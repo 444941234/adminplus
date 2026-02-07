@@ -2,6 +2,60 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import router from '@/router'
 
+// Token 刷新机制
+let isRefreshing = false
+let refreshSubscribers = []
+
+/**
+ * 订阅 token 刷新事件
+ * @param {Function} callback - token 刷新成功后的回调
+ */
+const subscribeTokenRefresh = (callback) => {
+  refreshSubscribers.push(callback)
+}
+
+/**
+ * 通知所有订阅者 token 已刷新
+ * @param {string} newToken - 新的 token
+ */
+const onRefreshed = (newToken) => {
+  refreshSubscribers.forEach(callback => callback(newToken))
+  refreshSubscribers = []
+}
+
+/**
+ * 刷新 token
+ * @returns {Promise<string>} 新的 token
+ */
+const refreshToken = async () => {
+  try {
+    const refreshTokenValue = sessionStorage.getItem('refreshToken')
+    if (!refreshTokenValue) {
+      throw new Error('No refresh token available')
+    }
+
+    const response = await axios.post(
+      `${import.meta.env.VITE_API_BASE_URL || '/api'}/auth/refresh`,
+      { refreshToken: refreshTokenValue }
+    )
+
+    const { token, refreshToken: newRefreshToken } = response.data
+
+    // 更新 sessionStorage
+    sessionStorage.setItem('token', token)
+    if (newRefreshToken) {
+      sessionStorage.setItem('refreshToken', newRefreshToken)
+    }
+
+    return token
+  } catch (error) {
+    // 刷新失败，清除所有 token
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('refreshToken')
+    throw error
+  }
+}
+
 // 全局登录对话框控制
 let loginDialogVisible = false
 let loginDialogResolve = null
@@ -83,25 +137,50 @@ request.interceptors.response.use(
       const { status } = error.response
 
       if (status === 401) {
-        // 如果已经显示登录对话框，不再重复显示
+        const originalConfig = error.config
+
+        // 如果正在刷新 token，将请求加入队列
+        if (isRefreshing) {
+          return new Promise((resolve) => {
+            subscribeTokenRefresh((newToken) => {
+              originalConfig.headers.Authorization = `Bearer ${newToken}`
+              resolve(request(originalConfig))
+            })
+          })
+        }
+
+        // 如果没有显示登录对话框，尝试刷新 token
         if (!loginDialogVisible) {
+          isRefreshing = true
+
           try {
-            // 保存原始请求配置，用于登录成功后重试
-            const originalConfig = error.config
-            
-            // 显示登录对话框，等待用户登录
-            await showLoginDialog()
-            
-            // 登录成功后，重试原始请求
-            if (originalConfig) {
-              return request(originalConfig)
+            const newToken = await refreshToken()
+            isRefreshing = false
+            onRefreshed(newToken)
+
+            // 重试原始请求
+            originalConfig.headers.Authorization = `Bearer ${newToken}`
+            return request(originalConfig)
+          } catch (refreshError) {
+            isRefreshing = false
+            refreshSubscribers = []
+
+            // 刷新失败，显示登录对话框
+            try {
+              await showLoginDialog()
+
+              // 登录成功后，重试原始请求
+              if (originalConfig) {
+                return request(originalConfig)
+              }
+            } catch {
+              // 用户取消登录或登录失败，跳转到登录页
+              sessionStorage.removeItem('token')
+              sessionStorage.removeItem('refreshToken')
+              sessionStorage.removeItem('user')
+              sessionStorage.removeItem('permissions')
+              router.push('/login')
             }
-          } catch {
-            // 用户取消登录或登录失败，跳转到登录页
-            sessionStorage.removeItem('token')
-            sessionStorage.removeItem('user')
-            sessionStorage.removeItem('permissions')
-            router.push('/login')
           }
         }
       } else if (status === 403) {

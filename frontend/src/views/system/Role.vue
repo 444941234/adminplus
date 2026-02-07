@@ -234,10 +234,11 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { getRoleList, createRole, updateRole, deleteRole, assignMenus, getRoleMenuIds } from '@/api/role'
 import { getMenuTree } from '@/api/menu'
+import { useConfirm } from '@/composables/useConfirm'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -266,6 +267,12 @@ const rules = {
   code: [{ required: true, message: '请输入角色编码', trigger: 'blur' }],
   name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }]
 }
+
+// 确认操作
+const confirmDelete = useConfirm({
+  message: '确定要删除该角色吗？',
+  type: 'warning'
+})
 
 const getDataScopeType = (scope) => {
   const types = { 1: '', 2: 'warning', 3: 'info', 4: 'danger' }
@@ -383,11 +390,7 @@ const handleMenuSubmit = async () => {
 
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('确定要删除该角色吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await confirmDelete()
     await deleteRole(row.id)
     ElMessage.success('删除成功')
     getData()

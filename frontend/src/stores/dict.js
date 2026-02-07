@@ -7,6 +7,8 @@ export const useDictStore = defineStore('dict', () => {
 
   /**
    * 获取字典项（带缓存）
+   * @param {string} dictType - 字典类型
+   * @returns {Promise<Object[]>} 字典项列表
    */
   const getDictItems = async (dictType) => {
     // 如果缓存中有，直接返回
@@ -27,6 +29,8 @@ export const useDictStore = defineStore('dict', () => {
 
   /**
    * 刷新字典缓存
+   * @param {string} dictType - 字典类型
+   * @returns {Promise<Object[]>} 字典项列表
    */
   const refreshDict = async (dictType) => {
     try {
@@ -48,6 +52,7 @@ export const useDictStore = defineStore('dict', () => {
 
   /**
    * 清除指定字典缓存
+   * @param {string} dictType - 字典类型
    */
   const clearDict = (dictType) => {
     dictMap.value.delete(dictType)
@@ -55,6 +60,9 @@ export const useDictStore = defineStore('dict', () => {
 
   /**
    * 根据字典值获取字典标签
+   * @param {string} dictType - 字典类型
+   * @param {string} value - 字典值
+   * @returns {string} 字典标签
    */
   const getDictLabel = (dictType, value) => {
     const items = dictMap.value.get(dictType)

@@ -1,10 +1,11 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { Plus, Search, Refresh } from '@element-plus/icons-vue'
 import { getDictList, createDict, updateDict, deleteDict, updateDictStatus } from '@/api/dict'
 import { debounce } from '@/utils/debounce'
+import { useConfirm } from '@/composables/useConfirm'
 
 const router = useRouter()
 
@@ -43,6 +44,17 @@ const rules = {
 
 const formRef = ref(null)
 
+// 确认操作
+const confirmDelete = useConfirm({
+  message: '确定要删除该字典吗？',
+  type: 'warning'
+})
+
+const confirmStatus = useConfirm({
+  message: '确定要执行此操作吗？',
+  type: 'warning'
+})
+
 // 获取列表
 const getList = async () => {
   loading.value = true
@@ -57,11 +69,15 @@ const getList = async () => {
   }
 }
 
-// 搜索
-const handleSearch = debounce(() => {
+// 搜索（使用防抖）
+const searchDebounced = debounce(() => {
   queryParams.page = 1
   getList()
-})
+}, 300)
+
+const handleSearch = () => {
+  searchDebounced()
+}
 
 // 重置
 const handleReset = () => {
@@ -123,9 +139,7 @@ const handleSubmit = async () => {
 // 删除
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('确定要删除该字典吗？', '提示', {
-      type: 'warning'
-    })
+    await confirmDelete()
     await deleteDict(row.id)
     ElMessage.success('删除成功')
     getList()
@@ -141,11 +155,7 @@ const handleStatus = async (row) => {
   const action = newStatus === 1 ? '启用' : '禁用'
 
   try {
-    await ElMessageBox.confirm(`确定要${action}该字典吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await confirmStatus(`确定要${action}该字典吗？`)
     await updateDictStatus(row.id, newStatus)
     ElMessage.success(`${action}成功`)
     getList()

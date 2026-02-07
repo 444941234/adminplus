@@ -73,7 +73,7 @@ router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
 
   // 检查 token 是否存在
-  const token = userStore.token || localStorage.getItem('token') || sessionStorage.getItem('token')
+  const token = userStore.token || sessionStorage.getItem('token')
 
   if (to.meta.requiresAuth && !token) {
     next('/login')

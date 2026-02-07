@@ -215,10 +215,11 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { Plus, Search, Refresh, ArrowLeft } from '@element-plus/icons-vue'
 import { getDictItemTree, createDictItem, updateDictItem, deleteDictItem, updateDictItemStatus } from '@/api/dict'
 import { useRoute, useRouter } from 'vue-router'
+import { useConfirm } from '@/composables/useConfirm'
 
 const route = useRoute()
 const router = useRouter()
@@ -250,6 +251,17 @@ const rules = {
   label: [{ required: true, message: '请输入字典标签', trigger: 'blur' }],
   value: [{ required: true, message: '请输入字典值', trigger: 'blur' }]
 }
+
+// 确认操作
+const confirmDelete = useConfirm({
+  message: '确定要删除该字典项吗？',
+  type: 'warning'
+})
+
+const confirmStatus = useConfirm({
+  message: '确定要执行此操作吗？',
+  type: 'warning'
+})
 
 // 用于选择的父节点树（不包含当前编辑的节点及其子节点）
 const parentTreeData = computed(() => {
@@ -361,11 +373,7 @@ const handleStatus = async (row) => {
   const action = newStatus === 1 ? '启用' : '禁用'
 
   try {
-    await ElMessageBox.confirm(`确定要${action}该字典项吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await confirmStatus(`确定要${action}该字典项吗？`)
     await updateDictItemStatus(dictId, row.id, newStatus)
     ElMessage.success(`${action}成功`)
     getData()
@@ -376,11 +384,7 @@ const handleStatus = async (row) => {
 
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('确定要删除该字典项吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await confirmDelete()
     await deleteDictItem(dictId, row.id)
     ElMessage.success('删除成功')
     getData()

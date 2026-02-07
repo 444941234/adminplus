@@ -79,8 +79,9 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import { useConfirm } from '@/composables/useConfirm'
 
 const router = useRouter()
 const route = useRoute()
@@ -88,14 +89,16 @@ const userStore = useUserStore()
 
 const activeMenu = computed(() => route.path)
 
+// 确认操作
+const confirmLogout = useConfirm({
+  message: '确定要退出登录吗？',
+  type: 'warning'
+})
+
 const handleCommand = async (command) => {
   if (command === 'logout') {
     try {
-      await ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
+      await confirmLogout()
       userStore.logout()
       ElMessage.success('退出成功')
       router.push('/login')

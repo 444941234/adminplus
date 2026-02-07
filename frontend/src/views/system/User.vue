@@ -263,9 +263,10 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage } from 'element-plus'
 import { getUserList, createUser, updateUser, deleteUser, updateUserStatus, assignRoles, getUserRoleIds } from '@/api/user'
 import { getRoleList } from '@/api/role'
+import { useConfirm } from '@/composables/useConfirm'
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -303,6 +304,17 @@ const rules = {
   email: [{ type: 'email', message: '请输入正确的邮箱', trigger: 'blur' }],
   phone: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }]
 }
+
+// 确认操作
+const confirmDelete = useConfirm({
+  message: '确定要删除该用户吗？',
+  type: 'warning'
+})
+
+const confirmStatus = useConfirm({
+  message: '确定要执行此操作吗？',
+  type: 'warning'
+})
 
 const getData = async () => {
   loading.value = true
@@ -388,11 +400,7 @@ const handleStatus = async (row) => {
   const action = newStatus === 1 ? '启用' : '禁用'
 
   try {
-    await ElMessageBox.confirm(`确定要${action}该用户吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await confirmStatus(`确定要${action}该用户吗？`)
     await updateUserStatus(row.id, newStatus)
     ElMessage.success(`${action}成功`)
     getData()
@@ -403,11 +411,7 @@ const handleStatus = async (row) => {
 
 const handleDelete = async (row) => {
   try {
-    await ElMessageBox.confirm('确定要删除该用户吗？', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    })
+    await confirmDelete()
     await deleteUser(row.id)
     ElMessage.success('删除成功')
     getData()

@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+/**
+ * 获取用户列表
+ * @param {Object} params - 查询参数
+ * @param {number} params.page - 页码
+ * @param {number} params.size - 每页数量
+ * @param {string} params.keyword - 关键字（用户名/昵称）
+ * @returns {Promise<Object>} 用户列表数据
+ */
 export const getUserList = (params) => {
   return request({
     url: '/sys/users',
@@ -8,6 +16,11 @@ export const getUserList = (params) => {
   })
 }
 
+/**
+ * 根据ID获取用户信息
+ * @param {number} id - 用户ID
+ * @returns {Promise<Object>} 用户信息
+ */
 export const getUserById = (id) => {
   return request({
     url: `/sys/users/${id}`,
@@ -15,6 +28,16 @@ export const getUserById = (id) => {
   })
 }
 
+/**
+ * 创建用户
+ * @param {Object} data - 用户信息
+ * @param {string} data.username - 用户名
+ * @param {string} data.password - 密码
+ * @param {string} data.nickname - 昵称
+ * @param {string} data.email - 邮箱
+ * @param {string} data.phone - 手机号
+ * @returns {Promise<Object>} 创建的用户信息
+ */
 export const createUser = (data) => {
   return request({
     url: '/sys/users',
@@ -23,6 +46,12 @@ export const createUser = (data) => {
   })
 }
 
+/**
+ * 更新用户信息
+ * @param {number} id - 用户ID
+ * @param {Object} data - 用户信息
+ * @returns {Promise<Object>} 更新后的用户信息
+ */
 export const updateUser = (id, data) => {
   return request({
     url: `/sys/users/${id}`,
@@ -31,6 +60,11 @@ export const updateUser = (id, data) => {
   })
 }
 
+/**
+ * 删除用户
+ * @param {number} id - 用户ID
+ * @returns {Promise<void>}
+ */
 export const deleteUser = (id) => {
   return request({
     url: `/sys/users/${id}`,
@@ -38,6 +72,12 @@ export const deleteUser = (id) => {
   })
 }
 
+/**
+ * 更新用户状态
+ * @param {number} id - 用户ID
+ * @param {number} status - 状态（1-启用，0-禁用）
+ * @returns {Promise<void>}
+ */
 export const updateUserStatus = (id, status) => {
   return request({
     url: `/sys/users/${id}/status`,
@@ -46,6 +86,12 @@ export const updateUserStatus = (id, status) => {
   })
 }
 
+/**
+ * 重置用户密码
+ * @param {number} id - 用户ID
+ * @param {string} password - 新密码
+ * @returns {Promise<void>}
+ */
 export const resetPassword = (id, password) => {
   return request({
     url: `/sys/users/${id}/password`,
@@ -54,6 +100,12 @@ export const resetPassword = (id, password) => {
   })
 }
 
+/**
+ * 为用户分配角色
+ * @param {number} userId - 用户ID
+ * @param {number[]} roleIds - 角色ID列表
+ * @returns {Promise<void>}
+ */
 export const assignRoles = (userId, roleIds) => {
   return request({
     url: `/sys/users/${userId}/roles`,
@@ -62,6 +114,11 @@ export const assignRoles = (userId, roleIds) => {
   })
 }
 
+/**
+ * 获取用户的角色ID列表
+ * @param {number} userId - 用户ID
+ * @returns {Promise<number[]>} 角色ID列表
+ */
 export const getUserRoleIds = (userId) => {
   return request({
     url: `/sys/users/${userId}/roles`,

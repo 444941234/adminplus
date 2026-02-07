@@ -15,7 +15,10 @@
       label-width="80px"
       @keyup.enter="handleLogin"
     >
-      <el-form-item label="用户名" prop="username">
+      <el-form-item
+        label="用户名"
+        prop="username"
+      >
         <el-input
           v-model="loginForm.username"
           placeholder="请输入用户名"
@@ -23,7 +26,10 @@
           :prefix-icon="User"
         />
       </el-form-item>
-      <el-form-item label="密码" prop="password">
+      <el-form-item
+        label="密码"
+        prop="password"
+      >
         <el-input
           v-model="loginForm.password"
           type="password"
@@ -36,7 +42,11 @@
     </el-form>
     <template #footer>
       <span class="dialog-footer">
-        <el-button type="primary" :loading="loading" @click="handleLogin">
+        <el-button
+          type="primary"
+          :loading="loading"
+          @click="handleLogin"
+        >
           登录
         </el-button>
       </span>
