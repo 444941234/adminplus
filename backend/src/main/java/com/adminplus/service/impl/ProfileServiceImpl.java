@@ -183,7 +183,13 @@ public class ProfileServiceImpl implements ProfileService {
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
-        return new SettingsVO(user.getSettings());
+        // 如果 settings 为 null，返回空 Map 而不是 null
+        Map<String, Object> settings = user.getSettings();
+        if (settings == null) {
+            settings = Map.of();
+        }
+
+        return new SettingsVO(settings);
     }
 
     @Override

@@ -14,7 +14,7 @@
           <div class="avatar-section">
             <el-avatar
               :size="120"
-              :src="avatarUrl"
+              :src="avatarUrl || undefined"
               class="avatar"
               @click="showAvatarDialog = true"
             >
