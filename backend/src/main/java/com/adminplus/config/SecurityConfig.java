@@ -7,6 +7,7 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -35,12 +36,25 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Value("${jwt.secret:}")
+    private String jwtSecret;
+
     /**
      * 密钥生成（开发环境）
      * 生产环境应从环境变量或配置文件读取
      */
     @Bean
     public RSAKey rsaKey() throws JOSEException {
+        // 如果配置了 JWT 密钥，从环境变量读取
+        if (jwtSecret != null && !jwtSecret.isEmpty()) {
+            try {
+                return RSAKey.parse(jwtSecret);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to parse JWT secret from environment", e);
+            }
+        }
+
+        // 开发环境生成临时密钥
         return new RSAKeyGenerator(2048)
                 .keyID("adminplus-key")
                 .generate();

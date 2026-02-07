@@ -1,8 +1,7 @@
 package com.adminplus.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.util.Set;
 
@@ -12,8 +11,7 @@ import java.util.Set;
  * @author AdminPlus
  * @since 2026-02-06
  */
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "sys_menu")
 public class MenuEntity extends BaseEntity {

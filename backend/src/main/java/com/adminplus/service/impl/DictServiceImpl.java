@@ -151,13 +151,13 @@ public class DictServiceImpl implements DictService {
 
     @Override
     @Transactional(readOnly = true)
-    // @Cacheable(value = "dict", key = "'items:' + #dictType")
+    @Cacheable(value = "dict", key = "'items:' + #dictType")
     public List<DictItemVO> getDictItemsByType(String dictType) {
         DictEntity dict = dictRepository.findByDictType(dictType)
                 .orElseThrow(() -> new BizException("字典不存在"));
 
         return dictItemRepository.findByDictIdAndStatusOrderBySortOrderAsc(dict.getId(), 1).stream()
-                .map(this::toItemVO)
+                .map(item -> toItemVO(item, dict))
                 .toList();
     }
 
@@ -173,11 +173,7 @@ public class DictServiceImpl implements DictService {
         );
     }
 
-    private com.adminplus.vo.DictItemVO toItemVO(com.adminplus.entity.DictItemEntity item) {
-        // 通过 dictId 查询字典实体来获取 dictType
-        com.adminplus.entity.DictEntity dict = dictRepository.findById(item.getDictId())
-                .orElseThrow(() -> new BizException("字典不存在"));
-        
+    private com.adminplus.vo.DictItemVO toItemVO(com.adminplus.entity.DictItemEntity item, com.adminplus.entity.DictEntity dict) {
         return new com.adminplus.vo.DictItemVO(
                 item.getId(),
                 item.getDictId(),

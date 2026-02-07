@@ -55,10 +55,10 @@ public class PermissionServiceImpl implements PermissionService {
             return List.of();
         }
 
-        // 3. 查询菜单的权限标识符（permKey），过滤掉空值
-        return menuIds.stream()
-                .map(menuId -> menuRepository.findById(menuId).orElse(null))
-                .filter(menu -> menu != null && menu.getPermKey() != null && !menu.getPermKey().isBlank())
+        // 3. 批量查询菜单的权限标识符（permKey），过滤掉空值
+        List<MenuEntity> menus = menuRepository.findAllById(menuIds);
+        return menus.stream()
+                .filter(menu -> menu.getPermKey() != null && !menu.getPermKey().isBlank())
                 .map(MenuEntity::getPermKey)
                 .collect(Collectors.toList());
     }
@@ -70,8 +70,13 @@ public class PermissionServiceImpl implements PermissionService {
                 .map(UserRoleEntity::getRoleId)
                 .toList();
 
-        return roleIds.stream()
-                .map(roleId -> roleRepository.findById(roleId).orElse(null))
+        if (roleIds.isEmpty()) {
+            return List.of();
+        }
+
+        // 批量查询角色
+        List<RoleEntity> roles = roleRepository.findAllById(roleIds);
+        return roles.stream()
                 .filter(role -> role != null)
                 .map(RoleEntity::getCode)
                 .toList();
@@ -95,10 +100,10 @@ public class PermissionServiceImpl implements PermissionService {
             return List.of();
         }
 
-        // 2. 查询菜单的权限标识符（permKey），过滤掉空值
-        return menuIds.stream()
-                .map(menuId -> menuRepository.findById(menuId).orElse(null))
-                .filter(menu -> menu != null && menu.getPermKey() != null && !menu.getPermKey().isBlank())
+        // 2. 批量查询菜单的权限标识符（permKey），过滤掉空值
+        List<MenuEntity> menus = menuRepository.findAllById(menuIds);
+        return menus.stream()
+                .filter(menu -> menu.getPermKey() != null && !menu.getPermKey().isBlank())
                 .map(MenuEntity::getPermKey)
                 .collect(Collectors.toList());
     }

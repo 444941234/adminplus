@@ -42,10 +42,14 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // 查询用户的角色
         List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
-        List<String> roleCodes = userRoles.stream()
+        List<Long> roleIds = userRoles.stream()
                 .map(UserRoleEntity::getRoleId)
-                .map(roleId -> roleRepository.findById(roleId).orElse(null))
-                .filter(role -> role != null && role.getStatus() == 1)
+                .toList();
+
+        // 批量查询角色
+        List<RoleEntity> roles = roleIds.isEmpty() ? List.of() : roleRepository.findAllById(roleIds);
+        List<String> roleCodes = roles.stream()
+                .filter(role -> role.getStatus() == 1)
                 .map(RoleEntity::getCode)
                 .collect(Collectors.toList());
 

@@ -24,7 +24,7 @@ import java.time.Duration;
  * @since 2026-02-06
  */
 @Configuration
-// @EnableCaching
+@EnableCaching
 public class CacheConfig {
 
     /**

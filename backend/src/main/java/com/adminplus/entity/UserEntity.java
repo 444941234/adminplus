@@ -1,8 +1,7 @@
 package com.adminplus.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -14,8 +13,7 @@ import java.util.Map;
  * @author AdminPlus
  * @since 2026-02-06
  */
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "sys_user", uniqueConstraints = {
         @UniqueConstraint(columnNames = "username")

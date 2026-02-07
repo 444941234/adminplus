@@ -45,7 +45,12 @@ spring:
 
   # 缓存配置
   cache:
-    type: none
+    type: redis
+    redis:
+      time-to-live: 3600000
+      cache-null-values: false
+      key-prefix: adminplus
+      use-key-prefix: true
 
   # Redis 配置
   data:
@@ -77,11 +82,8 @@ management:
     health:
       show-details: when-authorized
 
-# 日志配置
+# 日志配置（具体配置在 application-dev.yml 和 application-prod.yml 中）
 logging:
   level:
     root: INFO
-    com.adminplus: DEBUG
-    org.springframework.security: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    com.adminplus: INFO

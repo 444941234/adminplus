@@ -10,6 +10,7 @@ import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.UserService;
+import com.adminplus.utils.XssUtils;
 import com.adminplus.vo.UserVO;
 import com.adminplus.vo.PageResultVO;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 用户服务实现
@@ -43,14 +45,38 @@ public class UserServiceImpl implements UserService {
         var pageable = PageRequest.of(page - 1, size);
         var pageResult = userRepository.findAll(pageable);
 
+        // 批量查询所有用户角色
+        List<Long> userIds = pageResult.getContent().stream()
+                .map(UserEntity::getId)
+                .toList();
+        List<UserRoleEntity> allUserRoles = userIds.isEmpty()
+                ? List.of()
+                : userRoleRepository.findByUserIdIn(userIds);
+
+        // 批量查询所有角色
+        List<Long> roleIds = allUserRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .distinct()
+                .toList();
+        List<RoleEntity> allRoles = roleIds.isEmpty()
+                ? List.of()
+                : roleRepository.findAllById(roleIds);
+
+        // 构建角色映射
+        Map<Long, String> roleMap = allRoles.stream()
+                .collect(Collectors.toMap(RoleEntity::getId, RoleEntity::getName));
+
+        // 构建用户角色映射
+        Map<Long, List<String>> userRoleMap = new HashMap<>();
+        for (UserRoleEntity ur : allUserRoles) {
+            String roleName = roleMap.get(ur.getRoleId());
+            if (roleName != null) {
+                userRoleMap.computeIfAbsent(ur.getUserId(), k -> new ArrayList<>()).add(roleName);
+            }
+        }
+
         var records = pageResult.getContent().stream().map(user -> {
-            List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
-            List<String> roleNames = userRoles.stream()
-                    .map(UserRoleEntity::getRoleId)
-                    .map(roleId -> roleRepository.findById(roleId).orElse(null))
-                    .filter(role -> role != null)
-                    .map(RoleEntity::getName)
-                    .toList();
+            List<String> roleNames = userRoleMap.getOrDefault(user.getId(), List.of());
 
             return new UserVO(
                     user.getId(),
@@ -120,9 +146,9 @@ public class UserServiceImpl implements UserService {
         var user = new UserEntity();
         user.setUsername(req.username());
         user.setPassword(passwordEncoder.encode(req.password()));
-        user.setNickname(req.nickname());
-        user.setEmail(req.email());
-        user.setPhone(req.phone());
+        user.setNickname(XssUtils.escape(req.nickname()));
+        user.setEmail(XssUtils.escape(req.email()));
+        user.setPhone(XssUtils.escape(req.phone()));
         user.setAvatar(req.avatar());
         user.setStatus(1);
 
@@ -149,13 +175,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new BizException("用户不存在"));
 
         if (req.nickname() != null) {
-            user.setNickname(req.nickname());
+            user.setNickname(XssUtils.escape(req.nickname()));
         }
         if (req.email() != null) {
-            user.setEmail(req.email());
+            user.setEmail(XssUtils.escape(req.email()));
         }
         if (req.phone() != null) {
-            user.setPhone(req.phone());
+            user.setPhone(XssUtils.escape(req.phone()));
         }
         if (req.avatar() != null) {
             user.setAvatar(req.avatar());

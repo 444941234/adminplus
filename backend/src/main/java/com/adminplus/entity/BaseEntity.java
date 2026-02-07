@@ -1,8 +1,7 @@
 package com.adminplus.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -14,8 +13,7 @@ import java.time.Instant;
  * @author AdminPlus
  * @since 2026-02-06
  */
-@Getter
-@Setter
+@Data
 @MappedSuperclass
 public abstract class BaseEntity {
 

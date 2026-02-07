@@ -1,8 +1,7 @@
 package com.adminplus.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * 操作日志实体
@@ -10,8 +9,7 @@ import lombok.Setter;
  * @author AdminPlus
  * @since 2026-02-07
  */
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "sys_log")
 public class LogEntity extends BaseEntity {

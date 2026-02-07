@@ -9,6 +9,7 @@ import com.adminplus.repository.ProfileRepository;
 import com.adminplus.security.CustomUserDetails;
 import com.adminplus.service.ProfileService;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.XssUtils;
 import com.adminplus.vo.ProfileVO;
 import com.adminplus.vo.SettingsVO;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +53,15 @@ public class ProfileServiceImpl implements ProfileService {
             "image/webp"
     };
 
+    // 允许的文件扩展名
+    private static final String[] ALLOWED_EXTENSIONS = {
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".webp"
+    };
+
     // 最大文件大小 2MB
     private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
 
@@ -83,13 +93,13 @@ public class ProfileServiceImpl implements ProfileService {
                 .orElseThrow(() -> new BizException("用户不存在"));
 
         if (req.nickname() != null) {
-            user.setNickname(req.nickname());
+            user.setNickname(XssUtils.escape(req.nickname()));
         }
         if (req.email() != null) {
-            user.setEmail(req.email());
+            user.setEmail(XssUtils.escape(req.email()));
         }
         if (req.phone() != null) {
-            user.setPhone(req.phone());
+            user.setPhone(XssUtils.escape(req.phone()));
         }
         if (req.avatar() != null) {
             user.setAvatar(req.avatar());
@@ -146,8 +156,24 @@ public class ProfileServiceImpl implements ProfileService {
         validateImageFile(file);
 
         try {
-            // 生成唯一文件名
+            // 获取并验证原始文件名
             String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || originalFilename.isEmpty()) {
+                throw new BizException("文件名不能为空");
+            }
+
+            // 验证文件名不包含非法字符
+            String sanitizedFilename = XssUtils.sanitizeFilename(originalFilename);
+            if (!originalFilename.equals(sanitizedFilename)) {
+                throw new BizException("文件名包含非法字符");
+            }
+
+            // 验证文件扩展名
+            if (!XssUtils.isAllowedExtension(originalFilename, ALLOWED_EXTENSIONS)) {
+                throw new BizException("不支持的文件格式");
+            }
+
+            // 生成唯一文件名
             String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String filename = UUID.randomUUID() + extension;
 

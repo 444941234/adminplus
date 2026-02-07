@@ -1,8 +1,7 @@
 package com.adminplus.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * 角色-菜单关联实体
@@ -10,8 +9,7 @@ import lombok.Setter;
  * @author AdminPlus
  * @since 2026-02-06
  */
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "sys_role_menu", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"role_id", "menu_id"})

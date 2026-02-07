@@ -1,8 +1,7 @@
 package com.adminplus.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 /**
  * 用户-角色关联实体
@@ -10,8 +9,7 @@ import lombok.Setter;
  * @author AdminPlus
  * @since 2026-02-06
  */
-@Getter
-@Setter
+@Data
 @Entity
 @Table(name = "sys_user_role", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"user_id", "role_id"})
