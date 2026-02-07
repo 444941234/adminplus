@@ -49,6 +49,7 @@ import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { User, Lock } from '@element-plus/icons-vue'
 import { login } from '@/api/auth'
+import { handleLoginSuccess, handleLoginError } from '@/utils/request'
 
 const dialogVisible = ref(false)
 const loading = ref(false)
@@ -100,17 +101,19 @@ const handleLogin = async () => {
       sessionStorage.setItem('user', JSON.stringify(res.user))
     }
 
+    // 调用 request.js 中的登录成功处理
+    handleLoginSuccess(res.token, res.user)
+
     ElMessage.success('登录成功')
 
     // 关闭弹窗
     hide()
 
-    // 刷新当前页面
-    setTimeout(() => {
-      window.location.reload()
-    }, 300)
+    // 注意：不要在这里刷新页面，让 request.js 中的拦截器来处理刷新
   } catch (error) {
     console.error('登录失败:', error)
+    // 调用 request.js 中的登录失败处理
+    handleLoginError(error)
     ElMessage.error(error.message || '登录失败，请检查用户名和密码')
   } finally {
     loading.value = false
