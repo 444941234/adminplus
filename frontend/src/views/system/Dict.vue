@@ -234,7 +234,7 @@ onMounted(() => {
         <el-table-column label="操作" width="280" fixed="right">
           <template #default="{ row }">
             <el-button
-              type="info"
+              type="primary"
               size="small"
               @click="handleViewItems(row)"
             >
