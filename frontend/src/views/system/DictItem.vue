@@ -111,7 +111,7 @@ import { getDictItems, createDictItem, updateDictItem, deleteDictItem, updateDic
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const dictId = route.params.id
+const dictId = route.params.dictId
 const dictName = route.query.dictName || '未知'
 
 const loading = ref(false)
