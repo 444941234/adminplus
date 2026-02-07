@@ -12,12 +12,24 @@ spring:
     virtual:
       enabled: true
 
+  # 静态资源配置（禁用）
+  web:
+    resources:
+      add-mappings: false
+
   # 数据源配置
   datasource:
     url: jdbc:postgresql://postgres:5432/adminplus
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+
+  # SQL 初始化配置
+  sql:
+    init:
+      mode: never
+      encoding: UTF-8
+      continue-on-error: false
 
   # JPA 配置
   jpa:

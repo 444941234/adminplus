@@ -46,8 +46,8 @@ const getList = async () => {
   loading.value = true
   try {
     const data = await getDictList(queryParams)
-    tableData.value = data.data.records
-    total.value = data.data.total
+    tableData.value = data.records || []
+    total.value = data.total || 0
   } catch (error) {
     ElMessage.error('获取列表失败')
   } finally {
