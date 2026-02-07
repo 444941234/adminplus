@@ -207,7 +207,7 @@ onMounted(() => {
 
       <!-- 操作栏 -->
       <div class="table-operations">
-        <el-button type="primary" @click="handleAdd" v-auth="'dict:add'">
+        <el-button type="primary" @click="handleAdd">
           新增字典
         </el-button>
       </div>
