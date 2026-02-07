@@ -110,6 +110,9 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login", "/auth/register", "/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                )
                 .build();
     }
 }
