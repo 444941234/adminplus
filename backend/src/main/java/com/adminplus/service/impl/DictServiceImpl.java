@@ -178,11 +178,13 @@ public class DictServiceImpl implements DictService {
                 item.getId(),
                 item.getDictId(),
                 dict.getDictType(),
+                item.getParentId(),
                 item.getLabel(),
                 item.getValue(),
                 item.getSortOrder(),
                 item.getStatus(),
                 item.getRemark(),
+                null, // children - 在构建树形结构时填充
                 item.getCreateTime(),
                 item.getUpdateTime()
         );
