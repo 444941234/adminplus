@@ -2,6 +2,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Search, Refresh } from '@element-plus/icons-vue'
 import { getDictList, createDict, updateDict, deleteDict, updateDictStatus } from '@/api/dict'
 import { debounce } from '@/utils/debounce'
 
@@ -16,6 +17,7 @@ const formData = reactive({
   id: null,
   dictType: '',
   dictName: '',
+  status: 1,
   remark: ''
 })
 
@@ -75,6 +77,7 @@ const handleAdd = () => {
     id: null,
     dictType: '',
     dictName: '',
+    status: 1,
     remark: ''
   })
   dialogVisible.value = true
@@ -87,6 +90,7 @@ const handleEdit = (row) => {
     id: row.id,
     dictType: row.dictType,
     dictName: row.dictName,
+    status: row.status,
     remark: row.remark
   })
   dialogVisible.value = true
@@ -189,6 +193,16 @@ onMounted(() => {
 <template>
   <div class="dict-container">
     <el-card>
+      <template #header>
+        <div class="card-header">
+          <span>字典管理</span>
+          <el-button type="primary" @click="handleAdd">
+            <el-icon><Plus /></el-icon>
+            新增字典
+          </el-button>
+        </div>
+      </template>
+
       <!-- 搜索栏 -->
       <el-form :inline="true" :model="queryParams">
         <el-form-item label="关键字">
@@ -200,17 +214,16 @@ onMounted(() => {
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button type="primary" @click="handleSearch">
+            <el-icon><Search /></el-icon>
+            搜索
+          </el-button>
+          <el-button @click="handleReset">
+            <el-icon><Refresh /></el-icon>
+            重置
+          </el-button>
         </el-form-item>
       </el-form>
-
-      <!-- 操作栏 -->
-      <div class="table-operations">
-        <el-button type="primary" @click="handleAdd">
-          新增字典
-        </el-button>
-      </div>
 
       <!-- 表格 -->
       <el-table
@@ -306,6 +319,12 @@ onMounted(() => {
             placeholder="请输入字典名称"
           />
         </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="formData.status">
+            <el-radio :label="1">正常</el-radio>
+            <el-radio :label="0">禁用</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="备注">
           <el-input
             v-model="formData.remark"
@@ -327,7 +346,9 @@ onMounted(() => {
   padding: 20px;
 }
 
-.table-operations {
-  margin: 20px 0;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>
