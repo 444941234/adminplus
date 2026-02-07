@@ -309,7 +309,24 @@ const userStore = useUserStore()
 // 用户信息
 const userInfo = ref({})
 const avatarUrl = computed(() => {
-  return userInfo.value.avatar || ''
+  const avatar = userInfo.value.avatar
+  if (!avatar) {
+    return undefined
+  }
+
+  // 如果已经是完整 URL（以 http:// 或 https:// 开头），直接返回
+  if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+    return avatar
+  }
+
+  // 否则，拼接 API 基础 URL（静态资源也需要通过 /api 访问）
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
+  // 移除路径末尾的斜杠，避免双斜杠
+  const baseUrl = apiBaseUrl.replace(/\/$/, '')
+  // 确保路径以斜杠开头
+  const path = avatar.startsWith('/') ? avatar : '/' + avatar
+
+  return baseUrl + path
 })
 
 // 个人信息表单

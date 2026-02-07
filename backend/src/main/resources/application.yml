@@ -12,7 +12,7 @@ spring:
     virtual:
       enabled: true
 
-  # 静态资源配置（禁用）
+  # 静态资源配置（仅通过 ResourceHandlerRegistry 配置的路径可访问）
   web:
     resources:
       add-mappings: false
