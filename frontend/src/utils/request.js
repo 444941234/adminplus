@@ -7,6 +7,7 @@ import { login } from '@/api/auth'
 let loginDialogVisible = false
 let loginDialogResolve = null
 let loginDialogReject = null
+let pendingRequest = null // 保存当前失败的请求
 
 // 显示登录对话框的方法
 export const showLoginDialog = () => {
@@ -24,6 +25,7 @@ export const hideLoginDialog = () => {
   loginDialogVisible = false
   loginDialogResolve = null
   loginDialogReject = null
+  pendingRequest = null
   // 触发自定义事件通知组件隐藏
   window.dispatchEvent(new CustomEvent('hide-login-dialog'))
 }
@@ -87,14 +89,21 @@ request.interceptors.response.use(
         // 如果已经显示登录对话框，不再重复显示
         if (!loginDialogVisible) {
           try {
+            // 保存原始请求配置，用于登录成功后重试
+            const originalConfig = error.config
+            
             // 显示登录对话框，等待用户登录
             await showLoginDialog()
-            // 登录成功后刷新当前页面
-            window.location.reload()
+            
+            // 登录成功后，重试原始请求
+            if (originalConfig) {
+              return request(originalConfig)
+            }
           } catch (err) {
             // 用户取消登录或登录失败，跳转到登录页
             sessionStorage.removeItem('token')
             sessionStorage.removeItem('user')
+            sessionStorage.removeItem('permissions')
             router.push('/login')
           }
         }
