@@ -843,6 +843,10 @@ onBeforeUnmount(() => {
   font-size: 14px;
   transition: all 0.3s;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .quick-actions .el-button--primary {
