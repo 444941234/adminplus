@@ -49,12 +49,15 @@
               :src="captchaImage"
               class="captcha-image"
               @click="refreshCaptcha"
+              title="点击图片可刷新验证码"
             >
               <template #placeholder>
                 <div class="image-placeholder">加载中...</div>
               </template>
             </el-image>
           </div>
+          <!-- 验证码提示文本 -->
+          <div class="captcha-hint">点击图片可刷新验证码</div>
         </el-form-item>
 
         <el-form-item>
@@ -98,10 +101,11 @@ const form = reactive({
   captchaCode: ''
 })
 
+// 表单验证规则
 const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
-  captchaCode: [{ required: true, message: '请输入验证码', trigger: 'blur' }]
+  username: [{ required: true, message: '请输入您的用户名', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入登录密码（默认：admin123）', trigger: 'blur' }],
+  captchaCode: [{ required: true, message: '请输入图片中的验证码（点击图片可刷新）', trigger: 'blur' }]
 }
 
 const refreshCaptcha = async () => {
@@ -111,7 +115,8 @@ const refreshCaptcha = async () => {
     captchaId.value = data.captchaId
     form.captchaCode = ''
   } catch (error) {
-    ElMessage.error('获取验证码失败')
+    // 优化 API 错误提示
+    ElMessage.error('获取验证码失败，请检查网络连接或稍后重试')
     console.error('获取验证码失败:', error)
   }
 }
@@ -127,6 +132,7 @@ const handleLogin = async () => {
   } catch (error) {
     // 登录失败后自动刷新验证码
     await refreshCaptcha()
+    // 错误提示已经在 request.js 的响应拦截器中处理，这里不需要重复提示
   } finally {
     loading.value = false
   }
@@ -211,6 +217,14 @@ onMounted(() => {
   color: #999999;
   font-size: 12px;
   margin-top: 20px;
+}
+
+/* 验证码提示文本样式 */
+.captcha-hint {
+  font-size: 12px;
+  color: #999999;
+  margin-top: 4px;
+  text-align: left;
 }
 
 /* 登录按钮样式 */

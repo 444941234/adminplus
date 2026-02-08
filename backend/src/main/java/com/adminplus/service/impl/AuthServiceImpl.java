@@ -32,6 +32,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -60,13 +61,21 @@ public class AuthServiceImpl implements AuthService {
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenService refreshTokenService;
     private final LogService logService;
+    private final StringRedisTemplate redisTemplate;
 
     @Override
     public LoginResp login(UserLoginReq req) {
         // 验证验证码
         if (!captchaService.validateCaptcha(req.captchaId(), req.captchaCode())) {
             log.warn("验证码验证失败: username={}", maskUsername(req.username()));
-            throw new BizException("验证码错误或已过期");
+            // 优化验证码错误提示，区分不同错误类型
+            String redisKey = "captcha:" + req.captchaId();
+            String storedCode = redisTemplate.opsForValue().get(redisKey);
+            if (storedCode == null) {
+                throw new BizException("验证码已过期，请重新获取");
+            } else {
+                throw new BizException("验证码错误，请重新输入");
+            }
         }
 
         try {

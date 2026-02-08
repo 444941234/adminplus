@@ -98,7 +98,7 @@ public class DashboardServiceImpl implements DashboardService {
         // 获取所有角色及其用户数
         List<RoleEntity> roles = roleRepository.findByDeletedFalse();
         for (RoleEntity role : roles) {
-            roleNames.add(role.getRoleName());
+            roleNames.add(role.getName());
             List<UserRoleEntity> userRoles = userRoleRepository.findByRoleId(role.getId());
             userCounts.add((long) userRoles.size());
         }
