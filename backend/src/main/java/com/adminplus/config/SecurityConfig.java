@@ -158,7 +158,9 @@ public class SecurityConfig {
                         // 其他 API 端点使用 JWT Bearer Token，不依赖 Cookie，可安全忽略 CSRF
                         .ignoringRequestMatchers(
                                 "/auth/**",           // 认证相关端点（登录、注册、登出）
+                                "/v1/auth/**",        // v1 版本的认证相关端点
                                 "/captcha/**",        // 验证码端点
+                                "/v1/captcha/**",     // v1 版本的验证码端点
                                 "/uploads/**",        // 公开的上传文件访问
                                 "/actuator/health"    // 健康检查端点
                         )
@@ -167,6 +169,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 公开端点
                         .requestMatchers("/auth/login", "/auth/register", "/uploads/**", "/captcha/**").permitAll()
+                        .requestMatchers("/v1/auth/login", "/v1/auth/register", "/v1/uploads/**", "/v1/captcha/**").permitAll()
                         // Actuator - 根据环境限制访问
                         .requestMatchers("/actuator/health").permitAll()
                         .requestMatchers("/actuator/**").denyAll()
