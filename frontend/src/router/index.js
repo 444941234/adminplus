@@ -74,8 +74,8 @@ router.beforeEach(async (to, from, next) => {
   // 检查 token 是否存在
   const token = userStore.token.value || sessionStorage.getItem('token')
 
-  // 不需要认证的路由
-  if (!to.meta.requiresAuth) {
+  // 不需要认证的路由（排除根路径，根路径需要特殊处理）
+  if (!to.meta.requiresAuth && to.path !== '/') {
     if (to.path === '/login' && token) {
       // 已登录用户访问登录页，跳转到首页
       next('/')
@@ -85,7 +85,47 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // 需要认证的路由
+  // 需要认证的路由或根路径
+  if (to.path === '/') {
+    // 特殊处理根路径
+    if (!token) {
+      // 未登录，跳转到登录页
+      next('/login')
+      return
+    }
+
+    // 已登录，检查是否已加载动态路由
+    if (!userStore.hasLoadedRoutes) {
+      try {
+        console.log('[Router] 开始加载动态路由')
+
+        // 获取用户菜单树
+        const menus = await getUserMenuTree()
+
+        // 动态添加路由
+        addDynamicRoutes(menus)
+
+        // 标记路由已加载
+        userStore.setRoutesLoaded(true)
+
+        console.log('[Router] 动态路由加载完成')
+
+        // 重新进入当前路由（会自动重定向到 /dashboard）
+        next({ ...to, replace: true })
+      } catch (error) {
+        console.error('[Router] 动态路由加载失败', error)
+        // 加载失败，跳转到登录页
+        userStore.logout()
+        next('/login')
+      }
+    } else {
+      // 路由已加载，直接放行（会自动重定向到 /dashboard）
+      next()
+    }
+    return
+  }
+
+  // 其他需要认证的路由
   if (!token) {
     // 未登录，跳转到登录页
     console.log('[Router] 未登录，跳转到登录页')
@@ -93,7 +133,7 @@ router.beforeEach(async (to, from, next) => {
     return
   }
 
-  // 已登录，检查是否已���载动态路由
+  // 已登录，检查是否已加载动态路由
   if (!userStore.hasLoadedRoutes) {
     try {
       console.log('[Router] 开始加载动态路由')
