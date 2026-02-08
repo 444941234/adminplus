@@ -78,28 +78,34 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore()
 
-  // 检查 token 是否存在
-  const token = userStore.token || sessionStorage.getItem('token')
+  // 检查 token 是否存在（使用 .value 获取 ref 的实际值）
+  const token = userStore.token.value || sessionStorage.getItem('token')
 
   if (to.meta.requiresAuth && !token) {
+    console.log('[Router] 未登录，跳转到登录页')
     next('/login')
   } else if (to.path === '/login' && token) {
+    console.log('[Router] 已登录，跳转到首页')
     next('/')
   } else if (to.meta.requiresAuth && token) {
+    console.log('[Router] 已登录，验证 token 有效性')
     // 验证 token 有效性（可选：添加 decode 验证）
     try {
       // 简单的 token 格式验证
       if (typeof token === 'string' && token.length > 0) {
         next()
       } else {
+        console.error('[Router] Token 格式无效，跳转到登录页')
         userStore.logout()
         next('/login')
       }
-    } catch {
+    } catch (error) {
+      console.error('[Router] Token 验证失败，跳转到登录页', error)
       userStore.logout()
       next('/login')
     }
   } else {
+    console.log('[Router] 不需要认证，继续导航')
     next()
   }
 })
