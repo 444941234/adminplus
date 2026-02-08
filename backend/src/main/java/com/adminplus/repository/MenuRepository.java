@@ -24,4 +24,9 @@ public interface MenuRepository extends JpaRepository<MenuEntity, Long> {
      * 统计未删除的菜单数量
      */
     long countByDeletedFalse();
+
+    /**
+     * 统计指定类型的菜单数量
+     */
+    long countByTypeAndDeletedFalse(Integer type);
 }
