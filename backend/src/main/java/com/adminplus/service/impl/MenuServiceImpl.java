@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -268,7 +269,7 @@ public class MenuServiceImpl implements MenuService {
         }
 
         // 检查是否有子菜单
-        Set<Long> idSet = req.ids();
+        Set<Long> idSet = new HashSet<>(req.ids());
         List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
 
         // 找出所有要删除的菜单的子菜单
