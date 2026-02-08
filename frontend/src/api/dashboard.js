@@ -6,7 +6,7 @@ import request from '@/utils/request'
  */
 export const getDashboardStats = () => {
   return request({
-    url: '/sys/dashboard/stats',
+    url: '/v1/sys/dashboard/stats',
     method: 'get'
   })
 }

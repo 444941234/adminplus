@@ -9,7 +9,7 @@ import request from '@/utils/request'
  */
 export const login = (data) => {
   return request({
-    url: '/auth/login',
+    url: '/v1/auth/login',
     method: 'post',
     data
   })
@@ -21,7 +21,7 @@ export const login = (data) => {
  */
 export const getCurrentUser = () => {
   return request({
-    url: '/auth/me',
+    url: '/v1/auth/me',
     method: 'get'
   })
 }
@@ -32,7 +32,7 @@ export const getCurrentUser = () => {
  */
 export const getCurrentUserPermissions = () => {
   return request({
-    url: '/auth/permissions',
+    url: '/v1/auth/permissions',
     method: 'get'
   })
 }
@@ -43,7 +43,7 @@ export const getCurrentUserPermissions = () => {
  */
 export const logout = () => {
   return request({
-    url: '/auth/logout',
+    url: '/v1/auth/logout',
     method: 'post'
   })
 }

@@ -10,7 +10,7 @@ import request from '@/utils/request'
  */
 export const getDictList = (params) => {
   return request({
-    url: '/sys/dicts',
+    url: '/v1/sys/dicts',
     method: 'get',
     params
   })
@@ -23,7 +23,7 @@ export const getDictList = (params) => {
  */
 export const getDictByType = (dictType) => {
   return request({
-    url: `/sys/dicts/type/${dictType}`,
+    url: `/v1/sys/dicts/type/${dictType}`,
     method: 'get'
   })
 }
@@ -35,7 +35,7 @@ export const getDictByType = (dictType) => {
  */
 export const getDictById = (id) => {
   return request({
-    url: `/sys/dicts/${id}`,
+    url: `/v1/sys/dicts/${id}`,
     method: 'get'
   })
 }
@@ -51,7 +51,7 @@ export const getDictById = (id) => {
  */
 export const createDict = (data) => {
   return request({
-    url: '/sys/dicts',
+    url: '/v1/sys/dicts',
     method: 'post',
     data
   })
@@ -65,7 +65,7 @@ export const createDict = (data) => {
  */
 export const updateDict = (id, data) => {
   return request({
-    url: `/sys/dicts/${id}`,
+    url: `/v1/sys/dicts/${id}`,
     method: 'put',
     data
   })
@@ -78,7 +78,7 @@ export const updateDict = (id, data) => {
  */
 export const deleteDict = (id) => {
   return request({
-    url: `/sys/dicts/${id}`,
+    url: `/v1/sys/dicts/${id}`,
     method: 'delete'
   })
 }
@@ -91,7 +91,7 @@ export const deleteDict = (id) => {
  */
 export const updateDictStatus = (id, status) => {
   return request({
-    url: `/sys/dicts/${id}/status`,
+    url: `/v1/sys/dicts/${id}/status`,
     method: 'put',
     params: { status }
   })
@@ -104,7 +104,7 @@ export const updateDictStatus = (id, status) => {
  */
 export const getDictItems = (dictId) => {
   return request({
-    url: `/sys/dicts/${dictId}/items`,
+    url: `/v1/sys/dicts/${dictId}/items`,
     method: 'get'
   })
 }
@@ -116,7 +116,7 @@ export const getDictItems = (dictId) => {
  */
 export const getDictItemTree = (dictId) => {
   return request({
-    url: `/sys/dicts/${dictId}/items/tree`,
+    url: `/v1/sys/dicts/${dictId}/items/tree`,
     method: 'get'
   })
 }
@@ -128,7 +128,7 @@ export const getDictItemTree = (dictId) => {
  */
 export const getDictItemsByType = (dictType) => {
   return request({
-    url: `/sys/dicts/type/${dictType}/items`,
+    url: `/v1/sys/dicts/type/${dictType}/items`,
     method: 'get'
   })
 }
@@ -146,7 +146,7 @@ export const getDictItemsByType = (dictType) => {
  */
 export const createDictItem = (dictId, data) => {
   return request({
-    url: `/sys/dicts/${dictId}/items`,
+    url: `/v1/sys/dicts/${dictId}/items`,
     method: 'post',
     data
   })
@@ -161,7 +161,7 @@ export const createDictItem = (dictId, data) => {
  */
 export const updateDictItem = (dictId, id, data) => {
   return request({
-    url: `/sys/dicts/${dictId}/items/${id}`,
+    url: `/v1/sys/dicts/${dictId}/items/${id}`,
     method: 'put',
     data
   })
@@ -175,7 +175,7 @@ export const updateDictItem = (dictId, id, data) => {
  */
 export const deleteDictItem = (dictId, id) => {
   return request({
-    url: `/sys/dicts/${dictId}/items/${id}`,
+    url: `/v1/sys/dicts/${dictId}/items/${id}`,
     method: 'delete'
   })
 }
@@ -189,7 +189,7 @@ export const deleteDictItem = (dictId, id) => {
  */
 export const updateDictItemStatus = (dictId, id, status) => {
   return request({
-    url: `/sys/dicts/${dictId}/items/${id}/status`,
+    url: `/v1/sys/dicts/${dictId}/items/${id}/status`,
     method: 'put',
     params: { status }
   })

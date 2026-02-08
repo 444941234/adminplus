@@ -6,7 +6,7 @@ import request from '@/utils/request'
  */
 export const getProfile = () => {
   return request({
-    url: '/profile',
+    url: '/v1/profile',
     method: 'get'
   })
 }
@@ -21,7 +21,7 @@ export const getProfile = () => {
  */
 export const updateProfile = (data) => {
   return request({
-    url: '/profile',
+    url: '/v1/profile',
     method: 'put',
     data
   })
@@ -36,7 +36,7 @@ export const updateProfile = (data) => {
  */
 export const changePassword = (data) => {
   return request({
-    url: '/profile/password',
+    url: '/v1/profile/password',
     method: 'post',
     data
   })
@@ -49,7 +49,7 @@ export const changePassword = (data) => {
  */
 export const uploadAvatar = (formData) => {
   return request({
-    url: '/profile/avatar',
+    url: '/v1/profile/avatar',
     method: 'post',
     data: formData,
     headers: {
@@ -67,7 +67,7 @@ export const uploadAvatar = (formData) => {
  */
 export const updateSettings = (data) => {
   return request({
-    url: '/profile/settings',
+    url: '/v1/profile/settings',
     method: 'put',
     data
   })
@@ -79,7 +79,7 @@ export const updateSettings = (data) => {
  */
 export const getSettings = () => {
   return request({
-    url: '/profile/settings',
+    url: '/v1/profile/settings',
     method: 'get'
   })
 }

@@ -10,7 +10,7 @@ import request from '@/utils/request'
  */
 export const getUserList = (params) => {
   return request({
-    url: '/sys/users',
+    url: '/v1/sys/users',
     method: 'get',
     params
   })
@@ -23,7 +23,7 @@ export const getUserList = (params) => {
  */
 export const getUserById = (id) => {
   return request({
-    url: `/sys/users/${id}`,
+    url: `/v1/sys/users/${id}`,
     method: 'get'
   })
 }
@@ -40,7 +40,7 @@ export const getUserById = (id) => {
  */
 export const createUser = (data) => {
   return request({
-    url: '/sys/users',
+    url: '/v1/sys/users',
     method: 'post',
     data
   })
@@ -54,7 +54,7 @@ export const createUser = (data) => {
  */
 export const updateUser = (id, data) => {
   return request({
-    url: `/sys/users/${id}`,
+    url: `/v1/sys/users/${id}`,
     method: 'put',
     data
   })
@@ -67,7 +67,7 @@ export const updateUser = (id, data) => {
  */
 export const deleteUser = (id) => {
   return request({
-    url: `/sys/users/${id}`,
+    url: `/v1/sys/users/${id}`,
     method: 'delete'
   })
 }
@@ -80,7 +80,7 @@ export const deleteUser = (id) => {
  */
 export const updateUserStatus = (id, status) => {
   return request({
-    url: `/sys/users/${id}/status`,
+    url: `/v1/sys/users/${id}/status`,
     method: 'put',
     params: { status }
   })
@@ -94,7 +94,7 @@ export const updateUserStatus = (id, status) => {
  */
 export const resetPassword = (id, password) => {
   return request({
-    url: `/sys/users/${id}/password`,
+    url: `/v1/sys/users/${id}/password`,
     method: 'put',
     params: { password }
   })
@@ -108,7 +108,7 @@ export const resetPassword = (id, password) => {
  */
 export const assignRoles = (userId, roleIds) => {
   return request({
-    url: `/sys/users/${userId}/roles`,
+    url: `/v1/sys/users/${userId}/roles`,
     method: 'put',
     data: { roleIds }
   })
@@ -121,7 +121,7 @@ export const assignRoles = (userId, roleIds) => {
  */
 export const getUserRoleIds = (userId) => {
   return request({
-    url: `/sys/users/${userId}/roles`,
+    url: `/v1/sys/users/${userId}/roles`,
     method: 'get'
   })
 }

@@ -6,7 +6,7 @@ import request from '@/utils/request'
  */
 export const getCurrentUserPermissions = () => {
   return request({
-    url: '/auth/permissions',
+    url: '/v1/auth/permissions',
     method: 'get'
   })
 }
@@ -17,7 +17,7 @@ export const getCurrentUserPermissions = () => {
  */
 export const getAllPermissions = () => {
   return request({
-    url: '/sys/permissions/all',
+    url: '/v1/sys/permissions/all',
     method: 'get'
   })
 }
@@ -28,7 +28,7 @@ export const getAllPermissions = () => {
  */
 export const getCurrentUserRoles = () => {
   return request({
-    url: '/sys/permissions/current/roles',
+    url: '/v1/sys/permissions/current/roles',
     method: 'get'
   })
 }

@@ -6,7 +6,7 @@ import request from '@/utils/request'
  */
 export const getRoleList = () => {
   return request({
-    url: '/sys/roles',
+    url: '/v1/sys/roles',
     method: 'get'
   })
 }
@@ -18,7 +18,7 @@ export const getRoleList = () => {
  */
 export const getRoleById = (id) => {
   return request({
-    url: `/sys/roles/${id}`,
+    url: `/v1/sys/roles/${id}`,
     method: 'get'
   })
 }
@@ -36,7 +36,7 @@ export const getRoleById = (id) => {
  */
 export const createRole = (data) => {
   return request({
-    url: '/sys/roles',
+    url: '/v1/sys/roles',
     method: 'post',
     data
   })
@@ -50,7 +50,7 @@ export const createRole = (data) => {
  */
 export const updateRole = (id, data) => {
   return request({
-    url: `/sys/roles/${id}`,
+    url: `/v1/sys/roles/${id}`,
     method: 'put',
     data
   })
@@ -63,7 +63,7 @@ export const updateRole = (id, data) => {
  */
 export const deleteRole = (id) => {
   return request({
-    url: `/sys/roles/${id}`,
+    url: `/v1/sys/roles/${id}`,
     method: 'delete'
   })
 }
@@ -76,7 +76,7 @@ export const deleteRole = (id) => {
  */
 export const assignMenus = (id, menuIds) => {
   return request({
-    url: `/sys/roles/${id}/menus`,
+    url: `/v1/sys/roles/${id}/menus`,
     method: 'put',
     data: menuIds
   })
@@ -89,7 +89,7 @@ export const assignMenus = (id, menuIds) => {
  */
 export const getRoleMenuIds = (id) => {
   return request({
-    url: `/sys/roles/${id}/menus`,
+    url: `/v1/sys/roles/${id}/menus`,
     method: 'get'
   })
 }
