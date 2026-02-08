@@ -56,49 +56,15 @@ const refreshToken = async () => {
   }
 }
 
-// 全局登录对话框控制
-let loginDialogVisible = false
-let loginDialogResolve = null
-let loginDialogReject = null
-
-// 显示登录对话框的方法
-export const showLoginDialog = () => {
-  return new Promise((resolve, reject) => {
-    loginDialogVisible = true
-    loginDialogResolve = resolve
-    loginDialogReject = reject
-    // 触发自定义事件通知组件显示
-    window.dispatchEvent(new CustomEvent('show-login-dialog'))
-  })
-}
-
-// 关闭登录对话框的方法
-export const hideLoginDialog = () => {
-  loginDialogVisible = false
-  loginDialogResolve = null
-  loginDialogReject = null
-  // 触发自定义事件通知组件隐藏
-  window.dispatchEvent(new CustomEvent('hide-login-dialog'))
-}
-
-// 处理登录成功
-export const handleLoginSuccess = (token, user, permissions) => {
-  sessionStorage.setItem('token', token)
-  sessionStorage.setItem('user', JSON.stringify(user))
-  if (permissions) {
-    sessionStorage.setItem('permissions', JSON.stringify(permissions))
-  }
-  if (loginDialogResolve) {
-    loginDialogResolve({ token, user, permissions })
-  }
-  hideLoginDialog()
-}
-
-// 处理登录失败
-export const handleLoginError = (error) => {
-  if (loginDialogReject) {
-    loginDialogReject(error)
-  }
+/**
+ * 清除用户信息并跳转到登录页
+ */
+const clearUserInfoAndRedirect = () => {
+  sessionStorage.removeItem('token')
+  sessionStorage.removeItem('refreshToken')
+  sessionStorage.removeItem('user')
+  sessionStorage.removeItem('permissions')
+  router.push('/login')
 }
 
 const request = axios.create({
@@ -149,39 +115,23 @@ request.interceptors.response.use(
           })
         }
 
-        // 如果没有显示登录对话框，尝试刷新 token
-        if (!loginDialogVisible) {
-          isRefreshing = true
+        // 尝试刷新 token
+        isRefreshing = true
 
-          try {
-            const newToken = await refreshToken()
-            isRefreshing = false
-            onRefreshed(newToken)
+        try {
+          const newToken = await refreshToken()
+          isRefreshing = false
+          onRefreshed(newToken)
 
-            // 重试原始请求
-            originalConfig.headers.Authorization = `Bearer ${newToken}`
-            return request(originalConfig)
-          } catch {
-            isRefreshing = false
-            refreshSubscribers = []
+          // 重试原始请求
+          originalConfig.headers.Authorization = `Bearer ${newToken}`
+          return request(originalConfig)
+        } catch {
+          isRefreshing = false
+          refreshSubscribers = []
 
-            // 刷新失败，显示登录对话框
-            try {
-              await showLoginDialog()
-
-              // 登录成功后，重试原始请求
-              if (originalConfig) {
-                return request(originalConfig)
-              }
-            } catch {
-              // 用户取消登录或登录失败，跳转到登录页
-              sessionStorage.removeItem('token')
-              sessionStorage.removeItem('refreshToken')
-              sessionStorage.removeItem('user')
-              sessionStorage.removeItem('permissions')
-              router.push('/login')
-            }
-          }
+          // 刷新失败，清除用户信息并跳转到登录页
+          clearUserInfoAndRedirect()
         }
       } else if (status === 403) {
         ElMessage.error('无权访问')
