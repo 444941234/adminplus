@@ -1,5 +1,7 @@
 package com.adminplus.service;
 
+import com.adminplus.dto.MenuBatchDeleteReq;
+import com.adminplus.dto.MenuBatchStatusReq;
 import com.adminplus.dto.MenuCreateReq;
 import com.adminplus.dto.MenuUpdateReq;
 import com.adminplus.vo.MenuVO;
@@ -38,4 +40,14 @@ public interface MenuService {
      * 删除菜单
      */
     void deleteMenu(Long id);
+
+    /**
+     * 批量更新菜单状态
+     */
+    void batchUpdateStatus(MenuBatchStatusReq req);
+
+    /**
+     * 批量删除菜单
+     */
+    void batchDelete(MenuBatchDeleteReq req);
 }

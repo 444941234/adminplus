@@ -3,6 +3,8 @@ package com.adminplus.service.impl;
 import com.adminplus.constants.OperationType;
 import com.adminplus.dto.MenuCreateReq;
 import com.adminplus.dto.MenuUpdateReq;
+import com.adminplus.dto.MenuBatchStatusReq;
+import com.adminplus.dto.MenuBatchDeleteReq;
 import com.adminplus.entity.MenuEntity;
 import com.adminplus.exception.BizException;
 import com.adminplus.repository.MenuRepository;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -234,5 +237,52 @@ public class MenuServiceImpl implements MenuService {
 
         // 记录审计日志
         logService.log("菜单管理", OperationType.DELETE, "删除菜单: " + menu.getName());
+    }
+
+    @Override
+    @Transactional
+    public void batchUpdateStatus(MenuBatchStatusReq req) {
+        List<MenuEntity> menus = menuRepository.findAllById(req.ids());
+
+        if (menus.size() != req.ids().size()) {
+            throw new BizException("部分菜单不存在");
+        }
+
+        menus.forEach(menu -> {
+            menu.setStatus(req.status());
+        });
+
+        menuRepository.saveAll(menus);
+
+        // 记录审计日志
+        logService.log("菜单管理", OperationType.UPDATE, "批量更新菜单状态，数量: " + req.ids().size());
+    }
+
+    @Override
+    @Transactional
+    public void batchDelete(MenuBatchDeleteReq req) {
+        List<MenuEntity> menus = menuRepository.findAllById(req.ids());
+
+        if (menus.size() != req.ids().size()) {
+            throw new BizException("部分菜单不存在");
+        }
+
+        // 检查是否有子菜单
+        Set<Long> idSet = req.ids();
+        List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
+
+        // 找出所有要删除的菜单的子菜单
+        List<MenuEntity> children = allMenus.stream()
+                .filter(m -> idSet.contains(m.getParentId()))
+                .toList();
+
+        if (!children.isEmpty()) {
+            throw new BizException("存在菜单下有子菜单，无法批量删除");
+        }
+
+        menuRepository.deleteAll(menus);
+
+        // 记录审计日志
+        logService.log("菜单管理", OperationType.DELETE, "批量删除菜单，数量: " + req.ids().size());
     }
 }

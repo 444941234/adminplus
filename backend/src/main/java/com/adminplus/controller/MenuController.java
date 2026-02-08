@@ -1,5 +1,7 @@
 package com.adminplus.controller;
 
+import com.adminplus.dto.MenuBatchDeleteReq;
+import com.adminplus.dto.MenuBatchStatusReq;
 import com.adminplus.dto.MenuCreateReq;
 import com.adminplus.dto.MenuUpdateReq;
 import com.adminplus.service.MenuService;
@@ -67,6 +69,22 @@ public class MenuController {
     @PreAuthorize("hasAuthority('menu:delete')")
     public ApiResponse<Void> deleteMenu(@PathVariable Long id) {
         menuService.deleteMenu(id);
+        return ApiResponse.ok();
+    }
+
+    @PutMapping("/batch/status")
+    @Operation(summary = "批量更新菜单状态")
+    @PreAuthorize("hasAuthority('menu:edit')")
+    public ApiResponse<Void> batchUpdateStatus(@Valid @RequestBody MenuBatchStatusReq req) {
+        menuService.batchUpdateStatus(req);
+        return ApiResponse.ok();
+    }
+
+    @DeleteMapping("/batch")
+    @Operation(summary = "批量删除菜单")
+    @PreAuthorize("hasAuthority('menu:delete')")
+    public ApiResponse<Void> batchDelete(@Valid @RequestBody MenuBatchDeleteReq req) {
+        menuService.batchDelete(req);
         return ApiResponse.ok();
     }
 }
