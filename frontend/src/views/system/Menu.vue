@@ -545,10 +545,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus, Edit, Delete, Search, Setting, User, Lock, Unlock,
   View, Hide, Check, Close, ArrowRight, ArrowLeft, ArrowUp, ArrowDown,
-  Home, Menu, Document, Folder, FolderOpened, Files, DataLine,
+  Menu, Document, Folder, FolderOpened, Files, DataLine,
   Tools, Management, Monitor, Bell, Message, ChatLineSquare,
   Calendar, Clock, Timer, Warning, InfoFilled, SuccessFilled,
-  CircleCheck, CircleClose, CirclePlus, CircleMinus, ZoomIn, ZoomOut,
+  CircleCheck, CircleClose, CirclePlus, ZoomIn, ZoomOut,
   Refresh, RefreshRight, RefreshLeft, Download, Upload, Share,
   More, MoreFilled, Star, StarFilled, EditPen, DeleteFilled,
   MagicStick
@@ -566,10 +566,10 @@ import {
 const ALLOWED_ICONS = [
   'Plus', 'Edit', 'Delete', 'Search', 'Setting', 'User', 'Lock', 'Unlock',
   'View', 'Hide', 'Check', 'Close', 'ArrowRight', 'ArrowLeft', 'ArrowUp', 'ArrowDown',
-  'Home', 'Menu', 'Document', 'Folder', 'FolderOpened', 'Files', 'DataLine',
+  'Menu', 'Document', 'Folder', 'FolderOpened', 'Files', 'DataLine',
   'Tools', 'Management', 'Monitor', 'Bell', 'Message', 'ChatLineSquare',
   'Calendar', 'Clock', 'Timer', 'Warning', 'InfoFilled', 'SuccessFilled',
-  'CircleCheck', 'CircleClose', 'CirclePlus', 'CircleMinus', 'ZoomIn', 'ZoomOut',
+  'CircleCheck', 'CircleClose', 'CirclePlus', 'ZoomIn', 'ZoomOut',
   'Refresh', 'RefreshRight', 'RefreshLeft', 'Download', 'Upload', 'Share',
   'More', 'MoreFilled', 'Star', 'StarFilled', 'EditPen', 'DeleteFilled',
   'MagicStick', 'ArrowDown', 'Grid', 'List', 'Operation', 'Position', 'Tickets',
@@ -580,7 +580,7 @@ const ALLOWED_ICONS = [
 // 常用图标（用于快速选择）
 const COMMON_ICONS = [
   'Setting', 'User', 'Document', 'Folder', 'Management', 'Monitor',
-  'Tools', 'DataLine', 'TrendCharts', 'Menu', 'Home', 'Search',
+  'Tools', 'DataLine', 'TrendCharts', 'Menu', 'Search',
   'Edit', 'Delete', 'Plus', 'View', 'Lock', 'Unlock'
 ]
 
