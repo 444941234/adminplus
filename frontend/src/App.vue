@@ -1,6 +1,5 @@
 <template>
   <router-view />
-  <LoginDialog />
 </template>
 
 <script setup>
