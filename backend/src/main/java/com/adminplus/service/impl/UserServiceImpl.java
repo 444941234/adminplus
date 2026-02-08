@@ -266,11 +266,26 @@ public class UserServiceImpl implements UserService {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
+        // 验证新密码强度（确保所有密码修改操作都使用相同的密码强度规则）
+        if (!PasswordUtils.isStrongPassword(newPassword)) {
+            throw new BizException(PasswordUtils.getPasswordStrengthHint(newPassword));
+        }
+
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
-        // 记录审计日志
-        logService.log("用户管理", OperationType.UPDATE, "重置密码: " + user.getUsername());
+        // 记录审计日志（使用掩码隐藏用户名）
+        logService.log("用户管理", OperationType.UPDATE, "重置密码: " + maskUsername(user.getUsername()));
+    }
+
+    /**
+     * 隐藏用户名敏感信息
+     */
+    private String maskUsername(String username) {
+        if (username == null || username.length() <= 2) {
+            return "***";
+        }
+        return username.charAt(0) + "***" + username.charAt(username.length() - 1);
     }
 
     @Override

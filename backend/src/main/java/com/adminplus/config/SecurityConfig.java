@@ -62,7 +62,8 @@ public class SecurityConfig {
      * 安全要求：
      * - 生产环境必须配置 JWT_SECRET 环境变量
      * - 密钥长度至少 256 位（RSA 2048 位）
-     * - 开发环境生成临时密钥并输出警告日志
+     * - 开发环境使用固定密钥或生成临时密钥
+     * - 不记录密钥内容到日志，只记录密钥长度
      */
     @Bean
     public RSAKey rsaKey() throws JOSEException {
@@ -85,7 +86,8 @@ public class SecurityConfig {
                     );
                 }
 
-                log.info("JWT 密钥已从环境变量加载，密钥长度：{} 位", keySize);
+                // 只记录密钥长度，不记录密钥内容（防止密钥泄露）
+                log.info("JWT 密��已从环境变量加载，密钥长度：{} 位", keySize);
                 return rsaKey;
 
             } catch (Exception e) {
@@ -93,15 +95,26 @@ public class SecurityConfig {
             }
         }
 
-        // 开发环境：生成临时密钥
+        // 开发环境：优先使用配置文件中的固定密钥，否则生成临时密钥
+        String devSecret = env.getProperty("jwt.dev-secret");
+        if (devSecret != null && !devSecret.isEmpty()) {
+            try {
+                RSAKey devKey = RSAKey.parse(devSecret);
+                int keySize = devKey.toRSAPublicKey().getModulus().bitLength();
+                log.info("开发环境：使用配置文件中的 JWT 密钥，密钥长度：{} 位", keySize);
+                return devKey;
+            } catch (Exception e) {
+                log.warn("开发环境密钥解析失败，使用临时密钥");
+            }
+        }
+
+        // 生成临时密钥（开发环境）
         RSAKey tempKey = new RSAKeyGenerator(2048)
                 .keyID("adminplus-dev-key")
                 .generate();
 
-        log.warn("⚠️  开发环境：使用临时生成的 JWT 密钥（仅限开发环境使用）");
-        log.warn("⚠️  警告：临时密钥每次重启都会变化，生产环境必须配置 JWT_SECRET 环境变量！");
-        log.warn("⚠️  如何配置：export JWT_SECRET=<your-rsa-key-json>");
-
+        // 只记录密钥长度，不记录密钥内容
+        log.warn("开发环境：使用临时生成的 JWT 密钥，密钥长度：2048 位");
         return tempKey;
     }
 
@@ -161,30 +174,23 @@ public class SecurityConfig {
      * 安全过滤器链
      *
      * CSRF 保护说明：
-     * - 对于使用 JWT 认证的 REST API（/api/**），CSRF 保护通过忽略请求来实现
-     * - 这是因为 JWT Token 本身已经提供了防 CSRF 保护（通过 Authorization 头）
-     * - 如果前端使用 Cookie 存储 JWT，则需要启用 CSRF 保护
-     * - 当前实现：API 端点忽略 CSRF（JWT Bearer Token 方式），其他端点启用 CSRF
+     * - 根据前端 JWT 存储方式决定是否启用 CSRF 保护
+     * - 如果使用 Cookie 存储 JWT，必须启用 CSRF 保护（防止 CSRF 攻击）
+     * - 如果使用 Bearer Token（localStorage/sessionStorage），可以安全地禁用 CSRF
+     * - 生产环境强制检查 JWT 存储方式配置
      */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
-                // 启用 CSRF 保护，使用 CookieCsrfTokenRepository
-                // 注意：对于使用 Bearer Token 的 REST API，可以安全地忽略 CSRF
-                // 如果使用 Cookie 存储 JWT，应该移除 ignoringRequestMatchers 配置
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        // 仅忽略认证相关端点（登录、注册）和公开端点
-                        // 其他 API 端点使用 JWT Bearer Token，不依赖 Cookie，可安全忽略 CSRF
-                        .ignoringRequestMatchers(
-                                "/auth/**",           // 认证相关端点（登录、注册、登出）
-                                "/v1/auth/**",        // v1 版本的认证相关端点
-                                "/captcha/**",        // 验证码端点
-                                "/v1/captcha/**",     // v1 版本的验证码端点
-                                "/uploads/**",        // 公开的上传文件访问
-                                "/actuator/health"    // 健康检查端点
-                        )
-                )
+        // 读取 JWT 存储方式配置（默认为 false，即使用 Bearer Token）
+        boolean useCookieForJwt = Boolean.parseBoolean(env.getProperty("security.jwt.use-cookie", "false"));
+
+        // 生产环境强制检查 JWT 存储方式配置
+        if (isProduction() && env.getProperty("security.jwt.use-cookie") == null) {
+            log.warn("生产环境未明确配置 security.jwt.use-cookie，使用默认值 false（Bearer Token 方式）");
+        }
+
+        // 构建 SecurityFilterChain
+        http
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // 公开端点
@@ -210,8 +216,30 @@ public class SecurityConfig {
                                 .maxAgeInSeconds(31536000)
                                 .preload(true)
                         )
-                )
-                .build();
+                );
+
+        // 根据前端 JWT 存储方式配置 CSRF 保护
+        if (useCookieForJwt) {
+            // 如果使用 Cookie 存储 JWT，启用 CSRF 保护
+            log.info("CSRF 保护已启用（Cookie 存储 JWT 模式）");
+
+            http.csrf(csrf -> csrf
+                    .csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse())
+                    // 只忽略登录和注册端点（这些端点需要先获取 CSRF Token）
+                    .ignoringRequestMatchers(
+                            "/auth/login",
+                            "/auth/register",
+                            "/v1/auth/login",
+                            "/v1/auth/register"
+                    )
+            );
+        } else {
+            // 如果使用 Bearer Token，可以安全地禁用 CSRF
+            log.info("CSRF 保护已禁用（Bearer Token 模式）");
+            http.csrf(AbstractHttpConfigurer::disable);
+        }
+
+        return http.build();
     }
 
     /**
