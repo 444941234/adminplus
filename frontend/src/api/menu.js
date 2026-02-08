@@ -71,3 +71,30 @@ export const deleteMenu = (id) => {
     method: 'delete'
   })
 }
+
+/**
+ * 批量更新菜单状态
+ * @param {number[]} ids - 菜单ID数组
+ * @param {number} status - 状态（1-启用，0-禁用）
+ * @returns {Promise<void>}
+ */
+export const batchUpdateMenuStatus = (ids, status) => {
+  return request({
+    url: '/v1/sys/menus/batch/status',
+    method: 'put',
+    data: { ids, status }
+  })
+}
+
+/**
+ * 批量删除菜单
+ * @param {number[]} ids - 菜单ID数组
+ * @returns {Promise<void>}
+ */
+export const batchDeleteMenu = (ids) => {
+  return request({
+    url: '/v1/sys/menus/batch',
+    method: 'delete',
+    data: { ids }
+  })
+}

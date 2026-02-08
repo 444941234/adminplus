@@ -551,7 +551,7 @@ import {
   CircleCheck, CircleClose, CirclePlus, CircleMinus, ZoomIn, ZoomOut,
   Refresh, RefreshRight, RefreshLeft, Download, Upload, Share,
   More, MoreFilled, Star, StarFilled, EditPen, DeleteFilled,
-  MagicStick, ArrowDown
+  MagicStick
 } from '@element-plus/icons-vue'
 import { getMenuTree, createMenu, updateMenu, deleteMenu, batchUpdateMenuStatus, batchDeleteMenu } from '@/api/menu'
 import { useForm } from '@/composables/useForm'
