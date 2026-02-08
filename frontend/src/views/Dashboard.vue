@@ -363,7 +363,7 @@ const fetchUserGrowth = async () => {
     const data = await getUserGrowth()
     
     // 检查数据是否为空
-    if (!data.labels || data.labels.length === 0 || !data.values || data.values.length === 0) {
+    if (!data || !data.labels || data.labels.length === 0 || !data.values || data.values.length === 0) {
       // 数据为空，显示空状态
       userGrowthChart.clear()
       userGrowthChart.setOption({
@@ -434,7 +434,7 @@ const fetchRoleDistribution = async () => {
     const data = await getRoleDistribution()
     
     // 检查数据是否为空
-    if (!data.labels || data.labels.length === 0 || !data.values || data.values.length === 0) {
+    if (!data || !data.labels || data.labels.length === 0 || !data.values || data.values.length === 0) {
       // 数据为空，显示空状态
       roleDistributionChart.clear()
       roleDistributionChart.setOption({
@@ -510,7 +510,7 @@ const fetchMenuDistribution = async () => {
     const data = await getMenuDistribution()
     
     // 检查数据是否为空
-    if (!data.labels || data.labels.length === 0 || !data.values || data.values.length === 0) {
+    if (!data || !data.labels || data.labels.length === 0 || !data.values || data.values.length === 0) {
       // 数据为空，显示空状态
       menuDistributionChart.clear()
       menuDistributionChart.setOption({
