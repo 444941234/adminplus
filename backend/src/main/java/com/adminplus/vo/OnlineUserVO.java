@@ -12,7 +12,7 @@ public record OnlineUserVO(
         /**
          * 用户ID
          */
-        Long userId,
+        String userId,
 
         /**
          * 用户名

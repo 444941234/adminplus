@@ -52,7 +52,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
-    public RoleVO getRoleById(Long id) {
+    public RoleVO getRoleById(String id) {
         var role = roleRepository.findById(id)
                 .orElseThrow(() -> new BizException("角色不存在"));
 
@@ -105,7 +105,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public RoleVO updateRole(Long id, RoleUpdateReq req) {
+    public RoleVO updateRole(String id, RoleUpdateReq req) {
         var role = roleRepository.findById(id)
                 .orElseThrow(() -> new BizException("角色不存在"));
 
@@ -142,7 +142,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public void deleteRole(Long id) {
+    public void deleteRole(String id) {
         var role = roleRepository.findById(id)
                 .orElseThrow(() -> new BizException("角色不存在"));
 
@@ -158,7 +158,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public void assignMenus(Long roleId, List<Long> menuIds) {
+    public void assignMenus(String roleId, List<String> menuIds) {
         // 检查角色是否存在
         if (!roleRepository.existsById(roleId)) {
             throw new BizException("角色不存在");
@@ -187,7 +187,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Long> getRoleMenuIds(Long roleId) {
+    public List<String> getRoleMenuIds(String roleId) {
         if (!roleRepository.existsById(roleId)) {
             throw new BizException("角色不存在");
         }

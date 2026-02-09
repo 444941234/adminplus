@@ -12,9 +12,9 @@ import jakarta.validation.constraints.Size;
  */
 public record DictItemCreateReq(
         @NotNull(message = "字典ID不能为空")
-        Long dictId,
+        String dictId,
 
-        Long parentId,
+        String parentId,
 
         @NotBlank(message = "字典标签不能为空")
         @Size(max = 100, message = "字典标签长度不能超过100")

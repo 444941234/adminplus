@@ -13,6 +13,6 @@ import java.util.List;
 public record MenuBatchDeleteReq(
 
         @NotEmpty(message = "菜单ID列表不能为空")
-        List<Long> ids
+        List<String> ids
 ) {
 }

@@ -17,12 +17,12 @@ public interface DictItemService {
     /**
      * 根据字典ID查询字典项列表
      */
-    List<DictItemVO> getDictItemsByDictId(Long dictId);
+    List<DictItemVO> getDictItemsByDictId(String dictId);
 
     /**
      * 根据字典ID查询字典项树形结构
      */
-    List<DictItemVO> getDictItemTreeByDictId(Long dictId);
+    List<DictItemVO> getDictItemTreeByDictId(String dictId);
 
     /**
      * 根据字典类型查询字典项列表（仅启用状态的）
@@ -30,9 +30,9 @@ public interface DictItemService {
     List<DictItemVO> getDictItemsByType(String dictType);
 
     /**
-     * 根据ID查询字���项
+     * 根据ID查询字典项
      */
-    DictItemVO getDictItemById(Long id);
+    DictItemVO getDictItemById(String id);
 
     /**
      * 创建字典项
@@ -42,15 +42,15 @@ public interface DictItemService {
     /**
      * 更新字典项
      */
-    DictItemVO updateDictItem(Long id, DictItemUpdateReq req);
+    DictItemVO updateDictItem(String id, DictItemUpdateReq req);
 
     /**
      * 删除字典项
      */
-    void deleteDictItem(Long id);
+    void deleteDictItem(String id);
 
     /**
      * 更新字典项状态
      */
-    void updateDictItemStatus(Long id, Integer status);
+    void updateDictItemStatus(String id, Integer status);
 }

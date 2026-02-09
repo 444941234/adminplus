@@ -30,12 +30,12 @@ public interface UserService {
     /**
      * 根据ID查询用户
      */
-    UserVO getUserById(Long id);
+    UserVO getUserById(String id);
 
     /**
      * 异步根据ID查询用户（使用虚拟线程）
      */
-    CompletableFuture<UserVO> getUserByIdAsync(Long id);
+    CompletableFuture<UserVO> getUserByIdAsync(String id);
 
     /**
      * 根据用户名查询用户
@@ -50,30 +50,30 @@ public interface UserService {
     /**
      * 更新用户
      */
-    UserVO updateUser(Long id, UserUpdateReq req);
+    UserVO updateUser(String id, UserUpdateReq req);
 
     /**
      * 删除用户
      */
-    void deleteUser(Long id);
+    void deleteUser(String id);
 
     /**
      * 启用/禁用用户
      */
-    void updateUserStatus(Long id, Integer status);
+    void updateUserStatus(String id, Integer status);
 
     /**
      * 重置密码
      */
-    void resetPassword(Long id, String newPassword);
+    void resetPassword(String id, String newPassword);
 
     /**
      * 为用户分配角色
      */
-    void assignRoles(Long userId, List<Long> roleIds);
+    void assignRoles(String userId, List<String> roleIds);
 
     /**
      * 查询用户的角色ID列表
      */
-    List<Long> getUserRoleIds(Long userId);
+    List<String> getUserRoleIds(String userId);
 }

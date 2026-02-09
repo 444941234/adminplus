@@ -13,7 +13,7 @@ import java.util.List;
  * @since 2026-02-06
  */
 @Repository
-public interface MenuRepository extends JpaRepository<MenuEntity, Long> {
+public interface MenuRepository extends JpaRepository<MenuEntity, String> {
 
     /**
      * 查询所有菜单（按排序字段排序）

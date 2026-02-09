@@ -13,7 +13,7 @@ import java.util.List;
  * @since 2026-02-09
  */
 @Repository
-public interface DeptRepository extends JpaRepository<DeptEntity, Long> {
+public interface DeptRepository extends JpaRepository<DeptEntity, String> {
 
     /**
      * 查询所有部门（按排序字段排序）
@@ -28,12 +28,12 @@ public interface DeptRepository extends JpaRepository<DeptEntity, Long> {
     /**
      * 根据父部门ID查询子部门
      */
-    List<DeptEntity> findByParentIdOrderBySortOrderAsc(Long parentId);
+    List<DeptEntity> findByParentIdOrderBySortOrderAsc(String parentId);
 
     /**
      * 检查部门名称是否存在（排除指定ID）
      */
-    boolean existsByNameAndIdNotAndDeletedFalse(String name, Long id);
+    boolean existsByNameAndIdNotAndDeletedFalse(String name, String id);
 
     /**
      * 检查部门名称是否存在

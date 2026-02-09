@@ -14,7 +14,7 @@ import java.util.Optional;
  * @since 2026-02-06
  */
 @Repository
-public interface RoleRepository extends JpaRepository<RoleEntity, Long> {
+public interface RoleRepository extends JpaRepository<RoleEntity, String> {
 
     /**
      * 根据角色编码查询角色

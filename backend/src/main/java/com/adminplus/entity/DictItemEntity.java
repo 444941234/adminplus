@@ -16,13 +16,13 @@ public class DictItemEntity extends BaseEntity {
      * 字典ID
      */
     @Column(name = "dict_id", nullable = false)
-    private Long dictId;
+    private String dictId;
 
     /**
      * 父节点ID
      */
     @Column(name = "parent_id")
-    private Long parentId;
+    private String parentId;
 
     /**
      * 字典标签
@@ -55,19 +55,19 @@ public class DictItemEntity extends BaseEntity {
     private String remark;
 
     // Getter and Setter methods
-    public Long getDictId() {
+    public String getDictId() {
         return dictId;
     }
 
-    public void setDictId(Long dictId) {
+    public void setDictId(String dictId) {
         this.dictId = dictId;
     }
 
-    public Long getParentId() {
+    public String getParentId() {
         return parentId;
     }
 
-    public void setParentId(Long parentId) {
+    public void setParentId(String parentId) {
         this.parentId = parentId;
     }
 

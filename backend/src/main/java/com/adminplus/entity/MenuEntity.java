@@ -2,6 +2,7 @@ package com.adminplus.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import java.util.Set;
  * @since 2026-02-06
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "sys_menu")
 public class MenuEntity extends BaseEntity {
@@ -20,7 +22,7 @@ public class MenuEntity extends BaseEntity {
      * 父菜单ID
      */
     @Column(name = "parent_id")
-    private Long parentId;
+    private String parentId;
 
     /**
      * 类型（0=目录，1=菜单，2=按钮）

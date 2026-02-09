@@ -9,10 +9,10 @@ import java.time.Instant;
  * @since 2026-02-07
  */
 public record PermissionVO(
-        Long id,
+        String id,
         String permKey,
         String name,
         Integer type,
-        Long parentId
+        String parentId
 ) {
 }

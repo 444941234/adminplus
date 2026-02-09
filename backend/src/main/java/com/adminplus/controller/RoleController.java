@@ -45,7 +45,7 @@ public class RoleController {
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询角色")
     @PreAuthorize("hasAuthority('role:query')")
-    public ApiResponse<RoleVO> getRoleById(@PathVariable Long id) {
+    public ApiResponse<RoleVO> getRoleById(@PathVariable String id) {
         RoleVO role = roleService.getRoleById(id);
         return ApiResponse.ok(role);
     }
@@ -61,7 +61,7 @@ public class RoleController {
     @PutMapping("/{id}")
     @Operation(summary = "更新角色")
     @PreAuthorize("hasAuthority('role:edit')")
-    public ApiResponse<RoleVO> updateRole(@PathVariable Long id, @Valid @RequestBody RoleUpdateReq req) {
+    public ApiResponse<RoleVO> updateRole(@PathVariable String id, @Valid @RequestBody RoleUpdateReq req) {
         RoleVO role = roleService.updateRole(id, req);
         return ApiResponse.ok(role);
     }
@@ -69,7 +69,7 @@ public class RoleController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除角色")
     @PreAuthorize("hasAuthority('role:delete')")
-    public ApiResponse<Void> deleteRole(@PathVariable Long id) {
+    public ApiResponse<Void> deleteRole(@PathVariable String id) {
         roleService.deleteRole(id);
         return ApiResponse.ok();
     }
@@ -78,8 +78,8 @@ public class RoleController {
     @Operation(summary = "为角色分配菜单权限")
     @PreAuthorize("hasAuthority('role:assign')")
     public ApiResponse<Void> assignMenus(
-            @PathVariable Long id,
-            @RequestBody List<Long> menuIds
+            @PathVariable String id,
+            @RequestBody List<String> menuIds
     ) {
         roleService.assignMenus(id, menuIds);
         return ApiResponse.ok();
@@ -88,8 +88,8 @@ public class RoleController {
     @GetMapping("/{id}/menus")
     @Operation(summary = "查询角色的菜单ID列表")
     @PreAuthorize("hasAuthority('role:query')")
-    public ApiResponse<List<Long>> getRoleMenuIds(@PathVariable Long id) {
-        List<Long> menuIds = roleService.getRoleMenuIds(id);
+    public ApiResponse<List<String>> getRoleMenuIds(@PathVariable String id) {
+        List<String> menuIds = roleService.getRoleMenuIds(id);
         return ApiResponse.ok(menuIds);
     }
 }

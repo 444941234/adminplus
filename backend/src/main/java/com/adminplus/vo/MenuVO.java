@@ -10,8 +10,8 @@ import java.util.List;
  * @since 2026-02-06
  */
 public record MenuVO(
-        Long id,
-        Long parentId,
+        String id,
+        String parentId,
         Integer type,
         String name,
         String path,

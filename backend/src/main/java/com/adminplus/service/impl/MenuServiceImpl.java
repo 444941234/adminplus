@@ -72,15 +72,15 @@ public class MenuServiceImpl implements MenuService {
     /**
      * 构建树形结构（带 children）
      */
-    private List<MenuVO> buildTreeWithChildren(List<MenuVO> menus, Long parentId) {
-        Map<Long, List<MenuVO>> childrenMap = menus.stream()
-                .filter(menu -> menu.parentId() != null && menu.parentId() != 0)
+    private List<MenuVO> buildTreeWithChildren(List<MenuVO> menus, String parentId) {
+        Map<String, List<MenuVO>> childrenMap = menus.stream()
+                .filter(menu -> menu.parentId() != null && !menu.parentId().equals("0"))
                 .collect(Collectors.groupingBy(MenuVO::parentId));
 
         return menus.stream()
                 .filter(menu -> {
                     if (parentId == null) {
-                        return menu.parentId() == null || menu.parentId() == 0;
+                        return menu.parentId() == null || menu.parentId().equals("0");
                     }
                     return parentId.equals(menu.parentId());
                 })
@@ -113,7 +113,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional(readOnly = true)
-    public MenuVO getMenuById(Long id) {
+    public MenuVO getMenuById(String id) {
         var menu = menuRepository.findById(id)
                 .orElseThrow(() -> new BizException("菜单不存在"));
 
@@ -139,7 +139,7 @@ public class MenuServiceImpl implements MenuService {
     @Transactional
     public MenuVO createMenu(MenuCreateReq req) {
         // 如果有父菜单，检查父菜单是否存在
-        if (req.parentId() != null && req.parentId() != 0) {
+        if (req.parentId() != null && !req.parentId().equals("0")) {
             if (!menuRepository.existsById(req.parentId())) {
                 throw new BizException("父菜单不存在");
             }
@@ -182,12 +182,12 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
-    public MenuVO updateMenu(Long id, MenuUpdateReq req) {
+    public MenuVO updateMenu(String id, MenuUpdateReq req) {
         var menu = menuRepository.findById(id)
                 .orElseThrow(() -> new BizException("菜单不存在"));
 
         req.parentId().ifPresent(parentId -> {
-            if (parentId != null && parentId != 0) {
+            if (parentId != null && !parentId.equals("0")) {
                 if (!menuRepository.existsById(parentId)) {
                     throw new BizException("父菜单不存在");
                 }
@@ -226,7 +226,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
-    public void deleteMenu(Long id) {
+    public void deleteMenu(String id) {
         var menu = menuRepository.findById(id)
                 .orElseThrow(() -> new BizException("菜单不存在"));
 
@@ -274,7 +274,7 @@ public class MenuServiceImpl implements MenuService {
         }
 
         // 检查是否有子菜单
-        Set<Long> idSet = new HashSet<>(req.ids());
+        Set<String> idSet = new HashSet<>(req.ids());
         List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
 
         // 找出所有要删除的菜单的子菜单
@@ -294,9 +294,9 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MenuVO> getUserMenuTree(Long userId) {
+    public List<MenuVO> getUserMenuTree(String userId) {
         // 1. 查询用户的角色ID列表
-        List<Long> roleIds = userRoleRepository.findByUserId(userId).stream()
+        List<String> roleIds = userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
                 .toList();
 
@@ -305,7 +305,7 @@ public class MenuServiceImpl implements MenuService {
         }
 
         // 2. 查询这些角色的菜单ID列表（去重）
-        Set<Long> menuIds = roleIds.stream()
+        Set<String> menuIds = roleIds.stream()
                 .flatMap(roleId -> roleMenuRepository.findMenuIdByRoleId(roleId).stream())
                 .collect(Collectors.toSet());
 
@@ -317,9 +317,9 @@ public class MenuServiceImpl implements MenuService {
         List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
 
         // 4. 获取用户可访问的菜单ID集合（包括父菜单）
-        Set<Long> accessibleMenuIds = new HashSet<>(menuIds);
+        Set<String> accessibleMenuIds = new HashSet<>(menuIds);
         // 递归添加所有父菜单
-        for (Long menuId : menuIds) {
+        for (String menuId : menuIds) {
             addParentMenus(allMenus, accessibleMenuIds, menuId);
         }
 
@@ -354,8 +354,8 @@ public class MenuServiceImpl implements MenuService {
     /**
      * 递归添加父菜单到集合中
      */
-    private void addParentMenus(List<MenuEntity> allMenus, Set<Long> menuIds, Long menuId) {
-        if (menuId == null || menuId == 0) {
+    private void addParentMenus(List<MenuEntity> allMenus, Set<String> menuIds, String menuId) {
+        if (menuId == null || menuId.equals("0")) {
             return;
         }
 
@@ -364,7 +364,7 @@ public class MenuServiceImpl implements MenuService {
                 .findFirst()
                 .orElse(null);
 
-        if (menu != null && menu.getParentId() != null && menu.getParentId() != 0) {
+        if (menu != null && menu.getParentId() != null && !menu.getParentId().equals("0")) {
             if (!menuIds.contains(menu.getParentId())) {
                 menuIds.add(menu.getParentId());
                 addParentMenus(allMenus, menuIds, menu.getParentId());

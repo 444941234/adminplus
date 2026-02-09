@@ -17,18 +17,17 @@ import lombok.Data;
 public class UserRoleEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     /**
      * 用户ID
      */
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private String userId;
 
     /**
      * 角色ID
      */
     @Column(name = "role_id", nullable = false)
-    private Long roleId;
+    private String roleId;
 }

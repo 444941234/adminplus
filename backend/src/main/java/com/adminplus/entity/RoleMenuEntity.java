@@ -17,18 +17,17 @@ import lombok.Data;
 public class RoleMenuEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     /**
      * 角色ID
      */
     @Column(name = "role_id", nullable = false)
-    private Long roleId;
+    private String roleId;
 
     /**
      * 菜单ID
      */
     @Column(name = "menu_id", nullable = false)
-    private Long menuId;
+    private String menuId;
 }

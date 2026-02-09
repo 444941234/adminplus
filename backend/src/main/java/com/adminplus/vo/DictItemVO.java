@@ -10,10 +10,10 @@ import java.util.List;
  * @since 2026-02-06
  */
 public record DictItemVO(
-        Long id,
-        Long dictId,
+        String id,
+        String dictId,
         String dictType,
-        Long parentId,
+        String parentId,
         String label,
         String value,
         Integer sortOrder,

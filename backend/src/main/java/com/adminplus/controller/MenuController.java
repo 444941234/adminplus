@@ -43,7 +43,7 @@ public class MenuController {
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询菜单")
     @PreAuthorize("hasAuthority('menu:query')")
-    public ApiResponse<MenuVO> getMenuById(@PathVariable Long id) {
+    public ApiResponse<MenuVO> getMenuById(@PathVariable String id) {
         MenuVO menu = menuService.getMenuById(id);
         return ApiResponse.ok(menu);
     }
@@ -59,7 +59,7 @@ public class MenuController {
     @PutMapping("/{id}")
     @Operation(summary = "更新菜单")
     @PreAuthorize("hasAuthority('menu:edit')")
-    public ApiResponse<MenuVO> updateMenu(@PathVariable Long id, @Valid @RequestBody MenuUpdateReq req) {
+    public ApiResponse<MenuVO> updateMenu(@PathVariable String id, @Valid @RequestBody MenuUpdateReq req) {
         MenuVO menu = menuService.updateMenu(id, req);
         return ApiResponse.ok(menu);
     }
@@ -67,7 +67,7 @@ public class MenuController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除菜单")
     @PreAuthorize("hasAuthority('menu:delete')")
-    public ApiResponse<Void> deleteMenu(@PathVariable Long id) {
+    public ApiResponse<Void> deleteMenu(@PathVariable String id) {
         menuService.deleteMenu(id);
         return ApiResponse.ok();
     }
@@ -93,7 +93,7 @@ public class MenuController {
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<List<MenuVO>> getUserMenuTree() {
         // 从 SecurityContext 获取当前用户ID
-        Long userId = com.adminplus.utils.SecurityUtils.getCurrentUserId();
+        String userId = com.adminplus.utils.SecurityUtils.getCurrentUserId();
         List<MenuVO> menus = menuService.getUserMenuTree(userId);
         return ApiResponse.ok(menus);
     }

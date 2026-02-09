@@ -15,27 +15,27 @@ import java.util.List;
  * @since 2026-02-06
  */
 @Repository
-public interface RoleMenuRepository extends JpaRepository<RoleMenuEntity, Long> {
+public interface RoleMenuRepository extends JpaRepository<RoleMenuEntity, String> {
 
     /**
      * 根据角色ID查询菜单ID列表
      */
     @Query("SELECT rm.menuId FROM RoleMenuEntity rm WHERE rm.roleId = :roleId")
-    List<Long> findMenuIdByRoleId(@Param("roleId") Long roleId);
+    List<String> findMenuIdByRoleId(@Param("roleId") String roleId);
 
     /**
      * 根据菜单ID查询角色ID列表
      */
     @Query("SELECT rm.roleId FROM RoleMenuEntity rm WHERE rm.menuId = :menuId")
-    List<Long> findRoleIdByMenuId(@Param("menuId") Long menuId);
+    List<String> findRoleIdByMenuId(@Param("menuId") String menuId);
 
     /**
      * 删除角色的所有菜单
      */
-    void deleteByRoleId(Long roleId);
+    void deleteByRoleId(String roleId);
 
     /**
      * 删除菜单的所有角色
      */
-    void deleteByMenuId(Long menuId);
+    void deleteByMenuId(String menuId);
 }

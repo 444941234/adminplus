@@ -14,7 +14,7 @@ import java.util.Optional;
  * @since 2026-02-06
  */
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, Long> {
+public interface UserRepository extends JpaRepository<UserEntity, String> {
 
     /**
      * 根据用户名查询用户

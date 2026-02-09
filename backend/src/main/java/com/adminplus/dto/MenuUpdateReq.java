@@ -10,7 +10,7 @@ import java.util.Optional;
  * @since 2026-02-06
  */
 public record MenuUpdateReq(
-        Optional<Long> parentId,
+        Optional<String> parentId,
         Optional<Integer> type,
         Optional<String> name,
         Optional<String> path,

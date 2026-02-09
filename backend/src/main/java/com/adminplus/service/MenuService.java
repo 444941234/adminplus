@@ -24,7 +24,7 @@ public interface MenuService {
     /**
      * 根据ID查询菜单
      */
-    MenuVO getMenuById(Long id);
+    MenuVO getMenuById(String id);
 
     /**
      * 创建菜单
@@ -34,12 +34,12 @@ public interface MenuService {
     /**
      * 更新菜单
      */
-    MenuVO updateMenu(Long id, MenuUpdateReq req);
+    MenuVO updateMenu(String id, MenuUpdateReq req);
 
     /**
      * 删除菜单
      */
-    void deleteMenu(Long id);
+    void deleteMenu(String id);
 
     /**
      * 批量更新菜单状态
@@ -54,5 +54,5 @@ public interface MenuService {
     /**
      * 获取用户的菜单树（根据用户权限过滤）
      */
-    List<MenuVO> getUserMenuTree(Long userId);
+    List<MenuVO> getUserMenuTree(String userId);
 }

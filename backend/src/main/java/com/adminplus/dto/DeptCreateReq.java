@@ -15,7 +15,7 @@ import lombok.Builder;
 @Builder
 public record DeptCreateReq(
         @NotNull(message = "父部门ID不能为空")
-        Long parentId,
+        String parentId,
 
         @NotBlank(message = "部门名称不能为空")
         @Size(max = 50, message = "部门名称长度不能超过50")

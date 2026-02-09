@@ -10,7 +10,7 @@ import java.util.List;
  * @since 2026-02-06
  */
 public record UserVO(
-        Long id,
+        String id,
         String username,
         String nickname,
         String email,

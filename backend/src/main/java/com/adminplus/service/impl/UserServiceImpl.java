@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
         var pageResult = userRepository.findAll(pageable);
 
         // 批量查询所有用户角色
-        List<Long> userIds = pageResult.getContent().stream()
+        List<String> userIds = pageResult.getContent().stream()
                 .map(UserEntity::getId)
                 .toList();
         List<UserRoleEntity> allUserRoles = userIds.isEmpty()
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
                 : userRoleRepository.findByUserIdIn(userIds);
 
         // 批量查询所有角色
-        List<Long> roleIds = allUserRoles.stream()
+        List<String> roleIds = allUserRoles.stream()
                 .map(UserRoleEntity::getRoleId)
                 .distinct()
                 .toList();
@@ -69,11 +69,11 @@ public class UserServiceImpl implements UserService {
                 : roleRepository.findAllById(roleIds);
 
         // 构建角色映射
-        Map<Long, String> roleMap = allRoles.stream()
+        Map<String, String> roleMap = allRoles.stream()
                 .collect(Collectors.toMap(RoleEntity::getId, RoleEntity::getName));
 
         // 构建用户角色映射
-        Map<Long, List<String>> userRoleMap = new HashMap<>();
+        Map<String, List<String>> userRoleMap = new HashMap<>();
         for (UserRoleEntity ur : allUserRoles) {
             String roleName = roleMap.get(ur.getRoleId());
             if (roleName != null) {
@@ -108,7 +108,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserVO getUserById(Long id) {
+    public UserVO getUserById(String id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -143,7 +143,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Async
-    public CompletableFuture<UserVO> getUserByIdAsync(Long id) {
+    public CompletableFuture<UserVO> getUserByIdAsync(String id) {
         log.info("使用虚拟线程异步查询用户: {}", id);
         return CompletableFuture.completedFuture(getUserById(id));
     }
@@ -198,7 +198,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserVO updateUser(Long id, UserUpdateReq req) {
+    public UserVO updateUser(String id, UserUpdateReq req) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -236,7 +236,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteUser(Long id) {
+    public void deleteUser(String id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -249,7 +249,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void updateUserStatus(Long id, Integer status) {
+    public void updateUserStatus(String id, Integer status) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -262,7 +262,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void resetPassword(Long id, String newPassword) {
+    public void resetPassword(String id, String newPassword) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -290,14 +290,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void assignRoles(Long userId, List<Long> roleIds) {
+    public void assignRoles(String userId, List<String> roleIds) {
         // 检查用户是否存在
         if (!userRepository.existsById(userId)) {
             throw new BizException("用户不存在");
         }
 
         // 验证所有角色是否存在
-        for (Long roleId : roleIds) {
+        for (String roleId : roleIds) {
             if (!roleRepository.existsById(roleId)) {
                 throw new BizException("角色不存在，ID: " + roleId);
             }
@@ -331,7 +331,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Long> getUserRoleIds(Long userId) {
+    public List<String> getUserRoleIds(String userId) {
         if (!userRepository.existsById(userId)) {
             throw new BizException("用户不存在");
         }

@@ -40,12 +40,7 @@ public class SecurityUtils {
                 throw new RuntimeException("JWT 中缺少用户 ID 信息");
             }
 
-            Long userId;
-            if (userIdClaim instanceof Number) {
-                userId = ((Number) userIdClaim).longValue();
-            } else {
-                userId = Long.parseLong(userIdClaim.toString());
-            }
+            String userId = userIdClaim.toString();
 
             // 创建一个简化的 CustomUserDetails 对象
             // 注意：此对象仅包含基本信息，不包含密码等敏感信息
@@ -69,7 +64,7 @@ public class SecurityUtils {
     /**
      * 获取当前用户ID
      */
-    public static Long getCurrentUserId() {
+    public static String getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
             throw new RuntimeException("未登录或登录已过期");
@@ -89,11 +84,7 @@ public class SecurityUtils {
                 throw new RuntimeException("JWT 中缺少用户 ID 信息");
             }
 
-            if (userIdClaim instanceof Number) {
-                return ((Number) userIdClaim).longValue();
-            } else {
-                return Long.parseLong(userIdClaim.toString());
-            }
+            return userIdClaim.toString();
         }
 
         throw new RuntimeException("未知的认证类型: " + principal.getClass().getName());

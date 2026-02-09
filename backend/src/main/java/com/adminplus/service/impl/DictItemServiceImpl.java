@@ -38,7 +38,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dictItem", key = "'dictId:' + #dictId")
-    public List<DictItemVO> getDictItemsByDictId(Long dictId) {
+    public List<DictItemVO> getDictItemsByDictId(String dictId) {
         return dictItemRepository.findByDictIdOrderBySortOrderAsc(dictId).stream()
                 .map(this::toVO)
                 .toList();
@@ -47,7 +47,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dictItem", key = "'tree:dictId:' + #dictId")
-    public List<DictItemVO> getDictItemTreeByDictId(Long dictId) {
+    public List<DictItemVO> getDictItemTreeByDictId(String dictId) {
         List<DictItemEntity> items = dictItemRepository.findByDictIdOrderBySortOrderAsc(dictId);
         return buildTree(items, null);
     }
@@ -67,7 +67,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dictItem", key = "'id:' + #id")
-    public DictItemVO getDictItemById(Long id) {
+    public DictItemVO getDictItemById(String id) {
         DictItemEntity item = dictItemRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典项不存在"));
 
@@ -110,7 +110,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional
     @CacheEvict(value = "dictItem", allEntries = true)
-    public DictItemVO updateDictItem(Long id, DictItemUpdateReq req) {
+    public DictItemVO updateDictItem(String id, DictItemUpdateReq req) {
         DictItemEntity item = dictItemRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典项不存在"));
 
@@ -145,7 +145,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional
     @CacheEvict(value = "dictItem", allEntries = true)
-    public void deleteDictItem(Long id) {
+    public void deleteDictItem(String id) {
         DictItemEntity item = dictItemRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典项不存在"));
 
@@ -156,7 +156,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional
     @CacheEvict(value = "dictItem", allEntries = true)
-    public void updateDictItemStatus(Long id, Integer status) {
+    public void updateDictItemStatus(String id, Integer status) {
         DictItemEntity item = dictItemRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典项不存在"));
 
@@ -202,11 +202,11 @@ public class DictItemServiceImpl implements DictItemService {
     /**
      * 构建树形结构
      */
-    private List<DictItemVO> buildTree(List<DictItemEntity> items, Long parentId) {
-        Map<Long, List<DictItemEntity>> childrenMap = items.stream()
+    private List<DictItemVO> buildTree(List<DictItemEntity> items, String parentId) {
+        Map<String, List<DictItemEntity>> childrenMap = items.stream()
                 .filter(item -> (parentId == null && item.getParentId() == null) ||
                                 (parentId != null && parentId.equals(item.getParentId())))
-                .collect(Collectors.groupingBy(item -> item.getParentId() == null ? 0L : item.getParentId()));
+                .collect(Collectors.groupingBy(item -> item.getParentId() == null ? "0" : item.getParentId()));
 
         List<DictItemVO> result = new ArrayList<>();
         for (DictItemEntity item : items) {
@@ -261,12 +261,12 @@ public class DictItemServiceImpl implements DictItemService {
     /**
      * 检查是否存在循环引用
      */
-    private boolean isCircularReference(Long newParentId, Long currentId, Long dictId) {
+    private boolean isCircularReference(String newParentId, String currentId, String dictId) {
         if (newParentId == null) {
             return false;
         }
 
-        Long currentParentId = newParentId;
+        String currentParentId = newParentId;
         int maxDepth = 100; // 防止无限循环
         while (currentParentId != null && maxDepth-- > 0) {
             if (currentParentId.equals(currentId)) {

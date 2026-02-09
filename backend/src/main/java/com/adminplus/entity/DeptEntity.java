@@ -2,6 +2,7 @@ package com.adminplus.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 部门实体
@@ -10,6 +11,7 @@ import lombok.Data;
  * @since 2026-02-09
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "sys_dept")
 public class DeptEntity extends BaseEntity {
@@ -18,7 +20,7 @@ public class DeptEntity extends BaseEntity {
      * 父部门ID
      */
     @Column(name = "parent_id")
-    private Long parentId;
+    private String parentId;
 
     /**
      * 部门名称

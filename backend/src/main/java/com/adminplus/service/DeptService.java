@@ -22,7 +22,7 @@ public interface DeptService {
     /**
      * 根据ID查询部门
      */
-    DeptVO getDeptById(Long id);
+    DeptVO getDeptById(String id);
 
     /**
      * 创建部门
@@ -32,10 +32,10 @@ public interface DeptService {
     /**
      * 更新部门
      */
-    DeptVO updateDept(Long id, DeptUpdateReq req);
+    DeptVO updateDept(String id, DeptUpdateReq req);
 
     /**
      * 删除部门
      */
-    void deleteDept(Long id);
+    void deleteDept(String id);
 }

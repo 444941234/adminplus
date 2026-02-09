@@ -35,7 +35,7 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
     private static final Duration TOKEN_EXPIRATION = Duration.ofHours(2);
 
     @Override
-    public void blacklistToken(String token, Long userId) {
+    public void blacklistToken(String token, String userId) {
         if (token == null || token.isEmpty()) {
             return;
         }
@@ -67,7 +67,7 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
     }
 
     @Override
-    public void blacklistAllUserTokens(Long userId) {
+    public void blacklistAllUserTokens(String userId) {
         if (userId == null) {
             return;
         }

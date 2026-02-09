@@ -13,7 +13,7 @@ import java.util.Optional;
  * @since 2026-02-07
  */
 @Repository
-public interface ProfileRepository extends JpaRepository<UserEntity, Long> {
+public interface ProfileRepository extends JpaRepository<UserEntity, String> {
 
     /**
      * 根据用户名查找用户

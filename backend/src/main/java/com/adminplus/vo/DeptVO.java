@@ -10,8 +10,8 @@ import java.util.List;
  * @since 2026-02-09
  */
 public record DeptVO(
-        Long id,
-        Long parentId,
+        String id,
+        String parentId,
         String name,
         String code,
         String leader,

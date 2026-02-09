@@ -182,7 +182,7 @@ public class AuthServiceImpl implements AuthService {
     public void logout() {
         try {
             // 获取当前用户ID
-            Long userId = SecurityUtils.getCurrentUserId();
+            String userId = SecurityUtils.getCurrentUserId();
             String username = SecurityUtils.getCurrentUsername();
 
             // 撤销用户的所有 Refresh Token

@@ -15,13 +15,13 @@ import java.util.Optional;
  * @since 2026-02-08
  */
 @Repository
-public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity, Long> {
+public interface RefreshTokenRepository extends JpaRepository<RefreshTokenEntity, String> {
 
     Optional<RefreshTokenEntity> findByToken(String token);
 
-    List<RefreshTokenEntity> findByUserIdAndRevokedFalse(Long userId);
+    List<RefreshTokenEntity> findByUserIdAndRevokedFalse(String userId);
 
     void deleteByExpiryDateBefore(Instant date);
 
-    void deleteByUserId(Long userId);
+    void deleteByUserId(String userId);
 }

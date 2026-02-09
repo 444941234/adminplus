@@ -22,7 +22,7 @@ public interface RoleService {
     /**
      * 根据ID查询角色
      */
-    RoleVO getRoleById(Long id);
+    RoleVO getRoleById(String id);
 
     /**
      * 创建角色
@@ -32,20 +32,20 @@ public interface RoleService {
     /**
      * 更新角色
      */
-    RoleVO updateRole(Long id, RoleUpdateReq req);
+    RoleVO updateRole(String id, RoleUpdateReq req);
 
     /**
      * 删除角色
      */
-    void deleteRole(Long id);
+    void deleteRole(String id);
 
     /**
      * 为角色分配菜单权限
      */
-    void assignMenus(Long roleId, List<Long> menuIds);
+    void assignMenus(String roleId, List<String> menuIds);
 
     /**
      * 查询角色的菜单ID列表
      */
-    List<Long> getRoleMenuIds(Long roleId);
+    List<String> getRoleMenuIds(String roleId);
 }

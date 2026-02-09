@@ -77,7 +77,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dict", key = "'id:' + #id")
-    public DictVO getDictById(Long id) {
+    public DictVO getDictById(String id) {
         DictEntity dict = dictRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典不存在"));
         return toVO(dict);
@@ -117,7 +117,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional
     @CacheEvict(value = "dict", allEntries = true)
-    public DictVO updateDict(Long id, DictUpdateReq req) {
+    public DictVO updateDict(String id, DictUpdateReq req) {
         DictEntity dict = dictRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典不存在"));
 
@@ -139,7 +139,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional
     @CacheEvict(value = "dict", allEntries = true)
-    public void deleteDict(Long id) {
+    public void deleteDict(String id) {
         DictEntity dict = dictRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典不存在"));
 
@@ -154,7 +154,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional
     @CacheEvict(value = "dict", allEntries = true)
-    public void updateDictStatus(Long id, Integer status) {
+    public void updateDictStatus(String id, Integer status) {
         DictEntity dict = dictRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典不存在"));
 

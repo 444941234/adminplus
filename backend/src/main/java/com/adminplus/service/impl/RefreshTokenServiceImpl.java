@@ -39,7 +39,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Override
     @Transactional
-    public String createRefreshToken(Long userId) {
+    public String createRefreshToken(String userId) {
         // 撤销用户之前的所有 Refresh Token
         refreshTokenRepository.deleteByUserId(userId);
 
@@ -106,7 +106,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Override
     @Transactional
-    public void revokeAllUserTokens(Long userId) {
+    public void revokeAllUserTokens(String userId) {
         refreshTokenRepository.deleteByUserId(userId);
         log.info("撤销用户所有 Refresh Token: userId={}", userId);
     }

@@ -9,7 +9,7 @@ import java.time.Instant;
  * @since 2026-02-06
  */
 public record DictVO(
-        Long id,
+        String id,
         String dictType,
         String dictName,
         Integer status,

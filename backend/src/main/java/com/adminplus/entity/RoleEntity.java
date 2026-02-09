@@ -2,6 +2,7 @@ package com.adminplus.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 角色实体
@@ -10,6 +11,7 @@ import lombok.Data;
  * @since 2026-02-06
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "sys_role", uniqueConstraints = {
         @UniqueConstraint(columnNames = "code")

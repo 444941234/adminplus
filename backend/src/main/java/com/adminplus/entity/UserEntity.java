@@ -2,6 +2,7 @@ package com.adminplus.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -14,6 +15,7 @@ import java.util.Map;
  * @since 2026-02-06
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "sys_user",
        uniqueConstraints = {

@@ -36,9 +36,9 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> getUserPermissions(Long userId) {
+    public List<String> getUserPermissions(String userId) {
         // 1. 查询用户的角色ID列表
-        List<Long> roleIds = userRoleRepository.findByUserId(userId).stream()
+        List<String> roleIds = userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
                 .toList();
 
@@ -47,7 +47,7 @@ public class PermissionServiceImpl implements PermissionService {
         }
 
         // 2. 查询这些角色的菜单ID列表（去重）
-        Set<Long> menuIds = roleIds.stream()
+        Set<String> menuIds = roleIds.stream()
                 .flatMap(roleId -> roleMenuRepository.findMenuIdByRoleId(roleId).stream())
                 .collect(Collectors.toSet());
 
@@ -65,8 +65,8 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> getUserRoles(Long userId) {
-        List<Long> roleIds = userRoleRepository.findByUserId(userId).stream()
+    public List<String> getUserRoles(String userId) {
+        List<String> roleIds = userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
                 .toList();
 
@@ -84,7 +84,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Long> getUserRoleIds(Long userId) {
+    public List<String> getUserRoleIds(String userId) {
         return userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
                 .toList();
@@ -92,9 +92,9 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<String> getRolePermissions(Long roleId) {
+    public List<String> getRolePermissions(String roleId) {
         // 1. 查询角色的菜单ID列表
-        List<Long> menuIds = roleMenuRepository.findMenuIdByRoleId(roleId);
+        List<String> menuIds = roleMenuRepository.findMenuIdByRoleId(roleId);
 
         if (menuIds.isEmpty()) {
             return List.of();

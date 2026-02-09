@@ -12,7 +12,7 @@ public record OperationLogVO(
         /**
          * 日志ID
          */
-        Long id,
+        String id,
 
         /**
          * 操作人用户名

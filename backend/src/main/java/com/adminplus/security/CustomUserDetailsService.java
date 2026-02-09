@@ -42,7 +42,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // 查询用户的角色
         List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
-        List<Long> roleIds = userRoles.stream()
+        List<String> roleIds = userRoles.stream()
                 .map(UserRoleEntity::getRoleId)
                 .toList();
 

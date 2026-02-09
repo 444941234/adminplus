@@ -12,7 +12,7 @@ import java.util.Optional;
  */
 @Builder
 public record DeptUpdateReq(
-        Optional<Long> parentId,
+        Optional<String> parentId,
         Optional<String> name,
         Optional<String> code,
         Optional<String> leader,

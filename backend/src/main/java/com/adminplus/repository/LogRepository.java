@@ -13,7 +13,7 @@ import java.util.List;
  * @since 2026-02-07
  */
 @Repository
-public interface LogRepository extends JpaRepository<LogEntity, Long> {
+public interface LogRepository extends JpaRepository<LogEntity, String> {
 
     /**
      * 统计未删除的日志数量

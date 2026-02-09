@@ -46,7 +46,7 @@ public class UserController {
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询用户")
     @PreAuthorize("hasAuthority('user:query')")
-    public ApiResponse<UserVO> getUserById(@PathVariable Long id) {
+    public ApiResponse<UserVO> getUserById(@PathVariable String id) {
         UserVO user = userService.getUserById(id);
         return ApiResponse.ok(user);
     }
@@ -62,7 +62,7 @@ public class UserController {
     @PutMapping("/{id}")
     @Operation(summary = "更新用户")
     @PreAuthorize("hasAuthority('user:edit')")
-    public ApiResponse<UserVO> updateUser(@PathVariable Long id, @Valid @RequestBody UserUpdateReq req) {
+    public ApiResponse<UserVO> updateUser(@PathVariable String id, @Valid @RequestBody UserUpdateReq req) {
         UserVO user = userService.updateUser(id, req);
         return ApiResponse.ok(user);
     }
@@ -70,7 +70,7 @@ public class UserController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除用户")
     @PreAuthorize("hasAuthority('user:delete')")
-    public ApiResponse<Void> deleteUser(@PathVariable Long id) {
+    public ApiResponse<Void> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
         return ApiResponse.ok();
     }
@@ -79,7 +79,7 @@ public class UserController {
     @Operation(summary = "更新用户状态")
     @PreAuthorize("hasAuthority('user:edit')")
     public ApiResponse<Void> updateUserStatus(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam Integer status
     ) {
         userService.updateUserStatus(id, status);
@@ -90,7 +90,7 @@ public class UserController {
     @Operation(summary = "重置用户密码")
     @PreAuthorize("hasAuthority('user:edit')")
     public ApiResponse<Void> resetPassword(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam String password
     ) {
         userService.resetPassword(id, password);
@@ -101,8 +101,8 @@ public class UserController {
     @Operation(summary = "为用户分配角色")
     @PreAuthorize("hasAuthority('user:assign')")
     public ApiResponse<Void> assignRoles(
-            @PathVariable Long id,
-            @RequestBody List<Long> roleIds
+            @PathVariable String id,
+            @RequestBody List<String> roleIds
     ) {
         userService.assignRoles(id, roleIds);
         return ApiResponse.ok();
@@ -111,8 +111,8 @@ public class UserController {
     @GetMapping("/{id}/roles")
     @Operation(summary = "查询用户的角色ID列表")
     @PreAuthorize("hasAuthority('user:query')")
-    public ApiResponse<List<Long>> getUserRoleIds(@PathVariable Long id) {
-        List<Long> roleIds = userService.getUserRoleIds(id);
+    public ApiResponse<List<String>> getUserRoleIds(@PathVariable String id) {
+        List<String> roleIds = userService.getUserRoleIds(id);
         return ApiResponse.ok(roleIds);
     }
 }

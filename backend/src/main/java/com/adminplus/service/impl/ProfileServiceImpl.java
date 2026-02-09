@@ -71,7 +71,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     @Transactional(readOnly = true)
     public ProfileVO getCurrentUserProfile() {
-        Long userId = SecurityUtils.getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -91,7 +91,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     @Transactional
     public ProfileVO updateCurrentProfile(ProfileUpdateReq req) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -145,7 +145,7 @@ public class ProfileServiceImpl implements ProfileService {
             throw new BizException(PasswordUtils.getPasswordStrengthHint(req.newPassword()));
         }
 
-        Long userId = SecurityUtils.getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -241,7 +241,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     @Transactional(readOnly = true)
     public SettingsVO getSettings() {
-        Long userId = SecurityUtils.getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -257,7 +257,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     @Transactional
     public SettingsVO updateSettings(SettingsUpdateReq req) {
-        Long userId = SecurityUtils.getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 

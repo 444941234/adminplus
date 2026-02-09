@@ -2,6 +2,7 @@ package com.adminplus.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 操作日志实体
@@ -10,6 +11,7 @@ import lombok.Data;
  * @since 2026-02-07
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "sys_log")
 public class LogEntity extends BaseEntity {
@@ -18,7 +20,7 @@ public class LogEntity extends BaseEntity {
      * 操作人ID
      */
     @Column(name = "user_id")
-    private Long userId;
+    private String userId;
 
     /**
      * 操作人用户名

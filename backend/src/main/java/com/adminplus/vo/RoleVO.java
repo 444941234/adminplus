@@ -10,7 +10,7 @@ import java.util.List;
  * @since 2026-02-06
  */
 public record RoleVO(
-        Long id,
+        String id,
         String code,
         String name,
         String description,

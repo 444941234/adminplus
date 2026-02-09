@@ -41,7 +41,7 @@ public class DeptController {
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询部门")
     @PreAuthorize("hasAuthority('dept:query')")
-    public ApiResponse<DeptVO> getDeptById(@PathVariable Long id) {
+    public ApiResponse<DeptVO> getDeptById(@PathVariable String id) {
         DeptVO dept = deptService.getDeptById(id);
         return ApiResponse.ok(dept);
     }
@@ -57,7 +57,7 @@ public class DeptController {
     @PutMapping("/{id}")
     @Operation(summary = "更新部门")
     @PreAuthorize("hasAuthority('dept:edit')")
-    public ApiResponse<DeptVO> updateDept(@PathVariable Long id, @Valid @RequestBody DeptUpdateReq req) {
+    public ApiResponse<DeptVO> updateDept(@PathVariable String id, @Valid @RequestBody DeptUpdateReq req) {
         DeptVO dept = deptService.updateDept(id, req);
         return ApiResponse.ok(dept);
     }
@@ -65,7 +65,7 @@ public class DeptController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除部门")
     @PreAuthorize("hasAuthority('dept:delete')")
-    public ApiResponse<Void> deleteDept(@PathVariable Long id) {
+    public ApiResponse<Void> deleteDept(@PathVariable String id) {
         deptService.deleteDept(id);
         return ApiResponse.ok();
     }

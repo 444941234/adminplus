@@ -11,7 +11,7 @@ public interface RefreshTokenService {
     /**
      * 创建 Refresh Token
      */
-    String createRefreshToken(Long userId);
+    String createRefreshToken(String userId);
 
     /**
      * 刷新 Access Token
@@ -26,7 +26,7 @@ public interface RefreshTokenService {
     /**
      * 撤销用户的所有 Refresh Token
      */
-    void revokeAllUserTokens(Long userId);
+    void revokeAllUserTokens(String userId);
 
     /**
      * 清理过期的 Refresh Token

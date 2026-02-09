@@ -20,8 +20,7 @@ import java.time.Instant;
 public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @CreationTimestamp
     @Column(name = "create_time", nullable = false, updatable = false)
@@ -30,6 +29,18 @@ public abstract class BaseEntity {
     @UpdateTimestamp
     @Column(name = "update_time", nullable = false)
     private Instant updateTime;
+
+    /**
+     * 创建人
+     */
+    @Column(name = "create_user", nullable = false, updatable = false)
+    private String createUser;
+
+    /**
+     * 更新人
+     */
+    @Column(name = "update_user", nullable = false)
+    private String updateUser;
 
     @Column(name = "deleted", nullable = false)
     private Boolean deleted = false;

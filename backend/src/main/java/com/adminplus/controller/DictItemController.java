@@ -34,7 +34,7 @@ public class DictItemController {
     @GetMapping
     @Operation(summary = "查询字典项列表")
     @PreAuthorize("hasAuthority('dictitem:list')")
-    public ApiResponse<Map<String, Object>> getDictItems(@PathVariable Long dictId) {
+    public ApiResponse<Map<String, Object>> getDictItems(@PathVariable String dictId) {
         List<DictItemVO> items = dictItemService.getDictItemsByDictId(dictId);
         return ApiResponse.ok(Map.of(
                 "records", items,
@@ -45,7 +45,7 @@ public class DictItemController {
     @GetMapping("/tree")
     @Operation(summary = "查询字典项树形结构")
     @PreAuthorize("hasAuthority('dictitem:list')")
-    public ApiResponse<List<DictItemVO>> getDictItemTree(@PathVariable Long dictId) {
+    public ApiResponse<List<DictItemVO>> getDictItemTree(@PathVariable String dictId) {
         List<DictItemVO> tree = dictItemService.getDictItemTreeByDictId(dictId);
         return ApiResponse.ok(tree);
     }
@@ -61,7 +61,7 @@ public class DictItemController {
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询字典项")
     @PreAuthorize("hasAuthority('dictitem:query')")
-    public ApiResponse<DictItemVO> getDictItemById(@PathVariable Long id) {
+    public ApiResponse<DictItemVO> getDictItemById(@PathVariable String id) {
         DictItemVO item = dictItemService.getDictItemById(id);
         return ApiResponse.ok(item);
     }
@@ -69,7 +69,7 @@ public class DictItemController {
     @PostMapping
     @Operation(summary = "创建字典项")
     @PreAuthorize("hasAuthority('dictitem:add')")
-    public ApiResponse<DictItemVO> createDictItem(@PathVariable Long dictId, @Valid @RequestBody DictItemCreateReq req) {
+    public ApiResponse<DictItemVO> createDictItem(@PathVariable String dictId, @Valid @RequestBody DictItemCreateReq req) {
         DictItemVO item = dictItemService.createDictItem(req);
         return ApiResponse.ok(item);
     }
@@ -77,7 +77,7 @@ public class DictItemController {
     @PutMapping("/{id}")
     @Operation(summary = "更新字典项")
     @PreAuthorize("hasAuthority('dictitem:edit')")
-    public ApiResponse<DictItemVO> updateDictItem(@PathVariable Long id, @Valid @RequestBody DictItemUpdateReq req) {
+    public ApiResponse<DictItemVO> updateDictItem(@PathVariable String id, @Valid @RequestBody DictItemUpdateReq req) {
         DictItemVO item = dictItemService.updateDictItem(id, req);
         return ApiResponse.ok(item);
     }
@@ -85,7 +85,7 @@ public class DictItemController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除字典项")
     @PreAuthorize("hasAuthority('dictitem:delete')")
-    public ApiResponse<Void> deleteDictItem(@PathVariable Long id) {
+    public ApiResponse<Void> deleteDictItem(@PathVariable String id) {
         dictItemService.deleteDictItem(id);
         return ApiResponse.ok();
     }
@@ -94,7 +94,7 @@ public class DictItemController {
     @Operation(summary = "更新字典项状态")
     @PreAuthorize("hasAuthority('dictitem:edit')")
     public ApiResponse<Void> updateDictItemStatus(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam Integer status
     ) {
         dictItemService.updateDictItemStatus(id, status);

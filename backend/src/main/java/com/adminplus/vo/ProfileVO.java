@@ -9,7 +9,7 @@ import java.time.Instant;
  * @since 2026-02-07
  */
 public record ProfileVO(
-        Long id,
+        String id,
         String username,
         String nickname,
         String email,

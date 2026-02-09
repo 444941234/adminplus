@@ -14,7 +14,7 @@ public interface TokenBlacklistService {
      * @param token Token 字符串
      * @param userId 用户ID
      */
-    void blacklistToken(String token, Long userId);
+    void blacklistToken(String token, String userId);
 
     /**
      * 检查 Token 是否在黑名单中
@@ -29,7 +29,7 @@ public interface TokenBlacklistService {
      *
      * @param userId 用户ID
      */
-    void blacklistAllUserTokens(Long userId);
+    void blacklistAllUserTokens(String userId);
 
     /**
      * 清理过期的黑名单记录

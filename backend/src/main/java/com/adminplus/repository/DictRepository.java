@@ -14,7 +14,7 @@ import java.util.Optional;
  * @since 2026-02-06
  */
 @Repository
-public interface DictRepository extends JpaRepository<DictEntity, Long>, JpaSpecificationExecutor<DictEntity> {
+public interface DictRepository extends JpaRepository<DictEntity, String>, JpaSpecificationExecutor<DictEntity> {
 
     /**
      * 根据字典类型查询

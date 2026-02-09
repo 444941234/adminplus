@@ -33,7 +33,7 @@ public class PermissionController {
     @Operation(summary = "获取当前用户的权限列表")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<List<String>> getCurrentUserPermissions() {
-        Long userId = SecurityUtils.getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         List<String> permissions = permissionService.getUserPermissions(userId);
         return ApiResponse.ok(permissions);
     }
@@ -42,7 +42,7 @@ public class PermissionController {
     @Operation(summary = "获取当前用户的角色列表")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<List<String>> getCurrentUserRoles() {
-        Long userId = SecurityUtils.getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         List<String> roles = permissionService.getUserRoles(userId);
         return ApiResponse.ok(roles);
     }

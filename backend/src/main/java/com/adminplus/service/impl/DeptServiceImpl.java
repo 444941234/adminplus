@@ -61,15 +61,15 @@ public class DeptServiceImpl implements DeptService {
     /**
      * 构建树形结构（带 children）
      */
-    private List<DeptVO> buildTreeWithChildren(List<DeptVO> depts, Long parentId) {
-        Map<Long, List<DeptVO>> childrenMap = depts.stream()
-                .filter(dept -> dept.parentId() != null && dept.parentId() != 0)
+    private List<DeptVO> buildTreeWithChildren(List<DeptVO> depts, String parentId) {
+        Map<String, List<DeptVO>> childrenMap = depts.stream()
+                .filter(dept -> dept.parentId() != null && !dept.parentId().equals("0"))
                 .collect(Collectors.groupingBy(DeptVO::parentId));
 
         return depts.stream()
                 .filter(dept -> {
                     if (parentId == null) {
-                        return dept.parentId() == null || dept.parentId() == 0;
+                        return dept.parentId() == null || dept.parentId().equals("0");
                     }
                     return parentId.equals(dept.parentId());
                 })
@@ -100,7 +100,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional(readOnly = true)
-    public DeptVO getDeptById(Long id) {
+    public DeptVO getDeptById(String id) {
         var dept = deptRepository.findById(id)
                 .orElseThrow(() -> new BizException("部门不存在"));
 
@@ -129,7 +129,7 @@ public class DeptServiceImpl implements DeptService {
         }
 
         // 如果有父部门，检查父部门是否存在
-        if (req.parentId() != null && req.parentId() != 0) {
+        if (req.parentId() != null && !req.parentId().equals("0")) {
             if (!deptRepository.existsById(req.parentId())) {
                 throw new BizException("父部门不存在");
             }
@@ -168,7 +168,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional
-    public DeptVO updateDept(Long id, DeptUpdateReq req) {
+    public DeptVO updateDept(String id, DeptUpdateReq req) {
         var dept = deptRepository.findById(id)
                 .orElseThrow(() -> new BizException("部门不存在"));
 
@@ -188,7 +188,7 @@ public class DeptServiceImpl implements DeptService {
             if (isChildDept(id, parentId)) {
                 throw new BizException("不能将部门设置为自己的子部门");
             }
-            if (parentId != null && parentId != 0) {
+            if (parentId != null && !parentId.equals("0")) {
                 if (!deptRepository.existsById(parentId)) {
                     throw new BizException("父部门不存在");
                 }
@@ -224,7 +224,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional
-    public void deleteDept(Long id) {
+    public void deleteDept(String id) {
         var dept = deptRepository.findById(id)
                 .orElseThrow(() -> new BizException("部门不存在"));
 
@@ -244,21 +244,21 @@ public class DeptServiceImpl implements DeptService {
     /**
      * 检查目标部门是否是指定部门的子部门（防止循环引用）
      */
-    private boolean isChildDept(Long parentId, Long targetId) {
-        if (targetId == null || targetId == 0) {
+    private boolean isChildDept(String parentId, String targetId) {
+        if (targetId == null || targetId.equals("0")) {
             return false;
         }
 
         List<DeptEntity> allDepts = deptRepository.findAllByOrderBySortOrderAsc();
 
         // 从目标部门开始向上查找
-        Long currentId = targetId;
-        while (currentId != null && currentId != 0) {
+        String currentId = targetId;
+        while (currentId != null && !currentId.equals("0")) {
             if (currentId.equals(parentId)) {
                 return true;
             }
 
-            final Long finalCurrentId = currentId;
+            final String finalCurrentId = currentId;
             DeptEntity currentDept = allDepts.stream()
                     .filter(d -> d.getId().equals(finalCurrentId))
                     .findFirst()

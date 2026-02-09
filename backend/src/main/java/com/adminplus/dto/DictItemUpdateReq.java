@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
  * @since 2026-02-06
  */
 public record DictItemUpdateReq(
-        Long parentId,
+        String parentId,
 
         @NotBlank(message = "字典标签不能为空")
         @Size(max = 100, message = "字典标签长度不能超过100")

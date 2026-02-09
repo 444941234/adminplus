@@ -45,7 +45,7 @@ class UserServiceTest {
         when(passwordEncoder.encode("password123")).thenReturn("encoded_password");
         when(userRepository.save(any(UserEntity.class))).thenAnswer(invocation -> {
             UserEntity user = invocation.getArgument(0);
-            user.setId(1L);
+            user.setId("1");
             return user;
         });
 
@@ -54,7 +54,7 @@ class UserServiceTest {
 
         // Then
         assertNotNull(user);
-        assertEquals(1L, user.id());
+        assertEquals("1", user.id());
         assertEquals("testuser", user.username());
         assertEquals("测试用户", user.nickname());
 
@@ -81,32 +81,33 @@ class UserServiceTest {
     void testGetUserById_Success() {
         // Given
         UserEntity user = new UserEntity();
-        user.setId(1L);
+        user.setId("1");
         user.setUsername("testuser");
         user.setNickname("测试用户");
         user.setStatus(1);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.findById("1")).thenReturn(Optional.of(user));
 
         // When
-        UserVO userVO = userService.getUserById(1L);
+        UserVO userVO = userService.getUserById("1");
 
         // Then
         assertNotNull(userVO);
-        assertEquals(1L, userVO.id());
+        assertEquals("1", userVO.id());
         assertEquals("testuser", userVO.username());
+        assertEquals("测试用户", userVO.nickname());
 
-        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).findById("1");
     }
 
     @Test
     void testGetUserById_NotFound() {
         // Given
-        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+        when(userRepository.findById("1")).thenReturn(Optional.empty());
 
         // When & Then
-        assertThrows(com.adminplus.exception.BizException.class, () -> userService.getUserById(1L));
+        assertThrows(com.adminplus.exception.BizException.class, () -> userService.getUserById("1"));
 
-        verify(userRepository, times(1)).findById(1L);
+        verify(userRepository, times(1)).findById("1");
     }
 }

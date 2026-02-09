@@ -24,7 +24,7 @@ public interface DictService {
     /**
      * 根据ID查询字典
      */
-    DictVO getDictById(Long id);
+    DictVO getDictById(String id);
 
     /**
      * 根据字典类型查询
@@ -44,15 +44,15 @@ public interface DictService {
     /**
      * 更新字典
      */
-    DictVO updateDict(Long id, DictUpdateReq req);
+    DictVO updateDict(String id, DictUpdateReq req);
 
     /**
      * 删除字典
      */
-    void deleteDict(Long id);
+    void deleteDict(String id);
 
     /**
      * 更新字典状态
      */
-    void updateDictStatus(Long id, Integer status);
+    void updateDictStatus(String id, Integer status);
 }

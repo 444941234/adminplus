@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
  * @since 2026-02-06
  */
 public record MenuCreateReq(
-        Long parentId,
+         String parentId,
 
         @NotNull(message = "菜单类型不能为空")
         Integer type,

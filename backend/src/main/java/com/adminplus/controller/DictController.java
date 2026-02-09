@@ -55,7 +55,7 @@ public class DictController {
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询字典")
     @PreAuthorize("hasAuthority('dict:query')")
-    public ApiResponse<DictVO> getDictById(@PathVariable Long id) {
+    public ApiResponse<DictVO> getDictById(@PathVariable String id) {
         DictVO dict = dictService.getDictById(id);
         return ApiResponse.ok(dict);
     }
@@ -71,7 +71,7 @@ public class DictController {
     @PutMapping("/{id}")
     @Operation(summary = "更新字典")
     @PreAuthorize("hasAuthority('dict:edit')")
-    public ApiResponse<DictVO> updateDict(@PathVariable Long id, @Valid @RequestBody DictUpdateReq req) {
+    public ApiResponse<DictVO> updateDict(@PathVariable String id, @Valid @RequestBody DictUpdateReq req) {
         DictVO dict = dictService.updateDict(id, req);
         return ApiResponse.ok(dict);
     }
@@ -79,7 +79,7 @@ public class DictController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除字典")
     @PreAuthorize("hasAuthority('dict:delete')")
-    public ApiResponse<Void> deleteDict(@PathVariable Long id) {
+    public ApiResponse<Void> deleteDict(@PathVariable String id) {
         dictService.deleteDict(id);
         return ApiResponse.ok();
     }
@@ -96,7 +96,7 @@ public class DictController {
     @Operation(summary = "更新字典状态")
     @PreAuthorize("hasAuthority('dict:edit')")
     public ApiResponse<Void> updateDictStatus(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestParam Integer status
     ) {
         dictService.updateDictStatus(id, status);

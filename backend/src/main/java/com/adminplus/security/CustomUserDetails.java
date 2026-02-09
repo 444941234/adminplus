@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @Getter
 public class CustomUserDetails implements UserDetails {
 
-    private final Long id;
+    private final String id;
     private final String username;
     private final String password;
     private final String nickname;
@@ -28,9 +28,9 @@ public class CustomUserDetails implements UserDetails {
     private final Integer status;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(Long id, String username, String password, String nickname,
-                             String email, String phone, String avatar, Integer status,
-                             List<String> roles, List<String> permissions) {
+    public CustomUserDetails(String id, String username, String password, String nickname,
+                              String email, String phone, String avatar, Integer status,
+                              List<String> roles, List<String> permissions) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -91,7 +91,7 @@ public class CustomUserDetails implements UserDetails {
      * 用于 JWT 认证场景
      */
     public static CustomUserDetails fromJwt(org.springframework.security.oauth2.jwt.Jwt jwt) {
-        Long userId = jwt.getClaim("userId");
+        String userId = jwt.getClaimAsString("userId");
         String username = jwt.getSubject();
 
         // 从 scope claim 中提取权限

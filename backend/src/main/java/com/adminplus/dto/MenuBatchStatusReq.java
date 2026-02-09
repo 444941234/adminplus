@@ -14,7 +14,7 @@ import java.util.List;
 public record MenuBatchStatusReq(
 
         @NotEmpty(message = "菜单ID列表不能为空")
-        List<Long> ids,
+        List<String> ids,
 
         @NotNull(message = "状态不能为空")
         Integer status
