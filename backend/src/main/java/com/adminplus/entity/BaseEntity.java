@@ -17,6 +17,7 @@ import java.time.Instant;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @MappedSuperclass
+@EntityListeners(com.adminplus.listener.EntityAuditListener.class)
 public abstract class BaseEntity {
 
     @Id

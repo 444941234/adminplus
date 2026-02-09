@@ -3,40 +3,23 @@
  * 将后端返回的菜单数据转换为 Vue Router 路由配置
  */
 
+import { getComponent } from './component-registry.js'
+
 /**
- * 组件映射表
- * 将后端的组件路径映射到实际的组件文件路径
+ * 组件映射表（兼容性保留）
  */
 const componentMap = {
-  // 系统管理模块
+  // 保留原有映射用于兼容性
   '/views/system/User.vue': () => import('@/views/system/User.vue'),
   '/views/system/Role.vue': () => import('@/views/system/Role.vue'),
   '/views/system/Menu.vue': () => import('@/views/system/Menu.vue'),
   '/views/system/Dict.vue': () => import('@/views/system/Dict.vue'),
   '/views/system/DictItem.vue': () => import('@/views/system/DictItem.vue'),
-  // 其他模块
+  '/views/system/Config.vue': () => import('@/views/system/Config.vue'),
+  '/views/analysis/Statistics.vue': () => import('@/views/analysis/Statistics.vue'),
+  '/views/analysis/Report.vue': () => import('@/views/analysis/Report.vue'),
   '/views/Dashboard.vue': () => import('@/views/Dashboard.vue'),
   '/views/Profile.vue': () => import('@/views/Profile.vue')
-}
-
-/**
- * 获取组件
- * @param {string} componentPath - 组件路径
- * @returns {Function} 组件加载函数
- */
-const getComponent = (componentPath) => {
-  if (!componentPath) {
-    return () => import('@/views/NotFound.vue')
-  }
-
-  // 如果组件路径以 / 开头，直接使用
-  if (componentPath.startsWith('/')) {
-    return componentMap[componentPath] || (() => import('@/views/NotFound.vue'))
-  }
-
-  // 否则添加前缀
-  const fullPath = `/views/${componentPath}`
-  return componentMap[fullPath] || (() => import('@/views/NotFound.vue'))
 }
 
 /**

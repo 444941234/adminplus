@@ -1,0 +1,37 @@
+-- 添加审计字段（创建人、更新人）到所有表
+
+-- 用户表
+ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS create_user VARCHAR(50) NOT NULL DEFAULT 'system';
+ALTER TABLE sys_user ADD COLUMN IF NOT EXISTS update_user VARCHAR(50) NOT NULL DEFAULT 'system';
+
+-- 角色表
+ALTER TABLE sys_role ADD COLUMN IF NOT EXISTS create_user VARCHAR(50) NOT NULL DEFAULT 'system';
+ALTER TABLE sys_role ADD COLUMN IF NOT EXISTS update_user VARCHAR(50) NOT NULL DEFAULT 'system';
+
+-- 菜单表
+ALTER TABLE sys_menu ADD COLUMN IF NOT EXISTS create_user VARCHAR(50) NOT NULL DEFAULT 'system';
+ALTER TABLE sys_menu ADD COLUMN IF NOT EXISTS update_user VARCHAR(50) NOT NULL DEFAULT 'system';
+
+-- 部门表
+ALTER TABLE sys_dept ADD COLUMN IF NOT EXISTS create_user VARCHAR(50) NOT NULL DEFAULT 'system';
+ALTER TABLE sys_dept ADD COLUMN IF NOT EXISTS update_user VARCHAR(50) NOT NULL DEFAULT 'system';
+
+-- 字典表
+ALTER TABLE sys_dict ADD COLUMN IF NOT EXISTS create_user VARCHAR(50) NOT NULL DEFAULT 'system';
+ALTER TABLE sys_dict ADD COLUMN IF NOT EXISTS update_user VARCHAR(50) NOT NULL DEFAULT 'system';
+
+-- 字典项表
+ALTER TABLE sys_dict_item ADD COLUMN IF NOT EXISTS create_user VARCHAR(50) NOT NULL DEFAULT 'system';
+ALTER TABLE sys_dict_item ADD COLUMN IF NOT EXISTS update_user VARCHAR(50) NOT NULL DEFAULT 'system';
+
+-- 用户角色关联表
+ALTER TABLE sys_user_role ADD COLUMN IF NOT EXISTS create_user VARCHAR(50) NOT NULL DEFAULT 'system';
+ALTER TABLE sys_user_role ADD COLUMN IF NOT EXISTS update_user VARCHAR(50) NOT NULL DEFAULT 'system';
+
+-- 角色菜单关联表
+ALTER TABLE sys_role_menu ADD COLUMN IF NOT EXISTS create_user VARCHAR(50) NOT NULL DEFAULT 'system';
+ALTER TABLE sys_role_menu ADD COLUMN IF NOT EXISTS update_user VARCHAR(50) NOT NULL DEFAULT 'system';
+
+-- 日志表
+ALTER TABLE sys_log ADD COLUMN IF NOT EXISTS create_user VARCHAR(50) NOT NULL DEFAULT 'system';
+ALTER TABLE sys_log ADD COLUMN IF NOT EXISTS update_user VARCHAR(50) NOT NULL DEFAULT 'system';
