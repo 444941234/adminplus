@@ -21,7 +21,7 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "refresh_tokens", indexes = {
+@Table(name = "sys_refresh_token", indexes = {
         @Index(name = "idx_user_id", columnList = "user_id"),
         @Index(name = "idx_token", columnList = "token"),
         @Index(name = "idx_expiry_date", columnList = "expiry_date")

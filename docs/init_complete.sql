@@ -176,7 +176,7 @@ CREATE TABLE sys_log (
 );
 
 -- Refresh Token 表
-CREATE TABLE refresh_tokens (
+CREATE TABLE sys_refresh_token (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
     token VARCHAR(255) NOT NULL UNIQUE,
@@ -220,9 +220,9 @@ CREATE INDEX idx_sys_log_module ON sys_log(module);
 CREATE INDEX idx_sys_log_operation_type ON sys_log(operation_type);
 CREATE INDEX idx_sys_log_create_time ON sys_log(create_time);
 
-CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
-CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
-CREATE INDEX idx_refresh_tokens_expiry_date ON refresh_tokens(expiry_date);
+CREATE INDEX idx_sys_refresh_token_user_id ON sys_refresh_token(user_id);
+CREATE INDEX idx_sys_refresh_token_token ON sys_refresh_token(token);
+CREATE INDEX idx_sys_refresh_token_expiry_date ON sys_refresh_token(expiry_date);
 
 -- ================================================================================
 -- 第五部分：创建更新时间触发器
@@ -258,7 +258,7 @@ CREATE TRIGGER update_sys_dict_item_updated_at BEFORE UPDATE ON sys_dict_item
 CREATE TRIGGER update_sys_log_updated_at BEFORE UPDATE ON sys_log
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_refresh_tokens_updated_at BEFORE UPDATE ON refresh_tokens
+CREATE TRIGGER update_sys_refresh_token_updated_at BEFORE UPDATE ON sys_refresh_token
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ================================================================================
