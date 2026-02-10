@@ -32,6 +32,8 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
+import java.util.List;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
@@ -257,8 +259,8 @@ public class SecurityConfig {
         // 从配置文件读取允许的域名
         if (corsAllowedOrigins != null && !corsAllowedOrigins.trim().isEmpty()) {
             String[] origins = corsAllowedOrigins.split(",");
-            configuration.setAllowedOriginPatterns(java.util.Arrays.asList(origins));
-            log.info("CORS 已配置允许的域名: {}", java.util.Arrays.toString(origins));
+            configuration.setAllowedOriginPatterns(Arrays.asList(origins));
+            log.info("CORS 已配置允许的域名: {}", Arrays.toString(origins));
         } else {
             // 如果未配置，仅允许本地开发（生产环境会报错）
             if (isProduction()) {
@@ -266,12 +268,12 @@ public class SecurityConfig {
                     "生产环境必须配置 CORS 允许的域名！请设置环境变量 CORS_ALLOWED_ORIGINS"
                 );
             }
-            configuration.setAllowedOriginPatterns(java.util.List.of("http://localhost:5173", "http://localhost:3000"));
+            configuration.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://localhost:3000"));
             log.warn("⚠️  开发环境：CORS 使用默认配置（仅允许本地开发服务器）");
             log.warn("⚠️  警告：生产环境必须配置 CORS_ALLOWED_ORIGINS 环境变量！");
         }
 
-        configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(java.util.List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);

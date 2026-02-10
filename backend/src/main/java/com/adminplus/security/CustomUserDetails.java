@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.security.oauth2.jwt.Jwt;
+import java.util.ArrayList;
 
 /**
  * 自定义用户详情
@@ -42,7 +43,7 @@ public class CustomUserDetails implements UserDetails {
         this.status = status;
 
         // 构建权限列表：角色（ROLE_前缀）+ 权限标识符
-        List<GrantedAuthority> authorityList = new java.util.ArrayList<>();
+        List<GrantedAuthority> authorityList = new ArrayList<>();
 
         // 添加角色权限（ROLE_前缀）
         if (roles != null && !roles.isEmpty()) {
@@ -96,7 +97,7 @@ public class CustomUserDetails implements UserDetails {
         String username = jwt.getSubject();
 
         // 从 scope claim 中提取权限
-        Collection<GrantedAuthority> authorities = new java.util.ArrayList<>();
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
         Object scopeClaim = jwt.getClaim("scope");
         if (scopeClaim instanceof String) {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + scopeClaim));
