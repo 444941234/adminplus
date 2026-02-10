@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * 异步任务配置
@@ -26,6 +27,6 @@ public class AsyncConfig {
     @Bean(name = "asyncExecutor")
     public Executor asyncExecutor() {
         log.info("初始化虚拟线程执行器");
-        return java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor();
+        return Executors.newVirtualThreadPerTaskExecutor();
     }
 }

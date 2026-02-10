@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import jakarta.persistence.criteria.Predicate;
 
 /**
  * 字典服务实现
@@ -49,7 +50,7 @@ public class DictServiceImpl implements DictService {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createTime").descending());
 
         Specification<DictEntity> spec = (root, query, cb) -> {
-            List<jakarta.persistence.criteria.Predicate> predicates = new ArrayList<>();
+            List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("deleted"), false));
 
             if (keyword != null && !keyword.isEmpty()) {
@@ -59,7 +60,7 @@ public class DictServiceImpl implements DictService {
                 ));
             }
 
-            return cb.and(predicates.toArray(new jakarta.persistence.criteria.Predicate[0]));
+            return cb.and(predicates.toArray(new Predicate[0]));
         };
 
         var pageResult = dictRepository.findAll(spec, pageable);

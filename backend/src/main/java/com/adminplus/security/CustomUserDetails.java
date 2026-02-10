@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 /**
  * 自定义用户详情
@@ -90,7 +91,7 @@ public class CustomUserDetails implements UserDetails {
      * 从 JWT 对象创建 CustomUserDetails
      * 用于 JWT 认证场景
      */
-    public static CustomUserDetails fromJwt(org.springframework.security.oauth2.jwt.Jwt jwt) {
+    public static CustomUserDetails fromJwt(Jwt jwt) {
         String userId = jwt.getClaimAsString("userId");
         String username = jwt.getSubject();
 
