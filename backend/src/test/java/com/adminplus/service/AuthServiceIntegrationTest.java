@@ -5,6 +5,7 @@ import com.adminplus.dto.UserLoginResp;
 import com.adminplus.entity.UserEntity;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.exception.BizException;
+import com.adminplus.BaseIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
