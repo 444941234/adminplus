@@ -5,10 +5,10 @@ import com.adminplus.dto.UserLoginResp;
 import com.adminplus.entity.UserEntity;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.exception.BizException;
-import com.adminplus.BaseIntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -16,7 +16,8 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * 认证服务集成测试
  */
-class AuthServiceIntegrationTest extends BaseIntegrationTest {
+@SpringBootTest
+class AuthServiceIntegrationTest {
 
     @Autowired
     private AuthService authService;
