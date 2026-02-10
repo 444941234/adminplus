@@ -44,12 +44,47 @@
 
 ## 提交说明
 
-本次提交主要完成测试体系的架构设计和基础实现，包括：
-
+### 第一次提交：测试体系架构 (0dbbee0)
 - 完整的测试策略文档
 - 前后端测试配置
 - 示例测试代码
 - 自动化测试脚本
 - 测试工具类
 
-虽然当前测试执行存在技术问题，但测试框架已完整搭建，为后续持续集成和自动化测试打下坚实基础。
+### 第二次提交：修复编译错误 (a39e2c2)
+- 修复 DataInitializationService 中的编译错误
+- 验证测试脚本功能
+
+### 第三次提交：扩展测试覆盖 (ff83a46)
+- 用户管理接口测试
+- 角色管理接口测试
+- JWT 安全测试
+- 前端组件测试
+- API 工具函数测试
+- 性能测试示例
+- 测试数据工厂
+- 覆盖率配置
+
+## 测试覆盖范围总结
+
+### 后端测试覆盖
+- ✅ 用户管理模块 (UserControllerTest, UserServiceTest)
+- ✅ 角色管理模块 (RoleControllerTest)
+- ✅ 认证授权模块 (AuthControllerTest, JwtTokenProviderTest)
+- ✅ 安全过滤器 (XssFilterTest)
+- ✅ 集成测试 (AuthServiceIntegrationTest)
+- ✅ 性能测试 (UserServicePerformanceTest)
+
+### 前端测试覆盖
+- ✅ 登录组件 (LoginForm.test.js)
+- ✅ 仪表板组件 (Dashboard.test.js)
+- ✅ 工具函数 (auth.test.js, api.test.js)
+
+### 测试基础设施
+- ✅ 测试数据工厂 (TestDataFactory)
+- ✅ 测试工具类 (TestUtils)
+- ✅ 覆盖率配置 (jacoco-test-coverage.xml)
+- ✅ 自动化脚本 (run-tests.sh, verify-tests.sh)
+- ✅ 完整文档 (TESTING_STRATEGY.md)
+
+虽然当前测试执行存在技术问题需要调试，但测试框架已完整搭建，为项目提供了完整的测试基础架构。
