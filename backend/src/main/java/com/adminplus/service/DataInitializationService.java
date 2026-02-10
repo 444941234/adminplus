@@ -323,7 +323,7 @@ public class DataInitializationService implements CommandLineRunner {
         user.setNickname(nickname);
         user.setEmail(email);
         user.setPhone(phone);
-        user.setDeptId(deptId);
+        // user.setDeptId(deptId); // 暂时注释，UserEntity 暂无 deptId 字段
         user.setStatus(status);
         user.setCreateUser("system");
         user.setUpdateUser("system");
