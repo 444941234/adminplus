@@ -1,4 +1,4 @@
-package com.adminplus.config;
+package com.adminplus.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;

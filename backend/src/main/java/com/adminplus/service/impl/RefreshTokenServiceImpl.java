@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.exception.BizException;
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.entity.RefreshTokenEntity;
 import com.adminplus.repository.RefreshTokenRepository;
 import com.adminplus.service.RefreshTokenService;

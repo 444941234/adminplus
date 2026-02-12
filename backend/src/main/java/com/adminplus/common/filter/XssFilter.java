@@ -1,4 +1,4 @@
-package com.adminplus.filter;
+package com.adminplus.common.filter;
 
 import com.adminplus.common.pojo.XssRequestWrapper;
 import jakarta.servlet.*;

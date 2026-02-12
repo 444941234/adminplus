@@ -4,7 +4,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class SnowflakeIdGenerator {
+public class IdUtils {
 
     private static final long START_TIMESTAMP = 1735689600000L;
 

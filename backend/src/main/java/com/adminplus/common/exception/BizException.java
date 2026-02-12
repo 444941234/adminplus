@@ -1,4 +1,4 @@
-package com.adminplus.exception;
+package com.adminplus.common.exception;
 
 /**
  * 业务异常

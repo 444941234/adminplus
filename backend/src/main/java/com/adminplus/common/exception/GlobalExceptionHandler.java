@@ -1,8 +1,8 @@
-package com.adminplus.exception;
+package com.adminplus.common.exception;
 
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.common.properties.AppProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -24,14 +24,17 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @Value("${app.env:dev}")
-    private String env;
+    private final AppProperties appProperties;
+
+    public GlobalExceptionHandler(AppProperties appProperties) {
+        this.appProperties = appProperties;
+    }
 
     /**
      * 判断是否为生产环境
      */
     private boolean isProduction() {
-        return "prod".equalsIgnoreCase(env);
+        return "prod".equalsIgnoreCase(appProperties.getEnv());
     }
 
     /**

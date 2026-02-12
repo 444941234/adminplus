@@ -2,12 +2,11 @@
 
 app:
   env: dev
-
-# CORS 配置（开发环境）
-spring:
   cors:
     allowed-origins: http://localhost:5173
-  # JPA 配置（开发环境启用 SQL 日志）
+
+# JPA 配置（开发环境启用 SQL 日志）
+spring:
   jpa:
     show-sql: true  # 开发环境启用 SQL 日志
     properties:

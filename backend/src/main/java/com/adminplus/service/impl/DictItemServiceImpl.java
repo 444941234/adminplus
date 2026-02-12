@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.exception.BizException;
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.req.DictItemCreateReq;
 import com.adminplus.pojo.dto.req.DictItemUpdateReq;
 import com.adminplus.pojo.dto.resp.DictItemResp;

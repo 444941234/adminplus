@@ -1,4 +1,4 @@
-package com.adminplus.security;
+package com.adminplus.common.security;
 
 import com.adminplus.utils.SecurityUtils;
 import org.springframework.data.domain.AuditorAware;

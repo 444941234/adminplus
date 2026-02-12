@@ -1,6 +1,7 @@
-package com.adminplus.config;
+package com.adminplus.common.config;
 
-import com.adminplus.filter.TokenBlacklistFilter;
+import com.adminplus.common.filter.TokenBlacklistFilter;
+import com.adminplus.common.properties.AppProperties;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -9,7 +10,6 @@ import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -28,13 +28,14 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.Arrays;
 import java.util.List;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Spring Security 配置
@@ -47,18 +48,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("${jwt.secret:}")
-    private String jwtSecret;
-
-    @Value("${spring.cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
-    private String corsAllowedOrigins;
-
     private final TokenBlacklistFilter tokenBlacklistFilter;
     private final Environment env;
+    private final AppProperties appProperties;
 
-    public SecurityConfig(TokenBlacklistFilter tokenBlacklistFilter, Environment env) {
+    public SecurityConfig(TokenBlacklistFilter tokenBlacklistFilter, Environment env,
+                          AppProperties appProperties) {
         this.tokenBlacklistFilter = tokenBlacklistFilter;
         this.env = env;
+        this.appProperties = appProperties;
     }
 
     /**
@@ -73,6 +71,8 @@ public class SecurityConfig {
      */
     @Bean
     public RSAKey rsaKey() throws JOSEException {
+        String jwtSecret = appProperties.getJwt().getSecret();
+
         // 生产环境：强制从环境变量读取 JWT_SECRET
         if (isProduction()) {
             if (jwtSecret == null || jwtSecret.isEmpty()) {
@@ -102,7 +102,7 @@ public class SecurityConfig {
         }
 
         // 开发环境：优先使用配置文件中的固定密钥，否则生成临时密钥
-        String devSecret = env.getProperty("jwt.dev-secret");
+        String devSecret = appProperties.getJwt().getDevSecret();
         if (devSecret != null && !devSecret.isEmpty()) {
             try {
                 RSAKey devKey = RSAKey.parse(devSecret);
@@ -257,6 +257,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 从配置文件读取允许的域名
+        String corsAllowedOrigins = appProperties.getCors().getAllowedOrigins();
         if (corsAllowedOrigins != null && !corsAllowedOrigins.trim().isEmpty()) {
             String[] origins = corsAllowedOrigins.split(",");
             configuration.setAllowedOriginPatterns(Arrays.asList(origins));
@@ -287,7 +288,6 @@ public class SecurityConfig {
      * 判断是否为生产环境
      */
     private boolean isProduction() {
-        String env = this.env.getProperty("app.env", "dev");
-        return "prod".equalsIgnoreCase(env) || "production".equalsIgnoreCase(env);
+        return "prod".equalsIgnoreCase(appProperties.getEnv()) || "production".equalsIgnoreCase(appProperties.getEnv());
     }
 }

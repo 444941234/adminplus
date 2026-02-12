@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <!-- 注册日志脱敏转换器 -->
-    <conversionRule conversionWord="maskedMsg" converterClass="com.adminplus.logging.LogMaskingConverter" />
+    <conversionRule conversionWord="maskedMsg" converterClass="com.adminplus.common.logging.LogMaskingConverter"/>
 
     <!-- 开发环境：控制台输出详细日志（启用脱敏） -->
     <springProfile name="dev">

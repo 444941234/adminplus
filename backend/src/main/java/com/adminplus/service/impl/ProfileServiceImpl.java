@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.exception.BizException;
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.req.PasswordChangeReq;
 import com.adminplus.pojo.dto.req.ProfileUpdateReq;
 import com.adminplus.pojo.dto.req.SettingsUpdateReq;

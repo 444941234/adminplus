@@ -98,19 +98,6 @@ spring:
       # 生产环境必须明确配置此值
       use-cookie: ${SECURITY_JWT_USE_COOKIE:false}
 
-  # JWT 配置（自定义）
-  jwt:
-    # JWT 密钥（生产环境必须从环境变量 JWT_SECRET 设置）
-    secret: ${JWT_SECRET:}
-    # 开发环境固定密钥（可选，用于测试）
-    dev-secret: ${JWT_DEV_SECRET:}
-
-  # CORS 配置
-  cors:
-    # 允许的跨域来源（生产环境必须配置为具体的域名，使用逗号分隔）
-    # 示例: http://localhost:5173,https://admin.example.com
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
-
   # 文件上传配置
   servlet:
     multipart:
@@ -119,15 +106,6 @@ spring:
       max-request-size: 10MB
       file-size-threshold: 2MB
       location: ${java.io.tmpdir}
-
-# 病毒扫描配置
-virus:
-  scan:
-    enabled: ${VIRUS_SCAN_ENABLED:true}
-    clamav:
-      host: ${CLAMAV_HOST:localhost}
-      port: ${CLAMAV_PORT:3310}
-    timeout: 30000
 
 # Actuator 配置
 management:
@@ -138,6 +116,22 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+
+# 应用配置
+app:
+  env: ${APP_ENV:dev}
+  jwt:
+    secret: ${JWT_SECRET:}
+    dev-secret: ${JWT_DEV_SECRET:}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  virus:
+    scan:
+      enabled: ${VIRUS_SCAN_ENABLED:true}
+      clamav:
+        host: ${CLAMAV_HOST:localhost}
+        port: ${CLAMAV_PORT:3310}
+      timeout: 30000
 
 # 日志配置（具体配置在 application-dev.yml 和 application-prod.yml 中）
 logging:

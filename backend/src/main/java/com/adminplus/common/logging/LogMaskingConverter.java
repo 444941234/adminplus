@@ -1,8 +1,7 @@
-package com.adminplus.logging;
+package com.adminplus.common.logging;
 
 import ch.qos.logback.classic.pattern.MessageConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
-
 import com.adminplus.utils.LogMaskingUtils;
 
 public class LogMaskingConverter extends MessageConverter {

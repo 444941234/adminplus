@@ -1,6 +1,6 @@
 package com.adminplus.pojo.entity;
 
-import com.adminplus.utils.SnowflakeIdGenerator;
+import com.adminplus.utils.IdUtils;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -43,7 +43,7 @@ public abstract class BaseEntity {
     @PrePersist
     public void prePersist() {
         if (this.id == null || this.id.isEmpty()) {
-            this.id = SnowflakeIdGenerator.nextIdStr();
+            this.id = IdUtils.nextIdStr();
         }
         if (this.deleted == null) {
             this.deleted = false;

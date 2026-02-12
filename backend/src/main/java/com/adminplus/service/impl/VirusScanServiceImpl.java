@@ -1,8 +1,8 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.common.properties.AppProperties;
 import com.adminplus.service.VirusScanService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 病毒扫描服务实现（基于 ClamAV）
@@ -21,20 +22,16 @@ import java.net.Socket;
 @Service
 public class VirusScanServiceImpl implements VirusScanService {
 
-    @Value("${virus.scan.enabled:true}")
-    private boolean scanEnabled;
+    private final AppProperties appProperties;
 
-    @Value("${virus.scan.clamav.host:localhost}")
-    private String clamavHost;
-
-    @Value("${virus.scan.clamav.port:3310}")
-    private int clamavPort;
-
-    @Value("${virus.scan.timeout:30000}")
-    private int scanTimeout;
+    public VirusScanServiceImpl(AppProperties appProperties) {
+        this.appProperties = appProperties;
+    }
 
     @Override
     public boolean scanFile(MultipartFile file) {
+        boolean scanEnabled = appProperties.getVirus().getScan().isEnabled();
+
         // 如果病毒扫描被禁用，直接返回 true
         if (!scanEnabled) {
             log.warn("病毒扫描已禁用，跳过文件扫描: {}", file.getOriginalFilename());
@@ -67,6 +64,11 @@ public class VirusScanServiceImpl implements VirusScanService {
 
     @Override
     public boolean isServiceAvailable() {
+        boolean scanEnabled = appProperties.getVirus().getScan().isEnabled();
+        String clamavHost = appProperties.getVirus().getScan().getClamav().getHost();
+        int clamavPort = appProperties.getVirus().getScan().getClamav().getPort();
+        int scanTimeout = appProperties.getVirus().getScan().getTimeout();
+
         if (!scanEnabled) {
             return false;
         }
@@ -88,6 +90,10 @@ public class VirusScanServiceImpl implements VirusScanService {
      * @return true 如果文件安全，false 如果包含病毒
      */
     private boolean scanWithClamAV(byte[] fileBytes, String filename) {
+        String clamavHost = appProperties.getVirus().getScan().getClamav().getHost();
+        int clamavPort = appProperties.getVirus().getScan().getClamav().getPort();
+        int scanTimeout = appProperties.getVirus().getScan().getTimeout();
+
         try (Socket socket = new Socket(clamavHost, clamavPort)) {
             socket.setSoTimeout(scanTimeout);
 
@@ -147,8 +153,7 @@ public class VirusScanServiceImpl implements VirusScanService {
             }
         }
         // 移除结尾的 \0
-        byte[] response = baos.toByteArray();
-        String result = new String(response, "ISO-8859-1");
+        String result = baos.toString(StandardCharsets.ISO_8859_1);
         if (result.endsWith("\0")) {
             result = result.substring(0, result.length() - 1);
         }

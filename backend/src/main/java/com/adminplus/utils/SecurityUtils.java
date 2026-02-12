@@ -1,6 +1,6 @@
 package com.adminplus.utils;
 
-import com.adminplus.security.AppUserDetails;
+import com.adminplus.common.security.AppUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;

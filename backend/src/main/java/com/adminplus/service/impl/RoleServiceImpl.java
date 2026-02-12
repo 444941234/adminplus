@@ -1,7 +1,7 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.OperationType;
-import com.adminplus.exception.BizException;
 import com.adminplus.pojo.dto.req.RoleCreateReq;
 import com.adminplus.pojo.dto.req.RoleUpdateReq;
 import com.adminplus.pojo.dto.resp.RoleResp;

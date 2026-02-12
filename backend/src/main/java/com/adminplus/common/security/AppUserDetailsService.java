@@ -1,6 +1,6 @@
-package com.adminplus.security;
+package com.adminplus.common.security;
 
-import com.adminplus.exception.BizException;
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;

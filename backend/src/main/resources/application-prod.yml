@@ -2,21 +2,16 @@
 
 app:
   env: prod
-
-# CORS 配置（生产环境 - 必须从环境变量配置）
-spring:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:}
-  # JPA 配置（生产环境关闭 SQL 日志，防止敏感信息泄露）
+# 安全配置（生产环境）
+spring:
   jpa:
     show-sql: false
     properties:
       hibernate:
         format_sql: false
         use_sql_comments: false
-
-# 安全配置（生产环境）
-spring:
   security:
     jwt:
       # JWT 存储方式（生产环境必须明确配置）
