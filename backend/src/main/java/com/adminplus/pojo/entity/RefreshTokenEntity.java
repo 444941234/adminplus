@@ -1,12 +1,13 @@
 package com.adminplus.pojo.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
 
@@ -26,10 +27,8 @@ import java.time.Instant;
         @Index(name = "idx_token", columnList = "token"),
         @Index(name = "idx_expiry_date", columnList = "expiry_date")
 })
-public class RefreshTokenEntity {
+public class RefreshTokenEntity extends BaseEntity {
 
-    @Id
-    private String id;
 
     @Column(name = "user_id", nullable = false)
     private String userId;
@@ -43,12 +42,4 @@ public class RefreshTokenEntity {
     @Column(name = "revoked", nullable = false)
     @Builder.Default
     private Boolean revoked = false;
-
-    @CreationTimestamp
-    @Column(name = "create_time", nullable = false, updatable = false)
-    private Instant createTime;
-
-    @UpdateTimestamp
-    @Column(name = "update_time", nullable = false)
-    private Instant updateTime;
 }

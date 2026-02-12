@@ -2,11 +2,11 @@
 // AdminPlus 全局样式入口
 // ============================================
 
-// 引入 Element Plus 主题变量
-@use './element-variables.scss' as *;
+// 引入全局变量（作为全局命名空间）
+@use './variables.scss' as *;
 
-// 引入全局变量
-@import './variables.scss';
+// 引入 Element Plus 主题变量（不使用 as *，避免冲突）
+@use './element-variables.scss';
 
 // ===== 全局基础样式 =====
 * {

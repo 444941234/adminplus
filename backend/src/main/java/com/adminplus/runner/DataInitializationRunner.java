@@ -255,9 +255,8 @@ public class DataInitializationRunner implements CommandLineRunner {
         RoleEntity adminRole = roleMap.get("ROLE_ADMIN");
         if (adminRole != null) {
             for (MenuEntity menu : menus) {
-                if (menu.getType() != 2) { // 只关联非按钮菜单
-                    roleMenuRepository.save(createRoleMenu(adminRole.getId(), menu.getId()));
-                }
+                // 关联所有菜单，包括按钮权限
+                roleMenuRepository.save(createRoleMenu(adminRole.getId(), menu.getId()));
             }
         }
 

@@ -5,10 +5,7 @@
         <div class="card-header">
           <span>部门管理</span>
           <div class="header-actions">
-            <el-button
-              type="primary"
-              @click="handleAdd"
-            >
+            <el-button type="primary" @click="handleAdd">
               <el-icon><Plus /></el-icon>
               新增部门
             </el-button>
@@ -29,29 +26,29 @@
       >
         <template #default="{ node, data }">
           <div class="tree-node">
-            <span class="node-name">{{ node.label }}</span>
+            <div class="node-info">
+              <div class="node-name-row">
+                <span class="node-name">{{ node.label }}</span>
+                <el-tag
+                  :type="data.status === 1 ? 'success' : 'info'"
+                  class="status-tag"
+                  size="small"
+                >
+                  {{ data.status === 1 ? '启用' : '禁用' }}
+                </el-tag>
+              </div>
+              <div class="node-details">
+                <span class="detail-item">编码: {{ data.code }}</span>
+                <span class="detail-item">负责人: {{ data.leader || '-' }}</span>
+                <span class="detail-item">电话: {{ data.phone || '-' }}</span>
+              </div>
+            </div>
             <div class="node-actions">
-              <el-button
-                type="primary"
-                size="small"
-                @click="handleAddChild(data)"
-              >
+              <el-button type="primary" size="small" @click="handleAddChild(data)">
                 添加子部门
               </el-button>
-              <el-button
-                type="warning"
-                size="small"
-                @click="handleEdit(data)"
-              >
-                编辑
-              </el-button>
-              <el-button
-                type="danger"
-                size="small"
-                @click="handleDelete(data)"
-              >
-                删除
-              </el-button>
+              <el-button type="warning" size="small" @click="handleEdit(data)"> 编辑 </el-button>
+              <el-button type="danger" size="small" @click="handleDelete(data)"> 删除 </el-button>
             </div>
           </div>
         </template>
@@ -59,262 +56,182 @@
     </el-card>
 
     <!-- 部门编辑对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="500px"
-    >
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="80px"
-      >
-        <el-form-item
-          label="部门名称"
-          prop="name"
-        >
-          <el-input
-            v-model="form.name"
-            placeholder="请输入部门名称"
-          />
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
+        <el-form-item label="部门名称" prop="name">
+          <el-input v-model="form.name" placeholder="请输入部门名称" />
         </el-form-item>
-        <el-form-item
-          label="部门编码"
-          prop="code"
-        >
-          <el-input
-            v-model="form.code"
-            placeholder="请输入部门编码"
-          />
+        <el-form-item label="部门编码" prop="code">
+          <el-input v-model="form.code" placeholder="请输入部门编码" />
         </el-form-item>
-        <el-form-item
-          label="负责人"
-          prop="leader"
-        >
-          <el-input
-            v-model="form.leader"
-            placeholder="请输入负责人"
-          />
+        <el-form-item label="负责人" prop="leader">
+          <el-input v-model="form.leader" placeholder="请输入负责人" />
         </el-form-item>
-        <el-form-item
-          label="联系电话"
-          prop="phone"
-        >
-          <el-input
-            v-model="form.phone"
-            placeholder="请输入联系电话"
-          />
+        <el-form-item label="联系电话" prop="phone">
+          <el-input v-model="form.phone" placeholder="请输入联系电话" />
         </el-form-item>
-        <el-form-item
-          label="状态"
-          prop="status"
-        >
-          <el-switch
-            v-model="form.status"
-            :active-value="1"
-            :inactive-value="0"
-          />
+        <el-form-item label="状态" prop="status">
+          <el-switch v-model="form.status" :active-value="1" :inactive-value="0" />
         </el-form-item>
-        <el-form-item
-          label="排序"
-          prop="sortOrder"
-        >
-          <el-input-number
-            v-model="form.sortOrder"
-            :min="0"
-            :max="999"
-          />
+        <el-form-item label="排序" prop="sortOrder">
+          <el-input-number v-model="form.sortOrder" :min="0" :max="999" />
         </el-form-item>
-        <el-form-item
-          label="备注"
-          prop="remark"
-        >
-          <el-input
-            v-model="form.remark"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入备注信息"
-          />
+        <el-form-item label="备注" prop="remark">
+          <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入备注信息" />
         </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          :loading="submitLoading"
-          @click="handleSubmit"
-        >
-          确定
-        </el-button>
+        <el-button type="primary" :loading="submitLoading" @click="handleSubmit"> 确定 </el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { onMounted, reactive, ref } from 'vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { createDept, deleteDept, getDeptTree, updateDept } from '@/api/dept';
 
-const loading = ref(false)
-const treeData = ref([])
-const treeRef = ref()
-const dialogVisible = ref(false)
-const dialogTitle = ref('')
-const submitLoading = ref(false)
-const isEdit = ref(false)
+const loading = ref(false);
+const treeData = ref([]);
+const treeRef = ref();
+const dialogVisible = ref(false);
+const dialogTitle = ref('');
+const submitLoading = ref(false);
+const isEdit = ref(false);
 
-const formRef = ref()
+const formRef = ref();
 const form = reactive({
+  id: undefined,
+  parentId: undefined,
   name: '',
   code: '',
   leader: '',
   phone: '',
   status: 1,
   sortOrder: 0,
-  remark: ''
-})
+  remark: '',
+});
 
 const treeProps = {
   label: 'name',
-  children: 'children'
-}
+  children: 'children',
+};
 
 const rules = {
   name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入部门编码', trigger: 'blur' }]
-}
+  code: [{ required: true, message: '请输入部门编码', trigger: 'blur' }],
+};
 
 // 获取部门树数据
 const getData = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    // 模拟数据
-    treeData.value = [
-      {
-        id: '1',
-        name: '总公司',
-        code: 'ROOT',
-        leader: '张三',
-        phone: '13800138000',
-        status: 1,
-        sortOrder: 1,
-        remark: '总公司',
-        children: [
-          {
-            id: '2',
-            name: '技术部',
-            code: 'TECH',
-            leader: '李四',
-            phone: '13800138001',
-            status: 1,
-            sortOrder: 1,
-            remark: '技术研发部门'
-          },
-          {
-            id: '3',
-            name: '市场部',
-            code: 'MARKET',
-            leader: '王五',
-            phone: '13800138002',
-            status: 1,
-            sortOrder: 2,
-            remark: '市场推广部门'
-          }
-        ]
-      }
-    ]
+    treeData.value = await getDeptTree();
   } catch {
-    ElMessage.error('获取部门数据失败')
+    ElMessage.error('获取部门数据失败');
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 新增部门
 const handleAdd = () => {
-  isEdit.value = false
-  dialogTitle.value = '新增部门'
-  resetForm()
-  dialogVisible.value = true
-}
+  isEdit.value = false;
+  dialogTitle.value = '新增部门';
+  resetForm();
+  dialogVisible.value = true;
+};
 
 // 新增子部门
 const handleAddChild = (data) => {
-  isEdit.value = false
-  dialogTitle.value = '新增子部门'
-  resetForm()
-  form.parentId = data.id
-  dialogVisible.value = true
-}
+  isEdit.value = false;
+  dialogTitle.value = '新增子部门';
+  resetForm();
+  form.parentId = data.id;
+  dialogVisible.value = true;
+};
 
 // 编辑部门
 const handleEdit = (data) => {
-  isEdit.value = true
-  dialogTitle.value = '编辑部门'
-  Object.assign(form, data)
-  dialogVisible.value = true
-}
+  isEdit.value = true;
+  dialogTitle.value = '编辑部门';
+  Object.assign(form, {
+    id: data.id,
+    parentId: data.parentId,
+    name: data.name,
+    code: data.code,
+    leader: data.leader,
+    phone: data.phone,
+    status: data.status,
+    sortOrder: data.sortOrder,
+    remark: data.remark,
+  });
+  dialogVisible.value = true;
+};
 
 // 删除部门
 const handleDelete = async (data) => {
   try {
-    await ElMessageBox.confirm(
-      `确定要删除部门"${data.name}"吗？`,
-      '提示',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    ElMessage.success('删除成功')
-    getData()
+    await ElMessageBox.confirm(`确定要删除部门"${data.name}"吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    });
+    await deleteDept(data.id);
+    ElMessage.success('删除成功');
+    getData();
   } catch {
     // 用户取消操作
   }
-}
+};
 
 // 节点点击
 const handleNodeClick = (data) => {
-  console.log('选中部门:', data)
-}
+  console.log('选中部门:', data);
+};
 
 // 重置表单
 const resetForm = () => {
   Object.assign(form, {
+    id: undefined,
+    parentId: undefined,
     name: '',
     code: '',
     leader: '',
     phone: '',
     status: 1,
     sortOrder: 0,
-    remark: ''
-  })
-  formRef.value?.resetFields()
-}
+    remark: '',
+  });
+  formRef.value?.resetFields();
+};
 
 // 提交表单
 const handleSubmit = async () => {
-  await formRef.value.validate()
+  await formRef.value.validate();
 
-  submitLoading.value = true
+  submitLoading.value = true;
   try {
-    // 模拟保存操作
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功')
-    dialogVisible.value = false
-    getData()
+    if (isEdit.value) {
+      await updateDept(form.id, form);
+    } else {
+      await createDept(form);
+    }
+    ElMessage.success(isEdit.value ? '更新成功' : '创建成功');
+    dialogVisible.value = false;
+    getData();
   } catch {
-    ElMessage.error('操作失败')
+    ElMessage.error('操作失败');
   } finally {
-    submitLoading.value = false
+    submitLoading.value = false;
   }
-}
+};
 
 onMounted(() => {
-  getData()
-})
+  getData();
+});
 </script>
 
 <style scoped>
@@ -333,11 +250,40 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 5px 0;
+  padding: 8px 0;
+}
+
+.node-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.node-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .node-name {
-  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.status-tag {
+  flex-shrink: 0;
+}
+
+.node-details {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.detail-item {
+  white-space: nowrap;
 }
 
 .node-actions {

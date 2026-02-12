@@ -10,10 +10,10 @@
       default-src 'self';
       script-src 'self' 'unsafe-inline' 'unsafe-eval';
       style-src 'self' 'unsafe-inline';
-      img-src 'self' data: https:;
+      img-src 'self' data: https: http:;
       font-src 'self' data:;
-      connect-src 'self' http://localhost:8081;
-      frame-src 'none';
+      connect-src 'self' http: https: ws: wss:;
+      frame-src 'self';
       object-src 'none';
       base-uri 'self';
       form-action 'self';
