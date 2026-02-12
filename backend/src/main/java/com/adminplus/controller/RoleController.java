@@ -1,10 +1,10 @@
 package com.adminplus.controller;
 
-import com.adminplus.dto.RoleCreateReq;
-import com.adminplus.dto.RoleUpdateReq;
+import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.req.RoleCreateReq;
+import com.adminplus.pojo.dto.req.RoleUpdateReq;
+import com.adminplus.pojo.dto.resp.RoleResp;
 import com.adminplus.service.RoleService;
-import com.adminplus.utils.ApiResponse;
-import com.adminplus.vo.RoleVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -35,7 +35,7 @@ public class RoleController {
     @Operation(summary = "查询角色列表")
     @PreAuthorize("hasAuthority('role:list')")
     public ApiResponse<Map<String, Object>> getRoleList() {
-        List<RoleVO> roles = roleService.getRoleList();
+        List<RoleResp> roles = roleService.getRoleList();
         return ApiResponse.ok(Map.of(
                 "records", roles,
                 "total", roles.size()
@@ -45,24 +45,24 @@ public class RoleController {
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询角色")
     @PreAuthorize("hasAuthority('role:query')")
-    public ApiResponse<RoleVO> getRoleById(@PathVariable String id) {
-        RoleVO role = roleService.getRoleById(id);
+    public ApiResponse<RoleResp> getRoleById(@PathVariable String id) {
+        RoleResp role = roleService.getRoleById(id);
         return ApiResponse.ok(role);
     }
 
     @PostMapping
     @Operation(summary = "创建角色")
     @PreAuthorize("hasAuthority('role:add')")
-    public ApiResponse<RoleVO> createRole(@Valid @RequestBody RoleCreateReq req) {
-        RoleVO role = roleService.createRole(req);
+    public ApiResponse<RoleResp> createRole(@Valid @RequestBody RoleCreateReq req) {
+        RoleResp role = roleService.createRole(req);
         return ApiResponse.ok(role);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新角色")
     @PreAuthorize("hasAuthority('role:edit')")
-    public ApiResponse<RoleVO> updateRole(@PathVariable String id, @Valid @RequestBody RoleUpdateReq req) {
-        RoleVO role = roleService.updateRole(id, req);
+    public ApiResponse<RoleResp> updateRole(@PathVariable String id, @Valid @RequestBody RoleUpdateReq req) {
+        RoleResp role = roleService.updateRole(id, req);
         return ApiResponse.ok(role);
     }
 

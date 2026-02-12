@@ -1,7 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.constants.LogStatus;
-import com.adminplus.entity.LogEntity;
+import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.repository.LogRepository;
 import com.adminplus.service.LogService;
 import com.adminplus.utils.SecurityUtils;

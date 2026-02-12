@@ -1,6 +1,6 @@
 package com.adminplus.repository;
 
-import com.adminplus.entity.DictEntity;
+import com.adminplus.pojo.entity.DictEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;

@@ -1,8 +1,8 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.resp.*;
 import com.adminplus.service.DashboardService;
-import com.adminplus.utils.ApiResponse;
-import com.adminplus.vo.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -30,18 +30,18 @@ public class DashboardController {
 
     @GetMapping("/stats")
     @Operation(summary = "获取统计数据")
-    public ApiResponse<DashboardStatsVO> getStats() {
+    public ApiResponse<DashboardStatsResp> getStats() {
         log.info("获取 Dashboard 统计数据");
-        DashboardStatsVO stats = dashboardService.getStats();
+        DashboardStatsResp stats = dashboardService.getStats();
         return ApiResponse.ok(stats);
     }
 
     @GetMapping("/user-growth")
     @Operation(summary = "获取用户增长趋势")
-    public ApiResponse<ChartDataVO> getUserGrowth() {
+    public ApiResponse<ChartDataResp> getUserGrowth() {
         log.info("获取用户增长趋势数据 - 开始");
         try {
-            ChartDataVO data = dashboardService.getUserGrowthData();
+            ChartDataResp data = dashboardService.getUserGrowthData();
             log.info("获取用户增长趋势数据 - 成功, labels: {}, values: {}",
                      data.labels(), data.values());
             return ApiResponse.ok(data);
@@ -53,10 +53,10 @@ public class DashboardController {
 
     @GetMapping("/role-distribution")
     @Operation(summary = "获取角色分布")
-    public ApiResponse<ChartDataVO> getRoleDistribution() {
+    public ApiResponse<ChartDataResp> getRoleDistribution() {
         log.info("获取角色分布数据 - 开始");
         try {
-            ChartDataVO data = dashboardService.getRoleDistributionData();
+            ChartDataResp data = dashboardService.getRoleDistributionData();
             log.info("获取角色分布数据 - 成功, labels: {}, values: {}",
                      data.labels(), data.values());
             return ApiResponse.ok(data);
@@ -68,10 +68,10 @@ public class DashboardController {
 
     @GetMapping("/menu-distribution")
     @Operation(summary = "获取菜单类型分布")
-    public ApiResponse<ChartDataVO> getMenuDistribution() {
+    public ApiResponse<ChartDataResp> getMenuDistribution() {
         log.info("获取菜单类型分布数据 - 开始");
         try {
-            ChartDataVO data = dashboardService.getMenuDistributionData();
+            ChartDataResp data = dashboardService.getMenuDistributionData();
             log.info("获取菜单类型分布数据 - 成功, labels: {}, values: {}",
                      data.labels(), data.values());
             return ApiResponse.ok(data);
@@ -83,25 +83,25 @@ public class DashboardController {
 
     @GetMapping("/recent-logs")
     @Operation(summary = "获取最近操作日志")
-    public ApiResponse<List<OperationLogVO>> getRecentLogs() {
+    public ApiResponse<List<OperationLogResp>> getRecentLogs() {
         log.info("获取最近操作日志");
-        List<OperationLogVO> logs = dashboardService.getRecentOperationLogs();
+        List<OperationLogResp> logs = dashboardService.getRecentOperationLogs();
         return ApiResponse.ok(logs);
     }
 
     @GetMapping("/system-info")
     @Operation(summary = "获取系统信息")
-    public ApiResponse<SystemInfoVO> getSystemInfo() {
+    public ApiResponse<SystemInfoResp> getSystemInfo() {
         log.info("获取系统信息");
-        SystemInfoVO info = dashboardService.getSystemInfo();
+        SystemInfoResp info = dashboardService.getSystemInfo();
         return ApiResponse.ok(info);
     }
 
     @GetMapping("/online-users")
     @Operation(summary = "获取在线用户")
-    public ApiResponse<List<OnlineUserVO>> getOnlineUsers() {
+    public ApiResponse<List<OnlineUserResp>> getOnlineUsers() {
         log.info("获取在线用户列表");
-        List<OnlineUserVO> users = dashboardService.getOnlineUsers();
+        List<OnlineUserResp> users = dashboardService.getOnlineUsers();
         return ApiResponse.ok(users);
     }
 }

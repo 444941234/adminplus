@@ -1,16 +1,16 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.constants.OperationType;
-import com.adminplus.dto.RoleCreateReq;
-import com.adminplus.dto.RoleUpdateReq;
-import com.adminplus.entity.RoleEntity;
-import com.adminplus.entity.RoleMenuEntity;
 import com.adminplus.exception.BizException;
+import com.adminplus.pojo.dto.req.RoleCreateReq;
+import com.adminplus.pojo.dto.req.RoleUpdateReq;
+import com.adminplus.pojo.dto.resp.RoleResp;
+import com.adminplus.pojo.entity.RoleEntity;
+import com.adminplus.pojo.entity.RoleMenuEntity;
 import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.service.LogService;
 import com.adminplus.service.RoleService;
-import com.adminplus.vo.RoleVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,9 +35,9 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<RoleVO> getRoleList() {
+    public List<RoleResp> getRoleList() {
         var roles = roleRepository.findAll();
-        return roles.stream().map(role -> new RoleVO(
+        return roles.stream().map(role -> new RoleResp(
                 role.getId(),
                 role.getCode(),
                 role.getName(),
@@ -52,11 +52,11 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
-    public RoleVO getRoleById(String id) {
+    public RoleResp getRoleById(String id) {
         var role = roleRepository.findById(id)
                 .orElseThrow(() -> new BizException("角色不存在"));
 
-        return new RoleVO(
+        return new RoleResp(
                 role.getId(),
                 role.getCode(),
                 role.getName(),
@@ -71,7 +71,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public RoleVO createRole(RoleCreateReq req) {
+    public RoleResp createRole(RoleCreateReq req) {
         // 检查角色编码是否已存在
         if (roleRepository.existsByCode(req.code())) {
             throw new BizException("角色编码已存在");
@@ -90,7 +90,7 @@ public class RoleServiceImpl implements RoleService {
         // 记录审计日志
         logService.log("角色管理", OperationType.CREATE, "创建角色: " + role.getName() + " (" + role.getCode() + ")");
 
-        return new RoleVO(
+        return new RoleResp(
                 role.getId(),
                 role.getCode(),
                 role.getName(),
@@ -105,7 +105,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
-    public RoleVO updateRole(String id, RoleUpdateReq req) {
+    public RoleResp updateRole(String id, RoleUpdateReq req) {
         var role = roleRepository.findById(id)
                 .orElseThrow(() -> new BizException("角色不存在"));
 
@@ -127,7 +127,7 @@ public class RoleServiceImpl implements RoleService {
 
         role = roleRepository.save(role);
 
-        return new RoleVO(
+        return new RoleResp(
                 role.getId(),
                 role.getCode(),
                 role.getName(),

@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
-import com.adminplus.dto.MenuBatchDeleteReq;
-import com.adminplus.dto.MenuBatchStatusReq;
-import com.adminplus.dto.MenuCreateReq;
-import com.adminplus.dto.MenuUpdateReq;
-import com.adminplus.vo.MenuVO;
+import com.adminplus.pojo.dto.req.MenuBatchDeleteReq;
+import com.adminplus.pojo.dto.req.MenuBatchStatusReq;
+import com.adminplus.pojo.dto.req.MenuCreateReq;
+import com.adminplus.pojo.dto.req.MenuUpdateReq;
+import com.adminplus.pojo.dto.resp.MenuResp;
 
 import java.util.List;
 
@@ -19,22 +19,22 @@ public interface MenuService {
     /**
      * 查询菜单树形列表
      */
-    List<MenuVO> getMenuTree();
+    List<MenuResp> getMenuTree();
 
     /**
      * 根据ID查询菜单
      */
-    MenuVO getMenuById(String id);
+    MenuResp getMenuById(String id);
 
     /**
      * 创建菜单
      */
-    MenuVO createMenu(MenuCreateReq req);
+    MenuResp createMenu(MenuCreateReq req);
 
     /**
      * 更新菜单
      */
-    MenuVO updateMenu(String id, MenuUpdateReq req);
+    MenuResp updateMenu(String id, MenuUpdateReq req);
 
     /**
      * 删除菜单
@@ -54,5 +54,5 @@ public interface MenuService {
     /**
      * 获取用户的菜单树（根据用户权限过滤）
      */
-    List<MenuVO> getUserMenuTree(String userId);
+    List<MenuResp> getUserMenuTree(String userId);
 }

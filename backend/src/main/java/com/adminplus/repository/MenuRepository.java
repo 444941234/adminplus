@@ -1,6 +1,6 @@
 package com.adminplus.repository;
 
-import com.adminplus.entity.MenuEntity;
+import com.adminplus.pojo.entity.MenuEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,9 +1,9 @@
 package com.adminplus.security;
 
-import com.adminplus.entity.RoleEntity;
-import com.adminplus.entity.UserEntity;
-import com.adminplus.entity.UserRoleEntity;
 import com.adminplus.exception.BizException;
+import com.adminplus.pojo.entity.RoleEntity;
+import com.adminplus.pojo.entity.UserEntity;
+import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.repository.UserRoleRepository;

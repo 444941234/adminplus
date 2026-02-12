@@ -1,6 +1,7 @@
 package com.adminplus.service;
 
-import com.adminplus.vo.PermissionVO;
+import com.adminplus.pojo.dto.resp.PermissionResp;
+
 import java.util.List;
 
 /**
@@ -34,5 +35,5 @@ public interface PermissionService {
     /**
      * 获取所有可用权限（用于分配）
      */
-    List<PermissionVO> getAllPermissions();
+    List<PermissionResp> getAllPermissions();
 }

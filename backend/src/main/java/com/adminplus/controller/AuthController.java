@@ -1,12 +1,11 @@
 package com.adminplus.controller;
 
-import com.adminplus.dto.UserLoginReq;
-import com.adminplus.security.AppUserDetails;
+import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.req.UserLoginReq;
+import com.adminplus.pojo.dto.resp.LoginResp;
+import com.adminplus.pojo.dto.resp.UserResp;
 import com.adminplus.service.AuthService;
-import com.adminplus.utils.ApiResponse;
 import com.adminplus.utils.SecurityUtils;
-import com.adminplus.vo.LoginResp;
-import com.adminplus.vo.UserVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -44,11 +43,11 @@ public class AuthController {
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "获取当前用户信息")
-    public ApiResponse<UserVO> getCurrentUser(Authentication authentication) {
+    public ApiResponse<UserResp> getCurrentUser(Authentication authentication) {
         // 使用 SecurityUtils 获取当前用户名，支持 JWT 和 Session 认证
         String username = SecurityUtils.getCurrentUsername();
-        UserVO userVO = authService.getCurrentUser(username);
-        return ApiResponse.ok(userVO);
+        UserResp userResp = authService.getCurrentUser(username);
+        return ApiResponse.ok(userResp);
     }
 
     @GetMapping("/permissions")

@@ -1,6 +1,6 @@
 package com.adminplus.repository;
 
-import com.adminplus.entity.RoleEntity;
+import com.adminplus.pojo.entity.RoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,8 +1,8 @@
 package com.adminplus.service;
 
-import com.adminplus.dto.RoleCreateReq;
-import com.adminplus.dto.RoleUpdateReq;
-import com.adminplus.vo.RoleVO;
+import com.adminplus.pojo.dto.req.RoleCreateReq;
+import com.adminplus.pojo.dto.req.RoleUpdateReq;
+import com.adminplus.pojo.dto.resp.RoleResp;
 
 import java.util.List;
 
@@ -17,22 +17,22 @@ public interface RoleService {
     /**
      * 查询角色列表
      */
-    List<RoleVO> getRoleList();
+    List<RoleResp> getRoleList();
 
     /**
      * 根据ID查询角色
      */
-    RoleVO getRoleById(String id);
+    RoleResp getRoleById(String id);
 
     /**
      * 创建角色
      */
-    RoleVO createRole(RoleCreateReq req);
+    RoleResp createRole(RoleCreateReq req);
 
     /**
      * 更新角色
      */
-    RoleVO updateRole(String id, RoleUpdateReq req);
+    RoleResp updateRole(String id, RoleUpdateReq req);
 
     /**
      * 删除角色

@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
-import com.adminplus.dto.UserCreateReq;
-import com.adminplus.dto.UserUpdateReq;
-import com.adminplus.entity.UserEntity;
-import com.adminplus.vo.UserVO;
-import com.adminplus.vo.PageResultVO;
+import com.adminplus.pojo.dto.req.UserCreateReq;
+import com.adminplus.pojo.dto.req.UserUpdateReq;
+import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.entity.UserEntity;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -20,22 +20,22 @@ public interface UserService {
     /**
      * 分页查询用户列表
      */
-    PageResultVO<UserVO> getUserList(Integer page, Integer size, String keyword);
+    PageResultResp<UserResp> getUserList(Integer page, Integer size, String keyword);
 
     /**
      * 异步分页查询用户列表（使用虚拟线程）
      */
-    CompletableFuture<PageResultVO<UserVO>> getUserListAsync(Integer page, Integer size, String keyword);
+    CompletableFuture<PageResultResp<UserResp>> getUserListAsync(Integer page, Integer size, String keyword);
 
     /**
      * 根据ID查询用户
      */
-    UserVO getUserById(String id);
+    UserResp getUserById(String id);
 
     /**
      * 异步根据ID查询用户（使用虚拟线程）
      */
-    CompletableFuture<UserVO> getUserByIdAsync(String id);
+    CompletableFuture<UserResp> getUserByIdAsync(String id);
 
     /**
      * 根据用户名查询用户
@@ -45,12 +45,12 @@ public interface UserService {
     /**
      * 创建用户
      */
-    UserVO createUser(UserCreateReq req);
+    UserResp createUser(UserCreateReq req);
 
     /**
      * 更新用户
      */
-    UserVO updateUser(String id, UserUpdateReq req);
+    UserResp updateUser(String id, UserUpdateReq req);
 
     /**
      * 删除用户

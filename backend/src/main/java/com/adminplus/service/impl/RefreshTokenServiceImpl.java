@@ -1,10 +1,9 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.entity.RefreshTokenEntity;
 import com.adminplus.exception.BizException;
+import com.adminplus.pojo.entity.RefreshTokenEntity;
 import com.adminplus.repository.RefreshTokenRepository;
 import com.adminplus.service.RefreshTokenService;
-import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;

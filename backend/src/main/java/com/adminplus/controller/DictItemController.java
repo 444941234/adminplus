@@ -1,10 +1,10 @@
 package com.adminplus.controller;
 
-import com.adminplus.dto.DictItemCreateReq;
-import com.adminplus.dto.DictItemUpdateReq;
+import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.req.DictItemCreateReq;
+import com.adminplus.pojo.dto.req.DictItemUpdateReq;
+import com.adminplus.pojo.dto.resp.DictItemResp;
 import com.adminplus.service.DictItemService;
-import com.adminplus.utils.ApiResponse;
-import com.adminplus.vo.DictItemVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -35,7 +35,7 @@ public class DictItemController {
     @Operation(summary = "查询字典项列表")
     @PreAuthorize("hasAuthority('dictitem:list')")
     public ApiResponse<Map<String, Object>> getDictItems(@PathVariable String dictId) {
-        List<DictItemVO> items = dictItemService.getDictItemsByDictId(dictId);
+        List<DictItemResp> items = dictItemService.getDictItemsByDictId(dictId);
         return ApiResponse.ok(Map.of(
                 "records", items,
                 "total", items.size()
@@ -45,40 +45,40 @@ public class DictItemController {
     @GetMapping("/tree")
     @Operation(summary = "查询字典项树形结构")
     @PreAuthorize("hasAuthority('dictitem:list')")
-    public ApiResponse<List<DictItemVO>> getDictItemTree(@PathVariable String dictId) {
-        List<DictItemVO> tree = dictItemService.getDictItemTreeByDictId(dictId);
+    public ApiResponse<List<DictItemResp>> getDictItemTree(@PathVariable String dictId) {
+        List<DictItemResp> tree = dictItemService.getDictItemTreeByDictId(dictId);
         return ApiResponse.ok(tree);
     }
 
     @GetMapping("/type/{dictType}")
     @Operation(summary = "根据字典类型查询字典项")
     @PreAuthorize("hasAuthority('dictitem:query')")
-    public ApiResponse<List<DictItemVO>> getDictItemsByType(@PathVariable String dictType) {
-        List<DictItemVO> items = dictItemService.getDictItemsByType(dictType);
+    public ApiResponse<List<DictItemResp>> getDictItemsByType(@PathVariable String dictType) {
+        List<DictItemResp> items = dictItemService.getDictItemsByType(dictType);
         return ApiResponse.ok(items);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询字典项")
     @PreAuthorize("hasAuthority('dictitem:query')")
-    public ApiResponse<DictItemVO> getDictItemById(@PathVariable String id) {
-        DictItemVO item = dictItemService.getDictItemById(id);
+    public ApiResponse<DictItemResp> getDictItemById(@PathVariable String id) {
+        DictItemResp item = dictItemService.getDictItemById(id);
         return ApiResponse.ok(item);
     }
 
     @PostMapping
     @Operation(summary = "创建字典项")
     @PreAuthorize("hasAuthority('dictitem:add')")
-    public ApiResponse<DictItemVO> createDictItem(@PathVariable String dictId, @Valid @RequestBody DictItemCreateReq req) {
-        DictItemVO item = dictItemService.createDictItem(req);
+    public ApiResponse<DictItemResp> createDictItem(@PathVariable String dictId, @Valid @RequestBody DictItemCreateReq req) {
+        DictItemResp item = dictItemService.createDictItem(req);
         return ApiResponse.ok(item);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新字典项")
     @PreAuthorize("hasAuthority('dictitem:edit')")
-    public ApiResponse<DictItemVO> updateDictItem(@PathVariable String id, @Valid @RequestBody DictItemUpdateReq req) {
-        DictItemVO item = dictItemService.updateDictItem(id, req);
+    public ApiResponse<DictItemResp> updateDictItem(@PathVariable String id, @Valid @RequestBody DictItemUpdateReq req) {
+        DictItemResp item = dictItemService.updateDictItem(id, req);
         return ApiResponse.ok(item);
     }
 

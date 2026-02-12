@@ -1,12 +1,14 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.constants.OperationType;
-import com.adminplus.dto.UserCreateReq;
-import com.adminplus.dto.UserUpdateReq;
-import com.adminplus.entity.RoleEntity;
-import com.adminplus.entity.UserEntity;
-import com.adminplus.entity.UserRoleEntity;
 import com.adminplus.exception.BizException;
+import com.adminplus.pojo.dto.req.UserCreateReq;
+import com.adminplus.pojo.dto.req.UserUpdateReq;
+import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.entity.RoleEntity;
+import com.adminplus.pojo.entity.UserEntity;
+import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.repository.UserRoleRepository;
@@ -14,14 +16,11 @@ import com.adminplus.service.LogService;
 import com.adminplus.service.UserService;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.XssUtils;
-import com.adminplus.vo.UserVO;
-import com.adminplus.vo.PageResultVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +47,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultVO<UserVO> getUserList(Integer page, Integer size, String keyword) {
+    public PageResultResp<UserResp> getUserList(Integer page, Integer size, String keyword) {
         var pageable = PageRequest.of(page - 1, size);
         var pageResult = userRepository.findAll(pageable);
 
@@ -85,7 +84,7 @@ public class UserServiceImpl implements UserService {
         var records = pageResult.getContent().stream().map(user -> {
             List<String> roleNames = userRoleMap.getOrDefault(user.getId(), List.of());
 
-            return new UserVO(
+            return new UserResp(
                     user.getId(),
                     user.getUsername(),
                     user.getNickname(),
@@ -99,7 +98,7 @@ public class UserServiceImpl implements UserService {
             );
         }).toList();
 
-        return new PageResultVO<>(
+        return new PageResultResp<>(
                 records,
                 pageResult.getTotalElements(),
                 pageResult.getNumber() + 1,
@@ -109,7 +108,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserVO getUserById(String id) {
+    public UserResp getUserById(String id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -121,7 +120,7 @@ public class UserServiceImpl implements UserService {
                 .map(RoleEntity::getName)
                 .toList();
 
-        return new UserVO(
+        return new UserResp(
                 user.getId(),
                 user.getUsername(),
                 user.getNickname(),
@@ -137,14 +136,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Async
-    public CompletableFuture<PageResultVO<UserVO>> getUserListAsync(Integer page, Integer size, String keyword) {
+    public CompletableFuture<PageResultResp<UserResp>> getUserListAsync(Integer page, Integer size, String keyword) {
         log.info("使用虚拟线程异步查询用户列表");
         return CompletableFuture.completedFuture(getUserList(page, size, keyword));
     }
 
     @Override
     @Async
-    public CompletableFuture<UserVO> getUserByIdAsync(String id) {
+    public CompletableFuture<UserResp> getUserByIdAsync(String id) {
         log.info("使用虚拟线程异步查询用户: {}", id);
         return CompletableFuture.completedFuture(getUserById(id));
     }
@@ -158,7 +157,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserVO createUser(UserCreateReq req) {
+    public UserResp createUser(UserCreateReq req) {
         // 检查用户名是否已存在
         if (userRepository.existsByUsername(req.username())) {
             throw new BizException("用户名已存在");
@@ -183,7 +182,7 @@ public class UserServiceImpl implements UserService {
         // 记录审计日志
         logService.log("用户管理", OperationType.CREATE, "创建用户: " + user.getUsername());
 
-        return new UserVO(
+        return new UserResp(
                 user.getId(),
                 user.getUsername(),
                 user.getNickname(),
@@ -199,7 +198,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserVO updateUser(String id, UserUpdateReq req) {
+    public UserResp updateUser(String id, UserUpdateReq req) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -221,7 +220,7 @@ public class UserServiceImpl implements UserService {
 
         user = userRepository.save(user);
 
-        return new UserVO(
+        return new UserResp(
                 user.getId(),
                 user.getUsername(),
                 user.getNickname(),

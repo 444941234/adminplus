@@ -1,18 +1,19 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.constants.OperationType;
-import com.adminplus.dto.DictCreateReq;
-import com.adminplus.dto.DictUpdateReq;
-import com.adminplus.entity.DictEntity;
 import com.adminplus.exception.BizException;
+import com.adminplus.pojo.dto.req.DictCreateReq;
+import com.adminplus.pojo.dto.req.DictUpdateReq;
+import com.adminplus.pojo.dto.resp.DictItemResp;
+import com.adminplus.pojo.dto.resp.DictResp;
+import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.entity.DictEntity;
+import com.adminplus.pojo.entity.DictItemEntity;
 import com.adminplus.repository.DictItemRepository;
 import com.adminplus.repository.DictRepository;
 import com.adminplus.service.DictService;
 import com.adminplus.service.LogService;
-import com.adminplus.vo.DictItemVO;
-import com.adminplus.vo.DictVO;
-import com.adminplus.entity.DictItemEntity;
-import com.adminplus.vo.PageResultVO;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -26,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import jakarta.persistence.criteria.Predicate;
 
 /**
  * 字典服务实现
@@ -46,7 +46,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional(readOnly = true)
     // @Cacheable(value = "dict", key = "'list:' + #page + ':' + #size + ':' + (#keyword != null ? #keyword : '')")
-    public PageResultVO<DictVO> getDictList(Integer page, Integer size, String keyword) {
+    public PageResultResp<DictResp> getDictList(Integer page, Integer size, String keyword) {
         Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createTime").descending());
 
         Specification<DictEntity> spec = (root, query, cb) -> {
@@ -68,7 +68,7 @@ public class DictServiceImpl implements DictService {
                 .map(this::toVO)
                 .toList();
 
-        return new PageResultVO<>(
+        return new PageResultResp<>(
                 records,
                 pageResult.getTotalElements(),
                 pageResult.getNumber() + 1,
@@ -79,7 +79,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dict", key = "'id:' + #id")
-    public DictVO getDictById(String id) {
+    public DictResp getDictById(String id) {
         DictEntity dict = dictRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典不存在"));
         return toVO(dict);
@@ -88,7 +88,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dict", key = "'type:' + #dictType")
-    public DictVO getDictByType(String dictType) {
+    public DictResp getDictByType(String dictType) {
         DictEntity dict = dictRepository.findByDictType(dictType)
                 .orElseThrow(() -> new BizException("字典不存在"));
         return toVO(dict);
@@ -97,7 +97,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional
     @CacheEvict(value = "dict", allEntries = true)
-    public DictVO createDict(DictCreateReq req) {
+    public DictResp createDict(DictCreateReq req) {
         if (dictRepository.existsByDictType(req.dictType())) {
             throw new BizException("字典类型已存在");
         }
@@ -119,7 +119,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional
     @CacheEvict(value = "dict", allEntries = true)
-    public DictVO updateDict(String id, DictUpdateReq req) {
+    public DictResp updateDict(String id, DictUpdateReq req) {
         DictEntity dict = dictRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典不存在"));
 
@@ -168,7 +168,7 @@ public class DictServiceImpl implements DictService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dict", key = "'items:' + #dictType")
-    public List<DictItemVO> getDictItemsByType(String dictType) {
+    public List<DictItemResp> getDictItemsByType(String dictType) {
         DictEntity dict = dictRepository.findByDictType(dictType)
                 .orElseThrow(() -> new BizException("字典不存在"));
 
@@ -177,8 +177,8 @@ public class DictServiceImpl implements DictService {
                 .toList();
     }
 
-    private DictVO toVO(DictEntity dict) {
-        return new DictVO(
+    private DictResp toVO(DictEntity dict) {
+        return new DictResp(
                 dict.getId(),
                 dict.getDictType(),
                 dict.getDictName(),
@@ -189,8 +189,8 @@ public class DictServiceImpl implements DictService {
         );
     }
 
-    private DictItemVO toItemVO(DictItemEntity item, DictEntity dict) {
-        return new DictItemVO(
+    private DictItemResp toItemVO(DictItemEntity item, DictEntity dict) {
+        return new DictItemResp(
                 item.getId(),
                 item.getDictId(),
                 dict.getDictType(),

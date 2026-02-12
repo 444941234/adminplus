@@ -1,9 +1,9 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.resp.PermissionResp;
 import com.adminplus.service.PermissionService;
-import com.adminplus.utils.ApiResponse;
 import com.adminplus.utils.SecurityUtils;
-import com.adminplus.vo.PermissionVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -51,8 +51,8 @@ public class PermissionController {
     @GetMapping("/all")
     @Operation(summary = "获取所有可用权限（用于分配）")
     @PreAuthorize("hasAuthority('permission:list')")
-    public ApiResponse<List<PermissionVO>> getAllPermissions() {
-        List<PermissionVO> permissions = permissionService.getAllPermissions();
+    public ApiResponse<List<PermissionResp>> getAllPermissions() {
+        List<PermissionResp> permissions = permissionService.getAllPermissions();
         return ApiResponse.ok(permissions);
     }
 }

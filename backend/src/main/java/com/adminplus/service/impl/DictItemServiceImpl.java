@@ -1,14 +1,14 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.dto.DictItemCreateReq;
-import com.adminplus.dto.DictItemUpdateReq;
-import com.adminplus.entity.DictEntity;
-import com.adminplus.entity.DictItemEntity;
 import com.adminplus.exception.BizException;
+import com.adminplus.pojo.dto.req.DictItemCreateReq;
+import com.adminplus.pojo.dto.req.DictItemUpdateReq;
+import com.adminplus.pojo.dto.resp.DictItemResp;
+import com.adminplus.pojo.entity.DictEntity;
+import com.adminplus.pojo.entity.DictItemEntity;
 import com.adminplus.repository.DictItemRepository;
 import com.adminplus.repository.DictRepository;
 import com.adminplus.service.DictItemService;
-import com.adminplus.vo.DictItemVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -38,7 +38,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dictItem", key = "'dictId:' + #dictId")
-    public List<DictItemVO> getDictItemsByDictId(String dictId) {
+    public List<DictItemResp> getDictItemsByDictId(String dictId) {
         return dictItemRepository.findByDictIdOrderBySortOrderAsc(dictId).stream()
                 .map(this::toVO)
                 .toList();
@@ -47,7 +47,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dictItem", key = "'tree:dictId:' + #dictId")
-    public List<DictItemVO> getDictItemTreeByDictId(String dictId) {
+    public List<DictItemResp> getDictItemTreeByDictId(String dictId) {
         List<DictItemEntity> items = dictItemRepository.findByDictIdOrderBySortOrderAsc(dictId);
         return buildTree(items, null);
     }
@@ -55,7 +55,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dictItem", key = "'type:' + #dictType")
-    public List<DictItemVO> getDictItemsByType(String dictType) {
+    public List<DictItemResp> getDictItemsByType(String dictType) {
         DictEntity dict = dictRepository.findByDictType(dictType)
                 .orElseThrow(() -> new BizException("字典不存在"));
 
@@ -67,7 +67,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dictItem", key = "'id:' + #id")
-    public DictItemVO getDictItemById(String id) {
+    public DictItemResp getDictItemById(String id) {
         DictItemEntity item = dictItemRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典项不存在"));
 
@@ -80,7 +80,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional
     @CacheEvict(value = "dictItem", allEntries = true)
-    public DictItemVO createDictItem(DictItemCreateReq req) {
+    public DictItemResp createDictItem(DictItemCreateReq req) {
         DictEntity dict = dictRepository.findById(req.dictId())
                 .orElseThrow(() -> new BizException("字典不存在"));
 
@@ -110,7 +110,7 @@ public class DictItemServiceImpl implements DictItemService {
     @Override
     @Transactional
     @CacheEvict(value = "dictItem", allEntries = true)
-    public DictItemVO updateDictItem(String id, DictItemUpdateReq req) {
+    public DictItemResp updateDictItem(String id, DictItemUpdateReq req) {
         DictItemEntity item = dictItemRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典项不存在"));
 
@@ -165,8 +165,8 @@ public class DictItemServiceImpl implements DictItemService {
         log.info("更新字典项状态成功: {}", item.getLabel());
     }
 
-    private DictItemVO toVO(DictItemEntity item) {
-        return new DictItemVO(
+    private DictItemResp toVO(DictItemEntity item) {
+        return new DictItemResp(
                 item.getId(),
                 item.getDictId(),
                 null,
@@ -182,8 +182,8 @@ public class DictItemServiceImpl implements DictItemService {
         );
     }
 
-    private DictItemVO toVOWithDictType(DictItemEntity item, String dictType) {
-        return new DictItemVO(
+    private DictItemResp toVOWithDictType(DictItemEntity item, String dictType) {
+        return new DictItemResp(
                 item.getId(),
                 item.getDictId(),
                 dictType,
@@ -202,13 +202,13 @@ public class DictItemServiceImpl implements DictItemService {
     /**
      * 构建树形结构
      */
-    private List<DictItemVO> buildTree(List<DictItemEntity> items, String parentId) {
+    private List<DictItemResp> buildTree(List<DictItemEntity> items, String parentId) {
         Map<String, List<DictItemEntity>> childrenMap = items.stream()
                 .filter(item -> (parentId == null && item.getParentId() == null) ||
                                 (parentId != null && parentId.equals(item.getParentId())))
                 .collect(Collectors.groupingBy(item -> item.getParentId() == null ? "0" : item.getParentId()));
 
-        List<DictItemVO> result = new ArrayList<>();
+        List<DictItemResp> result = new ArrayList<>();
         for (DictItemEntity item : items) {
             if ((parentId == null && item.getParentId() == null) ||
                 (parentId != null && parentId.equals(item.getParentId()))) {
@@ -232,17 +232,17 @@ public class DictItemServiceImpl implements DictItemService {
     /**
      * 构建树节点（递归）
      */
-    private DictItemVO buildTreeNode(DictItemEntity parent, List<DictItemEntity> allItems) {
+    private DictItemResp buildTreeNode(DictItemEntity parent, List<DictItemEntity> allItems) {
         List<DictItemEntity> children = allItems.stream()
                 .filter(item -> parent.getId().equals(item.getParentId()))
                 .sorted((a, b) -> a.getSortOrder().compareTo(b.getSortOrder()))
                 .toList();
 
-        List<DictItemVO> childVOs = children.stream()
+        List<DictItemResp> childVOs = children.stream()
                 .map(child -> buildTreeNode(child, allItems))
                 .toList();
 
-        return new DictItemVO(
+        return new DictItemResp(
                 parent.getId(),
                 parent.getDictId(),
                 null,

@@ -1,13 +1,13 @@
 package com.adminplus.controller;
 
-import com.adminplus.dto.PasswordChangeReq;
-import com.adminplus.dto.ProfileUpdateReq;
-import com.adminplus.dto.SettingsUpdateReq;
+import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.req.PasswordChangeReq;
+import com.adminplus.pojo.dto.req.ProfileUpdateReq;
+import com.adminplus.pojo.dto.req.SettingsUpdateReq;
+import com.adminplus.pojo.dto.resp.AvatarUploadResp;
+import com.adminplus.pojo.dto.resp.ProfileResp;
+import com.adminplus.pojo.dto.resp.SettingsResp;
 import com.adminplus.service.ProfileService;
-import com.adminplus.utils.ApiResponse;
-import com.adminplus.vo.AvatarUploadResp;
-import com.adminplus.vo.ProfileVO;
-import com.adminplus.vo.SettingsVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -35,16 +35,16 @@ public class ProfileController {
     @GetMapping
     @Operation(summary = "获取当前用户信息")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<ProfileVO> getProfile() {
-        ProfileVO profile = profileService.getCurrentUserProfile();
+    public ApiResponse<ProfileResp> getProfile() {
+        ProfileResp profile = profileService.getCurrentUserProfile();
         return ApiResponse.ok(profile);
     }
 
     @PutMapping
     @Operation(summary = "更新当前用户信息")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<ProfileVO> updateProfile(@Valid @RequestBody ProfileUpdateReq req) {
-        ProfileVO profile = profileService.updateCurrentProfile(req);
+    public ApiResponse<ProfileResp> updateProfile(@Valid @RequestBody ProfileUpdateReq req) {
+        ProfileResp profile = profileService.updateCurrentProfile(req);
         return ApiResponse.ok(profile);
     }
 
@@ -72,16 +72,16 @@ public class ProfileController {
     @GetMapping("/settings")
     @Operation(summary = "获取用户设置")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<SettingsVO> getSettings() {
-        SettingsVO settings = profileService.getSettings();
+    public ApiResponse<SettingsResp> getSettings() {
+        SettingsResp settings = profileService.getSettings();
         return ApiResponse.ok(settings);
     }
 
     @PutMapping("/settings")
     @Operation(summary = "更新用户设置")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<SettingsVO> updateSettings(@Valid @RequestBody SettingsUpdateReq req) {
-        SettingsVO settings = profileService.updateSettings(req);
+    public ApiResponse<SettingsResp> updateSettings(@Valid @RequestBody SettingsUpdateReq req) {
+        SettingsResp settings = profileService.updateSettings(req);
         return ApiResponse.ok(settings);
     }
 }

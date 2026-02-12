@@ -1,29 +1,25 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.constants.OperationType;
-import com.adminplus.dto.MenuCreateReq;
-import com.adminplus.dto.MenuUpdateReq;
-import com.adminplus.dto.MenuBatchStatusReq;
-import com.adminplus.dto.MenuBatchDeleteReq;
-import com.adminplus.entity.MenuEntity;
-import com.adminplus.entity.UserRoleEntity;
 import com.adminplus.exception.BizException;
+import com.adminplus.pojo.dto.req.MenuBatchDeleteReq;
+import com.adminplus.pojo.dto.req.MenuBatchStatusReq;
+import com.adminplus.pojo.dto.req.MenuCreateReq;
+import com.adminplus.pojo.dto.req.MenuUpdateReq;
+import com.adminplus.pojo.dto.resp.MenuResp;
+import com.adminplus.pojo.entity.MenuEntity;
+import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.MenuRepository;
 import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.LogService;
 import com.adminplus.service.MenuService;
-import com.adminplus.vo.MenuVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -44,11 +40,11 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MenuVO> getMenuTree() {
+    public List<MenuResp> getMenuTree() {
         List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
 
         // 转换为 VO
-        List<MenuVO> menuVOs = allMenus.stream().map(menu -> new MenuVO(
+        List<MenuResp> menuResps = allMenus.stream().map(menu -> new MenuResp(
                 menu.getId(),
                 menu.getParentId(),
                 menu.getType(),
@@ -66,16 +62,16 @@ public class MenuServiceImpl implements MenuService {
         )).toList();
 
         // 构建树形结构
-        return buildTreeWithChildren(menuVOs, null);
+        return buildTreeWithChildren(menuResps, null);
     }
 
     /**
      * 构建树形结构（带 children）
      */
-    private List<MenuVO> buildTreeWithChildren(List<MenuVO> menus, String parentId) {
-        Map<String, List<MenuVO>> childrenMap = menus.stream()
+    private List<MenuResp> buildTreeWithChildren(List<MenuResp> menus, String parentId) {
+        Map<String, List<MenuResp>> childrenMap = menus.stream()
                 .filter(menu -> menu.parentId() != null && !menu.parentId().equals("0"))
-                .collect(Collectors.groupingBy(MenuVO::parentId));
+                .collect(Collectors.groupingBy(MenuResp::parentId));
 
         return menus.stream()
                 .filter(menu -> {
@@ -85,13 +81,13 @@ public class MenuServiceImpl implements MenuService {
                     return parentId.equals(menu.parentId());
                 })
                 .map(menu -> {
-                    List<MenuVO> children = childrenMap.getOrDefault(menu.id(), new ArrayList<>());
+                    List<MenuResp> children = childrenMap.getOrDefault(menu.id(), new ArrayList<>());
                     // 递归构建子节点
-                    List<MenuVO> childTree = buildTreeWithChildren(menus, menu.id());
+                    List<MenuResp> childTree = buildTreeWithChildren(menus, menu.id());
                     if (!childTree.isEmpty()) {
                         children = childTree;
                     }
-                    return new MenuVO(
+                    return new MenuResp(
                             menu.id(),
                             menu.parentId(),
                             menu.type(),
@@ -113,11 +109,11 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional(readOnly = true)
-    public MenuVO getMenuById(String id) {
+    public MenuResp getMenuById(String id) {
         var menu = menuRepository.findById(id)
                 .orElseThrow(() -> new BizException("菜单不存在"));
 
-        return new MenuVO(
+        return new MenuResp(
                 menu.getId(),
                 menu.getParentId(),
                 menu.getType(),
@@ -137,7 +133,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
-    public MenuVO createMenu(MenuCreateReq req) {
+    public MenuResp createMenu(MenuCreateReq req) {
         // 如果有父菜单，检查父菜单是否存在
         if (req.parentId() != null && !req.parentId().equals("0")) {
             if (!menuRepository.existsById(req.parentId())) {
@@ -162,7 +158,7 @@ public class MenuServiceImpl implements MenuService {
         // 记录审计日志
         logService.log("菜单管理", OperationType.CREATE, "创建菜单: " + menu.getName());
 
-        return new MenuVO(
+        return new MenuResp(
                 menu.getId(),
                 menu.getParentId(),
                 menu.getType(),
@@ -182,7 +178,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
-    public MenuVO updateMenu(String id, MenuUpdateReq req) {
+    public MenuResp updateMenu(String id, MenuUpdateReq req) {
         var menu = menuRepository.findById(id)
                 .orElseThrow(() -> new BizException("菜单不存在"));
 
@@ -206,7 +202,7 @@ public class MenuServiceImpl implements MenuService {
 
         var savedMenu = menuRepository.save(menu);
 
-        return new MenuVO(
+        return new MenuResp(
                 savedMenu.getId(),
                 savedMenu.getParentId(),
                 savedMenu.getType(),
@@ -294,7 +290,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<MenuVO> getUserMenuTree(String userId) {
+    public List<MenuResp> getUserMenuTree(String userId) {
         // 1. 查询用户的角色ID列表
         List<String> roleIds = userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
@@ -330,7 +326,7 @@ public class MenuServiceImpl implements MenuService {
                 .toList();
 
         // 6. 转换为 VO 并构建树形结构
-        List<MenuVO> menuVOs = userMenus.stream().map(menu -> new MenuVO(
+        List<MenuResp> menuResps = userMenus.stream().map(menu -> new MenuResp(
                 menu.getId(),
                 menu.getParentId(),
                 menu.getType(),
@@ -348,7 +344,7 @@ public class MenuServiceImpl implements MenuService {
         )).toList();
 
         // 7. 构建树形结构
-        return buildTreeWithChildren(menuVOs, null);
+        return buildTreeWithChildren(menuResps, null);
     }
 
     /**

@@ -393,7 +393,7 @@ describe('Dynamic Routes', () => {
 ```java
 package com.adminplus.service;
 
-import com.adminplus.vo.MenuVO;
+import com.adminplus.pojo.dto.resp.MenuResp;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

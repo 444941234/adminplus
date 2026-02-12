@@ -1,14 +1,14 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.entity.MenuEntity;
-import com.adminplus.entity.RoleEntity;
-import com.adminplus.entity.UserRoleEntity;
+import com.adminplus.pojo.dto.resp.PermissionResp;
+import com.adminplus.pojo.entity.MenuEntity;
+import com.adminplus.pojo.entity.RoleEntity;
+import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.MenuRepository;
 import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.PermissionService;
-import com.adminplus.vo.PermissionVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -110,12 +110,12 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<PermissionVO> getAllPermissions() {
+    public List<PermissionResp> getAllPermissions() {
         List<MenuEntity> menus = menuRepository.findAllByOrderBySortOrderAsc();
 
         return menus.stream()
                 .filter(menu -> menu.getPermKey() != null && !menu.getPermKey().isBlank())
-                .map(menu -> new PermissionVO(
+                .map(menu -> new PermissionResp(
                         menu.getId(),
                         menu.getPermKey(),
                         menu.getName(),

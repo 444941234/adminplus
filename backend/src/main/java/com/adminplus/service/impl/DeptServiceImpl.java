@@ -1,14 +1,14 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.constants.OperationType;
-import com.adminplus.dto.DeptCreateReq;
-import com.adminplus.dto.DeptUpdateReq;
-import com.adminplus.entity.DeptEntity;
 import com.adminplus.exception.BizException;
+import com.adminplus.pojo.dto.req.DeptCreateReq;
+import com.adminplus.pojo.dto.req.DeptUpdateReq;
+import com.adminplus.pojo.dto.resp.DeptResp;
+import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.repository.DeptRepository;
 import com.adminplus.service.DeptService;
 import com.adminplus.service.LogService;
-import com.adminplus.vo.DeptVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -35,11 +35,11 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<DeptVO> getDeptTree() {
+    public List<DeptResp> getDeptTree() {
         List<DeptEntity> allDepts = deptRepository.findAllByOrderBySortOrderAsc();
 
         // 转换为 VO
-        List<DeptVO> deptVOs = allDepts.stream().map(dept -> new DeptVO(
+        List<DeptResp> deptResps = allDepts.stream().map(dept -> new DeptResp(
                 dept.getId(),
                 dept.getParentId(),
                 dept.getName(),
@@ -55,16 +55,16 @@ public class DeptServiceImpl implements DeptService {
         )).toList();
 
         // 构建树形结构
-        return buildTreeWithChildren(deptVOs, null);
+        return buildTreeWithChildren(deptResps, null);
     }
 
     /**
      * 构建树形结构（带 children）
      */
-    private List<DeptVO> buildTreeWithChildren(List<DeptVO> depts, String parentId) {
-        Map<String, List<DeptVO>> childrenMap = depts.stream()
+    private List<DeptResp> buildTreeWithChildren(List<DeptResp> depts, String parentId) {
+        Map<String, List<DeptResp>> childrenMap = depts.stream()
                 .filter(dept -> dept.parentId() != null && !dept.parentId().equals("0"))
-                .collect(Collectors.groupingBy(DeptVO::parentId));
+                .collect(Collectors.groupingBy(DeptResp::parentId));
 
         return depts.stream()
                 .filter(dept -> {
@@ -74,13 +74,13 @@ public class DeptServiceImpl implements DeptService {
                     return parentId.equals(dept.parentId());
                 })
                 .map(dept -> {
-                    List<DeptVO> children = childrenMap.getOrDefault(dept.id(), new ArrayList<>());
+                    List<DeptResp> children = childrenMap.getOrDefault(dept.id(), new ArrayList<>());
                     // 递归构建子节点
-                    List<DeptVO> childTree = buildTreeWithChildren(depts, dept.id());
+                    List<DeptResp> childTree = buildTreeWithChildren(depts, dept.id());
                     if (!childTree.isEmpty()) {
                         children = childTree;
                     }
-                    return new DeptVO(
+                    return new DeptResp(
                             dept.id(),
                             dept.parentId(),
                             dept.name(),
@@ -100,11 +100,11 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional(readOnly = true)
-    public DeptVO getDeptById(String id) {
+    public DeptResp getDeptById(String id) {
         var dept = deptRepository.findById(id)
                 .orElseThrow(() -> new BizException("部门不存在"));
 
-        return new DeptVO(
+        return new DeptResp(
                 dept.getId(),
                 dept.getParentId(),
                 dept.getName(),
@@ -122,7 +122,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional
-    public DeptVO createDept(DeptCreateReq req) {
+    public DeptResp createDept(DeptCreateReq req) {
         // 检查部门名称是否已存在
         if (deptRepository.existsByNameAndDeletedFalse(req.name())) {
             throw new BizException("部门名称已存在");
@@ -150,7 +150,7 @@ public class DeptServiceImpl implements DeptService {
         // 记录审计日志
         logService.log("部门管理", OperationType.CREATE, "创建部门: " + dept.getName());
 
-        return new DeptVO(
+        return new DeptResp(
                 dept.getId(),
                 dept.getParentId(),
                 dept.getName(),
@@ -168,7 +168,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional
-    public DeptVO updateDept(String id, DeptUpdateReq req) {
+    public DeptResp updateDept(String id, DeptUpdateReq req) {
         var dept = deptRepository.findById(id)
                 .orElseThrow(() -> new BizException("部门不存在"));
 
@@ -206,7 +206,7 @@ public class DeptServiceImpl implements DeptService {
 
         var savedDept = deptRepository.save(dept);
 
-        return new DeptVO(
+        return new DeptResp(
                 savedDept.getId(),
                 savedDept.getParentId(),
                 savedDept.getName(),

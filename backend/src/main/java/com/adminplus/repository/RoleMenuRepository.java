@@ -1,6 +1,6 @@
 package com.adminplus.repository;
 
-import com.adminplus.entity.RoleMenuEntity;
+import com.adminplus.pojo.entity.RoleMenuEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

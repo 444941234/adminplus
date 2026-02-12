@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
-import com.adminplus.dto.DictCreateReq;
-import com.adminplus.dto.DictUpdateReq;
-import com.adminplus.vo.DictItemVO;
-import com.adminplus.vo.DictVO;
-import com.adminplus.vo.PageResultVO;
+import com.adminplus.pojo.dto.req.DictCreateReq;
+import com.adminplus.pojo.dto.req.DictUpdateReq;
+import com.adminplus.pojo.dto.resp.DictItemResp;
+import com.adminplus.pojo.dto.resp.DictResp;
+import com.adminplus.pojo.dto.resp.PageResultResp;
 
 import java.util.List;
 
@@ -19,32 +19,32 @@ public interface DictService {
     /**
      * 分页查询字典列表
      */
-    PageResultVO<DictVO> getDictList(Integer page, Integer size, String keyword);
+    PageResultResp<DictResp> getDictList(Integer page, Integer size, String keyword);
 
     /**
      * 根据ID查询字典
      */
-    DictVO getDictById(String id);
+    DictResp getDictById(String id);
 
     /**
      * 根据字典类型查询
      */
-    DictVO getDictByType(String dictType);
+    DictResp getDictByType(String dictType);
 
     /**
      * 根据字典类型查询字典项
      */
-    List<DictItemVO> getDictItemsByType(String dictType);
+    List<DictItemResp> getDictItemsByType(String dictType);
 
     /**
      * 创建字典
      */
-    DictVO createDict(DictCreateReq req);
+    DictResp createDict(DictCreateReq req);
 
     /**
      * 更新字典
      */
-    DictVO updateDict(String id, DictUpdateReq req);
+    DictResp updateDict(String id, DictUpdateReq req);
 
     /**
      * 删除字典

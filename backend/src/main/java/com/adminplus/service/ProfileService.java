@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
-import com.adminplus.dto.PasswordChangeReq;
-import com.adminplus.dto.ProfileUpdateReq;
-import com.adminplus.dto.SettingsUpdateReq;
-import com.adminplus.vo.ProfileVO;
-import com.adminplus.vo.SettingsVO;
+import com.adminplus.pojo.dto.req.PasswordChangeReq;
+import com.adminplus.pojo.dto.req.ProfileUpdateReq;
+import com.adminplus.pojo.dto.req.SettingsUpdateReq;
+import com.adminplus.pojo.dto.resp.ProfileResp;
+import com.adminplus.pojo.dto.resp.SettingsResp;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -18,12 +18,12 @@ public interface ProfileService {
     /**
      * 获取当前用户信息
      */
-    ProfileVO getCurrentUserProfile();
+    ProfileResp getCurrentUserProfile();
 
     /**
      * 更新当前用户信息
      */
-    ProfileVO updateCurrentProfile(ProfileUpdateReq req);
+    ProfileResp updateCurrentProfile(ProfileUpdateReq req);
 
     /**
      * 修改密码
@@ -38,10 +38,10 @@ public interface ProfileService {
     /**
      * 获取用户设置
      */
-    SettingsVO getSettings();
+    SettingsResp getSettings();
 
     /**
      * 更新用户设置
      */
-    SettingsVO updateSettings(SettingsUpdateReq req);
+    SettingsResp updateSettings(SettingsUpdateReq req);
 }

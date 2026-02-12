@@ -1,27 +1,22 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.dto.UserLoginReq;
-import com.adminplus.entity.RoleEntity;
-import com.adminplus.entity.UserEntity;
-import com.adminplus.entity.UserRoleEntity;
-import com.adminplus.exception.BizException;
-import com.adminplus.repository.RoleRepository;
-import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.constants.LogStatus;
 import com.adminplus.constants.OperationType;
-import com.adminplus.service.AuthService;
-import com.adminplus.service.CaptchaService;
-import com.adminplus.service.LogService;
-import com.adminplus.service.PermissionService;
-import com.adminplus.service.RefreshTokenService;
-import com.adminplus.service.TokenBlacklistService;
-import com.adminplus.service.UserService;
+import com.adminplus.exception.BizException;
+import com.adminplus.pojo.dto.req.UserLoginReq;
+import com.adminplus.pojo.dto.resp.LoginResp;
+import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.entity.RoleEntity;
+import com.adminplus.pojo.entity.UserEntity;
+import com.adminplus.pojo.entity.UserRoleEntity;
+import com.adminplus.repository.RoleRepository;
+import com.adminplus.repository.UserRoleRepository;
+import com.adminplus.service.*;
 import com.adminplus.utils.SecurityUtils;
-import com.adminplus.vo.LoginResp;
-import com.adminplus.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,7 +27,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -110,7 +104,7 @@ public class AuthServiceImpl implements AuthService {
                     .map(RoleEntity::getName)
                     .collect(Collectors.toList());
 
-            UserVO userVO = new UserVO(
+            UserResp userResp = new UserResp(
                     user.getId(),
                     user.getUsername(),
                     user.getNickname(),
@@ -132,7 +126,7 @@ public class AuthServiceImpl implements AuthService {
             // 记录登录审计日志
             logService.log("认证管理", OperationType.OTHER, "用户登录成功: " + maskUsername(req.username()));
 
-            return new LoginResp(token, refreshToken, "Bearer", userVO, permissions);
+            return new LoginResp(token, refreshToken, "Bearer", userResp, permissions);
 
         } catch (AuthenticationException e) {
             log.error("登录失败: username={}", maskUsername(req.username()));
@@ -146,7 +140,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserVO getCurrentUser(String username) {
+    public UserResp getCurrentUser(String username) {
         UserEntity user = userService.getUserByUsername(username);
 
         // 查询用户角色
@@ -158,7 +152,7 @@ public class AuthServiceImpl implements AuthService {
                 .map(RoleEntity::getName)
                 .collect(Collectors.toList());
 
-        return new UserVO(
+        return new UserResp(
                 user.getId(),
                 user.getUsername(),
                 user.getNickname(),

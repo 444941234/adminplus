@@ -1,19 +1,18 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.dto.PasswordChangeReq;
-import com.adminplus.dto.ProfileUpdateReq;
-import com.adminplus.dto.SettingsUpdateReq;
-import com.adminplus.entity.UserEntity;
 import com.adminplus.exception.BizException;
+import com.adminplus.pojo.dto.req.PasswordChangeReq;
+import com.adminplus.pojo.dto.req.ProfileUpdateReq;
+import com.adminplus.pojo.dto.req.SettingsUpdateReq;
+import com.adminplus.pojo.dto.resp.ProfileResp;
+import com.adminplus.pojo.dto.resp.SettingsResp;
+import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.repository.ProfileRepository;
-import com.adminplus.security.AppUserDetails;
 import com.adminplus.service.ProfileService;
 import com.adminplus.service.VirusScanService;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
-import com.adminplus.vo.ProfileVO;
-import com.adminplus.vo.SettingsVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,7 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -70,12 +68,12 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProfileVO getCurrentUserProfile() {
+    public ProfileResp getCurrentUserProfile() {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
-        return new ProfileVO(
+        return new ProfileResp(
                 user.getId(),
                 user.getUsername(),
                 user.getNickname(),
@@ -90,7 +88,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public ProfileVO updateCurrentProfile(ProfileUpdateReq req) {
+    public ProfileResp updateCurrentProfile(ProfileUpdateReq req) {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
@@ -114,7 +112,7 @@ public class ProfileServiceImpl implements ProfileService {
 
         user = profileRepository.save(user);
 
-        return new ProfileVO(
+        return new ProfileResp(
                 user.getId(),
                 user.getUsername(),
                 user.getNickname(),
@@ -192,7 +190,7 @@ public class ProfileServiceImpl implements ProfileService {
 
             // 生成唯一文件名（使用 UUID 避免文件名冲突）
             String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String filename = UUID.randomUUID().toString() + extension;
+            String filename = UUID.randomUUID() + extension;
 
             // 按日期创建目录（使用相对路径，防止路径遍历）
             String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
@@ -240,7 +238,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional(readOnly = true)
-    public SettingsVO getSettings() {
+    public SettingsResp getSettings() {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
@@ -251,12 +249,12 @@ public class ProfileServiceImpl implements ProfileService {
             settings = Map.of();
         }
 
-        return new SettingsVO(settings);
+        return new SettingsResp(settings);
     }
 
     @Override
     @Transactional
-    public SettingsVO updateSettings(SettingsUpdateReq req) {
+    public SettingsResp updateSettings(SettingsUpdateReq req) {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
@@ -272,7 +270,7 @@ public class ProfileServiceImpl implements ProfileService {
         user.setSettings(currentSettings);
         user = profileRepository.save(user);
 
-        return new SettingsVO(user.getSettings());
+        return new SettingsResp(user.getSettings());
     }
 
     /**

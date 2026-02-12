@@ -1,17 +1,11 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.entity.LogEntity;
-import com.adminplus.entity.MenuEntity;
-import com.adminplus.entity.RoleEntity;
-import com.adminplus.entity.UserEntity;
-import com.adminplus.entity.UserRoleEntity;
-import com.adminplus.repository.LogRepository;
-import com.adminplus.repository.MenuRepository;
-import com.adminplus.repository.RoleRepository;
-import com.adminplus.repository.UserRepository;
-import com.adminplus.repository.UserRoleRepository;
+import com.adminplus.pojo.dto.resp.*;
+import com.adminplus.pojo.entity.LogEntity;
+import com.adminplus.pojo.entity.RoleEntity;
+import com.adminplus.pojo.entity.UserRoleEntity;
+import com.adminplus.repository.*;
 import com.adminplus.service.DashboardService;
-import com.adminplus.vo.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,7 +19,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Dashboard 服务实现
@@ -45,7 +38,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final UserRoleRepository userRoleRepository;
 
     @Override
-    public DashboardStatsVO getStats() {
+    public DashboardStatsResp getStats() {
         log.debug("获取 Dashboard 统计数据");
 
         // 统计用户数（未删除的）
@@ -60,11 +53,11 @@ public class DashboardServiceImpl implements DashboardService {
         // 统计日志数（未删除���）
         long logCount = logRepository.countByDeletedFalse();
 
-        return new DashboardStatsVO(userCount, roleCount, menuCount, logCount);
+        return new DashboardStatsResp(userCount, roleCount, menuCount, logCount);
     }
 
     @Override
-    public ChartDataVO getUserGrowthData() {
+    public ChartDataResp getUserGrowthData() {
         log.debug("获取用户增长趋势数据 - 开始");
 
         // 获取最近7天的日期
@@ -87,11 +80,11 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         log.debug("获取用户增长趋势数据 - 完成, 日期数: {}, 值数: {}", dates.size(), values.size());
-        return new ChartDataVO(dates, values);
+        return new ChartDataResp(dates, values);
     }
 
     @Override
-    public ChartDataVO getRoleDistributionData() {
+    public ChartDataResp getRoleDistributionData() {
         log.debug("获取角色分布数据 - 开始");
 
         List<String> roleNames = new ArrayList<>();
@@ -109,11 +102,11 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         log.debug("获取角色分布数据 - 完成, 角色数: {}", roleNames.size());
-        return new ChartDataVO(roleNames, userCounts);
+        return new ChartDataResp(roleNames, userCounts);
     }
 
     @Override
-    public ChartDataVO getMenuDistributionData() {
+    public ChartDataResp getMenuDistributionData() {
         log.debug("获取菜单类型分布数据 - 开始");
 
         List<String> types = List.of("目录", "菜单", "按钮");
@@ -130,19 +123,19 @@ public class DashboardServiceImpl implements DashboardService {
 
         log.debug("获取菜单类型分布数据 - 完成, 目录: {}, 菜单: {}, 按钮: {}",
                  directoryCount, menuCount, buttonCount);
-        return new ChartDataVO(types, counts);
+        return new ChartDataResp(types, counts);
     }
 
     @Override
-    public List<OperationLogVO> getRecentOperationLogs() {
+    public List<OperationLogResp> getRecentOperationLogs() {
         log.debug("获取最近操作日志");
 
         // 获取最近10条操作日志
         List<LogEntity> logs = logRepository.findTop10ByDeletedFalseOrderByCreateTimeDesc();
 
-        List<OperationLogVO> result = new ArrayList<>();
+        List<OperationLogResp> result = new ArrayList<>();
         for (LogEntity log : logs) {
-            result.add(new OperationLogVO(
+            result.add(new OperationLogResp(
                     log.getId(),
                     log.getUsername(),
                     log.getModule(),
@@ -159,7 +152,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public SystemInfoVO getSystemInfo() {
+    public SystemInfoResp getSystemInfo() {
         log.debug("获取系统信息");
 
         // 获取系统信息
@@ -177,7 +170,7 @@ public class DashboardServiceImpl implements DashboardService {
         // 获取JDK版本
         String jdkVersion = System.getProperty("java.version");
 
-        return new SystemInfoVO(
+        return new SystemInfoResp(
                 "AdminPlus",
                 "1.0.0",
                 osBean.getName(),
@@ -193,16 +186,16 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
-    public List<OnlineUserVO> getOnlineUsers() {
+    public List<OnlineUserResp> getOnlineUsers() {
         log.debug("获取在线用户列表");
 
         // 获取最近登录的用户（模拟在线用户）
         List<LogEntity> recentLogs = logRepository.findTop10ByStatusAndDeletedFalseOrderByCreateTimeDesc(1);
 
-        List<OnlineUserVO> result = new ArrayList<>();
+        List<OnlineUserResp> result = new ArrayList<>();
         for (LogEntity log : recentLogs) {
             if (log.getUserId() != null) {
-                result.add(new OnlineUserVO(
+                result.add(new OnlineUserResp(
                         log.getUserId(),
                         log.getUsername(),
                         log.getIp(),

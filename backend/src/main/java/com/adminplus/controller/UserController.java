@@ -1,11 +1,11 @@
 package com.adminplus.controller;
 
-import com.adminplus.dto.UserCreateReq;
-import com.adminplus.dto.UserUpdateReq;
+import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.req.UserCreateReq;
+import com.adminplus.pojo.dto.req.UserUpdateReq;
+import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.resp.UserResp;
 import com.adminplus.service.UserService;
-import com.adminplus.utils.ApiResponse;
-import com.adminplus.vo.UserVO;
-import com.adminplus.vo.PageResultVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -34,36 +34,36 @@ public class UserController {
     @GetMapping
     @Operation(summary = "分页查询用户列表")
     @PreAuthorize("hasAuthority('user:query')")
-    public ApiResponse<PageResultVO<UserVO>> getUserList(
+    public ApiResponse<PageResultResp<UserResp>> getUserList(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String keyword
     ) {
-        PageResultVO<UserVO> result = userService.getUserList(page, size, keyword);
+        PageResultResp<UserResp> result = userService.getUserList(page, size, keyword);
         return ApiResponse.ok(result);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询用户")
     @PreAuthorize("hasAuthority('user:query')")
-    public ApiResponse<UserVO> getUserById(@PathVariable String id) {
-        UserVO user = userService.getUserById(id);
+    public ApiResponse<UserResp> getUserById(@PathVariable String id) {
+        UserResp user = userService.getUserById(id);
         return ApiResponse.ok(user);
     }
 
     @PostMapping
     @Operation(summary = "创建用户")
     @PreAuthorize("hasAuthority('user:add')")
-    public ApiResponse<UserVO> createUser(@Valid @RequestBody UserCreateReq req) {
-        UserVO user = userService.createUser(req);
+    public ApiResponse<UserResp> createUser(@Valid @RequestBody UserCreateReq req) {
+        UserResp user = userService.createUser(req);
         return ApiResponse.ok(user);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新用户")
     @PreAuthorize("hasAuthority('user:edit')")
-    public ApiResponse<UserVO> updateUser(@PathVariable String id, @Valid @RequestBody UserUpdateReq req) {
-        UserVO user = userService.updateUser(id, req);
+    public ApiResponse<UserResp> updateUser(@PathVariable String id, @Valid @RequestBody UserUpdateReq req) {
+        UserResp user = userService.updateUser(id, req);
         return ApiResponse.ok(user);
     }
 

@@ -1,10 +1,10 @@
 package com.adminplus.controller;
 
-import com.adminplus.dto.DeptCreateReq;
-import com.adminplus.dto.DeptUpdateReq;
+import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.req.DeptCreateReq;
+import com.adminplus.pojo.dto.req.DeptUpdateReq;
+import com.adminplus.pojo.dto.resp.DeptResp;
 import com.adminplus.service.DeptService;
-import com.adminplus.utils.ApiResponse;
-import com.adminplus.vo.DeptVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -33,32 +33,32 @@ public class DeptController {
     @GetMapping("/tree")
     @Operation(summary = "查询部门树形列表")
     @PreAuthorize("hasAuthority('dept:list')")
-    public ApiResponse<List<DeptVO>> getDeptTree() {
-        List<DeptVO> depts = deptService.getDeptTree();
+    public ApiResponse<List<DeptResp>> getDeptTree() {
+        List<DeptResp> depts = deptService.getDeptTree();
         return ApiResponse.ok(depts);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询部门")
     @PreAuthorize("hasAuthority('dept:query')")
-    public ApiResponse<DeptVO> getDeptById(@PathVariable String id) {
-        DeptVO dept = deptService.getDeptById(id);
+    public ApiResponse<DeptResp> getDeptById(@PathVariable String id) {
+        DeptResp dept = deptService.getDeptById(id);
         return ApiResponse.ok(dept);
     }
 
     @PostMapping
     @Operation(summary = "创建部门")
     @PreAuthorize("hasAuthority('dept:add')")
-    public ApiResponse<DeptVO> createDept(@Valid @RequestBody DeptCreateReq req) {
-        DeptVO dept = deptService.createDept(req);
+    public ApiResponse<DeptResp> createDept(@Valid @RequestBody DeptCreateReq req) {
+        DeptResp dept = deptService.createDept(req);
         return ApiResponse.ok(dept);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新部门")
     @PreAuthorize("hasAuthority('dept:edit')")
-    public ApiResponse<DeptVO> updateDept(@PathVariable String id, @Valid @RequestBody DeptUpdateReq req) {
-        DeptVO dept = deptService.updateDept(id, req);
+    public ApiResponse<DeptResp> updateDept(@PathVariable String id, @Valid @RequestBody DeptUpdateReq req) {
+        DeptResp dept = deptService.updateDept(id, req);
         return ApiResponse.ok(dept);
     }
 

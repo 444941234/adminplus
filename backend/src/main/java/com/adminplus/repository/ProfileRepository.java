@@ -1,6 +1,6 @@
 package com.adminplus.repository;
 
-import com.adminplus.entity.UserEntity;
+import com.adminplus.pojo.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

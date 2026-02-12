@@ -1,13 +1,13 @@
 package com.adminplus.controller;
 
-import com.adminplus.dto.MenuBatchDeleteReq;
-import com.adminplus.dto.MenuBatchStatusReq;
-import com.adminplus.dto.MenuCreateReq;
-import com.adminplus.dto.MenuUpdateReq;
+import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.req.MenuBatchDeleteReq;
+import com.adminplus.pojo.dto.req.MenuBatchStatusReq;
+import com.adminplus.pojo.dto.req.MenuCreateReq;
+import com.adminplus.pojo.dto.req.MenuUpdateReq;
+import com.adminplus.pojo.dto.resp.MenuResp;
 import com.adminplus.service.MenuService;
-import com.adminplus.utils.ApiResponse;
 import com.adminplus.utils.SecurityUtils;
-import com.adminplus.vo.MenuVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,32 +36,32 @@ public class MenuController {
     @GetMapping("/tree")
     @Operation(summary = "查询菜单树形列表")
     @PreAuthorize("hasAuthority('menu:list')")
-    public ApiResponse<List<MenuVO>> getMenuTree() {
-        List<MenuVO> menus = menuService.getMenuTree();
+    public ApiResponse<List<MenuResp>> getMenuTree() {
+        List<MenuResp> menus = menuService.getMenuTree();
         return ApiResponse.ok(menus);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询菜单")
     @PreAuthorize("hasAuthority('menu:query')")
-    public ApiResponse<MenuVO> getMenuById(@PathVariable String id) {
-        MenuVO menu = menuService.getMenuById(id);
+    public ApiResponse<MenuResp> getMenuById(@PathVariable String id) {
+        MenuResp menu = menuService.getMenuById(id);
         return ApiResponse.ok(menu);
     }
 
     @PostMapping
     @Operation(summary = "创建菜单")
     @PreAuthorize("hasAuthority('menu:add')")
-    public ApiResponse<MenuVO> createMenu(@Valid @RequestBody MenuCreateReq req) {
-        MenuVO menu = menuService.createMenu(req);
+    public ApiResponse<MenuResp> createMenu(@Valid @RequestBody MenuCreateReq req) {
+        MenuResp menu = menuService.createMenu(req);
         return ApiResponse.ok(menu);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新菜单")
     @PreAuthorize("hasAuthority('menu:edit')")
-    public ApiResponse<MenuVO> updateMenu(@PathVariable String id, @Valid @RequestBody MenuUpdateReq req) {
-        MenuVO menu = menuService.updateMenu(id, req);
+    public ApiResponse<MenuResp> updateMenu(@PathVariable String id, @Valid @RequestBody MenuUpdateReq req) {
+        MenuResp menu = menuService.updateMenu(id, req);
         return ApiResponse.ok(menu);
     }
 
@@ -92,10 +92,10 @@ public class MenuController {
     @GetMapping("/user/tree")
     @Operation(summary = "获取当前用户的菜单树")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<MenuVO>> getUserMenuTree() {
+    public ApiResponse<List<MenuResp>> getUserMenuTree() {
         // 从 SecurityContext 获取当前用户ID
         String userId = SecurityUtils.getCurrentUserId();
-        List<MenuVO> menus = menuService.getUserMenuTree(userId);
+        List<MenuResp> menus = menuService.getUserMenuTree(userId);
         return ApiResponse.ok(menus);
     }
 }
