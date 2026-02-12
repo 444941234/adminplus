@@ -1,6 +1,6 @@
 package com.adminplus.security;
 
-import com.adminplus.utils.SecurityContextHolderUtils;
+import com.adminplus.utils.SecurityUtils;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.stereotype.Component;
 
@@ -11,7 +11,7 @@ public class JpaAuditorAware implements AuditorAware<String> {
 
     @Override
     public Optional<String> getCurrentAuditor() {
-        String currentUserId = SecurityContextHolderUtils.getCurrentUserId();
+        String currentUserId = SecurityUtils.getCurrentUserIdOrDefault();
         return Optional.of(currentUserId);
     }
 }

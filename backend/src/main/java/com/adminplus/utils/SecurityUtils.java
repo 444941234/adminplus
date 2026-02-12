@@ -122,4 +122,27 @@ public class SecurityUtils {
         return authentication != null && authentication.isAuthenticated()
                 && !"anonymousUser".equals(authentication.getPrincipal());
     }
+
+    /**
+     * 获取当前用户ID，未登录时返回默认值 "system"
+     * 用于审计等场景，避免因认证问题导致业务失败
+     */
+    public static String getCurrentUserIdOrDefault() {
+        try {
+            return getCurrentUserId();
+        } catch (RuntimeException e) {
+            return "system";
+        }
+    }
+
+    /**
+     * 获取当前用户名，未登录时返回默认值 "system"
+     */
+    public static String getCurrentUsernameOrDefault() {
+        try {
+            return getCurrentUsername();
+        } catch (RuntimeException e) {
+            return "system";
+        }
+    }
 }
