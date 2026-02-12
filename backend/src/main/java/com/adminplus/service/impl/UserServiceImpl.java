@@ -6,18 +6,23 @@ import com.adminplus.pojo.dto.req.UserCreateReq;
 import com.adminplus.pojo.dto.req.UserUpdateReq;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;
+import com.adminplus.repository.DeptRepository;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.repository.UserRoleRepository;
+import com.adminplus.service.DeptService;
 import com.adminplus.service.LogService;
 import com.adminplus.service.UserService;
 import com.adminplus.utils.PasswordUtils;
+import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,14 +47,38 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
+    private final DeptRepository deptRepository;
+    private final DeptService deptService;
     private final PasswordEncoder passwordEncoder;
     private final LogService logService;
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<UserResp> getUserList(Integer page, Integer size, String keyword) {
+    public PageResultResp<UserResp> getUserList(Integer page, Integer size, String keyword, String deptId) {
         var pageable = PageRequest.of(page - 1, size);
-        var pageResult = userRepository.findAll(pageable);
+
+        Page<UserEntity> pageResult;
+
+        // 判断是否为超级管理员
+        boolean isAdmin = SecurityUtils.isAdmin();
+
+        if (deptId != null && !deptId.isEmpty()) {
+            // 获取部门及其所有子部门ID
+            List<String> deptIds = deptService.getDeptAndChildrenIds(deptId);
+            pageResult = userRepository.findByDeptIdIn(deptIds, pageable);
+        } else if (!isAdmin) {
+            // 非超级管理员只能查看本部门及以下部门的用户
+            String currentDeptId = SecurityUtils.getCurrentUserDeptId();
+            if (currentDeptId != null) {
+                List<String> accessibleDeptIds = deptService.getDeptAndChildrenIds(currentDeptId);
+                pageResult = userRepository.findByDeptIdIn(accessibleDeptIds, pageable);
+            } else {
+                pageResult = Page.empty(pageable);
+            }
+        } else {
+            // 超级管理员可以查看所有用户
+            pageResult = userRepository.findAll(pageable);
+        }
 
         // 批量查询所有用户角色
         List<String> userIds = pageResult.getContent().stream()
@@ -68,6 +97,18 @@ public class UserServiceImpl implements UserService {
                 ? List.of()
                 : roleRepository.findAllById(roleIds);
 
+        // 批量查询所有部门
+        List<String> allDeptIds = pageResult.getContent().stream()
+                .map(UserEntity::getDeptId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        List<DeptEntity> allDepts = allDeptIds.isEmpty()
+                ? List.of()
+                : deptRepository.findAllById(allDeptIds);
+        Map<String, String> deptMap = allDepts.stream()
+                .collect(Collectors.toMap(DeptEntity::getId, DeptEntity::getName));
+
         // 构建角色映射
         Map<String, String> roleMap = allRoles.stream()
                 .collect(Collectors.toMap(RoleEntity::getId, RoleEntity::getName));
@@ -83,6 +124,7 @@ public class UserServiceImpl implements UserService {
 
         var records = pageResult.getContent().stream().map(user -> {
             List<String> roleNames = userRoleMap.getOrDefault(user.getId(), List.of());
+            String deptName = deptMap.getOrDefault(user.getDeptId(), null);
 
             return new UserResp(
                     user.getId(),
@@ -92,6 +134,8 @@ public class UserServiceImpl implements UserService {
                     user.getPhone(),
                     user.getAvatar(),
                     user.getStatus(),
+                    user.getDeptId(),
+                    deptName,
                     roleNames,
                     user.getCreateTime(),
                     user.getUpdateTime()
@@ -120,6 +164,14 @@ public class UserServiceImpl implements UserService {
                 .map(RoleEntity::getName)
                 .toList();
 
+        // 查询部门名称
+        String deptName = null;
+        if (user.getDeptId() != null) {
+            deptName = deptRepository.findById(user.getDeptId())
+                    .map(DeptEntity::getName)
+                    .orElse(null);
+        }
+
         return new UserResp(
                 user.getId(),
                 user.getUsername(),
@@ -128,6 +180,8 @@ public class UserServiceImpl implements UserService {
                 user.getPhone(),
                 user.getAvatar(),
                 user.getStatus(),
+                user.getDeptId(),
+                deptName,
                 roleNames,
                 user.getCreateTime(),
                 user.getUpdateTime()
@@ -136,9 +190,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Async
-    public CompletableFuture<PageResultResp<UserResp>> getUserListAsync(Integer page, Integer size, String keyword) {
+    public CompletableFuture<PageResultResp<UserResp>> getUserListAsync(Integer page, Integer size, String keyword, String deptId) {
         log.info("使用虚拟线程异步查询用户列表");
-        return CompletableFuture.completedFuture(getUserList(page, size, keyword));
+        return CompletableFuture.completedFuture(getUserList(page, size, keyword, deptId));
     }
 
     @Override
@@ -168,6 +222,13 @@ public class UserServiceImpl implements UserService {
             throw new BizException(PasswordUtils.getPasswordStrengthHint(req.password()));
         }
 
+        // 验证部门是否存在
+        if (req.deptId() != null && !req.deptId().isEmpty()) {
+            if (!deptRepository.existsById(req.deptId())) {
+                throw new BizException("部门不存在");
+            }
+        }
+
         var user = new UserEntity();
         user.setUsername(req.username());
         user.setPassword(passwordEncoder.encode(req.password()));
@@ -175,12 +236,21 @@ public class UserServiceImpl implements UserService {
         user.setEmail(XssUtils.escape(req.email()));
         user.setPhone(XssUtils.escape(req.phone()));
         user.setAvatar(req.avatar());
+        user.setDeptId(req.deptId());
         user.setStatus(1);
 
         user = userRepository.save(user);
 
         // 记录审计日志
         logService.log("用户管理", OperationType.CREATE, "创建用户: " + user.getUsername());
+
+        // 查询部门名称
+        String deptName = null;
+        if (user.getDeptId() != null) {
+            deptName = deptRepository.findById(user.getDeptId())
+                    .map(DeptEntity::getName)
+                    .orElse(null);
+        }
 
         return new UserResp(
                 user.getId(),
@@ -190,6 +260,8 @@ public class UserServiceImpl implements UserService {
                 user.getPhone(),
                 user.getAvatar(),
                 user.getStatus(),
+                user.getDeptId(),
+                deptName,
                 List.of(),
                 user.getCreateTime(),
                 user.getUpdateTime()
@@ -217,8 +289,23 @@ public class UserServiceImpl implements UserService {
         if (req.status() != null) {
             user.setStatus(req.status());
         }
+        if (req.deptId() != null) {
+            // 验证部门是否存在
+            if (!req.deptId().isEmpty() && !deptRepository.existsById(req.deptId())) {
+                throw new BizException("部门不存在");
+            }
+            user.setDeptId(req.deptId().isEmpty() ? null : req.deptId());
+        }
 
         user = userRepository.save(user);
+
+        // 查询部门名称
+        String deptName = null;
+        if (user.getDeptId() != null) {
+            deptName = deptRepository.findById(user.getDeptId())
+                    .map(DeptEntity::getName)
+                    .orElse(null);
+        }
 
         return new UserResp(
                 user.getId(),
@@ -228,6 +315,8 @@ public class UserServiceImpl implements UserService {
                 user.getPhone(),
                 user.getAvatar(),
                 user.getStatus(),
+                user.getDeptId(),
+                deptName,
                 List.of(),
                 user.getCreateTime(),
                 user.getUpdateTime()

@@ -38,4 +38,9 @@ public interface DeptService {
      * 删除部门
      */
     void deleteDept(String id);
+
+    /**
+     * 获取部门及其所有子部门的ID列表
+     */
+    List<String> getDeptAndChildrenIds(String deptId);
 }

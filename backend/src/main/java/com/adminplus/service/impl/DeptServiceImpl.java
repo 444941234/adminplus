@@ -9,6 +9,7 @@ import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.repository.DeptRepository;
 import com.adminplus.service.DeptService;
 import com.adminplus.service.LogService;
+import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,27 @@ public class DeptServiceImpl implements DeptService {
     @Override
     @Transactional(readOnly = true)
     public List<DeptResp> getDeptTree() {
-        List<DeptEntity> allDepts = deptRepository.findAllByOrderBySortOrderAsc();
+        List<DeptEntity> allDepts;
+
+        // 超级管理员可以查看所有部门
+        if (SecurityUtils.isAdmin()) {
+            allDepts = deptRepository.findAllByOrderBySortOrderAsc();
+        } else {
+            // 非超级管理员只能查看本部门及以下部门
+            String currentDeptId = SecurityUtils.getCurrentUserDeptId();
+            if (currentDeptId == null) {
+                return List.of();
+            }
+            List<String> accessibleDeptIds = getDeptAndChildrenIds(currentDeptId);
+            allDepts = deptRepository.findAllById(accessibleDeptIds);
+            // 按sortOrder排序
+            allDepts.sort((a, b) -> {
+                if (a.getSortOrder() == null && b.getSortOrder() == null) return 0;
+                if (a.getSortOrder() == null) return 1;
+                if (b.getSortOrder() == null) return -1;
+                return a.getSortOrder().compareTo(b.getSortOrder());
+            });
+        }
 
         // 转换为 VO
         List<DeptResp> deptResps = allDepts.stream().map(dept -> new DeptResp(
@@ -272,5 +293,32 @@ public class DeptServiceImpl implements DeptService {
         }
 
         return false;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getDeptAndChildrenIds(String deptId) {
+        if (deptId == null || deptId.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> result = new ArrayList<>();
+        result.add(deptId);
+
+        // 递归获取所有子部门ID
+        List<String> parentIds = List.of(deptId);
+        while (!parentIds.isEmpty()) {
+            List<DeptEntity> children = deptRepository.findByParentIdInOrderBySortOrderAsc(parentIds);
+            if (children.isEmpty()) {
+                break;
+            }
+            List<String> childIds = children.stream()
+                    .map(DeptEntity::getId)
+                    .toList();
+            result.addAll(childIds);
+            parentIds = childIds;
+        }
+
+        return result;
     }
 }

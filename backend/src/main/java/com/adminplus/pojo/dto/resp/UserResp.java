@@ -17,6 +17,8 @@ public record UserResp(
         String phone,
         String avatar,
         Integer status,
+        String deptId,
+        String deptName,
         List<String> roles,
         Instant createTime,
         Instant updateTime

@@ -2,6 +2,7 @@ package com.adminplus.utils;
 
 import com.adminplus.common.security.AppUserDetails;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -12,6 +13,11 @@ import org.springframework.security.oauth2.jwt.Jwt;
  * @since 2026-02-07
  */
 public class SecurityUtils {
+
+    /**
+     * 超级管理员角色编码
+     */
+    public static final String ROLE_ADMIN = "ROLE_ADMIN";
 
     /**
      * 获取当前认证的用户信息
@@ -42,6 +48,9 @@ public class SecurityUtils {
 
             String userId = userIdClaim.toString();
 
+            // 从JWT中获取部门ID
+            String deptId = jwt.getClaimAsString("deptId");
+
             // 创建一个简化的 AppUserDetails 对象
             // 注意：此对象仅包含基本信息，不包含密码等敏感信息
             return new AppUserDetails(
@@ -52,6 +61,7 @@ public class SecurityUtils {
                     null, // email
                     null, // phone
                     null, // avatar
+                    deptId, // deptId - 从JWT中获取
                     1,    // status - 默认启用
                     null, // roles - 从 JWT authorities 中获取
                     null  // permissions - 从 JWT authorities 中获取
@@ -144,5 +154,27 @@ public class SecurityUtils {
         } catch (RuntimeException e) {
             return "system";
         }
+    }
+
+    /**
+     * 判断当前用户是否为超级管理员
+     */
+    public static boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(ROLE_ADMIN::equals);
+    }
+
+    /**
+     * 获取当前用户的部门ID
+     */
+    public static String getCurrentUserDeptId() {
+        AppUserDetails currentUser = getCurrentUser();
+        return currentUser != null ? currentUser.getDeptId() : null;
     }
 }

@@ -1,4 +1,4 @@
-import request from '@/utils/request'
+import request from '@/utils/request';
 
 /**
  * 获取用户列表
@@ -6,6 +6,7 @@ import request from '@/utils/request'
  * @param {number} params.page - 页码
  * @param {number} params.size - 每页数量
  * @param {string} params.keyword - 关键字（用户名/昵称）
+ * @param {string} params.deptId - 部门ID
  * @returns {Promise<Object>} 用户列表数据
  */
 export const getUserList = (params) => {
@@ -36,6 +37,7 @@ export const getUserById = (id) => {
  * @param {string} data.nickname - 昵称
  * @param {string} data.email - 邮箱
  * @param {string} data.phone - 手机号
+ * @param {string} data.deptId - 部门ID
  * @returns {Promise<Object>} 创建的用户信息
  */
 export const createUser = (data) => {
@@ -110,8 +112,8 @@ export const assignRoles = (userId, roleIds) => {
   return request({
     url: `/v1/sys/users/${userId}/roles`,
     method: 'put',
-    data: { roleIds }
-  })
+    data: roleIds,
+  });
 }
 
 /**

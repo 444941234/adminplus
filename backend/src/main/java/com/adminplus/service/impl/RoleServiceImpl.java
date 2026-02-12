@@ -11,6 +11,7 @@ import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.service.LogService;
 import com.adminplus.service.RoleService;
+import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,7 +37,18 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(readOnly = true)
     public List<RoleResp> getRoleList() {
-        var roles = roleRepository.findAll();
+        List<RoleEntity> roles;
+
+        // 超级管理员可以查看所有角色
+        if (SecurityUtils.isAdmin()) {
+            roles = roleRepository.findAll();
+        } else {
+            // 非超级管理员不能查看超级管理员角色
+            roles = roleRepository.findAll().stream()
+                    .filter(role -> !"ROLE_ADMIN".equals(role.getCode()))
+                    .toList();
+        }
+
         return roles.stream().map(role -> new RoleResp(
                 role.getId(),
                 role.getCode(),
@@ -109,6 +121,11 @@ public class RoleServiceImpl implements RoleService {
         var role = roleRepository.findById(id)
                 .orElseThrow(() -> new BizException("角色不存在"));
 
+        // 非超级管理员不能修改超级管理员角色
+        if ("ROLE_ADMIN".equals(role.getCode()) && !SecurityUtils.isAdmin()) {
+            throw new BizException("无权修改超级管理员角色");
+        }
+
         if (req.name() != null) {
             role.setName(req.name());
         }
@@ -145,6 +162,16 @@ public class RoleServiceImpl implements RoleService {
     public void deleteRole(String id) {
         var role = roleRepository.findById(id)
                 .orElseThrow(() -> new BizException("角色不存在"));
+
+        // 非超级管理员不能删除超级管理员角色
+        if ("ROLE_ADMIN".equals(role.getCode()) && !SecurityUtils.isAdmin()) {
+            throw new BizException("无权删除超级管理员角色");
+        }
+
+        // 不能删除超级管理员角色（即使是超级管理员也不能删除）
+        if ("ROLE_ADMIN".equals(role.getCode())) {
+            throw new BizException("超级管理员角色不能删除");
+        }
 
         // 删除角色-菜单关联
         roleMenuRepository.deleteByRoleId(id);

@@ -21,11 +21,12 @@ public class AppUserDetails implements UserDetails {
     private final String email;
     private final String phone;
     private final String avatar;
+    private final String deptId;
     private final Integer status;
     private final Collection<? extends GrantedAuthority> authorities;
 
     public AppUserDetails(String id, String username, String password, String nickname,
-                           String email, String phone, String avatar, Integer status,
+                          String email, String phone, String avatar, String deptId, Integer status,
                            List<String> roles, List<String> permissions) {
         this.id = id;
         this.username = username;
@@ -34,6 +35,7 @@ public class AppUserDetails implements UserDetails {
         this.email = email;
         this.phone = phone;
         this.avatar = avatar;
+        this.deptId = deptId;
         this.status = status;
 
         List<GrantedAuthority> authorityList = new ArrayList<>();
@@ -92,6 +94,9 @@ public class AppUserDetails implements UserDetails {
             );
         }
 
+        // 从JWT中获取部门ID
+        String deptId = jwt.getClaimAsString("deptId");
+
         return new AppUserDetails(
             userId,
             username,
@@ -100,6 +105,7 @@ public class AppUserDetails implements UserDetails {
             null,
             null,
             null,
+                deptId,
             1,
             null,
             null

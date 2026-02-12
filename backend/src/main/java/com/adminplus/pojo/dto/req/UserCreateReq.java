@@ -32,7 +32,10 @@ public record UserCreateReq(
         String phone,
 
         @Size(max = 255, message = "头像URL长度不能超过255")
-        String avatar
+        String avatar,
+
+        @Size(max = 50, message = "部门ID长度不能超过50")
+        String deptId
 ) {
     public UserCreateReq {
         // 自定义验证：密码强度

@@ -39,4 +39,9 @@ public interface DeptRepository extends JpaRepository<DeptEntity, String> {
      * 检查部门名称是否存在
      */
     boolean existsByNameAndDeletedFalse(String name);
+
+    /**
+     * 根据父部门ID列表查询子部门
+     */
+    List<DeptEntity> findByParentIdInOrderBySortOrderAsc(List<String> parentIds);
 }

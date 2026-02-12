@@ -20,12 +20,12 @@ public interface UserService {
     /**
      * 分页查询用户列表
      */
-    PageResultResp<UserResp> getUserList(Integer page, Integer size, String keyword);
+    PageResultResp<UserResp> getUserList(Integer page, Integer size, String keyword, String deptId);
 
     /**
      * 异步分页查询用户列表（使用虚拟线程）
      */
-    CompletableFuture<PageResultResp<UserResp>> getUserListAsync(Integer page, Integer size, String keyword);
+    CompletableFuture<PageResultResp<UserResp>> getUserListAsync(Integer page, Integer size, String keyword, String deptId);
 
     /**
      * 根据ID查询用户

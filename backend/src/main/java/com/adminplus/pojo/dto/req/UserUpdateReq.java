@@ -24,6 +24,9 @@ public record UserUpdateReq(
         @Size(max = 255, message = "头像URL长度不能超过255")
         String avatar,
 
-        Integer status
+        Integer status,
+
+        @Size(max = 50, message = "部门ID长度不能超过50")
+        String deptId
 ) {
 }

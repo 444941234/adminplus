@@ -204,20 +204,42 @@ public class DataInitializationRunner implements CommandLineRunner {
             return;
         }
 
+        // 先获取部门数据
+        List<DeptEntity> depts = deptRepository.findAll();
+        java.util.Map<String, String> deptCodeMap = new java.util.HashMap<>();
+        for (DeptEntity dept : depts) {
+            deptCodeMap.put(dept.getCode(), dept.getId());
+        }
+
         // 使用系统的PasswordEncoder动态生成密码（123456）
         String encryptedPassword = passwordEncoder.encode("123456");
-        
+
+        // 总部
+        String hqId = deptCodeMap.getOrDefault("HQ", null);
+        // 技术研发部
+        String rdId = deptCodeMap.getOrDefault("RD", null);
+        // 市场运营部
+        String mkId = deptCodeMap.getOrDefault("MK", null);
+        // 后端开发组
+        String beId = deptCodeMap.getOrDefault("BE", null);
+        // 前端开发组
+        String feId = deptCodeMap.getOrDefault("FE", null);
+        // 市场推广组
+        String mpId = deptCodeMap.getOrDefault("MP", null);
+        // 客户服务组
+        String csId = deptCodeMap.getOrDefault("CS", null);
+
         List<UserEntity> users = Arrays.asList(
-                createUser(null, "admin", encryptedPassword, "超级管理员", "admin@adminplus.com", "13800138000", null, 1),
-                createUser(null, "manager", encryptedPassword, "部门经理", "manager@adminplus.com", "13800138001", null, 1),
-                createUser(null, "user1", encryptedPassword, "普通用户1", "user1@adminplus.com", "13800138002", null, 1),
-                createUser(null, "user2", encryptedPassword, "普通用户2", "user2@adminplus.com", "13800138003", null, 1),
-                createUser(null, "dev1", encryptedPassword, "开发人员1", "dev1@adminplus.com", "13800138004", null, 1),
-                createUser(null, "dev2", encryptedPassword, "开发人员2", "dev2@adminplus.com", "13800138005", null, 1),
-                createUser(null, "operator1", encryptedPassword, "运营人员1", "operator1@adminplus.com", "13800138006", null, 1),
-                createUser(null, "operator2", encryptedPassword, "运营人员2", "operator2@adminplus.com", "13800138007", null, 1),
-                createUser(null, "cs1", encryptedPassword, "客服人员1", "cs1@adminplus.com", "13800138008", null, 1),
-                createUser(null, "cs2", encryptedPassword, "客服人员2", "cs2@adminplus.com", "13800138009", null, 1)
+                createUser(null, "admin", encryptedPassword, "超级管理员", "admin@adminplus.com", "13800138000", hqId, 1),
+                createUser(null, "manager", encryptedPassword, "部门经理", "manager@adminplus.com", "13800138001", hqId, 1),
+                createUser(null, "user1", encryptedPassword, "普通用户1", "user1@adminplus.com", "13800138002", rdId, 1),
+                createUser(null, "user2", encryptedPassword, "普通用户2", "user2@adminplus.com", "13800138003", mkId, 1),
+                createUser(null, "dev1", encryptedPassword, "开发人员1", "dev1@adminplus.com", "13800138004", beId, 1),
+                createUser(null, "dev2", encryptedPassword, "开发人员2", "dev2@adminplus.com", "13800138005", feId, 1),
+                createUser(null, "operator1", encryptedPassword, "运营人员1", "operator1@adminplus.com", "13800138006", mpId, 1),
+                createUser(null, "operator2", encryptedPassword, "运营人员2", "operator2@adminplus.com", "13800138007", mkId, 1),
+                createUser(null, "cs1", encryptedPassword, "客服人员1", "cs1@adminplus.com", "13800138008", csId, 1),
+                createUser(null, "cs2", encryptedPassword, "客服人员2", "cs2@adminplus.com", "13800138009", csId, 1)
         );
 
         userRepository.saveAll(users);
@@ -397,7 +419,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         user.setNickname(nickname);
         user.setEmail(email);
         user.setPhone(phone);
-        // user.setDeptId(deptId); // 暂时注释，UserEntity 暂无 deptId 字段
+        user.setDeptId(deptId);
         user.setStatus(status);
         user.setCreateUser("system");
         user.setUpdateUser("system");

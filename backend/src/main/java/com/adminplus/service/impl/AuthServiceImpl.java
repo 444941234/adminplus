@@ -81,28 +81,41 @@ public class AuthServiceImpl implements AuthService {
             // 获取用户信息
             UserEntity user = userService.getUserByUsername(req.username());
 
+            // 查询用户角色
+            List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
+            List<RoleEntity> roles = userRoles.stream()
+                    .map(UserRoleEntity::getRoleId)
+                    .map(roleId -> roleRepository.findById(roleId).orElse(null))
+                    .filter(Objects::nonNull)
+                    .filter(role -> role.getStatus() == 1)
+                    .toList();
+            List<String> roleCodes = roles.stream()
+                    .map(RoleEntity::getCode)
+                    .collect(Collectors.toList());
+            List<String> roleNames = roles.stream()
+                    .map(RoleEntity::getName)
+                    .collect(Collectors.toList());
+
             // 生成 JWT Token（过期时间改为 2 小时）
             Instant now = Instant.now();
-            JwtClaimsSet claims = JwtClaimsSet.builder()
+            JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
                     .issuer("adminplus")
                     .issuedAt(now)
                     .expiresAt(now.plus(2, ChronoUnit.HOURS))  // 从 24 小时改为 2 小时
                     .subject(authentication.getName())
                     .claim("userId", user.getId())
                     .claim("username", user.getUsername())
-                    .claim("scope", "ROLE_USER")
-                    .build();
+                    .claim("deptId", user.getDeptId());
 
+            // 添加角色到scope
+            if (!roleCodes.isEmpty()) {
+                claimsBuilder.claim("scope", roleCodes);
+            } else {
+                claimsBuilder.claim("scope", "ROLE_USER");
+            }
+
+            JwtClaimsSet claims = claimsBuilder.build();
             String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-
-            // 查询用户角色
-            List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
-            List<String> roleNames = userRoles.stream()
-                    .map(UserRoleEntity::getRoleId)
-                    .map(roleId -> roleRepository.findById(roleId).orElse(null))
-                    .filter(Objects::nonNull)
-                    .map(RoleEntity::getName)
-                    .collect(Collectors.toList());
 
             UserResp userResp = new UserResp(
                     user.getId(),
@@ -112,6 +125,8 @@ public class AuthServiceImpl implements AuthService {
                     user.getPhone(),
                     user.getAvatar(),
                     user.getStatus(),
+                    user.getDeptId(),
+                    null, // deptName - 登录时不需要查询部门名称
                     roleNames,
                     user.getCreateTime(),
                     user.getUpdateTime()
@@ -160,6 +175,8 @@ public class AuthServiceImpl implements AuthService {
                 user.getPhone(),
                 user.getAvatar(),
                 user.getStatus(),
+                user.getDeptId(),
+                null, // deptName - 获取当前用户时不需要查询部门名称
                 roleNames,
                 user.getCreateTime(),
                 user.getUpdateTime()

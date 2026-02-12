@@ -37,9 +37,10 @@ public class UserController {
     public ApiResponse<PageResultResp<UserResp>> getUserList(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) String keyword
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String deptId
     ) {
-        PageResultResp<UserResp> result = userService.getUserList(page, size, keyword);
+        PageResultResp<UserResp> result = userService.getUserList(page, size, keyword, deptId);
         return ApiResponse.ok(result);
     }
 

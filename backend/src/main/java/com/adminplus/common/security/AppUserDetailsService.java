@@ -54,6 +54,7 @@ public class AppUserDetailsService implements UserDetailsService {
                 user.getEmail(),
                 user.getPhone(),
                 user.getAvatar(),
+                user.getDeptId(),
                 user.getStatus(),
                 roleCodes,
                 permissions

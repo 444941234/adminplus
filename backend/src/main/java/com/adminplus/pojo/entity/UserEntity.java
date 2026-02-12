@@ -26,7 +26,8 @@ import java.util.Map;
            @Index(name = "idx_email", columnList = "email"),
            @Index(name = "idx_phone", columnList = "phone"),
            @Index(name = "idx_status", columnList = "status"),
-           @Index(name = "idx_deleted", columnList = "deleted")
+               @Index(name = "idx_deleted", columnList = "deleted"),
+               @Index(name = "idx_dept_id", columnList = "dept_id")
        })
 public class UserEntity extends BaseEntity {
 
@@ -35,6 +36,12 @@ public class UserEntity extends BaseEntity {
      */
     @Column(name = "username", nullable = false, length = 50)
     private String username;
+
+    /**
+     * 部门ID
+     */
+    @Column(name = "dept_id", length = 50)
+    private String deptId;
 
     /**
      * 密码（BCrypt 加密）
