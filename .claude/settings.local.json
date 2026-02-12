@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(claude mcp:*)",
+      "mcp__plugin_context7_context7__resolve-library-id",
+      "Bash(node:*)",
+      "Bash(npm --version)",
+      "Bash(npx:*)",
+      "Bash(npm config get:*)",
+      "WebSearch",
+      "Bash(where:*)",
+      "mcp__plugin_context7_context7__query-docs"
+    ]
+  }
+}

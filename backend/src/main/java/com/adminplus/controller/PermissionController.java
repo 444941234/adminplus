@@ -1,6 +1,5 @@
 package com.adminplus.controller;
 
-import com.adminplus.security.CustomUserDetails;
 import com.adminplus.service.PermissionService;
 import com.adminplus.utils.ApiResponse;
 import com.adminplus.utils.SecurityUtils;
@@ -10,7 +9,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 

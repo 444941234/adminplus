@@ -93,7 +93,7 @@ public class SecurityConfig {
                 }
 
                 // 只记录密钥长度，不记录密钥内容（防止密钥泄露）
-                log.info("JWT 密��已从环境变量加载，密钥长度：{} 位", keySize);
+                log.info("JWT 密钥已从环境变量加载，密钥长度：{} 位", keySize);
                 return rsaKey;
 
             } catch (Exception e) {

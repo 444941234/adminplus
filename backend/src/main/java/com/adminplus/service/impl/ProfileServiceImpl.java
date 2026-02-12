@@ -6,7 +6,7 @@ import com.adminplus.dto.SettingsUpdateReq;
 import com.adminplus.entity.UserEntity;
 import com.adminplus.exception.BizException;
 import com.adminplus.repository.ProfileRepository;
-import com.adminplus.security.CustomUserDetails;
+import com.adminplus.security.AppUserDetails;
 import com.adminplus.service.ProfileService;
 import com.adminplus.service.VirusScanService;
 import com.adminplus.utils.PasswordUtils;

@@ -1,6 +1,6 @@
 package com.adminplus.utils;
 
-import com.adminplus.security.CustomUserDetails;
+import com.adminplus.security.AppUserDetails;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -17,7 +17,7 @@ public class SecurityUtils {
      * 获取当前认证的用户信息
      * 支持自定义用户详情和 JWT 认证
      */
-    public static CustomUserDetails getCurrentUser() {
+    public static AppUserDetails getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
             throw new RuntimeException("未登录或登录已过期");
@@ -25,9 +25,9 @@ public class SecurityUtils {
 
         Object principal = authentication.getPrincipal();
 
-        // 传统 Session 认证：principal 是 CustomUserDetails
-        if (principal instanceof CustomUserDetails) {
-            return (CustomUserDetails) principal;
+        // 传统 Session 认证：principal 是 AppUserDetails
+        if (principal instanceof AppUserDetails) {
+            return (AppUserDetails) principal;
         }
 
         // JWT 认证：principal 是 Jwt 对象
@@ -42,9 +42,9 @@ public class SecurityUtils {
 
             String userId = userIdClaim.toString();
 
-            // 创建一个简化的 CustomUserDetails 对象
+            // 创建一个简化的 AppUserDetails 对象
             // 注意：此对象仅包含基本信息，不包含密码等敏感信息
-            return new CustomUserDetails(
+            return new AppUserDetails(
                     userId,
                     username,
                     null, // password - JWT 认证不需要密码
@@ -73,7 +73,7 @@ public class SecurityUtils {
         Object principal = authentication.getPrincipal();
 
         // 传统 Session 认证
-        if (principal instanceof CustomUserDetails userDetails) {
+        if (principal instanceof AppUserDetails userDetails) {
             return userDetails.getId();
         }
 
@@ -102,7 +102,7 @@ public class SecurityUtils {
         Object principal = authentication.getPrincipal();
 
         // 传统 Session 认证
-        if (principal instanceof CustomUserDetails userDetails) {
+        if (principal instanceof AppUserDetails userDetails) {
             return userDetails.getUsername();
         }
 

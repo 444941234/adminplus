@@ -11,14 +11,8 @@ import java.util.stream.Collectors;
 import org.springframework.security.oauth2.jwt.Jwt;
 import java.util.ArrayList;
 
-/**
- * 自定义用户详情
- *
- * @author AdminPlus
- * @since 2026-02-06
- */
 @Getter
-public class CustomUserDetails implements UserDetails {
+public class AppUserDetails implements UserDetails {
 
     private final String id;
     private final String username;
@@ -30,9 +24,9 @@ public class CustomUserDetails implements UserDetails {
     private final Integer status;
     private final Collection<? extends GrantedAuthority> authorities;
 
-    public CustomUserDetails(String id, String username, String password, String nickname,
-                              String email, String phone, String avatar, Integer status,
-                              List<String> roles, List<String> permissions) {
+    public AppUserDetails(String id, String username, String password, String nickname,
+                           String email, String phone, String avatar, Integer status,
+                           List<String> roles, List<String> permissions) {
         this.id = id;
         this.username = username;
         this.password = password;
@@ -42,10 +36,8 @@ public class CustomUserDetails implements UserDetails {
         this.avatar = avatar;
         this.status = status;
 
-        // 构建权限列表：角色（ROLE_前缀）+ 权限标识符
         List<GrantedAuthority> authorityList = new ArrayList<>();
 
-        // 添加角色权限（ROLE_前缀）
         if (roles != null && !roles.isEmpty()) {
             authorityList.addAll(roles.stream()
                     .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
@@ -53,14 +45,12 @@ public class CustomUserDetails implements UserDetails {
                     .collect(Collectors.toList()));
         }
 
-        // 添加菜单权限
         if (permissions != null && !permissions.isEmpty()) {
             authorityList.addAll(permissions.stream()
                     .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList()));
         }
 
-        // 如果没有任何权限，默认给予 ROLE_USER
         if (authorityList.isEmpty()) {
             authorityList.add(new SimpleGrantedAuthority("ROLE_USER"));
         }
@@ -88,15 +78,10 @@ public class CustomUserDetails implements UserDetails {
         return status != null && status == 1;
     }
 
-    /**
-     * 从 JWT 对象创建 CustomUserDetails
-     * 用于 JWT 认证场景
-     */
-    public static CustomUserDetails fromJwt(Jwt jwt) {
+    public static AppUserDetails fromJwt(Jwt jwt) {
         String userId = jwt.getClaimAsString("userId");
         String username = jwt.getSubject();
 
-        // 从 scope claim 中提取权限
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         Object scopeClaim = jwt.getClaim("scope");
         if (scopeClaim instanceof String) {
@@ -107,17 +92,17 @@ public class CustomUserDetails implements UserDetails {
             );
         }
 
-        return new CustomUserDetails(
+        return new AppUserDetails(
             userId,
             username,
-            null,  // JWT 不包含密码
-            null,  // nickname
-            null,  // email
-            null,  // phone
-            null,  // avatar
-            1,     // status - 假设有效
-            null,  // roles
-            null   // permissions
+            null,
+            null,
+            null,
+            null,
+            null,
+            1,
+            null,
+            null
         );
     }
 }

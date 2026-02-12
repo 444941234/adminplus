@@ -1,7 +1,7 @@
 package com.adminplus.controller;
 
 import com.adminplus.dto.UserLoginReq;
-import com.adminplus.security.CustomUserDetails;
+import com.adminplus.security.AppUserDetails;
 import com.adminplus.service.AuthService;
 import com.adminplus.utils.ApiResponse;
 import com.adminplus.utils.SecurityUtils;

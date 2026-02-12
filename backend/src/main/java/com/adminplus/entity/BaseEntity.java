@@ -1,49 +1,52 @@
 package com.adminplus.entity;
 
+import com.adminplus.utils.SnowflakeIdGenerator;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
-import com.adminplus.listener.EntityAuditListener;
 
-/**
- * 基础实体类
- *
- * @author AdminPlus
- * @since 2026-02-06
- */
 @Data
 @EqualsAndHashCode(callSuper = false)
 @MappedSuperclass
-@EntityListeners(EntityAuditListener.class)
+@EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
 
     @Id
     private String id;
 
-    @CreationTimestamp
+    @CreatedDate
     @Column(name = "create_time", nullable = false, updatable = false)
     private Instant createTime;
 
-    @UpdateTimestamp
+    @LastModifiedDate
     @Column(name = "update_time", nullable = false)
     private Instant updateTime;
 
-    /**
-     * 创建人
-     */
+    @CreatedBy
     @Column(name = "create_user", nullable = false, updatable = false)
     private String createUser;
 
-    /**
-     * 更新人
-     */
+    @LastModifiedBy
     @Column(name = "update_user", nullable = false)
     private String updateUser;
 
     @Column(name = "deleted", nullable = false)
     private Boolean deleted = false;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null || this.id.isEmpty()) {
+            this.id = SnowflakeIdGenerator.nextIdStr();
+        }
+        if (this.deleted == null) {
+            this.deleted = false;
+        }
+    }
 }
