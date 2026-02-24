@@ -1,7 +1,8 @@
 package com.adminplus.pojo.dto.req;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+
+import java.util.Optional;
 
 /**
  * 字典项更新请求
@@ -12,11 +13,9 @@ import jakarta.validation.constraints.Size;
 public record DictItemUpdateReq(
         String parentId,
 
-        @NotBlank(message = "字典标签不能为空")
         @Size(max = 100, message = "字典标签长度不能超过100")
         String label,
 
-        @NotBlank(message = "字典值不能为空")
         @Size(max = 100, message = "字典值长度不能超过100")
         String value,
 
@@ -26,4 +25,11 @@ public record DictItemUpdateReq(
 
         @Size(max = 500, message = "备注长度不能超过500")
         String remark
-) {}
+) {
+    public Optional<String> getParentId() { return Optional.ofNullable(parentId); }
+    public Optional<String> getLabel() { return Optional.ofNullable(label); }
+    public Optional<String> getValue() { return Optional.ofNullable(value); }
+    public Optional<Integer> getSortOrder() { return Optional.ofNullable(sortOrder); }
+    public Optional<Integer> getStatus() { return Optional.ofNullable(status); }
+    public Optional<String> getRemark() { return Optional.ofNullable(remark); }
+}

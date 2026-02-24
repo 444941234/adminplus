@@ -51,18 +51,27 @@ public class TreeUtils {
     public interface ReadonlyTreeNode<T> {
         /**
          * 获取节点ID
+         * 默认返回 null，子类可重写
          */
-        String getId();
+        default String getId() {
+            return null;
+        }
 
         /**
          * 获取父节点ID
+         * 默认返回 null，子类可重写
          */
-        String getParentId();
+        default String getParentId() {
+            return null;
+        }
 
         /**
          * 获取子节点列表
+         * 默认返回 null，子类可重写
          */
-        List<T> getChildren();
+        default List<?> getChildren() {
+            return null;
+        }
     }
 
     /**

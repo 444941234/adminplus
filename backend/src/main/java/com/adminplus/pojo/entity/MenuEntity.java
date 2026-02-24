@@ -74,6 +74,12 @@ public class MenuEntity extends TreeEntity<MenuEntity> {
     private Integer visible = 1;
 
     /**
+     * 状态（1=启用，0=禁用）
+     */
+    @Column(name = "status", nullable = false)
+    private Integer status = 1;
+
+    /**
      * 获取子菜单列表（重写父类方法以支持 JPA 映射）
      */
     @Override

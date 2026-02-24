@@ -39,8 +39,11 @@ public class DictItemServiceImpl implements DictItemService {
     @Transactional(readOnly = true)
     @Cacheable(value = "dictItem", key = "'dictId:' + #dictId")
     public List<DictItemResp> getDictItemsByDictId(String dictId) {
+        DictEntity dict = dictRepository.findById(dictId).orElse(null);
+        String dictType = dict != null ? dict.getDictType() : null;
+
         return dictItemRepository.findByDictIdOrderBySortOrderAsc(dictId).stream()
-                .map(this::toResp)
+                .map(item -> toResp(item, dictType))
                 .toList();
     }
 
@@ -130,8 +133,8 @@ public class DictItemServiceImpl implements DictItemService {
                 .orElseThrow(() -> new BizException("字典不存在"));
 
         // 验证并更新父节点
-        if (req.parentId().isPresent()) {
-            String newParentId = req.parentId().get();
+        if (req.getParentId().isPresent()) {
+            String newParentId = req.getParentId().get();
             if (!id.equals(newParentId)) {
                 if (newParentId != null && !newParentId.equals("0")) {
                     DictItemEntity parent = dictItemRepository.findById(newParentId)
@@ -154,11 +157,11 @@ public class DictItemServiceImpl implements DictItemService {
             }
         }
 
-        req.label().ifPresent(item::setLabel);
-        req.value().ifPresent(item::setValue);
-        req.sortOrder().ifPresent(item::setSortOrder);
-        req.status().ifPresent(item::setStatus);
-        req.remark().ifPresent(item::setRemark);
+        req.getLabel().ifPresent(item::setLabel);
+        req.getValue().ifPresent(item::setValue);
+        req.getSortOrder().ifPresent(item::setSortOrder);
+        req.getStatus().ifPresent(item::setStatus);
+        req.getRemark().ifPresent(item::setRemark);
 
         item = dictItemRepository.save(item);
         log.info("更新字典项成功: {} - {}", dict.getDictType(), item.getLabel());
