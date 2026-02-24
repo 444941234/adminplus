@@ -2,6 +2,9 @@
 // AdminPlus 全局样式入口
 // ============================================
 
+// 引入 Sass color 模块
+@use 'sass:color';
+
 // 引入全局变量（作为全局命名空间）
 @use './variables.scss' as *;
 
