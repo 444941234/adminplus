@@ -182,6 +182,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { Plus } from '@element-plus/icons-vue';
 import { createDept, deleteDept, getDeptTree, updateDept } from '@/api/dept';
 
 const loading = ref(false);

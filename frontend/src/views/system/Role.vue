@@ -44,7 +44,7 @@
           width="120"
         >
           <template #default="{ row }">
-            <el-tag :type="getDataScopeType(row.dataScope)">
+            <el-tag v-bind="getDataScopeType(row.dataScope) ? { type: getDataScopeType(row.dataScope) } : {}">
               {{ getDataScopeText(row.dataScope) }}
             </el-tag>
           </template>

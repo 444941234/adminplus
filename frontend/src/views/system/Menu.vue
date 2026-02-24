@@ -116,7 +116,7 @@
           width="100"
         >
           <template #default="{ row }">
-            <el-tag :type="getMenuTypeTag(row.type)">
+            <el-tag v-bind="getMenuTypeTag(row.type) ? { type: getMenuTypeTag(row.type) } : {}">
               {{ getMenuTypeText(row.type) }}
             </el-tag>
           </template>
@@ -547,6 +547,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { MagicStick, ArrowDown, Upload, Plus, InfoFilled, Search } from '@element-plus/icons-vue'
 import { getMenuTree, createMenu, updateMenu, deleteMenu, batchUpdateMenuStatus, batchDeleteMenu } from '@/api/menu'
 import { useForm } from '@/composables/useForm'
 import { useConfirm } from '@/composables/useConfirm'

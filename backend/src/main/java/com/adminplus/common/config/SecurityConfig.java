@@ -269,13 +269,13 @@ public class SecurityConfig {
                     "生产环境必须配置 CORS 允许的域名！请设置环境变量 CORS_ALLOWED_ORIGINS"
                 );
             }
-            configuration.setAllowedOriginPatterns(List.of("http://localhost:5173", "http://localhost:3000"));
-            log.warn("⚠️  开发环境：CORS 使用默认配置（仅允许本地开发服务器）");
+            configuration.setAllowedOriginPatterns(List.of("*"));
+            log.info("开发环境：CORS 允许所有来源");
             log.warn("⚠️  警告：生产环境必须配置 CORS_ALLOWED_ORIGINS 环境变量！");
         }
 
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(java.util.List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
