@@ -25,11 +25,11 @@ import java.util.List;
 @Entity
 @Table(name = "sys_dept",
        indexes = {
-           @Index(name = "idx_parent_id", columnList = "parent_id"),
-           @Index(name = "idx_ancestors", columnList = "ancestors"),
-           @Index(name = "idx_sort_order", columnList = "sort_order"),
-           @Index(name = "idx_status", columnList = "status"),
-           @Index(name = "idx_deleted", columnList = "deleted")
+           @Index(name = "idx_dept_parent_id", columnList = "parent_id"),
+           @Index(name = "idx_dept_ancestors", columnList = "ancestors"),
+           @Index(name = "idx_dept_sort_order", columnList = "sort_order"),
+           @Index(name = "idx_dept_status", columnList = "status"),
+           @Index(name = "idx_dept_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_dept SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")

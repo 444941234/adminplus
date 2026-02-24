@@ -26,12 +26,12 @@ import java.util.List;
 @Entity
 @Table(name = "sys_dict_item",
        indexes = {
-           @Index(name = "idx_dict_id", columnList = "dict_id"),
-           @Index(name = "idx_parent_id", columnList = "parent_id"),
-           @Index(name = "idx_ancestors", columnList = "ancestors"),
-           @Index(name = "idx_sort_order", columnList = "sort_order"),
-           @Index(name = "idx_status", columnList = "status"),
-           @Index(name = "idx_deleted", columnList = "deleted")
+           @Index(name = "idx_dict_item_dict_id", columnList = "dict_id"),
+           @Index(name = "idx_dict_item_parent_id", columnList = "parent_id"),
+           @Index(name = "idx_dict_item_ancestors", columnList = "ancestors"),
+           @Index(name = "idx_dict_item_sort_order", columnList = "sort_order"),
+           @Index(name = "idx_dict_item_status", columnList = "status"),
+           @Index(name = "idx_dict_item_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_dict_item SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")

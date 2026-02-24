@@ -19,8 +19,8 @@ import lombok.Setter;
 @Table(name = "sys_dict",
        indexes = {
            @Index(name = "idx_dict_type", columnList = "dict_type"),
-           @Index(name = "idx_status", columnList = "status"),
-           @Index(name = "idx_deleted", columnList = "deleted")
+           @Index(name = "idx_dict_status", columnList = "status"),
+           @Index(name = "idx_dict_deleted", columnList = "deleted")
        })
 public class DictEntity extends BaseEntity {
 

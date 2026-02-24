@@ -25,13 +25,13 @@ import java.util.List;
 @Entity
 @Table(name = "sys_menu",
        indexes = {
-           @Index(name = "idx_parent_id", columnList = "parent_id"),
-           @Index(name = "idx_ancestors", columnList = "ancestors"),
-           @Index(name = "idx_sort_order", columnList = "sort_order"),
-           @Index(name = "idx_visible", columnList = "visible"),
-           @Index(name = "idx_status", columnList = "status"),
-           @Index(name = "idx_type", columnList = "type"),
-           @Index(name = "idx_deleted", columnList = "deleted")
+           @Index(name = "idx_menu_parent_id", columnList = "parent_id"),
+           @Index(name = "idx_menu_ancestors", columnList = "ancestors"),
+           @Index(name = "idx_menu_sort_order", columnList = "sort_order"),
+           @Index(name = "idx_menu_visible", columnList = "visible"),
+           @Index(name = "idx_menu_status", columnList = "status"),
+           @Index(name = "idx_menu_type", columnList = "type"),
+           @Index(name = "idx_menu_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_menu SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")

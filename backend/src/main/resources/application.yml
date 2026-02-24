@@ -53,7 +53,7 @@ spring:
   # JPA 配置
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update  # validate: 验证结构不修改, update: 自动更新表结构(仅开发环境)
     show-sql: false  # 默认关闭 SQL 日志，开发环境在 application-dev.yml 中启用
     properties:
       hibernate:

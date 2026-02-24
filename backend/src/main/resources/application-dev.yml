@@ -8,6 +8,8 @@ app:
 # JPA 配置（开发环境启用 SQL 日志）
 spring:
   jpa:
+    hibernate:
+      ddl-auto: update  # 开发环境使用 update 自动更新表结构
     show-sql: true  # 开发环境启用 SQL 日志
     properties:
       hibernate:

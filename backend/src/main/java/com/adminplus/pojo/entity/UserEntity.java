@@ -22,12 +22,12 @@ import java.util.Map;
            @UniqueConstraint(columnNames = "username")
        },
        indexes = {
-           @Index(name = "idx_username", columnList = "username"),
-           @Index(name = "idx_email", columnList = "email"),
-           @Index(name = "idx_phone", columnList = "phone"),
-           @Index(name = "idx_status", columnList = "status"),
-               @Index(name = "idx_deleted", columnList = "deleted"),
-               @Index(name = "idx_dept_id", columnList = "dept_id")
+           @Index(name = "idx_user_username", columnList = "username"),
+           @Index(name = "idx_user_email", columnList = "email"),
+           @Index(name = "idx_user_phone", columnList = "phone"),
+           @Index(name = "idx_user_status", columnList = "status"),
+           @Index(name = "idx_user_deleted", columnList = "deleted"),
+           @Index(name = "idx_user_dept_id", columnList = "dept_id")
        })
 public class UserEntity extends BaseEntity {
 
