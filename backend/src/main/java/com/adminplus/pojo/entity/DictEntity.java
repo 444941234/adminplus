@@ -6,6 +6,8 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 /**
  * 字典实体
@@ -22,7 +24,9 @@ import lombok.Setter;
            @Index(name = "idx_dict_status", columnList = "status"),
            @Index(name = "idx_dict_deleted", columnList = "deleted")
        })
-public class DictEntity extends BaseEntity {
+@SQLDelete(sql = "UPDATE sys_dict SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
+public class DictEntity extends     BaseEntity {
 
     /**
      * 字典名称

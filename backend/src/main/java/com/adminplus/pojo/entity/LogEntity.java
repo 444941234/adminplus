@@ -2,9 +2,12 @@ package com.adminplus.pojo.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 /**
  * 操作日志实体
@@ -15,7 +18,15 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "sys_log")
+@Table(name = "sys_log",
+       indexes = {
+           @Index(name = "idx_log_user_id", columnList = "user_id"),
+           @Index(name = "idx_log_create_time", columnList = "create_time"),
+           @Index(name = "idx_log_operation_type", columnList = "operation_type"),
+           @Index(name = "idx_log_deleted", columnList = "deleted")
+       })
+@SQLDelete(sql = "UPDATE sys_log SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class LogEntity extends BaseEntity {
 
     /**

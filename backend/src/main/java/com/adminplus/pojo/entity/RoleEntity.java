@@ -2,10 +2,13 @@ package com.adminplus.pojo.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 /**
  * 角色实体
@@ -16,9 +19,16 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "sys_role", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "code")
-})
+@Table(name = "sys_role",
+       uniqueConstraints = {
+           @UniqueConstraint(name = "uk_role_code", columnNames = "code")
+       },
+       indexes = {
+           @Index(name = "idx_role_status", columnList = "status"),
+           @Index(name = "idx_role_deleted", columnList = "deleted")
+       })
+@SQLDelete(sql = "UPDATE sys_role SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class RoleEntity extends BaseEntity {
 
     /**

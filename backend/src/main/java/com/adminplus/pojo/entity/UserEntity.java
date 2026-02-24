@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import org.hibernate.type.SqlTypes;
 
 import java.util.Map;
@@ -19,7 +21,7 @@ import java.util.Map;
 @Entity
 @Table(name = "sys_user",
        uniqueConstraints = {
-           @UniqueConstraint(columnNames = "username")
+           @UniqueConstraint(name = "uk_user_username", columnNames = "username")
        },
        indexes = {
            @Index(name = "idx_user_username", columnList = "username"),
@@ -29,6 +31,8 @@ import java.util.Map;
            @Index(name = "idx_user_deleted", columnList = "deleted"),
            @Index(name = "idx_user_dept_id", columnList = "dept_id")
        })
+@SQLDelete(sql = "UPDATE sys_user SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class UserEntity extends BaseEntity {
 
     /**
