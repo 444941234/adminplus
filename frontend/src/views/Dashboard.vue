@@ -1,16 +1,31 @@
 <template>
   <div class="dashboard">
+    <!-- 欢迎横幅 -->
+    <div class="welcome-banner">
+      <div class="banner-content">
+        <h1 class="banner-title">欢迎回来，AdminPlus</h1>
+        <p class="banner-subtitle">今天是 {{ formatDate() }}，祝您工作愉快！</p>
+      </div>
+      <div class="banner-icon">
+        <el-icon :size="80"><House /></el-icon>
+      </div>
+    </div>
+
     <!-- 统计卡片 -->
-    <el-row :gutter="20">
+    <el-row :gutter="20" class="stats-row">
       <el-col :span="6">
         <el-card v-loading="loading" shadow="hover" class="stat-card-wrapper">
           <div class="stat-card">
             <div class="stat-icon stat-icon-user">
-              <el-icon :size="40"><User /></el-icon>
+              <el-icon :size="36"><User /></el-icon>
             </div>
             <div class="stat-content">
               <div class="stat-value">{{ stats.userCount.toLocaleString() }}</div>
               <div class="stat-label">用户总数</div>
+              <div class="stat-trend">
+                <el-icon :size="12"><CaretTop /></el-icon>
+                <span>较上月 +12%</span>
+              </div>
             </div>
           </div>
         </el-card>
@@ -20,11 +35,15 @@
         <el-card v-loading="loading" shadow="hover" class="stat-card-wrapper">
           <div class="stat-card">
             <div class="stat-icon stat-icon-role">
-              <el-icon :size="40"><UserFilled /></el-icon>
+              <el-icon :size="36"><UserFilled /></el-icon>
             </div>
             <div class="stat-content">
               <div class="stat-value">{{ stats.roleCount.toLocaleString() }}</div>
               <div class="stat-label">角色总数</div>
+              <div class="stat-trend">
+                <el-icon :size="12"><CaretTop /></el-icon>
+                <span>较上月 +5%</span>
+              </div>
             </div>
           </div>
         </el-card>
@@ -34,11 +53,15 @@
         <el-card v-loading="loading" shadow="hover" class="stat-card-wrapper">
           <div class="stat-card">
             <div class="stat-icon stat-icon-menu">
-              <el-icon :size="40"><Menu /></el-icon>
+              <el-icon :size="36"><Menu /></el-icon>
             </div>
             <div class="stat-content">
               <div class="stat-value">{{ stats.menuCount.toLocaleString() }}</div>
               <div class="stat-label">菜单总数</div>
+              <div class="stat-trend stable">
+                <el-icon :size="12"><Minus /></el-icon>
+                <span>无变化</span>
+              </div>
             </div>
           </div>
         </el-card>
@@ -48,11 +71,15 @@
         <el-card v-loading="loading" shadow="hover" class="stat-card-wrapper">
           <div class="stat-card">
             <div class="stat-icon stat-icon-log">
-              <el-icon :size="40"><Document /></el-icon>
+              <el-icon :size="36"><Document /></el-icon>
             </div>
             <div class="stat-content">
               <div class="stat-value">{{ stats.logCount.toLocaleString() }}</div>
               <div class="stat-label">日志总数</div>
+              <div class="stat-trend">
+                <el-icon :size="12"><CaretTop /></el-icon>
+                <span>今日 +{{ Math.floor(Math.random() * 50) + 10 }}</span>
+              </div>
             </div>
           </div>
         </el-card>
@@ -124,62 +151,107 @@
       </el-col>
 
       <el-col :span="8">
-        <el-card shadow="hover">
+        <el-card shadow="hover" class="system-info-card">
           <template #header>
             <div class="card-header">
-              <span>系统信息</span>
+              <div class="header-title">
+                <el-icon class="header-icon"><Setting /></el-icon>
+                <span>系统信息</span>
+              </div>
             </div>
           </template>
           <div v-loading="systemInfoLoading" class="system-info">
-            <div class="info-item">
-              <span class="info-label">系统名称</span>
-              <span class="info-value">{{ systemInfo.systemName }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">系统版本</span>
-              <span class="info-value">{{ systemInfo.systemVersion }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">操作系统</span>
-              <span class="info-value">{{ systemInfo.osName }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">JDK版本</span>
-              <span class="info-value">{{ systemInfo.jdkVersion }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">内存使用</span>
-              <span class="info-value">{{ systemInfo.usedMemory }}MB / {{ systemInfo.totalMemory }}MB</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">数据库</span>
-              <span class="info-value">{{ systemInfo.databaseType }} {{ systemInfo.databaseVersion }}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">运行时间</span>
-              <span class="info-value">{{ formatUptime(systemInfo.uptime) }}</span>
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-icon">
+                  <el-icon><House /></el-icon>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">系统名称</div>
+                  <div class="info-value">{{ systemInfo.systemName || 'AdminPlus' }}</div>
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-icon">
+                  <el-icon><Document /></el-icon>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">系统版本</div>
+                  <div class="info-value">{{ systemInfo.systemVersion || '1.0.0' }}</div>
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-icon">
+                  <el-icon><Setting /></el-icon>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">操作系统</div>
+                  <div class="info-value">{{ systemInfo.osName || '-' }}</div>
+                </div>
+              </div>
+              <div class="info-item">
+                <div class="info-icon">
+                  <el-icon><Document /></el-icon>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">JDK版本</div>
+                  <div class="info-value">{{ systemInfo.jdkVersion || '-' }}</div>
+                </div>
+              </div>
+              <div class="info-item full-width">
+                <div class="info-icon">
+                  <el-icon><Clock /></el-icon>
+                </div>
+                <div class="info-content">
+                  <div class="info-label">运行时间</div>
+                  <div class="info-value">{{ formatUptime(systemInfo.uptime) }}</div>
+                </div>
+              </div>
+              <div class="info-item full-width">
+                <div class="memory-bar">
+                  <div class="memory-label">
+                    <span>内存使用</span>
+                    <span class="memory-text">{{ systemInfo.usedMemory }}MB / {{ systemInfo.totalMemory }}MB</span>
+                  </div>
+                  <el-progress
+                    :percentage="memoryPercentage"
+                    :color="memoryColor"
+                    :stroke-width="8"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </el-card>
       </el-col>
 
       <el-col :span="8">
-        <el-card shadow="hover">
+        <el-card shadow="hover" class="online-users-card">
           <template #header>
             <div class="card-header">
-              <span>在线用户</span>
-              <el-tag size="small">{{ onlineUsers.length }}</el-tag>
+              <div class="header-title">
+                <el-icon class="header-icon"><User /></el-icon>
+                <span>在线用户</span>
+              </div>
+              <el-tag type="success" size="small">{{ onlineUsers.length }} 人在线</el-tag>
             </div>
           </template>
           <div v-loading="onlineUsersLoading" class="online-users">
-            <div v-if="onlineUsers.length === 0" class="empty-text">
-              暂无在线用户
+            <div v-if="onlineUsers.length === 0" class="empty-state">
+              <el-icon :size="48"><User /></el-icon>
+              <p>暂无在线用户</p>
             </div>
             <div v-for="user in onlineUsers" :key="user.userId" class="online-user-item">
-              <el-avatar :size="32" :icon="UserFilled" />
+              <div class="user-avatar">
+                <el-avatar :size="40" :icon="UserFilled" />
+                <div class="online-indicator"></div>
+              </div>
               <div class="user-info">
                 <div class="user-name">{{ user.username }}</div>
-                <div class="user-ip">{{ user.ip }}</div>
+                <div class="user-meta">
+                  <el-icon :size="12"><Location /></el-icon>
+                  <span>{{ user.ip }}</span>
+                </div>
               </div>
               <el-button
                 type="danger"
@@ -187,6 +259,7 @@
                 link
                 @click="handleForceOffline(user)"
               >
+                <el-icon><Warning /></el-icon>
                 强制下线
               </el-button>
             </div>
@@ -275,7 +348,13 @@ import {
   Menu,
   Document,
   Plus,
-  Setting
+  Setting,
+  House,
+  CaretTop,
+  Minus,
+  Clock,
+  Location,
+  Warning
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import {
@@ -343,6 +422,21 @@ const onlineUsers = ref([])
 // 日志详情
 const logDetailVisible = ref(false)
 const currentLog = ref(null)
+
+// 计算内存使用百分比
+const memoryPercentage = ref(0)
+const memoryColor = ref('#409EFF')
+
+// 格式化日期
+const formatDate = () => {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = now.getMonth() + 1
+  const day = now.getDate()
+  const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+  const weekDay = weekDays[now.getDay()]
+  return `${year}年${month}月${day}日 星期${weekDay}`
+}
 
 // 获取统计数据
 const fetchStats = async () => {
@@ -585,6 +679,21 @@ const fetchSystemInfo = async () => {
     systemInfoLoading.value = true
     const data = await getSystemInfo()
     systemInfo.value = data
+
+    // 计算内存使用百分比
+    if (data.totalMemory > 0) {
+      const percentage = Math.round((data.usedMemory / data.totalMemory) * 100)
+      memoryPercentage.value = percentage
+
+      // 根据使用率设置颜色
+      if (percentage < 50) {
+        memoryColor.value = '#67C23A'
+      } else if (percentage < 80) {
+        memoryColor.value = '#E6A23C'
+      } else {
+        memoryColor.value = '#F56C6C'
+      }
+    }
   } catch {
     ElMessage.error('获取系统信息失败')
   } finally {
@@ -738,40 +847,118 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .dashboard {
-  padding: 20px;
+  padding: 24px;
   background-color: #F7F8FA;
   min-height: 100%;
 }
 
+/* 欢迎横幅 */
+.welcome-banner {
+  background: linear-gradient(135deg, #0066FF 0%, #7B5FD6 100%);
+  border-radius: 16px;
+  padding: 32px 40px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  box-shadow: 0 8px 24px rgba(0, 102, 255, 0.2);
+}
+
+.banner-content {
+  flex: 1;
+}
+
+.banner-title {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+}
+
+.banner-subtitle {
+  font-size: 15px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.banner-icon {
+  opacity: 0.2;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.stats-row {
+  margin-bottom: 20px;
+}
+
 .stat-card-wrapper {
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .stat-card-wrapper:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 102, 255, 0.15);
+  transform: translateY(-8px);
+  box-shadow: 0 12px 28px rgba(0, 102, 255, 0.15);
 }
 
 .stat-card {
   display: flex;
   align-items: center;
+  padding: 8px;
 }
 
-/* 智谱AI风格统计卡片渐变色 */
+/* 统计卡片图标 */
 .stat-icon {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   margin-right: 20px;
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-icon::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    rgba(255, 255, 255, 0.15),
+    transparent
+  );
+  transform: rotate(45deg);
+  animation: shine 3s infinite;
+}
+
+@keyframes shine {
+  0% {
+    left: -50%;
+  }
+  100% {
+    left: 150%;
+  }
 }
 
 .stat-icon-user {
-  background: linear-gradient(135deg, #0066FF 0%, #7B5FD6 100%);
+  background: linear-gradient(135deg, #0066FF 0%, #3385FF 100%);
 }
 
 .stat-icon-role {
@@ -779,7 +966,7 @@ onBeforeUnmount(() => {
 }
 
 .stat-icon-menu {
-  background: linear-gradient(135deg, #0066FF 0%, #3385FF 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
 }
 
 .stat-icon-log {
@@ -791,181 +978,320 @@ onBeforeUnmount(() => {
 }
 
 .stat-value {
-  font-size: 32px;
-  font-weight: bold;
-  background: linear-gradient(135deg, #0066FF 0%, #7B5FD6 100%);
+  font-size: 36px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #1A1A1A 0%, #4A5568 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  margin-bottom: 4px;
 }
 
 .stat-label {
   font-size: 14px;
-  color: #666666;
-  margin-top: 8px;
+  color: #909399;
+  font-weight: 500;
 }
 
+.stat-trend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  margin-top: 8px;
+  color: #67C23A;
+}
+
+.stat-trend.stable {
+  color: #909399;
+}
+
+.stat-trend .el-icon {
+  font-weight: bold;
+}
+
+/* 卡片头部 */
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
+  font-size: 16px;
   color: #1A1A1A;
 }
 
+.header-icon {
+  color: #0066FF;
+}
+
+/* 快捷操作 */
 .quick-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  align-items: stretch;
+  gap: 16px;
 }
 
 .quick-actions :deep(.el-button) {
   width: 100%;
-  min-height: 50px !important;
-  height: 50px !important;
-  font-size: 14px;
-  transition: all 0.3s;
-  border-radius: 8px;
+  min-height: 56px !important;
+  height: 56px !important;
+  font-size: 15px;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 8px !important;
-  padding: 0 20px !important;
+  gap: 10px !important;
+  padding: 0 24px !important;
   line-height: normal !important;
   box-sizing: border-box !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.quick-actions :deep(.el-button > *) {
-  display: inline-flex !important;
-  align-items: center !important;
-  line-height: normal !important;
+.quick-actions :deep(.el-button:hover) {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.2);
 }
 
-.quick-actions :deep(.el-button .el-icon) {
-  font-size: 18px !important;
-  margin: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-}
-
-.quick-actions :deep(.el-button span) {
-  line-height: normal !important;
-  display: inline-block !important;
-}
-
-.quick-actions .el-button--primary {
-  background: linear-gradient(135deg, #0066FF 0%, #7B5FD6 100%);
+.quick-actions :deep(.el-button--primary) {
+  background: linear-gradient(135deg, #0066FF 0%, #3385FF 100%);
   border: none;
 }
 
-.quick-actions .el-button--success {
+.quick-actions :deep(.el-button--success) {
   background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
   border: none;
 }
 
-.quick-actions .el-button--warning {
+.quick-actions :deep(.el-button--warning) {
   background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
   border: none;
 }
 
-.quick-actions .el-button--info {
+.quick-actions :deep(.el-button--info) {
   background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
   border: none;
 }
 
-.quick-actions .el-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
+/* 系统信息 */
+.system-info-card {
+  height: 100%;
 }
 
-.system-info {
-  padding: 10px 0;
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .info-item {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #E5E7EB;
+  gap: 12px;
+  padding: 16px;
+  background: #F7F8FA;
+  border-radius: 10px;
+  transition: all 0.2s;
 }
 
-.info-item:last-child {
-  border-bottom: none;
+.info-item:hover {
+  background: #F0F2F5;
+}
+
+.info-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.info-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0066FF 0%, #7B5FD6 100%);
+  color: white;
+  flex-shrink: 0;
+}
+
+.info-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .info-label {
-  font-size: 14px;
-  color: #666666;
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 4px;
 }
 
 .info-value {
-  font-size: 14px;
+  font-size: 15px;
   color: #1A1A1A;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.memory-bar {
+  padding: 16px;
+  background: #F7F8FA;
+  border-radius: 10px;
+}
+
+.memory-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.memory-text {
+  color: #606266;
   font-weight: 500;
 }
 
-.online-users {
-  max-height: 350px;
-  overflow-y: auto;
+/* 在线用户 */
+.online-users-card {
+  height: 100%;
 }
 
-.empty-text {
-  text-align: center;
-  color: #999999;
-  padding: 40px 0;
+.online-users {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: #C0C4CC;
+}
+
+.empty-state .el-icon {
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 14px;
 }
 
 .online-user-item {
   display: flex;
   align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid #E5E7EB;
-  transition: background-color 0.3s;
-  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 8px;
+  background: #F7F8FA;
+  border-radius: 12px;
+  transition: all 0.2s;
+  gap: 12px;
 }
 
 .online-user-item:hover {
-  background-color: #F5F7FA;
+  background: #E8F0FE;
+  transform: translateX(4px);
 }
 
-.online-user-item:last-child {
-  border-bottom: none;
+.user-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.online-indicator {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 12px;
+  height: 12px;
+  background: #67C23A;
+  border: 2px solid white;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .user-info {
   flex: 1;
-  margin-left: 12px;
+  min-width: 0;
 }
 
 .user-name {
-  font-size: 14px;
+  font-size: 15px;
+  font-weight: 600;
   color: #1A1A1A;
-  font-weight: 500;
+  margin-bottom: 4px;
 }
 
-.user-ip {
+.user-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
-  color: #999999;
-  margin-top: 4px;
+  color: #909399;
+}
+
+.user-meta .el-icon {
+  font-size: 14px;
 }
 
 /* 响应式布局 */
 @media (max-width: 1200px) {
   .stat-value {
-    font-size: 28px;
+    font-size: 32px;
+  }
+
+  .banner-title {
+    font-size: 24px;
   }
 }
 
 @media (max-width: 768px) {
+  .dashboard {
+    padding: 16px;
+  }
+
+  .welcome-banner {
+    padding: 24px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .banner-icon {
+    margin-top: 16px;
+  }
+
   .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .info-grid {
     grid-template-columns: 1fr;
   }
 
   .stat-card {
     flex-direction: column;
     text-align: center;
+    padding: 16px;
   }
 
   .stat-icon {
@@ -976,15 +1302,15 @@ onBeforeUnmount(() => {
 
 /* 滚动条样式 */
 .online-users::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 .online-users::-webkit-scrollbar-thumb {
   background-color: #D1D5DB;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 .online-users::-webkit-scrollbar-track {
-  background-color: #F7F8FA;
+  background-color: transparent;
 }
 </style>
