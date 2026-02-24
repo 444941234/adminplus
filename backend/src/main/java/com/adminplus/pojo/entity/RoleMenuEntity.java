@@ -25,7 +25,6 @@ import lombok.Data;
 public class RoleMenuEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     /**

@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
@@ -19,6 +20,9 @@ import org.hibernate.annotations.Where;
 @Setter
 @Entity
 @Table(name = "sys_dict",
+       uniqueConstraints = {
+           @UniqueConstraint(name = "uk_dict_type", columnNames = "dict_type")
+       },
        indexes = {
            @Index(name = "idx_dict_type", columnList = "dict_type"),
            @Index(name = "idx_dict_status", columnList = "status"),
@@ -26,7 +30,7 @@ import org.hibernate.annotations.Where;
        })
 @SQLDelete(sql = "UPDATE sys_dict SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
-public class DictEntity extends     BaseEntity {
+public class DictEntity extends BaseEntity {
 
     /**
      * 字典名称
@@ -37,7 +41,7 @@ public class DictEntity extends     BaseEntity {
     /**
      * 字典类型（唯一标识）
      */
-    @Column(name = "dict_type", nullable = false, unique = true, length = 100)
+    @Column(name = "dict_type", nullable = false, length = 100)
     private String dictType;
 
     /**

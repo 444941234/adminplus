@@ -25,7 +25,6 @@ import lombok.Data;
 public class UserRoleEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     /**

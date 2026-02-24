@@ -34,7 +34,7 @@ public class RoleEntity extends BaseEntity {
     /**
      * 角色编码（如 ROLE_ADMIN）
      */
-    @Column(name = "code", nullable = false, length = 50, unique = true)
+    @Column(name = "code", nullable = false, length = 50)
     private String code;
 
     /**
