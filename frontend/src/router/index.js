@@ -38,16 +38,16 @@ const publicRoutes = [
 // ============ Layout 内部固定路由 ============
 const layoutRoutes = [
   {
-    path: '/dashboard',
+    path: 'dashboard',
     name: 'Dashboard',
     component: () => import('@/views/Dashboard.vue'),
     meta: { requiresAuth: true, title: '首页', icon: 'HomeFilled' },
   },
   {
-    path: '/profile',
+    path: 'profile',
     name: 'Profile',
     component: () => import('@/views/Profile.vue'),
-    meta: { requiresAuth: true, title: '个人中心' },
+    meta: { requiresAuth: true, title: '个人中心', hidden: true },
   },
 ];
 
@@ -113,7 +113,7 @@ const loadDynamicRoutes = async (userStore) => {
 export const addDynamicRoutes = (menus) => {
   console.log('[Router] 开始添加动态路由，菜单数据:', menus);
 
-  const dynamicRoutes = menusToRoutes(menus);
+  const dynamicRoutes = normalizeRoutesPaths(menusToRoutes(menus));
   console.log('[Router] 转换后的路由配置:', dynamicRoutes);
 
   const layoutRoute = {
@@ -134,6 +134,29 @@ export const addDynamicRoutes = (menus) => {
   });
 
   console.log('[Router] 动态路由添加完成');
+};
+
+/**
+ * 标准化路由路径，移除前导斜杠使其成为相对路径
+ * @param {Object[]} routes - 路由配置数组
+ * @returns {Object[]} 标准化后的路由配置
+ */
+const normalizeRoutesPaths = (routes) => {
+  return routes.map((route) => {
+    const normalizedRoute = { ...route };
+
+    // 处理路径：移除前导斜杠
+    if (normalizedRoute.path.startsWith('/')) {
+      normalizedRoute.path = normalizedRoute.path.substring(1);
+    }
+
+    // 递归处理子路由
+    if (normalizedRoute.children && normalizedRoute.children.length > 0) {
+      normalizedRoute.children = normalizeRoutesPaths(normalizedRoute.children);
+    }
+
+    return normalizedRoute;
+  });
 };
 
 /**
