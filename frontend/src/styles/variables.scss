@@ -2,6 +2,9 @@
 // AdminPlus 全局样式变量 - 智谱AI风格
 // ============================================
 
+// 引入 Sass color 模块
+@use 'sass:color';
+
 // ===== 主色调 =====
 $primary-color: #0066FF;           // 科技蓝 - 主色
 $primary-light: #3385FF;          // 科技蓝 - 浅色
@@ -162,9 +165,9 @@ $sidebar-collapsed-width: 64px;
 $el-color-primary: $primary-color;
 $el-color-primary-light-3: $primary-light;
 $el-color-primary-light-5: $primary-lighter;
-$el-color-primary-light-7: mix($primary-color, $bg-white, 70%);
-$el-color-primary-light-8: mix($primary-color, $bg-white, 80%);
-$el-color-primary-light-9: mix($primary-color, $bg-white, 90%);
+$el-color-primary-light-7: color.mix($primary-color, $bg-white, 70%);
+$el-color-primary-light-8: color.mix($primary-color, $bg-white, 80%);
+$el-color-primary-light-9: color.mix($primary-color, $bg-white, 90%);
 $el-color-primary-dark-2: $primary-dark;
 
 $el-color-success: $success-color;

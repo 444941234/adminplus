@@ -44,7 +44,7 @@ html, body {
   transition: background-color $transition-fast;
 
   &:hover {
-    background-color: darken($border-dark, 10%);
+    background-color: color.scale($border-dark, $lightness: -10%);
   }
 }
 
