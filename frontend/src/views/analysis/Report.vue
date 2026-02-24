@@ -181,6 +181,7 @@
 <script setup>
 import { nextTick, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 
 const loading = ref(false)
