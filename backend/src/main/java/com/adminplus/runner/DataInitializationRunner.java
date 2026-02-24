@@ -9,6 +9,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import javax.sql.DataSource;
+import java.sql.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,13 +34,17 @@ public class DataInitializationRunner implements CommandLineRunner {
     private final UserRoleRepository userRoleRepository;
     private final RoleMenuRepository roleMenuRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DataSource dataSource;
 
     @Override
     @Transactional
     public void run(String... args) throws Exception {
         log.info("开始执行数据初始化...");
-        
+
         try {
+            // 确保中间表存在
+            ensureIntermediateTablesExist();
+
             // 检查是否已经初始化过
             if (isAlreadyInitialized()) {
                 log.info("数据已经初始化过，跳过初始化过程");
@@ -500,4 +506,100 @@ public class DataInitializationRunner implements CommandLineRunner {
     }
 
     // 已移除generateId方法，改用雪花ID
+
+    /**
+     * 确保中间表存在，不存在则创建
+     */
+    private void ensureIntermediateTablesExist() {
+        try (Connection conn = dataSource.getConnection()) {
+            DatabaseMetaData meta = conn.getMetaData();
+
+            // 检查并创建 sys_user_role 表
+            if (!tableExists(meta, "sys_user_role")) {
+                log.info("创建中间表: sys_user_role");
+                createUserRoleTable(conn);
+            }
+
+            // 检查并创建 sys_role_menu 表
+            if (!tableExists(meta, "sys_role_menu")) {
+                log.info("创建中间表: sys_role_menu");
+                createRoleMenuTable(conn);
+            }
+
+        } catch (SQLException e) {
+            log.error("检查/创建中间表失败", e);
+            throw new RuntimeException("无法创建中间表", e);
+        }
+    }
+
+    /**
+     * 检查表是否存在
+     */
+    private boolean tableExists(DatabaseMetaData meta, String tableName) throws SQLException {
+        try (ResultSet rs = meta.getTables(null, null, tableName, new String[]{"TABLE"})) {
+            return rs.next();
+        }
+    }
+
+    /**
+     * 创建 sys_user_role 表
+     */
+    private void createUserRoleTable(Connection conn) throws SQLException {
+        String sql = """
+            CREATE TABLE sys_user_role (
+                id VARCHAR(50) PRIMARY KEY,
+                user_id VARCHAR(50) NOT NULL,
+                role_id VARCHAR(50) NOT NULL,
+                CONSTRAINT uk_user_role_user_role UNIQUE (user_id, role_id)
+            )
+            """;
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute(sql);
+        }
+
+        // 创建索引
+        String[] indexes = {
+            "CREATE INDEX idx_user_role_user_id ON sys_user_role(user_id)",
+            "CREATE INDEX idx_user_role_role_id ON sys_user_role(role_id)"
+        };
+        for (String indexSql : indexes) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(indexSql);
+            } catch (SQLException e) {
+                // 索引可能已存在，忽略错误
+                log.debug("创建索引时出现警告: {}", e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * 创建 sys_role_menu 表
+     */
+    private void createRoleMenuTable(Connection conn) throws SQLException {
+        String sql = """
+            CREATE TABLE sys_role_menu (
+                id VARCHAR(50) PRIMARY KEY,
+                role_id VARCHAR(50) NOT NULL,
+                menu_id VARCHAR(50) NOT NULL,
+                CONSTRAINT uk_role_menu_role_menu UNIQUE (role_id, menu_id)
+            )
+            """;
+        try (Statement stmt = conn.createStatement()) {
+            stmt.execute(sql);
+        }
+
+        // 创建索引
+        String[] indexes = {
+            "CREATE INDEX idx_role_menu_role_id ON sys_role_menu(role_id)",
+            "CREATE INDEX idx_role_menu_menu_id ON sys_role_menu(menu_id)"
+        };
+        for (String indexSql : indexes) {
+            try (Statement stmt = conn.createStatement()) {
+                stmt.execute(indexSql);
+            } catch (SQLException e) {
+                // 索引可能已存在，忽略错误
+                log.debug("创建索引时出现警告: {}", e.getMessage());
+            }
+        }
+    }
 }
