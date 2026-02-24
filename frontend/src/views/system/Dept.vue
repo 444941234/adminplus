@@ -38,9 +38,18 @@
                 </el-tag>
               </div>
               <div class="node-details">
-                <span class="detail-item">编码: {{ data.code }}</span>
-                <span class="detail-item">负责人: {{ data.leader || '-' }}</span>
-                <span class="detail-item">电话: {{ data.phone || '-' }}</span>
+                <div class="detail-row">
+                  <span class="detail-label">编码</span>
+                  <span class="detail-value">{{ data.code || '-' }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">负责人</span>
+                  <span class="detail-value">{{ data.leader || '-' }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="detail-label">电话</span>
+                  <span class="detail-value">{{ data.phone || '-' }}</span>
+                </div>
               </div>
             </div>
             <div class="node-actions">
@@ -248,11 +257,16 @@ onMounted(() => {
 .tree-node {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   width: 100%;
-  padding: 12px 8px;
-  flex-wrap: wrap;
-  gap: 12px;
+  padding: 16px 12px;
+  gap: 16px;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.tree-node:hover {
+  background-color: #f5f7fa;
 }
 
 .node-info {
@@ -263,12 +277,12 @@ onMounted(() => {
 .node-name-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
 .node-name {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   color: #303133;
 }
@@ -280,35 +294,42 @@ onMounted(() => {
 .node-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-  font-size: 13px;
-  color: #606266;
+  gap: 24px 32px;
 }
 
-.detail-item {
-  white-space: nowrap;
+.detail-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
+  gap: 8px;
 }
 
-.detail-item::before {
-  content: '';
-  display: inline-block;
-  width: 4px;
-  height: 4px;
-  background-color: #dcdfe6;
-  border-radius: 50%;
-  margin-right: 8px;
+.detail-label {
+  font-size: 13px;
+  color: #909399;
+  white-space: nowrap;
 }
 
-.detail-item:first-child::before {
-  display: none;
+.detail-value {
+  font-size: 14px;
+  color: #606266;
+  word-break: break-all;
 }
 
 .node-actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-shrink: 0;
+  align-items: flex-start;
+}
+
+/* 树形组件内容区域的样式优化 */
+:deep(.el-tree-node__content) {
+  height: auto !important;
+  padding: 8px 0 !important;
+}
+
+:deep(.el-tree-node__content:hover) {
+  background-color: transparent !important;
 }
 
 /* 响应式：小屏幕时优化布局 */
@@ -316,11 +337,16 @@ onMounted(() => {
   .tree-node {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
   }
 
   .node-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .node-details {
+    gap: 12px 16px;
   }
 }
 </style>
