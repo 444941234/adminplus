@@ -250,7 +250,9 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 8px 0;
+  padding: 12px 8px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .node-info {
@@ -261,12 +263,12 @@ onMounted(() => {
 .node-name-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
 .node-name {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: #303133;
 }
@@ -277,17 +279,48 @@ onMounted(() => {
 
 .node-details {
   display: flex;
-  gap: 16px;
-  font-size: 12px;
-  color: #909399;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 13px;
+  color: #606266;
 }
 
 .detail-item {
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+.detail-item::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  background-color: #dcdfe6;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+
+.detail-item:first-child::before {
+  display: none;
 }
 
 .node-actions {
   display: flex;
-  gap: 5px;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* 响应式：小屏幕时优化布局 */
+@media (max-width: 768px) {
+  .tree-node {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .node-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 </style>
