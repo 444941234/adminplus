@@ -9,7 +9,9 @@
               <el-button type="success">
                 <el-icon><MagicStick /></el-icon>
                 快速添加模板
-                <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+                <el-icon class="el-icon--right">
+                  <ArrowDown />
+                </el-icon>
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
@@ -459,7 +461,10 @@
           </div>
         </div>
 
-        <div v-if="filteredIcons.length === 0" class="no-icons">
+        <div
+          v-if="filteredIcons.length === 0"
+          class="no-icons"
+        >
           未找到匹配的图标
         </div>
       </div>
@@ -542,17 +547,6 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import {
-  Plus, Edit, Delete, Search, Setting, User, Lock, Unlock,
-  View, Hide, Check, Close, ArrowRight, ArrowLeft, ArrowUp, ArrowDown,
-  Menu, Document, Folder, FolderOpened, Files, DataLine,
-  Tools, Management, Monitor, Bell, Message, ChatLineSquare,
-  Calendar, Clock, Timer, Warning, InfoFilled, SuccessFilled,
-  CircleCheck, CircleClose, CirclePlus, ZoomIn, ZoomOut,
-  Refresh, RefreshRight, RefreshLeft, Download, Upload, Share,
-  More, MoreFilled, Star, StarFilled, EditPen, DeleteFilled,
-  MagicStick
-} from '@element-plus/icons-vue'
 import { getMenuTree, createMenu, updateMenu, deleteMenu, batchUpdateMenuStatus, batchDeleteMenu } from '@/api/menu'
 import { useForm } from '@/composables/useForm'
 import { useConfirm } from '@/composables/useConfirm'
@@ -968,7 +962,7 @@ const handleBatchImportSubmit = async () => {
     }
     
     showBatchImport.value = false
-  } catch (error) {
+  } catch {
     ElMessage.error('JSON 格式错误，请检查数据')
   } finally {
     importLoading.value = false

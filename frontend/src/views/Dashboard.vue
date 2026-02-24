@@ -3,27 +3,48 @@
     <!-- 欢迎横幅 -->
     <div class="welcome-banner">
       <div class="banner-content">
-        <h1 class="banner-title">欢迎回来，AdminPlus</h1>
-        <p class="banner-subtitle">今天是 {{ formatDate() }}，祝您工作愉快！</p>
+        <h1 class="banner-title">
+          欢迎回来，AdminPlus
+        </h1>
+        <p class="banner-subtitle">
+          今天是 {{ formatDate() }}，祝您工作愉快！
+        </p>
       </div>
       <div class="banner-icon">
-        <el-icon :size="80"><House /></el-icon>
+        <el-icon :size="80">
+          <House />
+        </el-icon>
       </div>
     </div>
 
     <!-- 统计卡片 -->
-    <el-row :gutter="20" class="stats-row">
+    <el-row
+      :gutter="20"
+      class="stats-row"
+    >
       <el-col :span="6">
-        <el-card v-loading="loading" shadow="hover" class="stat-card-wrapper">
+        <el-card
+          v-loading="loading"
+          shadow="hover"
+          class="stat-card-wrapper"
+        >
           <div class="stat-card">
             <div class="stat-icon stat-icon-user">
-              <el-icon :size="36"><User /></el-icon>
+              <el-icon :size="36">
+                <User />
+              </el-icon>
             </div>
             <div class="stat-content">
-              <div class="stat-value">{{ stats.userCount.toLocaleString() }}</div>
-              <div class="stat-label">用户总数</div>
+              <div class="stat-value">
+                {{ stats.userCount.toLocaleString() }}
+              </div>
+              <div class="stat-label">
+                用户总数
+              </div>
               <div class="stat-trend">
-                <el-icon :size="12"><CaretTop /></el-icon>
+                <el-icon :size="12">
+                  <CaretTop />
+                </el-icon>
                 <span>较上月 +12%</span>
               </div>
             </div>
@@ -32,16 +53,28 @@
       </el-col>
 
       <el-col :span="6">
-        <el-card v-loading="loading" shadow="hover" class="stat-card-wrapper">
+        <el-card
+          v-loading="loading"
+          shadow="hover"
+          class="stat-card-wrapper"
+        >
           <div class="stat-card">
             <div class="stat-icon stat-icon-role">
-              <el-icon :size="36"><UserFilled /></el-icon>
+              <el-icon :size="36">
+                <UserFilled />
+              </el-icon>
             </div>
             <div class="stat-content">
-              <div class="stat-value">{{ stats.roleCount.toLocaleString() }}</div>
-              <div class="stat-label">角色总数</div>
+              <div class="stat-value">
+                {{ stats.roleCount.toLocaleString() }}
+              </div>
+              <div class="stat-label">
+                角色总数
+              </div>
               <div class="stat-trend">
-                <el-icon :size="12"><CaretTop /></el-icon>
+                <el-icon :size="12">
+                  <CaretTop />
+                </el-icon>
                 <span>较上月 +5%</span>
               </div>
             </div>
@@ -50,16 +83,28 @@
       </el-col>
 
       <el-col :span="6">
-        <el-card v-loading="loading" shadow="hover" class="stat-card-wrapper">
+        <el-card
+          v-loading="loading"
+          shadow="hover"
+          class="stat-card-wrapper"
+        >
           <div class="stat-card">
             <div class="stat-icon stat-icon-menu">
-              <el-icon :size="36"><Menu /></el-icon>
+              <el-icon :size="36">
+                <Menu />
+              </el-icon>
             </div>
             <div class="stat-content">
-              <div class="stat-value">{{ stats.menuCount.toLocaleString() }}</div>
-              <div class="stat-label">菜单总数</div>
+              <div class="stat-value">
+                {{ stats.menuCount.toLocaleString() }}
+              </div>
+              <div class="stat-label">
+                菜单总数
+              </div>
               <div class="stat-trend stable">
-                <el-icon :size="12"><Minus /></el-icon>
+                <el-icon :size="12">
+                  <Minus />
+                </el-icon>
                 <span>无变化</span>
               </div>
             </div>
@@ -68,16 +113,28 @@
       </el-col>
 
       <el-col :span="6">
-        <el-card v-loading="loading" shadow="hover" class="stat-card-wrapper">
+        <el-card
+          v-loading="loading"
+          shadow="hover"
+          class="stat-card-wrapper"
+        >
           <div class="stat-card">
             <div class="stat-icon stat-icon-log">
-              <el-icon :size="36"><Document /></el-icon>
+              <el-icon :size="36">
+                <Document />
+              </el-icon>
             </div>
             <div class="stat-content">
-              <div class="stat-value">{{ stats.logCount.toLocaleString() }}</div>
-              <div class="stat-label">日志总数</div>
+              <div class="stat-value">
+                {{ stats.logCount.toLocaleString() }}
+              </div>
+              <div class="stat-label">
+                日志总数
+              </div>
               <div class="stat-trend">
-                <el-icon :size="12"><CaretTop /></el-icon>
+                <el-icon :size="12">
+                  <CaretTop />
+                </el-icon>
                 <span>今日 +{{ Math.floor(Math.random() * 50) + 10 }}</span>
               </div>
             </div>
@@ -87,7 +144,10 @@
     </el-row>
 
     <!-- 图表区域 -->
-    <el-row :gutter="20" style="margin-top: 20px">
+    <el-row
+      :gutter="20"
+      style="margin-top: 20px"
+    >
       <el-col :span="16">
         <el-card shadow="hover">
           <template #header>
@@ -95,7 +155,10 @@
               <span>用户增长趋势</span>
             </div>
           </template>
-          <div ref="userGrowthChartRef" style="height: 350px"></div>
+          <div
+            ref="userGrowthChartRef"
+            style="height: 350px"
+          />
         </el-card>
       </el-col>
 
@@ -106,12 +169,18 @@
               <span>角色分布</span>
             </div>
           </template>
-          <div ref="roleDistributionChartRef" style="height: 350px"></div>
+          <div
+            ref="roleDistributionChartRef"
+            style="height: 350px"
+          />
         </el-card>
       </el-col>
     </el-row>
 
-    <el-row :gutter="20" style="margin-top: 20px">
+    <el-row
+      :gutter="20"
+      style="margin-top: 20px"
+    >
       <el-col :span="24">
         <el-card shadow="hover">
           <template #header>
@@ -119,58 +188,105 @@
               <span>菜单类型分布</span>
             </div>
           </template>
-          <div ref="menuDistributionChartRef" style="height: 300px"></div>
+          <div
+            ref="menuDistributionChartRef"
+            style="height: 300px"
+          />
         </el-card>
       </el-col>
     </el-row>
 
     <!-- 快捷操作、系统信息、在线用户 -->
-    <el-row :gutter="20" class="bottom-row">
+    <el-row
+      :gutter="20"
+      class="bottom-row"
+    >
       <el-col :span="8">
-        <el-card shadow="hover" class="quick-actions-card">
+        <el-card
+          shadow="hover"
+          class="quick-actions-card"
+        >
           <template #header>
             <div class="card-header">
               <div class="header-title">
-                <el-icon class="header-icon"><Operation /></el-icon>
+                <el-icon class="header-icon">
+                  <Operation />
+                </el-icon>
                 <span>快捷操作</span>
               </div>
             </div>
           </template>
           <div class="quick-actions">
-            <div class="action-card" @click="handleQuickAction('user')">
+            <div
+              class="action-card"
+              @click="handleQuickAction('user')"
+            >
               <div class="action-icon action-icon-blue">
-                <el-icon :size="24"><User /></el-icon>
+                <el-icon :size="24">
+                  <User />
+                </el-icon>
               </div>
               <div class="action-content">
-                <div class="action-title">添加用户</div>
-                <div class="action-desc">创建新用户账号</div>
+                <div class="action-title">
+                  添加用户
+                </div>
+                <div class="action-desc">
+                  创建新用户账号
+                </div>
               </div>
             </div>
-            <div class="action-card" @click="handleQuickAction('role')">
+            <div
+              class="action-card"
+              @click="handleQuickAction('role')"
+            >
               <div class="action-icon action-icon-purple">
-                <el-icon :size="24"><UserFilled /></el-icon>
+                <el-icon :size="24">
+                  <UserFilled />
+                </el-icon>
               </div>
               <div class="action-content">
-                <div class="action-title">添加角色</div>
-                <div class="action-desc">配置角色权限</div>
+                <div class="action-title">
+                  添加角色
+                </div>
+                <div class="action-desc">
+                  配置角色权限
+                </div>
               </div>
             </div>
-            <div class="action-card" @click="handleQuickAction('menu')">
+            <div
+              class="action-card"
+              @click="handleQuickAction('menu')"
+            >
               <div class="action-icon action-icon-orange">
-                <el-icon :size="24"><Menu /></el-icon>
+                <el-icon :size="24">
+                  <Menu />
+                </el-icon>
               </div>
               <div class="action-content">
-                <div class="action-title">添加菜单</div>
-                <div class="action-desc">管理菜单权限</div>
+                <div class="action-title">
+                  添加菜单
+                </div>
+                <div class="action-desc">
+                  管理菜单权限
+                </div>
               </div>
             </div>
-            <div class="action-card" @click="handleQuickAction('system')">
+            <div
+              class="action-card"
+              @click="handleQuickAction('system')"
+            >
               <div class="action-icon action-icon-cyan">
-                <el-icon :size="24"><Setting /></el-icon>
+                <el-icon :size="24">
+                  <Setting />
+                </el-icon>
               </div>
               <div class="action-content">
-                <div class="action-title">系统设置</div>
-                <div class="action-desc">系统参数配置</div>
+                <div class="action-title">
+                  系统设置
+                </div>
+                <div class="action-desc">
+                  系统参数配置
+                </div>
               </div>
             </div>
           </div>
@@ -178,24 +294,36 @@
       </el-col>
 
       <el-col :span="8">
-        <el-card shadow="hover" class="system-info-card">
+        <el-card
+          shadow="hover"
+          class="system-info-card"
+        >
           <template #header>
             <div class="card-header">
               <div class="header-title">
-                <el-icon class="header-icon"><Setting /></el-icon>
+                <el-icon class="header-icon">
+                  <Setting />
+                </el-icon>
                 <span>系统信息</span>
               </div>
             </div>
           </template>
-          <div v-loading="systemInfoLoading" class="system-info">
+          <div
+            v-loading="systemInfoLoading"
+            class="system-info"
+          >
             <div class="info-grid">
               <div class="info-item">
                 <div class="info-icon">
                   <el-icon><House /></el-icon>
                 </div>
                 <div class="info-content">
-                  <div class="info-label">系统名称</div>
-                  <div class="info-value">{{ systemInfo.systemName || 'AdminPlus' }}</div>
+                  <div class="info-label">
+                    系统名称
+                  </div>
+                  <div class="info-value">
+                    {{ systemInfo.systemName || 'AdminPlus' }}
+                  </div>
                 </div>
               </div>
               <div class="info-item">
@@ -203,8 +331,12 @@
                   <el-icon><Document /></el-icon>
                 </div>
                 <div class="info-content">
-                  <div class="info-label">系统版本</div>
-                  <div class="info-value">{{ systemInfo.systemVersion || '1.0.0' }}</div>
+                  <div class="info-label">
+                    系统版本
+                  </div>
+                  <div class="info-value">
+                    {{ systemInfo.systemVersion || '1.0.0' }}
+                  </div>
                 </div>
               </div>
               <div class="info-item">
@@ -212,8 +344,12 @@
                   <el-icon><Setting /></el-icon>
                 </div>
                 <div class="info-content">
-                  <div class="info-label">操作系统</div>
-                  <div class="info-value">{{ systemInfo.osName || '-' }}</div>
+                  <div class="info-label">
+                    操作系统
+                  </div>
+                  <div class="info-value">
+                    {{ systemInfo.osName || '-' }}
+                  </div>
                 </div>
               </div>
               <div class="info-item">
@@ -221,8 +357,12 @@
                   <el-icon><Document /></el-icon>
                 </div>
                 <div class="info-content">
-                  <div class="info-label">JDK版本</div>
-                  <div class="info-value">{{ systemInfo.jdkVersion || '-' }}</div>
+                  <div class="info-label">
+                    JDK版本
+                  </div>
+                  <div class="info-value">
+                    {{ systemInfo.jdkVersion || '-' }}
+                  </div>
                 </div>
               </div>
               <div class="info-item full-width">
@@ -230,8 +370,12 @@
                   <el-icon><Clock /></el-icon>
                 </div>
                 <div class="info-content">
-                  <div class="info-label">运行时间</div>
-                  <div class="info-value">{{ formatUptime(systemInfo.uptime) }}</div>
+                  <div class="info-label">
+                    运行时间
+                  </div>
+                  <div class="info-value">
+                    {{ formatUptime(systemInfo.uptime) }}
+                  </div>
                 </div>
               </div>
               <div class="info-item full-width">
@@ -253,30 +397,59 @@
       </el-col>
 
       <el-col :span="8">
-        <el-card shadow="hover" class="online-users-card">
+        <el-card
+          shadow="hover"
+          class="online-users-card"
+        >
           <template #header>
             <div class="card-header">
               <div class="header-title">
-                <el-icon class="header-icon"><User /></el-icon>
+                <el-icon class="header-icon">
+                  <User />
+                </el-icon>
                 <span>在线用户</span>
               </div>
-              <el-tag type="success" size="small">{{ onlineUsers.length }} 人在线</el-tag>
+              <el-tag
+                type="success"
+                size="small"
+              >
+                {{ onlineUsers.length }} 人在线
+              </el-tag>
             </div>
           </template>
-          <div v-loading="onlineUsersLoading" class="online-users">
-            <div v-if="onlineUsers.length === 0" class="empty-state">
-              <el-icon :size="48"><User /></el-icon>
+          <div
+            v-loading="onlineUsersLoading"
+            class="online-users"
+          >
+            <div
+              v-if="onlineUsers.length === 0"
+              class="empty-state"
+            >
+              <el-icon :size="48">
+                <User />
+              </el-icon>
               <p>暂无在线用户</p>
             </div>
-            <div v-for="user in onlineUsers" :key="user.userId" class="online-user-item">
+            <div
+              v-for="user in onlineUsers"
+              :key="user.userId"
+              class="online-user-item"
+            >
               <div class="user-avatar">
-                <el-avatar :size="40" :icon="UserFilled" />
-                <div class="online-indicator"></div>
+                <el-avatar
+                  :size="40"
+                  :icon="UserFilled"
+                />
+                <div class="online-indicator" />
               </div>
               <div class="user-info">
-                <div class="user-name">{{ user.username }}</div>
+                <div class="user-name">
+                  {{ user.username }}
+                </div>
                 <div class="user-meta">
-                  <el-icon :size="12"><Location /></el-icon>
+                  <el-icon :size="12">
+                    <Location />
+                  </el-icon>
                   <span>{{ user.ip }}</span>
                 </div>
               </div>
@@ -296,42 +469,90 @@
     </el-row>
 
     <!-- 最近操作日志 -->
-    <el-row :gutter="20" style="margin-top: 20px">
+    <el-row
+      :gutter="20"
+      style="margin-top: 20px"
+    >
       <el-col :span="24">
         <el-card shadow="hover">
           <template #header>
             <div class="card-header">
               <span>最近操作日志</span>
-              <el-button type="primary" link @click="handleViewAllLogs">查看全部</el-button>
+              <el-button
+                type="primary"
+                link
+                @click="handleViewAllLogs"
+              >
+                查看全部
+              </el-button>
             </div>
           </template>
-          <el-table :data="recentLogs" v-loading="logsLoading" stripe style="width: 100%">
-            <el-table-column prop="username" label="操作人" width="120" />
-            <el-table-column prop="module" label="模块" width="120" />
-            <el-table-column label="操作类型" width="100">
+          <el-table
+            v-loading="logsLoading"
+            :data="recentLogs"
+            stripe
+            style="width: 100%"
+          >
+            <el-table-column
+              prop="username"
+              label="操作人"
+              width="120"
+            />
+            <el-table-column
+              prop="module"
+              label="模块"
+              width="120"
+            />
+            <el-table-column
+              label="操作类型"
+              width="100"
+            >
               <template #default="{ row }">
                 <el-tag :type="getOperationTypeTag(row.operationType)">
                   {{ getOperationTypeName(row.operationType) }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="description" label="操作描述" show-overflow-tooltip />
-            <el-table-column prop="ip" label="IP地址" width="140" />
-            <el-table-column label="操作时间" width="180">
+            <el-table-column
+              prop="description"
+              label="操作描述"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="ip"
+              label="IP地址"
+              width="140"
+            />
+            <el-table-column
+              label="操作时间"
+              width="180"
+            >
               <template #default="{ row }">
                 {{ formatTime(row.createTime) }}
               </template>
             </el-table-column>
-            <el-table-column label="状态" width="80">
+            <el-table-column
+              label="状态"
+              width="80"
+            >
               <template #default="{ row }">
                 <el-tag :type="row.status === 1 ? 'success' : 'danger'">
                   {{ row.status === 1 ? '成功' : '失败' }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="100" fixed="right">
+            <el-table-column
+              label="操作"
+              width="100"
+              fixed="right"
+            >
               <template #default="{ row }">
-                <el-button type="primary" link size="small" @click="handleViewLogDetail(row)">
+                <el-button
+                  type="primary"
+                  link
+                  size="small"
+                  @click="handleViewLogDetail(row)"
+                >
                   详情
                 </el-button>
               </template>
@@ -342,24 +563,48 @@
     </el-row>
 
     <!-- 日志详情对话框 -->
-    <el-dialog v-model="logDetailVisible" title="日志详情" width="600px">
-      <el-descriptions :column="1" border v-if="currentLog">
-        <el-descriptions-item label="日志ID">{{ currentLog.id }}</el-descriptions-item>
-        <el-descriptions-item label="操作人">{{ currentLog.username }}</el-descriptions-item>
-        <el-descriptions-item label="操作模块">{{ currentLog.module }}</el-descriptions-item>
+    <el-dialog
+      v-model="logDetailVisible"
+      title="日志详情"
+      width="600px"
+    >
+      <el-descriptions
+        v-if="currentLog"
+        :column="1"
+        border
+      >
+        <el-descriptions-item label="日志ID">
+          {{ currentLog.id }}
+        </el-descriptions-item>
+        <el-descriptions-item label="操作人">
+          {{ currentLog.username }}
+        </el-descriptions-item>
+        <el-descriptions-item label="操作模块">
+          {{ currentLog.module }}
+        </el-descriptions-item>
         <el-descriptions-item label="操作类型">
           {{ getOperationTypeName(currentLog.operationType) }}
         </el-descriptions-item>
-        <el-descriptions-item label="操作描述">{{ currentLog.description }}</el-descriptions-item>
-        <el-descriptions-item label="IP地址">{{ currentLog.ip }}</el-descriptions-item>
-        <el-descriptions-item label="操作时间">{{ formatTime(currentLog.createTime) }}</el-descriptions-item>
+        <el-descriptions-item label="操作描述">
+          {{ currentLog.description }}
+        </el-descriptions-item>
+        <el-descriptions-item label="IP地址">
+          {{ currentLog.ip }}
+        </el-descriptions-item>
+        <el-descriptions-item label="操作时间">
+          {{ formatTime(currentLog.createTime) }}
+        </el-descriptions-item>
         <el-descriptions-item label="状态">
           {{ currentLog.status === 1 ? '成功' : '失败' }}
         </el-descriptions-item>
-        <el-descriptions-item label="执行时长">{{ currentLog.costTime }}ms</el-descriptions-item>
+        <el-descriptions-item label="执行时长">
+          {{ currentLog.costTime }}ms
+        </el-descriptions-item>
       </el-descriptions>
       <template #footer>
-        <el-button @click="logDetailVisible = false">关闭</el-button>
+        <el-button @click="logDetailVisible = false">
+          关闭
+        </el-button>
       </template>
     </el-dialog>
   </div>
@@ -370,23 +615,18 @@ import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
+  CaretTop,
+  Clock,
+  Document,
+  House,
+  Location,
+  Menu,
+  Minus,
+  Operation,
+  Setting,
   User,
   UserFilled,
-  Menu,
-  Document,
-  Plus,
-  Setting,
-  House,
-  CaretTop,
-  Minus,
-  Clock,
-  Location,
-  Warning,
-  Management,
-  Avatar,
-  Tools,
-  Connection,
-  Operation
+  Warning
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import {
@@ -424,11 +664,6 @@ const menuDistributionChartRef = ref(null)
 let userGrowthChart = null
 let roleDistributionChart = null
 let menuDistributionChart = null
-
-// 图表数据状态
-const userGrowthEmpty = ref(false)
-const roleDistributionEmpty = ref(false)
-const menuDistributionEmpty = ref(false)
 
 // 最近操作日志
 const recentLogs = ref([])
@@ -547,7 +782,7 @@ const fetchUserGrowth = async () => {
       ]
     }
     userGrowthChart.setOption(option)
-  } catch (error) {
+  } catch {
     ElMessage.error('获取用户增长趋势失败')
   }
 }
@@ -621,7 +856,7 @@ const fetchRoleDistribution = async () => {
       ]
     }
     roleDistributionChart.setOption(option)
-  } catch (error) {
+  } catch {
     ElMessage.error('获取角色分布失败')
   }
 }
@@ -687,7 +922,7 @@ const fetchMenuDistribution = async () => {
       ]
     }
     menuDistributionChart.setOption(option)
-  } catch (error) {
+  } catch {
     ElMessage.error('获取菜单类型分布失败')
   }
 }

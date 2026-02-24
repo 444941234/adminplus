@@ -107,7 +107,10 @@
       width="90%"
       fullscreen
     >
-      <div v-if="currentReport" class="report-detail">
+      <div
+        v-if="currentReport"
+        class="report-detail"
+      >
         <div class="report-header">
           <h2>{{ currentReport.name }}</h2>
           <div class="report-meta">
@@ -119,10 +122,16 @@
         <div class="report-content">
           <!-- 这里可以放置具体的报表内容 -->
           <el-card header="数据概览">
-            <div class="chart-container" ref="reportChartRef"></div>
+            <div
+              ref="reportChartRef"
+              class="chart-container"
+            />
           </el-card>
           
-          <el-card header="详细数据" class="mt-20">
+          <el-card
+            header="详细数据"
+            class="mt-20"
+          >
             <el-table
               :data="reportTableData"
               border
@@ -158,15 +167,19 @@
       </div>
       
       <template #footer>
-        <el-button @click="viewDialogVisible = false">关闭</el-button>
-        <el-button type="primary">导出报表</el-button>
+        <el-button @click="viewDialogVisible = false">
+          关闭
+        </el-button>
+        <el-button type="primary">
+          导出报表
+        </el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { nextTick, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as echarts from 'echarts'
 

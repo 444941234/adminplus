@@ -12,7 +12,10 @@
         active-text-color="#0066FF"
       >
         <!-- 动态菜单 -->
-        <template v-for="menu in menus" :key="menu.id">
+        <template
+          v-for="menu in menus"
+          :key="menu.id"
+        >
           <!-- 目录类型（有子菜单） -->
           <el-sub-menu
             v-if="menu.children && menu.children.length > 0"
@@ -25,7 +28,10 @@
               <span>{{ menu.name }}</span>
             </template>
             <!-- 子菜单 -->
-            <template v-for="child in menu.children" :key="child.id">
+            <template
+              v-for="child in menu.children"
+              :key="child.id"
+            >
               <!-- 如果子菜单还有子菜单（多层嵌套） -->
               <el-sub-menu
                 v-if="child.children && child.children.length > 0"
@@ -37,20 +43,26 @@
                   </el-icon>
                   <span>{{ child.name }}</span>
                 </template>
-                <el-menu-item
+                <template
                   v-for="grandchild in child.children"
                   :key="grandchild.id"
-                  :index="grandchild.path"
-                  v-if="grandchild.type === 1"
                 >
-                  <el-icon v-if="grandchild.icon">
-                    <component :is="getIcon(grandchild.icon)" />
-                  </el-icon>
-                  <span>{{ grandchild.name }}</span>
-                </el-menu-item>
+                  <el-menu-item
+                    v-if="grandchild.type === 1"
+                    :index="grandchild.path"
+                  >
+                    <el-icon v-if="grandchild.icon">
+                      <component :is="getIcon(grandchild.icon)" />
+                    </el-icon>
+                    <span>{{ grandchild.name }}</span>
+                  </el-menu-item>
+                </template>
               </el-sub-menu>
               <!-- 普通菜单项 -->
-              <el-menu-item v-else :index="child.path" v-if="child.type === 1">
+              <el-menu-item
+                v-else-if="child.type === 1"
+                :index="child.path"
+              >
                 <el-icon v-if="child.icon">
                   <component :is="getIcon(child.icon)" />
                 </el-icon>
@@ -59,7 +71,10 @@
             </template>
           </el-sub-menu>
           <!-- 菜单类型（无子菜单） -->
-          <el-menu-item v-else :index="menu.path" v-if="menu.type === 1">
+          <el-menu-item
+            v-else-if="menu.type === 1"
+            :index="menu.path"
+          >
             <el-icon v-if="menu.icon">
               <component :is="getIcon(menu.icon)" />
             </el-icon>
@@ -72,9 +87,7 @@
     <el-container>
       <el-header>
         <div class="header-left">
-          <span class="welcome-text"
-            >欢迎，{{ userStore.user?.nickname || userStore.user?.username }}</span
-          >
+          <span class="welcome-text">欢迎，{{ userStore.user?.nickname || userStore.user?.username }}</span>
         </div>
         <div class="header-right">
           <el-dropdown @command="handleCommand">
@@ -84,8 +97,15 @@
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="profile"> 个人中心 </el-dropdown-item>
-                <el-dropdown-item command="logout" divided> 退出登录 </el-dropdown-item>
+                <el-dropdown-item command="profile">
+                  个人中心
+                </el-dropdown-item>
+                <el-dropdown-item
+                  command="logout"
+                  divided
+                >
+                  退出登录
+                </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -182,12 +202,13 @@ const handleCommand = async (command) => {
       await confirmLogout();
       userStore.logout();
       ElMessage.success('退出成功');
-      router.push('/login');
+      await router.push('/login');
     } catch {
       // 取消操作
     }
   } else if (command === 'profile') {
-    router.push('/profile');
+
+    await router.push('/profile');
   }
 };
 

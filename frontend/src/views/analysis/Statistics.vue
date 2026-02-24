@@ -16,14 +16,21 @@
           class="stat-card"
         >
           <div class="stat-content">
-            <div class="stat-icon" :style="{ background: stat.color }">
+            <div
+              class="stat-icon"
+              :style="{ background: stat.color }"
+            >
               <el-icon :size="24">
                 <component :is="stat.icon" />
               </el-icon>
             </div>
             <div class="stat-info">
-              <div class="stat-value">{{ stat.value }}</div>
-              <div class="stat-title">{{ stat.title }}</div>
+              <div class="stat-value">
+                {{ stat.value }}
+              </div>
+              <div class="stat-title">
+                {{ stat.title }}
+              </div>
             </div>
           </div>
         </el-card>
@@ -34,12 +41,18 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-card header="用户增长趋势">
-              <div ref="userChartRef" class="chart-container"></div>
+              <div
+                ref="userChartRef"
+                class="chart-container"
+              />
             </el-card>
           </el-col>
           <el-col :span="12">
             <el-card header="访问量统计">
-              <div ref="visitChartRef" class="chart-container"></div>
+              <div
+                ref="visitChartRef"
+                class="chart-container"
+              />
             </el-card>
           </el-col>
         </el-row>

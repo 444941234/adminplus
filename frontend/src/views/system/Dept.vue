@@ -5,7 +5,10 @@
         <div class="card-header">
           <span>部门管理</span>
           <div class="header-actions">
-            <el-button type="primary" @click="handleAdd">
+            <el-button
+              type="primary"
+              @click="handleAdd"
+            >
               <el-icon><Plus /></el-icon>
               新增部门
             </el-button>
@@ -53,11 +56,27 @@
               </div>
             </div>
             <div class="node-actions">
-              <el-button type="primary" size="small" @click="handleAddChild(data)">
+              <el-button
+                type="primary"
+                size="small"
+                @click="handleAddChild(data)"
+              >
                 添加子部门
               </el-button>
-              <el-button type="warning" size="small" @click="handleEdit(data)"> 编辑 </el-button>
-              <el-button type="danger" size="small" @click="handleDelete(data)"> 删除 </el-button>
+              <el-button
+                type="warning"
+                size="small"
+                @click="handleEdit(data)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click="handleDelete(data)"
+              >
+                删除
+              </el-button>
             </div>
           </div>
         </template>
@@ -65,33 +84,96 @@
     </el-card>
 
     <!-- 部门编辑对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="部门名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入部门名称" />
+    <el-dialog
+      v-model="dialogVisible"
+      :title="dialogTitle"
+      width="500px"
+    >
+      <el-form
+        ref="formRef"
+        :model="form"
+        :rules="rules"
+        label-width="80px"
+      >
+        <el-form-item
+          label="部门名称"
+          prop="name"
+        >
+          <el-input
+            v-model="form.name"
+            placeholder="请输入部门名称"
+          />
         </el-form-item>
-        <el-form-item label="部门编码" prop="code">
-          <el-input v-model="form.code" placeholder="请输入部门编码" />
+        <el-form-item
+          label="部门编码"
+          prop="code"
+        >
+          <el-input
+            v-model="form.code"
+            placeholder="请输入部门编码"
+          />
         </el-form-item>
-        <el-form-item label="负责人" prop="leader">
-          <el-input v-model="form.leader" placeholder="请输入负责人" />
+        <el-form-item
+          label="负责人"
+          prop="leader"
+        >
+          <el-input
+            v-model="form.leader"
+            placeholder="请输入负责人"
+          />
         </el-form-item>
-        <el-form-item label="联系电话" prop="phone">
-          <el-input v-model="form.phone" placeholder="请输入联系电话" />
+        <el-form-item
+          label="联系电话"
+          prop="phone"
+        >
+          <el-input
+            v-model="form.phone"
+            placeholder="请输入联系电话"
+          />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-switch v-model="form.status" :active-value="1" :inactive-value="0" />
+        <el-form-item
+          label="状态"
+          prop="status"
+        >
+          <el-switch
+            v-model="form.status"
+            :active-value="1"
+            :inactive-value="0"
+          />
         </el-form-item>
-        <el-form-item label="排序" prop="sortOrder">
-          <el-input-number v-model="form.sortOrder" :min="0" :max="999" />
+        <el-form-item
+          label="排序"
+          prop="sortOrder"
+        >
+          <el-input-number
+            v-model="form.sortOrder"
+            :min="0"
+            :max="999"
+          />
         </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入备注信息" />
+        <el-form-item
+          label="备注"
+          prop="remark"
+        >
+          <el-input
+            v-model="form.remark"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入备注信息"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit"> 确定 </el-button>
+        <el-button @click="dialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          :loading="submitLoading"
+          @click="handleSubmit"
+        >
+          确定
+        </el-button>
       </template>
     </el-dialog>
   </div>

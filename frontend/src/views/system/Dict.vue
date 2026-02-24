@@ -1,7 +1,7 @@
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Plus, Search, Refresh, ArrowLeft } from '@element-plus/icons-vue'
+import { Plus, Refresh, Search } from '@element-plus/icons-vue'
 import {
   getDictList,
   createDict,
@@ -89,12 +89,6 @@ const searchDebounced = debounce(() => {
 
 const handleDictSearch = () => {
   searchDebounced()
-}
-
-const handleDictReset = () => {
-  dictQueryParams.keyword = ''
-  dictQueryParams.page = 1
-  getDictListData()
 }
 
 // 选择字典
@@ -373,7 +367,13 @@ onMounted(() => {
   <div class="dict-container">
     <el-row :gutter="20">
       <!-- 左侧：字典列表 (30%) -->
-      <el-col :xs="24" :sm="24" :md="8" :lg="6" :xl="6">
+      <el-col
+        :xs="24"
+        :sm="24"
+        :md="8"
+        :lg="6"
+        :xl="6"
+      >
         <el-card class="dict-list-card">
           <template #header>
             <div class="card-header">
@@ -390,7 +390,11 @@ onMounted(() => {
           </template>
 
           <!-- 搜索栏 -->
-          <el-form :inline="false" :model="dictQueryParams" class="search-form">
+          <el-form
+            :inline="false"
+            :model="dictQueryParams"
+            class="search-form"
+          >
             <el-input
               v-model="dictQueryParams.keyword"
               placeholder="搜索字典类型/名称"
@@ -420,7 +424,9 @@ onMounted(() => {
                   {{ dict.status === 1 ? '正常' : '禁用' }}
                 </el-tag>
               </div>
-              <div class="dict-item-name">{{ dict.dictName }}</div>
+              <div class="dict-item-name">
+                {{ dict.dictName }}
+              </div>
               <div class="dict-item-actions">
                 <el-button
                   type="primary"
@@ -449,24 +455,42 @@ onMounted(() => {
               </div>
             </div>
 
-            <el-empty v-if="!dictLoading && dictList.length === 0" description="暂无字典" />
+            <el-empty
+              v-if="!dictLoading && dictList.length === 0"
+              description="暂无字典"
+            />
           </div>
         </el-card>
       </el-col>
 
       <!-- 右侧：字典项管理 (70%) -->
-      <el-col :xs="24" :sm="24" :md="16" :lg="18" :xl="18">
+      <el-col
+        :xs="24"
+        :sm="24"
+        :md="16"
+        :lg="18"
+        :xl="18"
+      >
         <el-card class="dict-item-card">
           <template #header>
             <div class="card-header">
               <div class="header-left">
-                <span v-if="selectedDict" class="header-title">
+                <span
+                  v-if="selectedDict"
+                  class="header-title"
+                >
                   字典项管理 - {{ selectedDict.dictName }}
-                  <el-tag size="small" style="margin-left: 8px">
+                  <el-tag
+                    size="small"
+                    style="margin-left: 8px"
+                  >
                     {{ selectedDict.dictType }}
                   </el-tag>
                 </span>
-                <span v-else class="header-title">字典项管理</span>
+                <span
+                  v-else
+                  class="header-title"
+                >字典项管理</span>
               </div>
               <el-button
                 type="primary"
@@ -479,7 +503,10 @@ onMounted(() => {
             </div>
           </template>
 
-          <div v-if="!selectedDictId" class="empty-state">
+          <div
+            v-if="!selectedDictId"
+            class="empty-state"
+          >
             <el-empty description="请从左侧选择一个字典" />
           </div>
 

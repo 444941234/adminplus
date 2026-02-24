@@ -60,7 +60,7 @@
             <el-button
               type="danger"
               size="small"
-              @click="handleDelete(row)"
+              @click="handleDelete"
             >
               删除
             </el-button>
@@ -122,7 +122,9 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button @click="dialogVisible = false">
+          取消
+        </el-button>
         <el-button
           type="primary"
           :loading="submitLoading"
@@ -187,14 +189,6 @@ const getData = async () => {
   }
 }
 
-// 新增配置
-const handleAdd = () => {
-  isEdit.value = false
-  dialogTitle.value = '新增配置'
-  resetForm()
-  dialogVisible.value = true
-}
-
 // 编辑配置
 const handleEdit = (row) => {
   isEdit.value = true
@@ -204,7 +198,7 @@ const handleEdit = (row) => {
 }
 
 // 删除配置
-const handleDelete = async (row) => {
+const handleDelete = async () => {
   try {
     await ElMessageBox.confirm(
       '确定要删除该配置吗？',
@@ -220,17 +214,6 @@ const handleDelete = async (row) => {
   } catch {
     // 用户取消操作
   }
-}
-
-// 重置表单
-const resetForm = () => {
-  Object.assign(form, {
-    key: '',
-    value: '',
-    description: '',
-    status: 1
-  })
-  formRef.value?.resetFields()
 }
 
 // 提交表单

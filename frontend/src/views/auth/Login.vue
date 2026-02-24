@@ -48,16 +48,20 @@
               v-if="captchaImage"
               :src="captchaImage"
               class="captcha-image"
-              @click="refreshCaptcha"
               title="点击图片可刷新验证码"
+              @click="refreshCaptcha"
             >
               <template #placeholder>
-                <div class="image-placeholder">加载中...</div>
+                <div class="image-placeholder">
+                  加载中...
+                </div>
               </template>
             </el-image>
           </div>
           <!-- 验证码提示文本 -->
-          <div class="captcha-hint">点击图片可刷新验证码</div>
+          <div class="captcha-hint">
+            点击图片可刷新验证码
+          </div>
         </el-form-item>
 
         <el-form-item>
@@ -114,10 +118,9 @@ const refreshCaptcha = async () => {
     captchaImage.value = data.captchaImage
     captchaId.value = data.captchaId
     form.captchaCode = ''
-  } catch (error) {
+  } catch {
     // 优化 API 错误提示
     ElMessage.error('获取验证码失败，请检查网络连接或稍后重试')
-    console.error('获取验证码失败:', error)
   }
 }
 
@@ -129,7 +132,7 @@ const handleLogin = async () => {
     await userStore.login(form.username, form.password, form.captchaCode, captchaId.value)
     ElMessage.success('登录成功')
     router.push('/')
-  } catch (error) {
+  } catch {
     // 登录失败后自动刷新验证码
     await refreshCaptcha()
     // 错误提示已经在 request.js 的响应拦截器中处理，这里不需要重复提示
