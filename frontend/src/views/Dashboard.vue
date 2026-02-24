@@ -125,27 +125,54 @@
     </el-row>
 
     <!-- 快捷操作、系统信息、在线用户 -->
-    <el-row :gutter="20" style="margin-top: 20px">
+    <el-row :gutter="20" class="bottom-row">
       <el-col :span="8">
-        <el-card shadow="hover">
+        <el-card shadow="hover" class="quick-actions-card">
           <template #header>
             <div class="card-header">
-              <span>快捷操作</span>
+              <div class="header-title">
+                <el-icon class="header-icon"><Operation /></el-icon>
+                <span>快捷操作</span>
+              </div>
             </div>
           </template>
           <div class="quick-actions">
-            <el-button type="primary" :icon="Plus" @click="handleQuickAction('user')">
-              添加用户
-            </el-button>
-            <el-button type="success" :icon="Plus" @click="handleQuickAction('role')">
-              添加角色
-            </el-button>
-            <el-button type="warning" :icon="Plus" @click="handleQuickAction('menu')">
-              添加菜单
-            </el-button>
-            <el-button type="info" :icon="Setting" @click="handleQuickAction('system')">
-              系统设置
-            </el-button>
+            <div class="action-card" @click="handleQuickAction('user')">
+              <div class="action-icon action-icon-blue">
+                <el-icon :size="24"><User /></el-icon>
+              </div>
+              <div class="action-content">
+                <div class="action-title">添加用户</div>
+                <div class="action-desc">创建新用户账号</div>
+              </div>
+            </div>
+            <div class="action-card" @click="handleQuickAction('role')">
+              <div class="action-icon action-icon-purple">
+                <el-icon :size="24"><UserFilled /></el-icon>
+              </div>
+              <div class="action-content">
+                <div class="action-title">添加角色</div>
+                <div class="action-desc">配置角色权限</div>
+              </div>
+            </div>
+            <div class="action-card" @click="handleQuickAction('menu')">
+              <div class="action-icon action-icon-orange">
+                <el-icon :size="24"><Menu /></el-icon>
+              </div>
+              <div class="action-content">
+                <div class="action-title">添加菜单</div>
+                <div class="action-desc">管理菜单权限</div>
+              </div>
+            </div>
+            <div class="action-card" @click="handleQuickAction('system')">
+              <div class="action-icon action-icon-cyan">
+                <el-icon :size="24"><Setting /></el-icon>
+              </div>
+              <div class="action-content">
+                <div class="action-title">系统设置</div>
+                <div class="action-desc">系统参数配置</div>
+              </div>
+            </div>
           </div>
         </el-card>
       </el-col>
@@ -354,7 +381,12 @@ import {
   Minus,
   Clock,
   Location,
-  Warning
+  Warning,
+  Management,
+  Avatar,
+  Tools,
+  Connection,
+  Operation
 } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 import {
@@ -1031,53 +1063,109 @@ onBeforeUnmount(() => {
 }
 
 /* 快捷操作 */
+.quick-actions-card {
+  height: 100%;
+}
+
 .quick-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-.quick-actions :deep(.el-button) {
-  width: 100%;
-  min-height: 56px !important;
-  height: 56px !important;
-  font-size: 15px;
-  font-weight: 500;
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, #F7F8FA 0%, #FFFFFF 100%);
+  border-radius: 14px;
+  cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 12px;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 10px !important;
-  padding: 0 24px !important;
-  line-height: normal !important;
-  box-sizing: border-box !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.quick-actions :deep(.el-button:hover) {
+.action-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.12);
+  border-color: rgba(0, 102, 255, 0.2);
 }
 
-.quick-actions :deep(.el-button--primary) {
+.action-card:active {
+  transform: translateY(-2px);
+}
+
+.action-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.action-icon::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 50%);
+}
+
+.action-icon-blue {
   background: linear-gradient(135deg, #0066FF 0%, #3385FF 100%);
-  border: none;
 }
 
-.quick-actions :deep(.el-button--success) {
-  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-  border: none;
+.action-icon-purple {
+  background: linear-gradient(135deg, #7B5FD6 0%, #9F7AEA 100%);
 }
 
-.quick-actions :deep(.el-button--warning) {
+.action-icon-orange {
   background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
-  border: none;
 }
 
-.quick-actions :deep(.el-button--info) {
-  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-  border: none;
+.action-icon-cyan {
+  background: linear-gradient(135deg, #06B6D4 0%, #22D3EE 100%);
+}
+
+.action-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.action-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1A1A1A;
+  margin-bottom: 4px;
+}
+
+.action-desc {
+  font-size: 13px;
+  color: #909399;
+  line-height: 1.4;
+}
+
+/* 快捷操作响应式 */
+@media (max-width: 768px) {
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .action-card {
+    padding: 16px;
+  }
+
+  .action-icon {
+    width: 48px;
+    height: 48px;
+  }
 }
 
 /* 系统信息 */
