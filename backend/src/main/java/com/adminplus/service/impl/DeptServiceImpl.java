@@ -10,6 +10,7 @@ import com.adminplus.repository.DeptRepository;
 import com.adminplus.service.DeptService;
 import com.adminplus.service.LogService;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.TreeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -59,64 +59,31 @@ public class DeptServiceImpl implements DeptService {
             });
         }
 
-        // 转换为 VO
-        List<DeptResp> deptResps = allDepts.stream().map(dept -> new DeptResp(
-                dept.getId(),
-                dept.getParentId(),
-                dept.getName(),
-                dept.getCode(),
-                dept.getLeader(),
-                dept.getPhone(),
-                dept.getEmail(),
-                dept.getSortOrder(),
-                dept.getStatus(),
-                null, // children 稍后填充
-                dept.getCreateTime(),
-                dept.getUpdateTime()
-        )).toList();
+        // 转换为 VO（扁平结构，children 为 null）
+        List<DeptResp> deptResps = allDepts.stream().map(this::toResp).toList();
 
-        // 构建树形结构
-        return buildTreeWithChildren(deptResps, null);
+        // 使用 TreeUtils.buildTreeForRecord 构建树形结构
+        return TreeUtils.buildTreeForRecord(deptResps, this::createWithChildren);
     }
 
     /**
-     * 构建树形结构（带 children）
+     * 创建包含子节点的新 DeptResp 实例（用于 record 类型）
      */
-    private List<DeptResp> buildTreeWithChildren(List<DeptResp> depts, String parentId) {
-        Map<String, List<DeptResp>> childrenMap = depts.stream()
-                .filter(dept -> dept.parentId() != null && !dept.parentId().equals("0"))
-                .collect(Collectors.groupingBy(DeptResp::parentId));
-
-        return depts.stream()
-                .filter(dept -> {
-                    if (parentId == null) {
-                        return dept.parentId() == null || dept.parentId().equals("0");
-                    }
-                    return parentId.equals(dept.parentId());
-                })
-                .map(dept -> {
-                    List<DeptResp> children = childrenMap.getOrDefault(dept.id(), new ArrayList<>());
-                    // 递归构建子节点
-                    List<DeptResp> childTree = buildTreeWithChildren(depts, dept.id());
-                    if (!childTree.isEmpty()) {
-                        children = childTree;
-                    }
-                    return new DeptResp(
-                            dept.id(),
-                            dept.parentId(),
-                            dept.name(),
-                            dept.code(),
-                            dept.leader(),
-                            dept.phone(),
-                            dept.email(),
-                            dept.sortOrder(),
-                            dept.status(),
-                            children,
-                            dept.createTime(),
-                            dept.updateTime()
-                    );
-                })
-                .collect(Collectors.toList());
+    private DeptResp createWithChildren(DeptResp original, List<DeptResp> children) {
+        return new DeptResp(
+                original.id(),
+                original.parentId(),
+                original.name(),
+                original.code(),
+                original.leader(),
+                original.phone(),
+                original.email(),
+                original.sortOrder(),
+                original.status(),
+                children,
+                original.createTime(),
+                original.updateTime()
+        );
     }
 
     @Override
@@ -125,20 +92,7 @@ public class DeptServiceImpl implements DeptService {
         var dept = deptRepository.findById(id)
                 .orElseThrow(() -> new BizException("部门不存在"));
 
-        return new DeptResp(
-                dept.getId(),
-                dept.getParentId(),
-                dept.getName(),
-                dept.getCode(),
-                dept.getLeader(),
-                dept.getPhone(),
-                dept.getEmail(),
-                dept.getSortOrder(),
-                dept.getStatus(),
-                null,
-                dept.getCreateTime(),
-                dept.getUpdateTime()
-        );
+        return toResp(dept);
     }
 
     @Override
@@ -149,15 +103,7 @@ public class DeptServiceImpl implements DeptService {
             throw new BizException("部门名称已存在");
         }
 
-        // 如果有父部门，检查父部门是否存在
-        if (req.parentId() != null && !req.parentId().equals("0")) {
-            if (!deptRepository.existsById(req.parentId())) {
-                throw new BizException("父部门不存在");
-            }
-        }
-
         var dept = new DeptEntity();
-        dept.setParentId(req.parentId());
         dept.setName(req.name());
         dept.setCode(req.code());
         dept.setLeader(req.leader());
@@ -166,25 +112,24 @@ public class DeptServiceImpl implements DeptService {
         dept.setSortOrder(req.sortOrder());
         dept.setStatus(req.status());
 
+        // 设置父部门关系
+        if (req.parentId() != null && !req.parentId().equals("0")) {
+            DeptEntity parent = deptRepository.findById(req.parentId())
+                    .orElseThrow(() -> new BizException("父部门不存在"));
+            dept.setParent(parent);
+            // 更新 ancestors
+            String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
+            dept.setAncestors(parentAncestors + parent.getId() + ",");
+        } else {
+            dept.setAncestors("0,");
+        }
+
         dept = deptRepository.save(dept);
 
         // 记录审计日志
         logService.log("部门管理", OperationType.CREATE, "创建部门: " + dept.getName());
 
-        return new DeptResp(
-                dept.getId(),
-                dept.getParentId(),
-                dept.getName(),
-                dept.getCode(),
-                dept.getLeader(),
-                dept.getPhone(),
-                dept.getEmail(),
-                dept.getSortOrder(),
-                dept.getStatus(),
-                null,
-                dept.getCreateTime(),
-                dept.getUpdateTime()
-        );
+        return toResp(dept);
     }
 
     @Override
@@ -210,11 +155,16 @@ public class DeptServiceImpl implements DeptService {
                 throw new BizException("不能将部门设置为自己的子部门");
             }
             if (parentId != null && !parentId.equals("0")) {
-                if (!deptRepository.existsById(parentId)) {
-                    throw new BizException("父部门不存在");
-                }
+                DeptEntity parent = deptRepository.findById(parentId)
+                        .orElseThrow(() -> new BizException("父部门不存在"));
+                dept.setParent(parent);
+                // 更新 ancestors
+                String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
+                dept.setAncestors(parentAncestors + parent.getId() + ",");
+            } else {
+                dept.setParent(null);
+                dept.setAncestors("0,");
             }
-            dept.setParentId(parentId);
         });
 
         req.name().ifPresent(dept::setName);
@@ -227,20 +177,7 @@ public class DeptServiceImpl implements DeptService {
 
         var savedDept = deptRepository.save(dept);
 
-        return new DeptResp(
-                savedDept.getId(),
-                savedDept.getParentId(),
-                savedDept.getName(),
-                savedDept.getCode(),
-                savedDept.getLeader(),
-                savedDept.getPhone(),
-                savedDept.getEmail(),
-                savedDept.getSortOrder(),
-                savedDept.getStatus(),
-                null,
-                savedDept.getCreateTime(),
-                savedDept.getUpdateTime()
-        );
+        return toResp(savedDept);
     }
 
     @Override
@@ -250,9 +187,7 @@ public class DeptServiceImpl implements DeptService {
                 .orElseThrow(() -> new BizException("部门不存在"));
 
         // 检查是否有子部门
-        List<DeptEntity> children = deptRepository.findByParentIdOrderBySortOrderAsc(id);
-
-        if (!children.isEmpty()) {
+        if (!dept.getChildren().isEmpty()) {
             throw new BizException("该部门下存在子部门，无法删除");
         }
 
@@ -289,7 +224,9 @@ public class DeptServiceImpl implements DeptService {
                 break;
             }
 
-            currentId = currentDept.getParentId();
+            // 使用 parent 对象获取父节点 ID
+            DeptEntity parent = currentDept.getParent();
+            currentId = parent != null ? parent.getId() : null;
         }
 
         return false;
@@ -320,5 +257,26 @@ public class DeptServiceImpl implements DeptService {
         }
 
         return result;
+    }
+
+    /**
+     * 转换为响应 VO
+     */
+    private DeptResp toResp(DeptEntity dept) {
+        String parentId = dept.getParent() != null ? dept.getParent().getId() : "0";
+        return new DeptResp(
+                dept.getId(),
+                parentId,
+                dept.getName(),
+                dept.getCode(),
+                dept.getLeader(),
+                dept.getPhone(),
+                dept.getEmail(),
+                dept.getSortOrder(),
+                dept.getStatus(),
+                null, // children 在构建树时填充
+                dept.getCreateTime(),
+                dept.getUpdateTime()
+        );
     }
 }

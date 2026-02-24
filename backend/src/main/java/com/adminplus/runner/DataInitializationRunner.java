@@ -10,8 +10,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 数据初始化服务
@@ -84,18 +84,60 @@ public class DataInitializationRunner implements CommandLineRunner {
             return;
         }
 
-        List<DeptEntity> depts = Arrays.asList(
-                createDept(null, null, "AdminPlus 总部", "HQ", "张三", "010-12345678", 1, 1),
-                createDept(null, "1", "技术研发部", "RD", "李四", "010-12345679", 1, 1),
-                createDept(null, "1", "市场运营部", "MK", "王五", "010-12345680", 1, 2),
-                createDept(null, "2", "后端开发组", "BE", "赵六", "010-12345681", 1, 1),
-                createDept(null, "2", "前端开发组", "FE", "钱七", "010-12345682", 1, 2),
-                createDept(null, "3", "市场推广组", "MP", "孙八", "010-12345683", 1, 1),
-                createDept(null, "3", "客户服务组", "CS", "周九", "010-12345684", 1, 2)
+        // 创建部门数据（临时 ID 用于建立关系）
+        var deptData = Arrays.asList(
+                new Object[]{"1", null, "AdminPlus 总部", "HQ", "张三", "010-12345678", 1, 1},
+                new Object[]{"2", "1", "技术研发部", "RD", "李四", "010-12345679", 1, 1},
+                new Object[]{"3", "1", "市场运营部", "MK", "王五", "010-12345680", 1, 2},
+                new Object[]{"4", "2", "后端开发组", "BE", "赵六", "010-12345681", 1, 1},
+                new Object[]{"5", "2", "前端开发组", "FE", "钱七", "010-12345682", 1, 2},
+                new Object[]{"6", "3", "市场推广组", "MP", "孙八", "010-12345683", 1, 1},
+                new Object[]{"7", "3", "客户服务组", "CS", "周九", "010-12345684", 1, 2}
         );
+
+        // 先创建所有部门
+        List<DeptEntity> depts = deptData.stream()
+                .map(d -> createDept((String) d[0], (String) d[1], (String) d[2], (String) d[3], (String) d[4], (String) d[5], (Integer) d[6], (Integer) d[7]))
+                .toList();
+
+        deptRepository.saveAll(depts);
+
+        // 建立父子关系
+        Map<String, DeptEntity> deptMap = depts.stream()
+                .collect(Collectors.toMap(
+                        dept -> getTempIdFromCode(dept.getCode()),
+                        dept -> dept
+                ));
+
+        for (var d : deptData) {
+            String tempId = (String) d[0];
+            String parentId = (String) d[1];
+            if (parentId != null && !parentId.isEmpty()) {
+                DeptEntity child = deptMap.get(tempId);
+                DeptEntity parent = deptMap.get(parentId);
+                if (child != null && parent != null) {
+                    child.setParent(parent);
+                    String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
+                    child.setAncestors(parentAncestors + parent.getId() + ",");
+                }
+            }
+        }
 
         deptRepository.saveAll(depts);
         log.info("初始化部门数据完成，共 {} 个部门", depts.size());
+    }
+
+    private String getTempIdFromCode(String code) {
+        return switch (code) {
+            case "HQ" -> "1";
+            case "RD" -> "2";
+            case "MK" -> "3";
+            case "BE" -> "4";
+            case "FE" -> "5";
+            case "MP" -> "6";
+            case "CS" -> "7";
+            default -> code;
+        };
     }
 
     /**
@@ -128,71 +170,88 @@ public class DataInitializationRunner implements CommandLineRunner {
             return;
         }
 
-        // 先创建顶级菜单（目录和页面）
-        MenuEntity dashboard = createMenu(null, null, 1, "首页", "/dashboard", "Dashboard", "dashboard:view", "HomeFilled", 0, 1, 1);
-        MenuEntity system = createMenu(null, null, 0, "系统管理", "/system", null, null, "Setting", 1, 1, 1);
-        MenuEntity analysis = createMenu(null, null, 0, "数据分析", "/analysis", null, null, "DataLine", 2, 1, 1);
+        // 菜单数据：[临时ID, 父临时ID, 类型, 名称, 路径, 组件, 权限, 图标, 排序, 可见, 状态]
+        List<Object[]> menuData = new ArrayList<>();
 
-        // 保存顶级菜单以获取ID
-        menuRepository.save(dashboard);
-        menuRepository.save(system);
-        menuRepository.save(analysis);
+        // 顶级菜单
+        menuData.add(new Object[]{"M1", null, 1, "首页", "/dashboard", "Dashboard", "dashboard:view", "HomeFilled", 0, 1, 1});
+        menuData.add(new Object[]{"M2", null, 0, "系统管理", "/system", null, null, "Setting", 1, 1, 1});
+        menuData.add(new Object[]{"M3", null, 0, "数据分析", "/analysis", null, null, "DataLine", 2, 1, 1});
 
-        // 创建系统管理下的子菜单
-        MenuEntity user = createMenu(null, system.getId(), 1, "用户管理", "/system/user", "system/User", "system:user:list", "User", 1, 1, 1);
-        MenuEntity role = createMenu(null, system.getId(), 1, "角色管理", "/system/role", "system/Role", "system:role:list", "UserFilled", 2, 1, 1);
-        MenuEntity menu = createMenu(null, system.getId(), 1, "菜单管理", "/system/menu", "system/Menu", "system:menu:list", "Menu", 3, 1, 1);
-        MenuEntity dict = createMenu(null, system.getId(), 1, "字典管理", "/system/dict", "system/Dict", "system:dict:list", "Document", 4, 1, 1);
-        MenuEntity dept = createMenu(null, system.getId(), 1, "部门管理", "/system/dept", "system/Dept", "system:dept:list", "OfficeBuilding", 5, 1, 1);
-        MenuEntity config = createMenu(null, system.getId(), 1, "参数配置", "/system/config", "system/Config", "system:config:list", "Tools", 6, 1, 1);
+        // 系统管理子菜单
+        menuData.add(new Object[]{"M21", "M2", 1, "用户管理", "/system/user", "system/User", "system:user:list", "User", 1, 1, 1});
+        menuData.add(new Object[]{"M22", "M2", 1, "角色管理", "/system/role", "system/Role", "system:role:list", "UserFilled", 2, 1, 1});
+        menuData.add(new Object[]{"M23", "M2", 1, "菜单管理", "/system/menu", "system/Menu", "system:menu:list", "Menu", 3, 1, 1});
+        menuData.add(new Object[]{"M24", "M2", 1, "字典管理", "/system/dict", "system/Dict", "system:dict:list", "Document", 4, 1, 1});
+        menuData.add(new Object[]{"M25", "M2", 1, "部门管理", "/system/dept", "system/Dept", "system:dept:list", "OfficeBuilding", 5, 1, 1});
+        menuData.add(new Object[]{"M26", "M2", 1, "参数配置", "/system/config", "system/Config", "system:config:list", "Tools", 6, 1, 1});
 
-        // 保存二级菜单
-        menuRepository.save(user);
-        menuRepository.save(role);
-        menuRepository.save(menu);
-        menuRepository.save(dict);
-        menuRepository.save(dept);
-        menuRepository.save(config);
+        // 用户管理按钮权限
+        menuData.add(new Object[]{"M211", "M21", 2, "新增用户", null, null, "user:add", null, 1, 0, 1});
+        menuData.add(new Object[]{"M212", "M21", 2, "编辑用户", null, null, "user:edit", null, 2, 0, 1});
+        menuData.add(new Object[]{"M213", "M21", 2, "删除用户", null, null, "user:delete", null, 3, 0, 1});
+        menuData.add(new Object[]{"M214", "M21", 2, "分配角色", null, null, "user:assign", null, 4, 0, 1});
+        menuData.add(new Object[]{"M215", "M21", 2, "重置密码", null, null, "user:reset", null, 5, 0, 1});
 
-        // 创建用户管理的按钮权限
-        menuRepository.save(createMenu(null, user.getId(), 2, "新增用户", null, null, "user:add", null, 1, 0, 1));
-        menuRepository.save(createMenu(null, user.getId(), 2, "编辑用户", null, null, "user:edit", null, 2, 0, 1));
-        menuRepository.save(createMenu(null, user.getId(), 2, "删除用户", null, null, "user:delete", null, 3, 0, 1));
-        menuRepository.save(createMenu(null, user.getId(), 2, "分配角色", null, null, "user:assign", null, 4, 0, 1));
-        menuRepository.save(createMenu(null, user.getId(), 2, "重置密码", null, null, "user:reset", null, 5, 0, 1));
+        // 角色管理按钮权限
+        menuData.add(new Object[]{"M221", "M22", 2, "新增角色", null, null, "role:add", null, 1, 0, 1});
+        menuData.add(new Object[]{"M222", "M22", 2, "编辑角色", null, null, "role:edit", null, 2, 0, 1});
+        menuData.add(new Object[]{"M223", "M22", 2, "删除角色", null, null, "role:delete", null, 3, 0, 1});
+        menuData.add(new Object[]{"M224", "M22", 2, "分配权限", null, null, "role:assign", null, 4, 0, 1});
 
-        // 创建角色管理的按钮权限
-        menuRepository.save(createMenu(null, role.getId(), 2, "新增角色", null, null, "role:add", null, 1, 0, 1));
-        menuRepository.save(createMenu(null, role.getId(), 2, "编辑角色", null, null, "role:edit", null, 2, 0, 1));
-        menuRepository.save(createMenu(null, role.getId(), 2, "删除角色", null, null, "role:delete", null, 3, 0, 1));
-        menuRepository.save(createMenu(null, role.getId(), 2, "分配权限", null, null, "role:assign", null, 4, 0, 1));
+        // 菜单管理按钮权限
+        menuData.add(new Object[]{"M231", "M23", 2, "新增菜单", null, null, "menu:add", null, 1, 0, 1});
+        menuData.add(new Object[]{"M232", "M23", 2, "编辑菜单", null, null, "menu:edit", null, 2, 0, 1});
+        menuData.add(new Object[]{"M233", "M23", 2, "删除菜单", null, null, "menu:delete", null, 3, 0, 1});
 
-        // 创建菜单管理的按钮权限
-        menuRepository.save(createMenu(null, menu.getId(), 2, "新增菜单", null, null, "menu:add", null, 1, 0, 1));
-        menuRepository.save(createMenu(null, menu.getId(), 2, "编辑菜单", null, null, "menu:edit", null, 2, 0, 1));
-        menuRepository.save(createMenu(null, menu.getId(), 2, "删除菜单", null, null, "menu:delete", null, 3, 0, 1));
+        // 字典管理按钮权限
+        menuData.add(new Object[]{"M241", "M24", 2, "新增字典", null, null, "dict:add", null, 1, 0, 1});
+        menuData.add(new Object[]{"M242", "M24", 2, "编辑字典", null, null, "dict:edit", null, 2, 0, 1});
+        menuData.add(new Object[]{"M243", "M24", 2, "删除字典", null, null, "dict:delete", null, 3, 0, 1});
 
-        // 创建字典管理的按钮权限
-        menuRepository.save(createMenu(null, dict.getId(), 2, "新增字典", null, null, "dict:add", null, 1, 0, 1));
-        menuRepository.save(createMenu(null, dict.getId(), 2, "编辑字典", null, null, "dict:edit", null, 2, 0, 1));
-        menuRepository.save(createMenu(null, dict.getId(), 2, "删除字典", null, null, "dict:delete", null, 3, 0, 1));
+        // 部门管理按钮权限
+        menuData.add(new Object[]{"M251", "M25", 2, "新增部门", null, null, "dept:add", null, 1, 0, 1});
+        menuData.add(new Object[]{"M252", "M25", 2, "编辑部门", null, null, "dept:edit", null, 2, 0, 1});
+        menuData.add(new Object[]{"M253", "M25", 2, "删除部门", null, null, "dept:delete", null, 3, 0, 1});
+        menuData.add(new Object[]{"M254", "M25", 2, "查询部门", null, null, "dept:query", null, 4, 0, 1});
+        menuData.add(new Object[]{"M255", "M25", 2, "部门列表", null, null, "dept:list", null, 5, 0, 1});
 
-        // 创建部门管理的按钮权限
-        menuRepository.save(createMenu(null, dept.getId(), 2, "新增部门", null, null, "dept:add", null, 1, 0, 1));
-        menuRepository.save(createMenu(null, dept.getId(), 2, "编辑部门", null, null, "dept:edit", null, 2, 0, 1));
-        menuRepository.save(createMenu(null, dept.getId(), 2, "删除部门", null, null, "dept:delete", null, 3, 0, 1));
-        menuRepository.save(createMenu(null, dept.getId(), 2, "查询部门", null, null, "dept:query", null, 4, 0, 1));
-        menuRepository.save(createMenu(null, dept.getId(), 2, "部门列表", null, null, "dept:list", null, 5, 0, 1));
+        // 数据分析子菜单
+        menuData.add(new Object[]{"M31", "M3", 1, "数据统计", "/analysis/statistics", "analysis/Statistics", "analysis:statistics:view", "TrendCharts", 1, 1, 1});
+        menuData.add(new Object[]{"M32", "M3", 1, "报表管理", "/analysis/report", "analysis/Report", "analysis:report:view", "DataAnalysis", 2, 1, 1});
 
-        // 创建数据分析下的子菜单
-        MenuEntity statistics = createMenu(null, analysis.getId(), 1, "数据统计", "/analysis/statistics", "analysis/Statistics", "analysis:statistics:view", "TrendCharts", 1, 1, 1);
-        MenuEntity report = createMenu(null, analysis.getId(), 1, "报表管理", "/analysis/report", "analysis/Report", "analysis:report:view", "DataAnalysis", 2, 1, 1);
+        // 创建所有菜单
+        List<MenuEntity> menus = menuData.stream()
+                .map(d -> createMenu(
+                        (String) d[0], (String) d[1], (Integer) d[2], (String) d[3], (String) d[4],
+                        (String) d[5], (String) d[6], (String) d[7], (Integer) d[8], (Integer) d[9], (Integer) d[10]
+                ))
+                .toList();
 
-        menuRepository.save(statistics);
-        menuRepository.save(report);
+        menuRepository.saveAll(menus);
 
-        long menuCount = menuRepository.count();
-        log.info("初始化菜单数据完成，共 {} 个菜单", menuCount);
+        // 建立父子关系
+        Map<String, MenuEntity> menuMap = new HashMap<>();
+        for (int i = 0; i < menus.size(); i++) {
+            menuMap.put((String) menuData.get(i)[0], menus.get(i));
+        }
+
+        for (var d : menuData) {
+            String tempId = (String) d[0];
+            String parentId = (String) d[1];
+            if (parentId != null && !parentId.isEmpty()) {
+                MenuEntity child = menuMap.get(tempId);
+                MenuEntity parent = menuMap.get(parentId);
+                if (child != null && parent != null) {
+                    child.setParent(parent);
+                    String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
+                    child.setAncestors(parentAncestors + parent.getId() + ",");
+                }
+            }
+        }
+
+        menuRepository.saveAll(menus);
+        log.info("初始化菜单数据完成，共 {} 个菜单", menus.size());
     }
 
     /**
@@ -365,10 +424,8 @@ public class DataInitializationRunner implements CommandLineRunner {
     }
 
     // 创建实体的辅助方法 - 使用构造函数
-    private DeptEntity createDept(String id, String parentId, String name, String code, String leader, String phone, Integer status, Integer sortOrder) {
+    private DeptEntity createDept(String tempId, String parentId, String name, String code, String leader, String phone, Integer status, Integer sortOrder) {
         DeptEntity dept = new DeptEntity();
-        // ID由BaseEntity的@PrePersist自动设置
-        dept.setParentId(parentId);
         dept.setName(name);
         dept.setCode(code);
         dept.setLeader(leader);
@@ -377,6 +434,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         dept.setSortOrder(sortOrder);
         dept.setCreateUser("system");
         dept.setUpdateUser("system");
+        // parent 关系在保存后设置
         return dept;
     }
 
@@ -393,10 +451,8 @@ public class DataInitializationRunner implements CommandLineRunner {
         return role;
     }
 
-    private MenuEntity createMenu(String id, String parentId, Integer type, String name, String path, String component, String permKey, String icon, Integer sortOrder, Integer visible, Integer status) {
+    private MenuEntity createMenu(String tempId, String parentId, Integer type, String name, String path, String component, String permKey, String icon, Integer sortOrder, Integer visible, Integer status) {
         MenuEntity menu = new MenuEntity();
-        // ID由BaseEntity的@PrePersist自动设置
-        menu.setParentId(parentId);
         menu.setType(type);
         menu.setName(name);
         menu.setPath(path);
@@ -408,6 +464,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         menu.setStatus(status);
         menu.setCreateUser("system");
         menu.setUpdateUser("system");
+        // parent 关系在保存后设置
         return menu;
     }
 

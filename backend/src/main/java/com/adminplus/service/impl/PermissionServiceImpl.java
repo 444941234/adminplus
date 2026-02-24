@@ -115,13 +115,16 @@ public class PermissionServiceImpl implements PermissionService {
 
         return menus.stream()
                 .filter(menu -> menu.getPermKey() != null && !menu.getPermKey().isBlank())
-                .map(menu -> new PermissionResp(
-                        menu.getId(),
-                        menu.getPermKey(),
-                        menu.getName(),
-                        menu.getType(),
-                        menu.getParentId()
-                ))
+                .map(menu -> {
+                    String parentId = menu.getParent() != null ? menu.getParent().getId() : "0";
+                    return new PermissionResp(
+                            menu.getId(),
+                            menu.getPermKey(),
+                            menu.getName(),
+                            menu.getType(),
+                            parentId
+                    );
+                })
                 .toList();
     }
 }

@@ -19,6 +19,7 @@
     <factorypathentry kind="VARJAR" id="M2_REPO/org/apache/tomcat/embed/tomcat-embed-core/10.1.41/tomcat-embed-core-10.1.41.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/apache/tomcat/embed/tomcat-embed-websocket/10.1.41/tomcat-embed-websocket-10.1.41.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-web/6.2.7/spring-web-6.2.7.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-beans/6.2.7/spring-beans-6.2.7.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-webmvc/6.2.7/spring-webmvc-6.2.7.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-aop/6.2.7/spring-aop-6.2.7.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-context/6.2.7/spring-context-6.2.7.jar" enabled="true" runInBatchMode="false"/>
@@ -44,6 +45,7 @@
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/data/spring-data-jpa/3.5.0/spring-data-jpa-3.5.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/data/spring-data-commons/3.5.0/spring-data-commons-3.5.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-orm/6.2.7/spring-orm-6.2.7.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-tx/6.2.7/spring-tx-6.2.7.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-aspects/6.2.7/spring-aspects-6.2.7.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/aspectj/aspectjweaver/1.9.24/aspectjweaver-1.9.24.jar" enabled="true" runInBatchMode="false"/>
@@ -122,5 +124,4 @@
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-jcl/6.2.7/spring-jcl-6.2.7.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/security/spring-security-web/6.5.0/spring-security-web-6.5.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/net/bytebuddy/byte-buddy/1.17.5/byte-buddy-1.17.5.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-beans/6.2.7/spring-beans-6.2.7.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

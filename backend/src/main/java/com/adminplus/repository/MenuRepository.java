@@ -2,6 +2,8 @@ package com.adminplus.repository;
 
 import com.adminplus.pojo.entity.MenuEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -29,4 +31,22 @@ public interface MenuRepository extends JpaRepository<MenuEntity, String> {
      * 统计指定类型的菜单数量
      */
     long countByTypeAndDeletedFalse(Integer type);
+
+    /**
+     * 根据 ancestors 查找子孙节点
+     */
+    @Query("SELECT m FROM MenuEntity m WHERE m.ancestors LIKE :ancestorsPrefix || '%' ORDER BY m.sortOrder ASC")
+    List<MenuEntity> findByAncestorsStartingWith(@Param("ancestorsPrefix") String ancestorsPrefix);
+
+    /**
+     * 查找根节点（parent 为 null 或 parent.id = '0'）
+     */
+    @Query("SELECT m FROM MenuEntity m WHERE m.parent IS NULL OR m.parent.id = '0' ORDER BY m.sortOrder ASC")
+    List<MenuEntity> findRootNodesOrderBySortOrderAsc();
+
+    /**
+     * 根据类型和状态查询菜单
+     */
+    @Query("SELECT m FROM MenuEntity m WHERE m.type = :type AND m.status = :status ORDER BY m.sortOrder ASC")
+    List<MenuEntity> findByTypeAndStatus(@Param("type") Integer type, @Param("status") Integer status);
 }

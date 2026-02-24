@@ -38,7 +38,7 @@ spring:
 
   # 数据源配置
   datasource:
-    url: ${DB_URL:jdbc:postgresql://postgres:5432/adminplus}
+    url: ${DB_URL:jdbc:postgresql://127.0.0.1:5432/adminplus}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -74,7 +74,7 @@ spring:
   # Redis 配置
   data:
     redis:
-      host: redis
+      host: 127.0.0.1
       port: 6379
       timeout: 2000ms
       lettuce:

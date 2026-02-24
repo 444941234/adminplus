@@ -1,50 +1,62 @@
 package com.adminplus.pojo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
-import java.util.Objects;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 字典项实体
+ * <p>
+ * 树形结构实体，继承 TreeEntity 获得父子关系管理能力
+ * 支持字典项的层级结构（如：地区分类、行业分类等）
+ * </p>
  *
  * @author AdminPlus
  * @since 2026-02-06
  */
+@Data
+@EqualsAndHashCode(callSuper = true, exclude = {"parent", "children"})
+@ToString(callSuper = true, exclude = {"parent", "children"})
 @Entity
-@Table(name = "sys_dict_item")
-public class DictItemEntity extends BaseEntity {
+@Table(name = "sys_dict_item",
+       indexes = {
+           @Index(name = "idx_dict_id", columnList = "dict_id"),
+           @Index(name = "idx_parent_id", columnList = "parent_id"),
+           @Index(name = "idx_ancestors", columnList = "ancestors"),
+           @Index(name = "idx_sort_order", columnList = "sort_order"),
+           @Index(name = "idx_status", columnList = "status"),
+           @Index(name = "idx_deleted", columnList = "deleted")
+       })
+@SQLDelete(sql = "UPDATE sys_dict_item SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
+public class DictItemEntity extends TreeEntity<DictItemEntity> {
 
     /**
-     * 字典ID
+     * 字典ID（所属字典）
      */
     @Column(name = "dict_id", nullable = false)
     private String dictId;
 
     /**
-     * 父节点ID
-     */
-    @Column(name = "parent_id")
-    private String parentId;
-
-    /**
-     * 字典标签
+     * 字典标签（显示名称）
+     * <p>
+     * 注意：TreeEntity 中的 name 字段映射到此实体的 label
+     * </p>
      */
     @Column(name = "label", nullable = false, length = 100)
     private String label;
 
     /**
-     * 字典值
+     * 字典值（实际值）
      */
     @Column(name = "value", nullable = false, length = 100)
     private String value;
-
-    /**
-     * 排序
-     */
-    @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder = 0;
 
     /**
      * 状态（1-正常 0-禁用）
@@ -58,103 +70,62 @@ public class DictItemEntity extends BaseEntity {
     @Column(name = "remark", length = 500)
     private String remark;
 
-    // Getter and Setter methods
-    public String getDictId() {
-        return dictId;
-    }
-
-    public void setDictId(String dictId) {
-        this.dictId = dictId;
-    }
-
-    public String getParentId() {
-        return parentId;
-    }
-
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public Integer getSortOrder() {
-        return sortOrder;
-    }
-
-    public void setSortOrder(Integer sortOrder) {
-        this.sortOrder = sortOrder;
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
+    /**
+     * 获取子节点列表（重写父类方法以支持 JPA 映射）
+     */
     @Override
-    public String toString() {
-        return "DictItemEntity{" +
-                "dictId=" + dictId +
-                ", parentId=" + parentId +
-                ", label='" + label + '\'' +
-                ", value='" + value + '\'' +
-                ", sortOrder=" + sortOrder +
-                ", status=" + status +
-                ", remark='" + remark + '\'' +
-                '}';
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC, createTime ASC")
+    public List<DictItemEntity> getChildren() {
+        return super.getChildren();
     }
 
+    /**
+     * 设置子节点列表
+     */
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-
-        DictItemEntity that = (DictItemEntity) o;
-
-        if (!Objects.equals(dictId, that.dictId)) return false;
-        if (!Objects.equals(parentId, that.parentId)) return false;
-        if (!Objects.equals(label, that.label)) return false;
-        if (!Objects.equals(value, that.value)) return false;
-        if (!Objects.equals(sortOrder, that.sortOrder)) return false;
-        if (!Objects.equals(status, that.status)) return false;
-        return Objects.equals(remark, that.remark);
+    public void setChildren(List<DictItemEntity> children) {
+        super.setChildren(children != null ? children : new ArrayList<>());
     }
 
+    /**
+     * 获取父节点（重写父类方法以支持 JPA 映射）
+     */
     @Override
-    public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (dictId != null ? dictId.hashCode() : 0);
-        result = 31 * result + (parentId != null ? parentId.hashCode() : 0);
-        result = 31 * result + (label != null ? label.hashCode() : 0);
-        result = 31 * result + (value != null ? value.hashCode() : 0);
-        result = 31 * result + (sortOrder != null ? sortOrder.hashCode() : 0);
-        result = 31 * result + (status != null ? status.hashCode() : 0);
-        result = 31 * result + (remark != null ? remark.hashCode() : 0);
-        return result;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    public DictItemEntity getParent() {
+        return super.getParent();
+    }
+
+    /**
+     * 设置父节点
+     */
+    @Override
+    public void setParent(DictItemEntity parent) {
+        super.setParent(parent);
+    }
+
+    /**
+     * 获取显示名称（与 label 字段同义，用于 TreeEntity 的 name 字段）
+     */
+    @Override
+    public String getName() {
+        return this.label;
+    }
+
+    /**
+     * 设置显示名称
+     */
+    @Override
+    public void setName(String name) {
+        this.label = name;
+    }
+
+    /**
+     * 检查是否启用
+     */
+    public boolean isEnabled() {
+        return this.status != null && this.status == 1;
     }
 }

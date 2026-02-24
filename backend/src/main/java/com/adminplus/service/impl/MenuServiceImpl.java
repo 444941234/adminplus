@@ -43,68 +43,33 @@ public class MenuServiceImpl implements MenuService {
     public List<MenuResp> getMenuTree() {
         List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
 
-        // 转换为 VO
-        List<MenuResp> menuResps = allMenus.stream().map(menu -> new MenuResp(
-                menu.getId(),
-                menu.getParentId(),
-                menu.getType(),
-                menu.getName(),
-                menu.getPath(),
-                menu.getComponent(),
-                menu.getPermKey(),
-                menu.getIcon(),
-                menu.getSortOrder(),
-                menu.getVisible(),
-                menu.getStatus(),
-                null, // children 稍后填充
-                menu.getCreateTime(),
-                menu.getUpdateTime()
-        )).toList();
+        // 转换为 VO（扁平结构，children 为 null）
+        List<MenuResp> menuResps = allMenus.stream().map(this::toResp).toList();
 
-        // 构建树形结构
-        return buildTreeWithChildren(menuResps, null);
+        // 使用 TreeUtils.buildTreeForRecord 构建树形结构
+        return TreeUtils.buildTreeForRecord(menuResps, this::createWithChildren);
     }
 
     /**
-     * 构建树形结构（带 children）
+     * 创建包含子节点的新 MenuResp 实例（用于 record 类型）
      */
-    private List<MenuResp> buildTreeWithChildren(List<MenuResp> menus, String parentId) {
-        Map<String, List<MenuResp>> childrenMap = menus.stream()
-                .filter(menu -> menu.parentId() != null && !menu.parentId().equals("0"))
-                .collect(Collectors.groupingBy(MenuResp::parentId));
-
-        return menus.stream()
-                .filter(menu -> {
-                    if (parentId == null) {
-                        return menu.parentId() == null || menu.parentId().equals("0");
-                    }
-                    return parentId.equals(menu.parentId());
-                })
-                .map(menu -> {
-                    List<MenuResp> children = childrenMap.getOrDefault(menu.id(), new ArrayList<>());
-                    // 递归构建子节点
-                    List<MenuResp> childTree = buildTreeWithChildren(menus, menu.id());
-                    if (!childTree.isEmpty()) {
-                        children = childTree;
-                    }
-                    return new MenuResp(
-                            menu.id(),
-                            menu.parentId(),
-                            menu.type(),
-                            menu.name(),
-                            menu.path(),
-                            menu.component(),
-                            menu.permKey(),
-                            menu.icon(),
-                            menu.sortOrder(),
-                            menu.visible(),
-                            menu.status(),
-                            children,
-                            menu.createTime(),
-                            menu.updateTime()
-                    );
-                })
-                .collect(Collectors.toList());
+    private MenuResp createWithChildren(MenuResp original, List<MenuResp> children) {
+        return new MenuResp(
+                original.id(),
+                original.parentId(),
+                original.type(),
+                original.name(),
+                original.path(),
+                original.component(),
+                original.permKey(),
+                original.icon(),
+                original.sortOrder(),
+                original.visible(),
+                original.status(),
+                children,
+                original.createTime(),
+                original.updateTime()
+        );
     }
 
     @Override
@@ -113,36 +78,13 @@ public class MenuServiceImpl implements MenuService {
         var menu = menuRepository.findById(id)
                 .orElseThrow(() -> new BizException("菜单不存在"));
 
-        return new MenuResp(
-                menu.getId(),
-                menu.getParentId(),
-                menu.getType(),
-                menu.getName(),
-                menu.getPath(),
-                menu.getComponent(),
-                menu.getPermKey(),
-                menu.getIcon(),
-                menu.getSortOrder(),
-                menu.getVisible(),
-                menu.getStatus(),
-                null,
-                menu.getCreateTime(),
-                menu.getUpdateTime()
-        );
+        return toResp(menu);
     }
 
     @Override
     @Transactional
     public MenuResp createMenu(MenuCreateReq req) {
-        // 如果有父菜单，检查父菜单是否存在
-        if (req.parentId() != null && !req.parentId().equals("0")) {
-            if (!menuRepository.existsById(req.parentId())) {
-                throw new BizException("父菜单不存在");
-            }
-        }
-
         var menu = new MenuEntity();
-        menu.setParentId(req.parentId());
         menu.setType(req.type());
         menu.setName(req.name());
         menu.setPath(req.path());
@@ -153,27 +95,24 @@ public class MenuServiceImpl implements MenuService {
         menu.setVisible(req.visible());
         menu.setStatus(req.status());
 
+        // 设置父菜单关系
+        if (req.parentId() != null && !req.parentId().equals("0")) {
+            MenuEntity parent = menuRepository.findById(req.parentId())
+                    .orElseThrow(() -> new BizException("父菜单不存在"));
+            menu.setParent(parent);
+            // 更新 ancestors
+            String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
+            menu.setAncestors(parentAncestors + parent.getId() + ",");
+        } else {
+            menu.setAncestors("0,");
+        }
+
         menu = menuRepository.save(menu);
 
         // 记录审计日志
         logService.log("菜单管理", OperationType.CREATE, "创建菜单: " + menu.getName());
 
-        return new MenuResp(
-                menu.getId(),
-                menu.getParentId(),
-                menu.getType(),
-                menu.getName(),
-                menu.getPath(),
-                menu.getComponent(),
-                menu.getPermKey(),
-                menu.getIcon(),
-                menu.getSortOrder(),
-                menu.getVisible(),
-                menu.getStatus(),
-                null,
-                menu.getCreateTime(),
-                menu.getUpdateTime()
-        );
+        return toResp(menu);
     }
 
     @Override
@@ -184,12 +123,18 @@ public class MenuServiceImpl implements MenuService {
 
         req.parentId().ifPresent(parentId -> {
             if (parentId != null && !parentId.equals("0")) {
-                if (!menuRepository.existsById(parentId)) {
-                    throw new BizException("父菜单不存在");
-                }
+                MenuEntity parent = menuRepository.findById(parentId)
+                        .orElseThrow(() -> new BizException("父菜单不存在"));
+                menu.setParent(parent);
+                // 更新 ancestors
+                String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
+                menu.setAncestors(parentAncestors + parent.getId() + ",");
+            } else {
+                menu.setParent(null);
+                menu.setAncestors("0,");
             }
-            menu.setParentId(parentId);
         });
+
         req.type().ifPresent(menu::setType);
         req.name().ifPresent(menu::setName);
         req.path().ifPresent(menu::setPath);
@@ -202,22 +147,7 @@ public class MenuServiceImpl implements MenuService {
 
         var savedMenu = menuRepository.save(menu);
 
-        return new MenuResp(
-                savedMenu.getId(),
-                savedMenu.getParentId(),
-                savedMenu.getType(),
-                savedMenu.getName(),
-                savedMenu.getPath(),
-                menu.getComponent(),
-                menu.getPermKey(),
-                menu.getIcon(),
-                menu.getSortOrder(),
-                menu.getVisible(),
-                menu.getStatus(),
-                null,
-                menu.getCreateTime(),
-                menu.getUpdateTime()
-        );
+        return toResp(savedMenu);
     }
 
     @Override
@@ -227,11 +157,7 @@ public class MenuServiceImpl implements MenuService {
                 .orElseThrow(() -> new BizException("菜单不存在"));
 
         // 检查是否有子菜单
-        List<MenuEntity> children = menuRepository.findAllByOrderBySortOrderAsc().stream()
-                .filter(m -> id.equals(m.getParentId()))
-                .toList();
-
-        if (!children.isEmpty()) {
+        if (!menu.getChildren().isEmpty()) {
             throw new BizException("该菜单下存在子菜单，无法删除");
         }
 
@@ -270,16 +196,10 @@ public class MenuServiceImpl implements MenuService {
         }
 
         // 检查是否有子菜单
-        Set<String> idSet = new HashSet<>(req.ids());
-        List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
-
-        // 找出所有要删除的菜单的子菜单
-        List<MenuEntity> children = allMenus.stream()
-                .filter(m -> idSet.contains(m.getParentId()))
-                .toList();
-
-        if (!children.isEmpty()) {
-            throw new BizException("存在菜单下有子菜单，无法批量删除");
+        for (MenuEntity menu : menus) {
+            if (!menu.getChildren().isEmpty()) {
+                throw new BizException("菜单 [" + menu.getName() + "] 下有子菜单，无法批量删除");
+            }
         }
 
         menuRepository.deleteAll(menus);
@@ -326,25 +246,10 @@ public class MenuServiceImpl implements MenuService {
                 .toList();
 
         // 6. 转换为 VO 并构建树形结构
-        List<MenuResp> menuResps = userMenus.stream().map(menu -> new MenuResp(
-                menu.getId(),
-                menu.getParentId(),
-                menu.getType(),
-                menu.getName(),
-                menu.getPath(),
-                menu.getComponent(),
-                menu.getPermKey(),
-                menu.getIcon(),
-                menu.getSortOrder(),
-                menu.getVisible(),
-                menu.getStatus(),
-                null, // children 稍后填充
-                menu.getCreateTime(),
-                menu.getUpdateTime()
-        )).toList();
+        List<MenuResp> menuResps = userMenus.stream().map(this::toResp).toList();
 
-        // 7. 构建树形结构
-        return buildTreeWithChildren(menuResps, null);
+        // 7. 使用 TreeUtils.buildTreeForRecord 构建树形结构
+        return TreeUtils.buildTreeForRecord(menuResps, this::createWithChildren);
     }
 
     /**
@@ -360,11 +265,35 @@ public class MenuServiceImpl implements MenuService {
                 .findFirst()
                 .orElse(null);
 
-        if (menu != null && menu.getParentId() != null && !menu.getParentId().equals("0")) {
-            if (!menuIds.contains(menu.getParentId())) {
-                menuIds.add(menu.getParentId());
-                addParentMenus(allMenus, menuIds, menu.getParentId());
+        if (menu != null && menu.getParent() != null) {
+            String parentId = menu.getParent().getId();
+            if (parentId != null && !parentId.equals("0") && !menuIds.contains(parentId)) {
+                menuIds.add(parentId);
+                addParentMenus(allMenus, menuIds, parentId);
             }
         }
+    }
+
+    /**
+     * 转换为响应 VO
+     */
+    private MenuResp toResp(MenuEntity menu) {
+        String parentId = menu.getParent() != null ? menu.getParent().getId() : "0";
+        return new MenuResp(
+                menu.getId(),
+                parentId,
+                menu.getType(),
+                menu.getName(),
+                menu.getPath(),
+                menu.getComponent(),
+                menu.getPermKey(),
+                menu.getIcon(),
+                menu.getSortOrder(),
+                menu.getVisible(),
+                menu.getStatus(),
+                null, // children 在构建树时填充
+                menu.getCreateTime(),
+                menu.getUpdateTime()
+        );
     }
 }

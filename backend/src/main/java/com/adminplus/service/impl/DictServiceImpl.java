@@ -190,11 +190,12 @@ public class DictServiceImpl implements DictService {
     }
 
     private DictItemResp toItemVO(DictItemEntity item, DictEntity dict) {
+        String parentId = item.getParent() != null ? item.getParent().getId() : "0";
         return new DictItemResp(
                 item.getId(),
                 item.getDictId(),
                 dict.getDictType(),
-                item.getParentId(),
+                parentId,
                 item.getLabel(),
                 item.getValue(),
                 item.getSortOrder(),
