@@ -2,18 +2,17 @@ package com.adminplus.pojo.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
 /**
- * 用户-角色关联实体
+ * 用户-角色关联实体（中间表）
+ * <p>
+ * 注意：中间表不需要审计字段，因此不继承 BaseEntity
+ * </p>
  *
  * @author AdminPlus
  * @since 2026-02-06
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "sys_user_role",
        uniqueConstraints = {
@@ -23,9 +22,11 @@ import org.hibernate.annotations.Where;
            @Index(name = "idx_user_role_user_id", columnList = "user_id"),
            @Index(name = "idx_user_role_role_id", columnList = "role_id")
        })
-@SQLDelete(sql = "UPDATE sys_user_role SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
-public class UserRoleEntity extends BaseEntity {
+public class UserRoleEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String id;
 
     /**
      * 用户ID

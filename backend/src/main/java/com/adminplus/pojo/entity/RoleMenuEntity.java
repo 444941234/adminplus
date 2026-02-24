@@ -2,18 +2,17 @@ package com.adminplus.pojo.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
 /**
- * 角色-菜单关联实体
+ * 角色-菜单关联实体（中间表）
+ * <p>
+ * 注意：中间表不需要审计字段，因此不继承 BaseEntity
+ * </p>
  *
  * @author AdminPlus
  * @since 2026-02-06
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "sys_role_menu",
        uniqueConstraints = {
@@ -23,9 +22,11 @@ import org.hibernate.annotations.Where;
            @Index(name = "idx_role_menu_role_id", columnList = "role_id"),
            @Index(name = "idx_role_menu_menu_id", columnList = "menu_id")
        })
-@SQLDelete(sql = "UPDATE sys_role_menu SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
-public class RoleMenuEntity extends BaseEntity {
+public class RoleMenuEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private String id;
 
     /**
      * 角色ID
