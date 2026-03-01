@@ -23,7 +23,9 @@
         :data="treeData"
         :props="treeProps"
         node-key="id"
-        default-expand-all
+        :indent="16"
+        :expand-on-click-node="false"
+        :default-expand-all="true"
         highlight-current
         @node-click="handleNodeClick"
       >
@@ -195,8 +197,8 @@ const isEdit = ref(false);
 
 const formRef = ref();
 const form = reactive({
-  id: undefined,
-  parentId: undefined,
+  id: null,
+  parentId: null,
   name: '',
   code: '',
   leader: '',
@@ -211,9 +213,19 @@ const treeProps = {
   children: 'children',
 };
 
+// 手机号格式校验（只在有值时校验）
+const validatePhone = (rule, value, callback) => {
+  if (value && !/^1[3-9]\d{9}$/.test(value)) {
+    callback(new Error('手机号格式不正确'));
+  } else {
+    callback();
+  }
+};
+
 const rules = {
   name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
   code: [{ required: true, message: '请输入部门编码', trigger: 'blur' }],
+  phone: [{ validator: validatePhone, trigger: 'blur' }],
 };
 
 // 获取部门树数据
@@ -287,8 +299,8 @@ const handleNodeClick = (data) => {
 // 重置表单
 const resetForm = () => {
   Object.assign(form, {
-    id: undefined,
-    parentId: undefined,
+    id: null,
+    parentId: null,
     name: '',
     code: '',
     leader: '',
@@ -297,7 +309,7 @@ const resetForm = () => {
     sortOrder: 0,
     remark: '',
   });
-  formRef.value?.resetFields();
+  formRef.value?.resetFields();  // 清除验证状态（Element Plus 需要）
 };
 
 // 提交表单
