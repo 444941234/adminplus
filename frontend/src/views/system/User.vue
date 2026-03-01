@@ -1,12 +1,12 @@
-<template>
+﻿﻿<template>
   <div class="user-page">
-    <el-row :gutter="20">
+    <el-row :gutter="24">
       <!-- 左侧部门树 -->
-      <el-col :span="5">
+      <el-col :xs="24" :sm="24" :md="7" :lg="6" :xl="6">
         <el-card class="dept-tree-card">
           <template #header>
             <div class="card-header">
-              <span>部门列表</span>
+              <span class="card-title">部门列表</span>
               <el-button
                 link
                 type="primary"
@@ -53,11 +53,11 @@
       </el-col>
 
       <!-- 右侧用户列表 -->
-      <el-col :span="19">
-        <el-card>
+      <el-col :xs="24" :sm="24" :md="17" :lg="18" :xl="18">
+        <el-card class="user-list-card">
           <template #header>
             <div class="card-header">
-              <span>用户管理</span>
+              <span class="card-title">用户管理</span>
               <el-button
                 type="primary"
                 @click="handleAdd"
@@ -105,7 +105,7 @@
             type="info"
           />
 
-          <!-- 数据表格 -->
+          <div class="table-container">
           <el-table
             v-loading="loading"
             :data="tableData"
@@ -140,9 +140,9 @@
                   {{ row.deptName }}
                 </el-tag>
                 <span
-                  v-else
-                  style="color: #909399"
-                >-</span>
+                  v-else>
+                  <span class="empty-text">-</span>
+                </span>
               </template>
             </el-table-column>
             <el-table-column
@@ -164,13 +164,13 @@
                   v-for="role in row.roles"
                   :key="role"
                   size="small"
-                  style="margin-right: 5px"
+                  class="role-tag"
                 >
                   {{ role }}
                 </el-tag>
                 <span
                   v-if="!row.roles || row.roles.length === 0"
-                  style="color: #909399"
+                  class="empty-text"
                 >无</span>
               </template>
             </el-table-column>
@@ -221,18 +221,20 @@
               </template>
             </el-table-column>
           </el-table>
+          </div>
 
           <!-- 分页 -->
+          <div class="pagination-container">
           <el-pagination
             v-model:current-page="queryForm.page"
             v-model:page-size="queryForm.size"
             :page-sizes="[10, 20, 50, 100]"
             :total="total"
             layout="total, sizes, prev, pager, next, jumper"
-            style="margin-top: 20px; justify-content: flex-end"
             @size-change="getData"
             @current-change="getData"
           />
+          </div>
         </el-card>
       </el-col>
     </el-row>
@@ -617,7 +619,9 @@ onMounted(() => {
 
 <style scoped>
 .user-page {
-  padding: 20px;
+  padding: 24px;
+  background-color: #f5f7fa;
+  min-height: calc(100vh - 84px);
 }
 
 .card-header {
@@ -626,31 +630,60 @@ onMounted(() => {
   align-items: center;
 }
 
-.search-form {
-  margin-bottom: 20px;
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
 }
 
+/* 搜索表单 */
+.search-form {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: #fafafa;
+  border-radius: 4px;
+}
+
+/* 部门树卡片 */
 .dept-tree-card {
-  height: calc(100vh - 140px);
+  height: calc(100vh - 108px);
+  transition: all 0.3s ease;
+}
+
+.dept-tree-card :deep(.el-card__header) {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e4e7ed;
 }
 
 .dept-tree-card :deep(.el-card__body) {
-  height: calc(100% - 50px);
+  height: calc(100% - 57px);
+  padding: 16px;
   overflow: auto;
 }
 
+.dept-tree-card :deep(.el-card__body:hover) {
+  overflow-y: auto;
+}
+
 .dept-filter {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
+}
+
+.dept-filter :deep(.el-input__wrapper) {
+  border-radius: 4px;
 }
 
 .dept-tree-node {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  padding: 4px 0;
 }
 
 .dept-name {
   flex: 1;
+  font-size: 14px;
+  color: #606266;
 }
 
 .dept-count {
@@ -658,7 +691,196 @@ onMounted(() => {
   font-size: 12px;
 }
 
+/* 用户列表卡片 */
+.user-list-card {
+  transition: all 0.3s ease;
+}
+
+.user-list-card :deep(.el-card__header) {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.user-list-card :deep(.el-card__body) {
+  padding: 20px;
+}
+
+/* 部门提示 */
 .dept-alert {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
+}
+
+.dept-alert :deep(.el-alert__title) {
+  font-size: 14px;
+}
+
+/* 表格容器 */
+.table-container {
+  margin-bottom: 24px;
+}
+
+.table-container :deep(.el-table) {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.table-container :deep(.el-table th) {
+  background-color: #f5f7fa;
+  font-weight: 600;
+  color: #303133;
+}
+
+.table-container :deep(.el-table__body-wrapper) {
+  border-radius: 0 0 4px 4px;
+}
+
+/* 空文本 */
+.empty-text {
+  color: #909399;
+  font-size: 13px;
+}
+
+/* 角色标签 */
+.role-tag {
+  margin-right: 6px;
+}
+
+/* 分页容器 */
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+/* 响应式样式优化 */
+@media (max-width: 992px) {
+  .user-page {
+    padding: 16px;
+  }
+
+  .dept-tree-card {
+    height: auto;
+    margin-bottom: 24px;
+  }
+
+  .dept-tree-card :deep(.el-card__body) {
+    height: auto;
+    max-height: 500px;
+  }
+
+  .search-form {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .user-page {
+    padding: 12px;
+  }
+
+  .dept-tree-card {
+    margin-bottom: 16px;
+  }
+
+  .dept-tree-card :deep(.el-card__body) {
+    padding: 12px;
+  }
+
+  .user-list-card :deep(.el-card__body) {
+    padding: 16px;
+  }
+
+  .search-form {
+    margin-bottom: 16px;
+    padding: 12px;
+  }
+
+  .search-form :deep(.el-form-item) {
+    margin-bottom: 12px;
+  }
+
+  .table-container {
+    margin-bottom: 16px;
+  }
+
+  .pagination-container {
+    justify-content: center;
+  }
+
+  .pagination-container :deep(.el-pagination) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .user-page {
+    padding: 12px 8px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .card-title {
+    font-size: 15px;
+  }
+
+  .dept-tree-card :deep(.el-card__body) {
+    padding: 10px;
+  }
+
+  .search-form {
+    flex-direction: column;
+  }
+
+  .search-form :deep(.el-form-item) {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+
+  .search-form :deep(.el-form-item__label) {
+    width: 80px;
+  }
+
+  .dept-alert {
+    margin-bottom: 12px;
+  }
+}
+
+@media (min-width: 993px) and (max-width: 1200px) {
+  .dept-tree-card {
+    height: calc(100vh - 108px);
+  }
+
+  .dept-tree-card :deep(.el-card__body) {
+    height: calc(100% - 57px);
+  }
+}
+
+/* 滚动条样式优化 */
+:deep(.el-tree)::-webkit-scrollbar,
+:deep(.el-table__body-wrapper)::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+:deep(.el-tree)::-webkit-scrollbar-thumb,
+:deep(.el-table__body-wrapper)::-webkit-scrollbar-thumb {
+  background-color: #dcdfe6;
+  border-radius: 3px;
+}
+
+:deep(.el-tree)::-webkit-scrollbar-thumb:hover,
+:deep(.el-table__body-wrapper)::-webkit-scrollbar-thumb:hover {
+  background-color: #c0c4cc;
+}
+
+:deep(.el-tree)::-webkit-scrollbar-track,
+:deep(.el-table__body-wrapper)::-webkit-scrollbar-track {
+  background-color: transparent;
 }
 </style>
