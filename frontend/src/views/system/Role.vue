@@ -18,7 +18,7 @@
         </el-row>
       </template>
 
-      <!-- 鏁版嵁琛ㄦ牸 -->
+      <!-- 数据表格 -->
       <el-table
         v-loading="loading"
         :data="tableData"
@@ -31,20 +31,20 @@
         />
         <el-table-column
           prop="code"
-          label="瑙掕壊缂栫爜"
+          label="角色标识"
           width="150"
         />
         <el-table-column
           prop="name"
-          label="瑙掕壊鍚嶇О"
+          label="角色名称"
           width="150"
         />
         <el-table-column
           prop="description"
-          label="鎻忚堪"
+          label="描述"
         />
         <el-table-column
-          label="鏁版嵁鏉冮檺"
+          label="数据范围"
           width="120"
         >
           <template #default="{ row }">
@@ -54,7 +54,7 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="状态
+          label="状态"
           width="100"
         >
           <template #default="{ row }">
@@ -79,28 +79,28 @@
               size="small"
               @click="handleEdit(row)"
             >
-              缂栬緫
+              编辑
             </el-button>
             <el-button
               type="warning"
               size="small"
               @click="handleAssignMenu(row)"
             >
-              鍒嗛厤鏉冮檺
+              分配菜单
             </el-button>
             <el-button
               type="danger"
               size="small"
               @click="handleDelete(row)"
             >
-              鍒犻櫎
+              删除
             </el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <!-- 鏂板/缂栬緫瀵硅瘽妗?-->
+    <!-- 新增/编辑对话框-->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
@@ -114,62 +114,62 @@
         label-width="100px"
       >
         <el-form-item
-          label="瑙掕壊缂栫爜"
+          label="角色标识"
           prop="code"
         >
           <el-input
             v-model="form.code"
-            placeholder="璇疯緭鍏ヨ鑹茬紪鐮侊紙濡?ROLE_ADMIN锛?
+            placeholder="请输入角色代码（如：ROLE_ADMIN）"
             :disabled="isEdit"
           />
         </el-form-item>
         <el-form-item
-          label="瑙掕壊鍚嶇О"
+          label="角色名称"
           prop="name"
         >
           <el-input
             v-model="form.name"
-            placeholder="璇疯緭鍏ヨ鑹插悕绉?
+            placeholder="请输入角色标识"
           />
         </el-form-item>
         <el-form-item
-          label="鎻忚堪"
+          label="描述"
           prop="description"
         >
           <el-input
             v-model="form.description"
             type="textarea"
-            placeholder="璇疯緭鍏ユ弿杩?
+            placeholder="请输入角色描述"
           />
         </el-form-item>
         <el-form-item
-          label="鏁版嵁鏉冮檺"
+          label="数据范围"
           prop="dataScope"
         >
           <el-select
             v-model="form.dataScope"
-            placeholder="璇烽€夋嫨鏁版嵁鏉冮檺"
+            placeholder="请选择数据范围"
           >
             <el-option
-              label="鍏ㄩ儴鏁版嵁"
+              label="全部数据"
               :value="1"
             />
             <el-option
-              label="鏈儴闂?
+              label="自定义数据"
               :value="2"
             />
             <el-option
-              label="鏈儴闂ㄥ強浠ヤ笅"
+              label="本部门数据"
               :value="3"
             />
             <el-option
-              label="浠呮湰浜?
+              label="本部门及以下"
               :value="4"
             />
           </el-select>
         </el-form-item>
         <el-form-item
-          label="状态
+          label="状态"
           prop="status"
         >
           <el-radio-group v-model="form.status">
@@ -193,22 +193,22 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">
-          鍙栨秷
+          取消
         </el-button>
         <el-button
           type="primary"
           :loading="submitLoading"
           @click="handleSubmit"
         >
-          纭畾
+          确定
         </el-button>
       </template>
     </el-dialog>
 
-    <!-- 鍒嗛厤鏉冮檺瀵硅瘽妗?-->
+    <!-- 分配菜单对话框-->
     <el-dialog
       v-model="menuDialogVisible"
-      title="鍒嗛厤鑿滃崟鏉冮檺"
+      title="分配菜单"
       width="500px"
       @close="handleMenuDialogClose"
     >
@@ -222,14 +222,14 @@
       />
       <template #footer>
         <el-button @click="menuDialogVisible = false">
-          鍙栨秷
+          取消
         </el-button>
         <el-button
           type="primary"
           :loading="menuSubmitLoading"
           @click="handleMenuSubmit"
         >
-          纭畾
+          确定
         </el-button>
       </template>
     </el-dialog>
@@ -249,7 +249,7 @@ const submitLoading = ref(false)
 const menuSubmitLoading = ref(false)
 const dialogVisible = ref(false)
 const menuDialogVisible = ref(false)
-const dialogTitle = ref('鏂板瑙掕壊')
+const dialogTitle = ref('新增角色')
 const isEdit = ref(false)
 const tableData = ref([])
 const menuTreeData = ref([])
@@ -268,13 +268,13 @@ const form = reactive({
 })
 
 const rules = {
-  code: [{ required: true, message: '璇疯緭鍏ヨ鑹茬紪鐮?, trigger: 'blur' }],
-  name: [{ required: true, message: '璇疯緭鍏ヨ鑹插悕绉?, trigger: 'blur' }]
+  code: [{ required: true, message: '请输入角色代码', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入角色标识', trigger: 'blur' }]
 }
 
-// 纭鎿嶄綔
+// 确认操作
 const confirmDelete = useConfirm({
-  message: '纭畾瑕佸垹闄よ瑙掕壊鍚楋紵',
+  message: '确定要删除这个角色吗？',
   type: 'warning'
 })
 
@@ -284,8 +284,8 @@ const getDataScopeType = (scope) => {
 }
 
 const getDataScopeText = (scope) => {
-  const texts = { 1: '鍏ㄩ儴鏁版嵁', 2: '鏈儴闂?, 3: '鏈儴闂ㄥ強浠ヤ笅', 4: '浠呮湰浜? }
-  return texts[scope] || '鏈煡'
+  const texts = { 1: '全部数据', 2: '自定义数据', 3: '本部门数据', 4: '本部门及以下' }
+  return texts[scope] || '未知'
 }
 
 const getData = async () => {
@@ -294,7 +294,7 @@ const getData = async () => {
     const data = await getRoleList()
     tableData.value = data.records
   } catch {
-    ElMessage.error('鑾峰彇瑙掕壊鍒楄〃澶辫触')
+    ElMessage.error('获取角色列表失败')
   } finally {
     loading.value = false
   }
@@ -304,19 +304,19 @@ const getMenuData = async () => {
   try {
     menuTreeData.value = await getMenuTree()
   } catch {
-    ElMessage.error('鑾峰彇鑿滃崟鏍戝け璐?)
+    ElMessage.error('获取菜单数据失败')
   }
 }
 
 const handleAdd = () => {
   isEdit.value = false
-  dialogTitle.value = '鏂板瑙掕壊'
+  dialogTitle.value = '新增角色'
   dialogVisible.value = true
 }
 
 const handleEdit = (row) => {
   isEdit.value = true
-  dialogTitle.value = '缂栬緫瑙掕壊'
+  dialogTitle.value = '编辑角色'
   Object.assign(form, row)
   dialogVisible.value = true
 }
@@ -341,15 +341,15 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value) {
       await updateRole(form.id, form)
-      ElMessage.success('鏇存柊鎴愬姛')
+      ElMessage.success('更新成功')
     } else {
       await createRole(form)
-      ElMessage.success('鍒涘缓锟斤拷鍔?)
+      ElMessage.success('新增成功')
     }
     dialogVisible.value = false
     getData()
   } catch {
-    // 閿欒宸插湪楠岃瘉鎴?API 涓鐞?
+    // 错误已在验证或API中处理
   } finally {
     submitLoading.value = false
   }
@@ -359,15 +359,15 @@ const handleAssignMenu = async (row) => {
   currentRoleId.value = row.id
   menuDialogVisible.value = true
 
-  // 鍔犺浇鑿滃崟鏍?
+  // 加载菜单树
   await getMenuData()
 
-  // 鍔犺浇瑙掕壊宸叉湁鐨勮彍鍗?
+  // 加载角色已有的菜单
   try {
     const menuIds = await getRoleMenuIds(row.id)
     menuTreeRef.value?.setCheckedKeys(menuIds)
   } catch {
-    ElMessage.error('鑾峰彇瑙掕壊鑿滃崟澶辫触')
+    ElMessage.error('获取角色菜单失败')
   }
 }
 
@@ -383,10 +383,10 @@ const handleMenuSubmit = async () => {
   menuSubmitLoading.value = true
   try {
     await assignMenus(currentRoleId.value, allCheckedKeys)
-    ElMessage.success('鍒嗛厤鏉冮檺鎴愬姛')
+    ElMessage.success('分配成功')
     menuDialogVisible.value = false
   } catch {
-    ElMessage.error('鍒嗛厤鏉冮檺澶辫触')
+    ElMessage.error('分配失败')
   } finally {
     menuSubmitLoading.value = false
   }
@@ -396,10 +396,10 @@ const handleDelete = async (row) => {
   try {
     await confirmDelete()
     await deleteRole(row.id)
-    ElMessage.success('鍒犻櫎鎴愬姛')
-    getData()
+    ElMessage.success('删除成功')
+    await getData()
   } catch {
-    // 鍙栨秷鎿嶄綔
+    // 取消操作
   }
 }
 
@@ -414,4 +414,3 @@ onMounted(() => {
 }
 
 </style>
-
