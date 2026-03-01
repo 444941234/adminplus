@@ -54,22 +54,22 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="鐘舵€?
+          label="状态
           width="100"
         >
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? '姝ｅ父' : '绂佺敤' }}
+              {{ row.status === 1 ? '正常' : '禁用' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column
           prop="sortOrder"
-          label="鎺掑簭"
+          label="排序"
           width="80"
         />
         <el-table-column
-          label="鎿嶄綔"
+          label="操作"
           width="280"
           fixed="right"
         >
@@ -169,20 +169,20 @@
           </el-select>
         </el-form-item>
         <el-form-item
-          label="鐘舵€?
+          label="状态
           prop="status"
         >
           <el-radio-group v-model="form.status">
             <el-radio :value="1">
-              姝ｅ父
+              正常
             </el-radio>
             <el-radio :value="0">
-              绂佺敤
+              禁用
             </el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item
-          label="鎺掑簭"
+          label="排序"
           prop="sortOrder"
         >
           <el-input-number
@@ -414,3 +414,4 @@ onMounted(() => {
 }
 
 </style>
+
