@@ -10,6 +10,15 @@
           今天是 {{ formatDate() }},祝您工作愉快!
         </p>
       </div>
+      <div class="banner-actions">
+        <el-button
+          type="primary"
+          :icon="Refresh"
+          circle
+          size="large"
+          @click="handleRefresh"
+        />
+      </div>
       <div class="banner-icon">
         <el-icon :size="80">
           <House />
@@ -135,7 +144,7 @@
                 <el-icon :size="12">
                   <CaretTop />
                 </el-icon>
-                <span>今日 +{{ Math.floor(Math.random() * 50) + 10 }}</span>
+                <span>今日 +{{ stats.todayLogCount }}</span>
               </div>
             </div>
           </div>
@@ -146,10 +155,10 @@
     <!-- 图表区域 -->
     <el-row
       :gutter="20"
-      style="margin-top: 20px"
+      class="charts-row"
     >
       <el-col :span="16">
-        <el-card shadow="hover">
+        <el-card shadow="hover" class="chart-card">
           <template #header>
             <div class="card-header">
               <span>用户增长趋势</span>
@@ -157,13 +166,13 @@
           </template>
           <div
             ref="userGrowthChartRef"
-            style="height: 350px"
+            class="chart-container"
           />
         </el-card>
       </el-col>
 
       <el-col :span="8">
-        <el-card shadow="hover">
+        <el-card shadow="hover" class="chart-card">
           <template #header>
             <div class="card-header">
               <span>角色分布</span>
@@ -171,7 +180,7 @@
           </template>
           <div
             ref="roleDistributionChartRef"
-            style="height: 350px"
+            class="chart-container"
           />
         </el-card>
       </el-col>
@@ -179,10 +188,10 @@
 
     <el-row
       :gutter="20"
-      style="margin-top: 20px"
+      class="charts-row"
     >
       <el-col :span="24">
-        <el-card shadow="hover">
+        <el-card shadow="hover" class="chart-card">
           <template #header>
             <div class="card-header">
               <span>菜单类型分布</span>
@@ -190,7 +199,7 @@
           </template>
           <div
             ref="menuDistributionChartRef"
-            style="height: 300px"
+            class="chart-container chart-container-small"
           />
         </el-card>
       </el-col>
@@ -471,7 +480,7 @@
     <!-- 最近操作日志 -->
     <el-row
       :gutter="20"
-      style="margin-top: 20px"
+      class="charts-row"
     >
       <el-col :span="24">
         <el-card shadow="hover">
@@ -625,6 +634,7 @@ import {
   Menu,
   Minus,
   Operation,
+  Refresh,
   Setting,
   User,
   UserFilled,
@@ -648,7 +658,8 @@ const stats = ref({
   userCount: 0,
   roleCount: 0,
   menuCount: 0,
-  logCount: 0
+  logCount: 0,
+  todayLogCount: 0
 })
 
 // 加载状态
@@ -1090,6 +1101,25 @@ const handleForceOffline = async (user) => {
   }
 }
 
+// 手动刷新数据
+const handleRefresh = async () => {
+  ElMessage.info('正在刷新数据...')
+  try {
+    await Promise.all([
+      fetchStats(),
+      fetchUserGrowth(),
+      fetchRoleDistribution(),
+      fetchMenuDistribution(),
+      fetchRecentLogs(),
+      fetchSystemInfo(),
+      fetchOnlineUsers()
+    ])
+    ElMessage.success('数据刷新成功')
+  } catch {
+    ElMessage.error('数据刷新失败')
+  }
+}
+
 // 组件挂载时获取数据
 onMounted(async () => {
   // 先初始化图表
@@ -1132,16 +1162,51 @@ onBeforeUnmount(() => {
   align-items: center;
   color: white;
   box-shadow: 0 8px 24px rgba(0, 102, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  border-radius: 50%;
 }
 
 .banner-content {
   flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.banner-actions {
+  margin: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.banner-actions .el-button {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.banner-actions .el-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: rotate(180deg);
 }
 
 .banner-title {
   font-size: 28px;
   font-weight: 600;
   margin: 0 0 8px 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .banner-subtitle {
@@ -1151,8 +1216,10 @@ onBeforeUnmount(() => {
 }
 
 .banner-icon {
-  opacity: 0.2;
+  opacity: 0.15;
   animation: float 3s ease-in-out infinite;
+  position: relative;
+  z-index: 0;
 }
 
 @keyframes float {
@@ -1165,18 +1232,19 @@ onBeforeUnmount(() => {
 }
 
 .stats-row {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .stat-card-wrapper {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 12px;
   overflow: hidden;
+  height: 100%;
 }
 
 .stat-card-wrapper:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.18);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 102, 255, 0.22);
 }
 
 .stat-card {
@@ -1254,6 +1322,7 @@ onBeforeUnmount(() => {
   -webkit-text-fill-color: transparent;
   background-clip: text;
   margin-bottom: 4px;
+  letter-spacing: -0.5px;
 }
 
 .stat-label {
@@ -1269,6 +1338,7 @@ onBeforeUnmount(() => {
   font-size: 13px;
   margin-top: 8px;
   color: #67C23A;
+  font-weight: 500;
 }
 
 .stat-trend.stable {
@@ -1277,6 +1347,23 @@ onBeforeUnmount(() => {
 
 .stat-trend .el-icon {
   font-weight: bold;
+}
+
+/* 图表行 */
+.charts-row {
+  margin-top: 24px;
+}
+
+.chart-card {
+  height: 100%;
+}
+
+.chart-container {
+  height: 350px;
+}
+
+.chart-container-small {
+  height: 300px;
 }
 
 /* 卡片头部 */
@@ -1318,19 +1405,37 @@ onBeforeUnmount(() => {
   background: linear-gradient(135deg, #F7F8FA 0%, #FFFFFF 100%);
   border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid transparent;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.action-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 102, 255, 0.05), transparent);
+  transition: left 0.5s;
+}
+
+.action-card:hover::before {
+  left: 100%;
 }
 
 .action-card:hover {
-  transform: translateY(-0.5px);
-  box-shadow: 0 6px 16px rgba(0, 102, 255, 0.15);
-  border-color: rgba(0, 102, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.18);
+  border-color: rgba(0, 102, 255, 0.25);
 }
 
 .action-card:active {
-  transform: translateY(-0.5px);
+  transform: scale(0.98);
+  box-shadow: 0 2px 8px rgba(0, 102, 255, 0.12);
 }
 
 .action-icon {
@@ -1345,6 +1450,7 @@ onBeforeUnmount(() => {
   position: relative;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1;
 }
 
 .action-icon::after {
@@ -1374,6 +1480,7 @@ onBeforeUnmount(() => {
 .action-content {
   flex: 1;
   min-width: 0;
+  z-index: 1;
 }
 
 .action-title {
@@ -1407,11 +1514,15 @@ onBeforeUnmount(() => {
   padding: 16px;
   background: #F7F8FA;
   border-radius: 10px;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
 }
 
 .info-item:hover {
-  background: #F0F2F5;
+  background: #E8F0FE;
+  transform: translateX(4px);
+  border-color: rgba(0, 102, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 102, 255, 0.1);
 }
 
 .info-item.full-width {
@@ -1439,6 +1550,7 @@ onBeforeUnmount(() => {
   font-size: 13px;
   color: #909399;
   margin-bottom: 4px;
+  font-weight: 500;
 }
 
 .info-value {
@@ -1452,6 +1564,12 @@ onBeforeUnmount(() => {
   padding: 16px;
   background: #F7F8FA;
   border-radius: 10px;
+  border: 1px solid transparent;
+  transition: all 0.25s;
+}
+
+.memory-bar:hover {
+  border-color: rgba(0, 102, 255, 0.2);
 }
 
 .memory-label {
@@ -1504,12 +1622,16 @@ onBeforeUnmount(() => {
   margin-bottom: 8px;
   background: #F7F8FA;
   border-radius: 12px;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   gap: 12px;
+  border: 1px solid transparent;
 }
 
 .online-user-item:hover {
   background: #E8F0FE;
+  transform: translateX(4px);
+  border-color: rgba(0, 102, 255, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .user-avatar {
@@ -1527,14 +1649,17 @@ onBeforeUnmount(() => {
   border: 2px solid white;
   border-radius: 50%;
   animation: pulse 2s infinite;
+  box-shadow: 0 0 8px rgba(103, 194, 58, 0.5);
 }
 
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
     opacity: 0.5;
+    transform: scale(1.1);
   }
 }
 
@@ -1565,6 +1690,11 @@ onBeforeUnmount(() => {
 /* 表格容器 */
 .table-container {
   overflow-x: auto;
+}
+
+/* 底部行 */
+.bottom-row {
+  margin-top: 24px;
 }
 
 /* ========== 响应式布局 ========== */
@@ -1598,6 +1728,10 @@ onBeforeUnmount(() => {
   .info-icon {
     width: 36px;
     height: 36px;
+  }
+
+  .charts-row {
+    margin-top: 20px;
   }
 }
 
@@ -1652,6 +1786,14 @@ onBeforeUnmount(() => {
 
   .info-value {
     font-size: 14px;
+  }
+
+  .charts-row {
+    margin-top: 20px;
+  }
+
+  .bottom-row {
+    margin-top: 20px;
   }
 }
 
@@ -1743,6 +1885,14 @@ onBeforeUnmount(() => {
   .user-meta {
     font-size: 11px;
   }
+
+  .charts-row {
+    margin-top: 16px;
+  }
+
+  .bottom-row {
+    margin-top: 16px;
+  }
 }
 
 /* 手机 (<768px) - 所有内容改为单列布局 */
@@ -1811,14 +1961,22 @@ onBeforeUnmount(() => {
   }
 
   /* 图表 - 改为单列堆叠 */
-  .chart-row {
+  .charts-row {
     margin-top: 12px !important;
   }
 
-  .chart-row :deep(.el-col) {
+  .charts-row :deep(.el-col) {
     width: 100% !important;
     max-width: 100%;
     margin-bottom: 12px;
+  }
+
+  .chart-container {
+    height: 280px;
+  }
+
+  .chart-container-small {
+    height: 240px;
   }
 
   .el-card {
@@ -1917,15 +2075,6 @@ onBeforeUnmount(() => {
   /* 卡片头部 */
   .header-title {
     font-size: 14px;
-  }
-
-  /* 调整卡片间距 */
-  .el-row[style*="margin-top"] {
-    margin-top: 12px !important;
-  }
-
-  .bottom-row {
-    margin-top: 12px;
   }
 }
 
@@ -2055,6 +2204,10 @@ onBeforeUnmount(() => {
   border-radius: 4px;
 }
 
+.online-users::-webkit-scrollbar-thumb:hover {
+  background-color: #9CA3AF;
+}
+
 .online-users::-webkit-scrollbar-track {
   background-color: transparent;
 }
@@ -2066,6 +2219,10 @@ onBeforeUnmount(() => {
 .table-container::-webkit-scrollbar-thumb {
   background-color: #D1D5DB;
   border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background-color: #9CA3AF;
 }
 
 .table-container::-webkit-scrollbar-track {

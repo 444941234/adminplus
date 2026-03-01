@@ -2,19 +2,23 @@
   <div class="role-page">
     <el-card>
       <template #header>
-        <div class="card-header">
-          <span>角色管理</span>
-          <el-button
-            type="primary"
-            @click="handleAdd"
-          >
-            <el-icon><Plus /></el-icon>
-            新增角色
-          </el-button>
-        </div>
+        <el-row justify="end">
+          <el-col :xs="24" :sm="24" :md="20" :lg="20" :xl="20">
+            <span>角色管理</span>
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="4" :lg="4" :xl="4">
+            <el-button
+              type="primary"
+              @click="handleAdd"
+            >
+              <el-icon><Plus /></el-icon>
+              新增角色
+            </el-button>
+          </el-col>
+        </el-row>
       </template>
 
-      <!-- 数据表格 -->
+      <!-- 鏁版嵁琛ㄦ牸 -->
       <el-table
         v-loading="loading"
         :data="tableData"
@@ -27,20 +31,20 @@
         />
         <el-table-column
           prop="code"
-          label="角色编码"
+          label="瑙掕壊缂栫爜"
           width="150"
         />
         <el-table-column
           prop="name"
-          label="角色名称"
+          label="瑙掕壊鍚嶇О"
           width="150"
         />
         <el-table-column
           prop="description"
-          label="描述"
+          label="鎻忚堪"
         />
         <el-table-column
-          label="数据权限"
+          label="鏁版嵁鏉冮檺"
           width="120"
         >
           <template #default="{ row }">
@@ -50,22 +54,22 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="状态"
+          label="鐘舵€?
           width="100"
         >
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? '正常' : '禁用' }}
+              {{ row.status === 1 ? '姝ｅ父' : '绂佺敤' }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column
           prop="sortOrder"
-          label="排序"
+          label="鎺掑簭"
           width="80"
         />
         <el-table-column
-          label="操作"
+          label="鎿嶄綔"
           width="280"
           fixed="right"
         >
@@ -75,28 +79,28 @@
               size="small"
               @click="handleEdit(row)"
             >
-              编辑
+              缂栬緫
             </el-button>
             <el-button
               type="warning"
               size="small"
               @click="handleAssignMenu(row)"
             >
-              分配权限
+              鍒嗛厤鏉冮檺
             </el-button>
             <el-button
               type="danger"
               size="small"
               @click="handleDelete(row)"
             >
-              删除
+              鍒犻櫎
             </el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
 
-    <!-- 新增/编辑对话框 -->
+    <!-- 鏂板/缂栬緫瀵硅瘽妗?-->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
@@ -110,75 +114,75 @@
         label-width="100px"
       >
         <el-form-item
-          label="角色编码"
+          label="瑙掕壊缂栫爜"
           prop="code"
         >
           <el-input
             v-model="form.code"
-            placeholder="请输入角色编码（如 ROLE_ADMIN）"
+            placeholder="璇疯緭鍏ヨ鑹茬紪鐮侊紙濡?ROLE_ADMIN锛?
             :disabled="isEdit"
           />
         </el-form-item>
         <el-form-item
-          label="角色名称"
+          label="瑙掕壊鍚嶇О"
           prop="name"
         >
           <el-input
             v-model="form.name"
-            placeholder="请输入角色名称"
+            placeholder="璇疯緭鍏ヨ鑹插悕绉?
           />
         </el-form-item>
         <el-form-item
-          label="描述"
+          label="鎻忚堪"
           prop="description"
         >
           <el-input
             v-model="form.description"
             type="textarea"
-            placeholder="请输入描述"
+            placeholder="璇疯緭鍏ユ弿杩?
           />
         </el-form-item>
         <el-form-item
-          label="数据权限"
+          label="鏁版嵁鏉冮檺"
           prop="dataScope"
         >
           <el-select
             v-model="form.dataScope"
-            placeholder="请选择数据权限"
+            placeholder="璇烽€夋嫨鏁版嵁鏉冮檺"
           >
             <el-option
-              label="全部数据"
+              label="鍏ㄩ儴鏁版嵁"
               :value="1"
             />
             <el-option
-              label="本部门"
+              label="鏈儴闂?
               :value="2"
             />
             <el-option
-              label="本部门及以下"
+              label="鏈儴闂ㄥ強浠ヤ笅"
               :value="3"
             />
             <el-option
-              label="仅本人"
+              label="浠呮湰浜?
               :value="4"
             />
           </el-select>
         </el-form-item>
         <el-form-item
-          label="状态"
+          label="鐘舵€?
           prop="status"
         >
           <el-radio-group v-model="form.status">
             <el-radio :value="1">
-              正常
+              姝ｅ父
             </el-radio>
             <el-radio :value="0">
-              禁用
+              绂佺敤
             </el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item
-          label="排序"
+          label="鎺掑簭"
           prop="sortOrder"
         >
           <el-input-number
@@ -189,22 +193,22 @@
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">
-          取消
+          鍙栨秷
         </el-button>
         <el-button
           type="primary"
           :loading="submitLoading"
           @click="handleSubmit"
         >
-          确定
+          纭畾
         </el-button>
       </template>
     </el-dialog>
 
-    <!-- 分配权限对话框 -->
+    <!-- 鍒嗛厤鏉冮檺瀵硅瘽妗?-->
     <el-dialog
       v-model="menuDialogVisible"
-      title="分配菜单权限"
+      title="鍒嗛厤鑿滃崟鏉冮檺"
       width="500px"
       @close="handleMenuDialogClose"
     >
@@ -218,14 +222,14 @@
       />
       <template #footer>
         <el-button @click="menuDialogVisible = false">
-          取消
+          鍙栨秷
         </el-button>
         <el-button
           type="primary"
           :loading="menuSubmitLoading"
           @click="handleMenuSubmit"
         >
-          确定
+          纭畾
         </el-button>
       </template>
     </el-dialog>
@@ -245,7 +249,7 @@ const submitLoading = ref(false)
 const menuSubmitLoading = ref(false)
 const dialogVisible = ref(false)
 const menuDialogVisible = ref(false)
-const dialogTitle = ref('新增角色')
+const dialogTitle = ref('鏂板瑙掕壊')
 const isEdit = ref(false)
 const tableData = ref([])
 const menuTreeData = ref([])
@@ -264,13 +268,13 @@ const form = reactive({
 })
 
 const rules = {
-  code: [{ required: true, message: '请输入角色编码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }]
+  code: [{ required: true, message: '璇疯緭鍏ヨ鑹茬紪鐮?, trigger: 'blur' }],
+  name: [{ required: true, message: '璇疯緭鍏ヨ鑹插悕绉?, trigger: 'blur' }]
 }
 
-// 确认操作
+// 纭鎿嶄綔
 const confirmDelete = useConfirm({
-  message: '确定要删除该角色吗？',
+  message: '纭畾瑕佸垹闄よ瑙掕壊鍚楋紵',
   type: 'warning'
 })
 
@@ -280,8 +284,8 @@ const getDataScopeType = (scope) => {
 }
 
 const getDataScopeText = (scope) => {
-  const texts = { 1: '全部数据', 2: '本部门', 3: '本部门及以下', 4: '仅本人' }
-  return texts[scope] || '未知'
+  const texts = { 1: '鍏ㄩ儴鏁版嵁', 2: '鏈儴闂?, 3: '鏈儴闂ㄥ強浠ヤ笅', 4: '浠呮湰浜? }
+  return texts[scope] || '鏈煡'
 }
 
 const getData = async () => {
@@ -290,7 +294,7 @@ const getData = async () => {
     const data = await getRoleList()
     tableData.value = data.records
   } catch {
-    ElMessage.error('获取角色列表失败')
+    ElMessage.error('鑾峰彇瑙掕壊鍒楄〃澶辫触')
   } finally {
     loading.value = false
   }
@@ -300,19 +304,19 @@ const getMenuData = async () => {
   try {
     menuTreeData.value = await getMenuTree()
   } catch {
-    ElMessage.error('获取菜单树失败')
+    ElMessage.error('鑾峰彇鑿滃崟鏍戝け璐?)
   }
 }
 
 const handleAdd = () => {
   isEdit.value = false
-  dialogTitle.value = '新增角色'
+  dialogTitle.value = '鏂板瑙掕壊'
   dialogVisible.value = true
 }
 
 const handleEdit = (row) => {
   isEdit.value = true
-  dialogTitle.value = '编辑角色'
+  dialogTitle.value = '缂栬緫瑙掕壊'
   Object.assign(form, row)
   dialogVisible.value = true
 }
@@ -337,15 +341,15 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value) {
       await updateRole(form.id, form)
-      ElMessage.success('更新成功')
+      ElMessage.success('鏇存柊鎴愬姛')
     } else {
       await createRole(form)
-      ElMessage.success('创建��功')
+      ElMessage.success('鍒涘缓锟斤拷鍔?)
     }
     dialogVisible.value = false
     getData()
   } catch {
-    // 错误已在验证或 API 中处理
+    // 閿欒宸插湪楠岃瘉鎴?API 涓鐞?
   } finally {
     submitLoading.value = false
   }
@@ -355,15 +359,15 @@ const handleAssignMenu = async (row) => {
   currentRoleId.value = row.id
   menuDialogVisible.value = true
 
-  // 加载菜单树
+  // 鍔犺浇鑿滃崟鏍?
   await getMenuData()
 
-  // 加载角色已有的菜单
+  // 鍔犺浇瑙掕壊宸叉湁鐨勮彍鍗?
   try {
     const menuIds = await getRoleMenuIds(row.id)
     menuTreeRef.value?.setCheckedKeys(menuIds)
   } catch {
-    ElMessage.error('获取角色菜单失败')
+    ElMessage.error('鑾峰彇瑙掕壊鑿滃崟澶辫触')
   }
 }
 
@@ -379,10 +383,10 @@ const handleMenuSubmit = async () => {
   menuSubmitLoading.value = true
   try {
     await assignMenus(currentRoleId.value, allCheckedKeys)
-    ElMessage.success('分配权限成功')
+    ElMessage.success('鍒嗛厤鏉冮檺鎴愬姛')
     menuDialogVisible.value = false
   } catch {
-    ElMessage.error('分配权限失败')
+    ElMessage.error('鍒嗛厤鏉冮檺澶辫触')
   } finally {
     menuSubmitLoading.value = false
   }
@@ -392,10 +396,10 @@ const handleDelete = async (row) => {
   try {
     await confirmDelete()
     await deleteRole(row.id)
-    ElMessage.success('删除成功')
+    ElMessage.success('鍒犻櫎鎴愬姛')
     getData()
   } catch {
-    // 取消操作
+    // 鍙栨秷鎿嶄綔
   }
 }
 
@@ -409,9 +413,4 @@ onMounted(() => {
   padding: 20px;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
 </style>
