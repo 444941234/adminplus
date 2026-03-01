@@ -5,7 +5,7 @@
         <div class="card-header">
           <span>参数配置</span>
           <div class="header-actions">
-            <el-button type="primary">
+            <el-button type="primary" @click="handleAdd">
               <el-icon><Plus /></el-icon>
               新增配置
             </el-button>
@@ -188,6 +188,17 @@ const getData = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// 新增配置
+const handleAdd = () => {
+  isEdit.value = false
+  dialogTitle.value = '新增配置'
+  form.key = ''
+  form.value = ''
+  form.description = ''
+  form.status = 1
+  dialogVisible.value = true
 }
 
 // 编辑配置

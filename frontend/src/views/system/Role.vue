@@ -31,7 +31,7 @@
         />
         <el-table-column
           prop="code"
-          label="角色标识"
+          label="角色编码"
           width="150"
         />
         <el-table-column
@@ -44,7 +44,7 @@
           label="描述"
         />
         <el-table-column
-          label="数据范围"
+          label="数据权限"
           width="120"
         >
           <template #default="{ row }">
@@ -86,7 +86,7 @@
               size="small"
               @click="handleAssignMenu(row)"
             >
-              分配菜单
+              分配权限
             </el-button>
             <el-button
               type="danger"
@@ -100,7 +100,7 @@
       </el-table>
     </el-card>
 
-    <!-- 新增/编辑对话框-->
+    <!-- 新增/编辑对话框 -->
     <el-dialog
       v-model="dialogVisible"
       :title="dialogTitle"
@@ -114,12 +114,12 @@
         label-width="100px"
       >
         <el-form-item
-          label="角色标识"
+          label="角色编码"
           prop="code"
         >
           <el-input
             v-model="form.code"
-            placeholder="请输入角色代码（如：ROLE_ADMIN）"
+            placeholder="请输入角色编码（如：ROLE_ADMIN）"
             :disabled="isEdit"
           />
         </el-form-item>
@@ -129,7 +129,7 @@
         >
           <el-input
             v-model="form.name"
-            placeholder="请输入角色标识"
+            placeholder="请输入角色名称"
           />
         </el-form-item>
         <el-form-item
@@ -139,31 +139,31 @@
           <el-input
             v-model="form.description"
             type="textarea"
-            placeholder="请输入角色描述"
+            placeholder="请输入描述"
           />
         </el-form-item>
         <el-form-item
-          label="数据范围"
+          label="数据权限"
           prop="dataScope"
         >
           <el-select
             v-model="form.dataScope"
-            placeholder="请选择数据范围"
+            placeholder="请选择数据权限"
           >
             <el-option
               label="全部数据"
               :value="1"
             />
             <el-option
-              label="自定义数据"
+              label="本部门"
               :value="2"
             />
             <el-option
-              label="本部门数据"
+              label="本部门及以下"
               :value="3"
             />
             <el-option
-              label="本部门及以下"
+              label="仅本人"
               :value="4"
             />
           </el-select>
@@ -205,10 +205,10 @@
       </template>
     </el-dialog>
 
-    <!-- 分配菜单对话框-->
+    <!-- 分配权限对话框 -->
     <el-dialog
       v-model="menuDialogVisible"
-      title="分配菜单"
+      title="分配菜单权限"
       width="500px"
       @close="handleMenuDialogClose"
     >
@@ -268,13 +268,13 @@ const form = reactive({
 })
 
 const rules = {
-  code: [{ required: true, message: '请输入角色代码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入角色标识', trigger: 'blur' }]
+  code: [{ required: true, message: '请输入角色编码', trigger: 'blur' }],
+  name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }]
 }
 
 // 确认操作
 const confirmDelete = useConfirm({
-  message: '确定要删除这个角色吗？',
+  message: '确定要删除该角色吗？',
   type: 'warning'
 })
 
@@ -284,7 +284,7 @@ const getDataScopeType = (scope) => {
 }
 
 const getDataScopeText = (scope) => {
-  const texts = { 1: '全部数据', 2: '自定义数据', 3: '本部门数据', 4: '本部门及以下' }
+  const texts = { 1: '全部数据', 2: '本部门', 3: '本部门及以下', 4: '仅本人' }
   return texts[scope] || '未知'
 }
 
@@ -304,7 +304,7 @@ const getMenuData = async () => {
   try {
     menuTreeData.value = await getMenuTree()
   } catch {
-    ElMessage.error('获取菜单数据失败')
+    ElMessage.error('获取菜单树失败')
   }
 }
 
@@ -344,12 +344,12 @@ const handleSubmit = async () => {
       ElMessage.success('更新成功')
     } else {
       await createRole(form)
-      ElMessage.success('新增成功')
+      ElMessage.success('创建成功')
     }
     dialogVisible.value = false
     getData()
   } catch {
-    // 错误已在验证或API中处理
+    // 错误已在验证或 API 中处理
   } finally {
     submitLoading.value = false
   }
@@ -383,10 +383,10 @@ const handleMenuSubmit = async () => {
   menuSubmitLoading.value = true
   try {
     await assignMenus(currentRoleId.value, allCheckedKeys)
-    ElMessage.success('分配成功')
+    ElMessage.success('分配权限成功')
     menuDialogVisible.value = false
   } catch {
-    ElMessage.error('分配失败')
+    ElMessage.error('分配权限失败')
   } finally {
     menuSubmitLoading.value = false
   }
@@ -397,7 +397,7 @@ const handleDelete = async (row) => {
     await confirmDelete()
     await deleteRole(row.id)
     ElMessage.success('删除成功')
-    await getData()
+    getData()
   } catch {
     // 取消操作
   }
