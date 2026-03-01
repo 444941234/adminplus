@@ -4,10 +4,10 @@
     <div class="welcome-banner">
       <div class="banner-content">
         <h1 class="banner-title">
-          欢迎回来，AdminPlus
+          欢迎回来,AdminPlus
         </h1>
         <p class="banner-subtitle">
-          今天是 {{ formatDate() }}，祝您工作愉快！
+          今天是 {{ formatDate() }},祝您工作愉快!
         </p>
       </div>
       <div class="banner-icon">
@@ -487,77 +487,79 @@
               </el-button>
             </div>
           </template>
-          <el-table
-            v-loading="logsLoading"
-            :data="recentLogs"
-            stripe
-            style="width: 100%"
-          >
-            <el-table-column
-              prop="username"
-              label="操作人"
-              width="120"
-            />
-            <el-table-column
-              prop="module"
-              label="模块"
-              width="120"
-            />
-            <el-table-column
-              label="操作类型"
-              width="100"
+          <div class="table-container">
+            <el-table
+              v-loading="logsLoading"
+              :data="recentLogs"
+              stripe
+              style="width: 100%"
             >
-              <template #default="{ row }">
-                <el-tag :type="getOperationTypeTag(row.operationType)">
-                  {{ getOperationTypeName(row.operationType) }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="description"
-              label="操作描述"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              prop="ip"
-              label="IP地址"
-              width="140"
-            />
-            <el-table-column
-              label="操作时间"
-              width="180"
-            >
-              <template #default="{ row }">
-                {{ formatTime(row.createTime) }}
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="状态"
-              width="80"
-            >
-              <template #default="{ row }">
-                <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-                  {{ row.status === 1 ? '成功' : '失败' }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="操作"
-              width="100"
-              fixed="right"
-            >
-              <template #default="{ row }">
-                <el-button
-                  type="primary"
-                  link
-                  size="small"
-                  @click="handleViewLogDetail(row)"
-                >
-                  详情
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+              <el-table-column
+                prop="username"
+                label="操作人"
+                width="120"
+              />
+              <el-table-column
+                prop="module"
+                label="模块"
+                width="120"
+              />
+              <el-table-column
+                label="操作类型"
+                width="100"
+              >
+                <template #default="{ row }">
+                  <el-tag :type="getOperationTypeTag(row.operationType)">
+                    {{ getOperationTypeName(row.operationType) }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="description"
+                label="操作描述"
+                show-overflow-tooltip
+              />
+              <el-table-column
+                prop="ip"
+                label="IP地址"
+                width="140"
+              />
+              <el-table-column
+                label="操作时间"
+                width="180"
+              >
+                <template #default="{ row }">
+                  {{ formatTime(row.createTime) }}
+                </template>
+              </el-table-column>
+              <el-table-column
+                label="状态"
+                width="80"
+              >
+                <template #default="{ row }">
+                  <el-tag :type="row.status === 1 ? 'success' : 'danger'">
+                    {{ row.status === 1 ? '成功' : '失败' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column
+                label="操作"
+                width="100"
+                fixed="right"
+              >
+                <template #default="{ row }">
+                  <el-button
+                    type="primary"
+                    link
+                    size="small"
+                    @click="handleViewLogDetail(row)"
+                  >
+                    详情
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
         </el-card>
       </el-col>
     </el-row>
@@ -1167,14 +1169,14 @@ onBeforeUnmount(() => {
 }
 
 .stat-card-wrapper {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 12px;
   overflow: hidden;
 }
 
 .stat-card-wrapper:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 28px rgba(0, 102, 255, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.18);
 }
 
 .stat-card {
@@ -1316,19 +1318,19 @@ onBeforeUnmount(() => {
   background: linear-gradient(135deg, #F7F8FA 0%, #FFFFFF 100%);
   border-radius: 14px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border: 2px solid transparent;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .action-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 20px rgba(0, 102, 255, 0.12);
+  transform: translateY(-0.5px);
+  box-shadow: 0 6px 16px rgba(0, 102, 255, 0.15);
   border-color: rgba(0, 102, 255, 0.2);
 }
 
 .action-card:active {
-  transform: translateY(-2px);
+  transform: translateY(-0.5px);
 }
 
 .action-icon {
@@ -1385,22 +1387,6 @@ onBeforeUnmount(() => {
   font-size: 13px;
   color: #909399;
   line-height: 1.4;
-}
-
-/* 快捷操作响应式 */
-@media (max-width: 768px) {
-  .quick-actions {
-    grid-template-columns: 1fr;
-  }
-
-  .action-card {
-    padding: 16px;
-  }
-
-  .action-icon {
-    width: 48px;
-    height: 48px;
-  }
 }
 
 /* 系统信息 */
@@ -1524,7 +1510,6 @@ onBeforeUnmount(() => {
 
 .online-user-item:hover {
   background: #E8F0FE;
-  transform: translateX(4px);
 }
 
 .user-avatar {
@@ -1577,38 +1562,227 @@ onBeforeUnmount(() => {
   font-size: 14px;
 }
 
-/* 响应式布局 */
-@media (max-width: 1200px) {
+/* 表格容器 */
+.table-container {
+  overflow-x: auto;
+}
+
+/* ========== 响应式布局 ========== */
+
+/* 大屏幕 (>1400px) - 保持当前布局 */
+
+/* 中等屏幕 (1200px-1400px) - 调整卡片间距和字体 */
+@media (max-width: 1400px) {
   .stat-value {
     font-size: 32px;
   }
 
   .banner-title {
-    font-size: 24px;
+    font-size: 26px;
+  }
+
+  .banner-subtitle {
+    font-size: 14px;
+  }
+
+  .stat-icon {
+    width: 64px;
+    height: 64px;
+  }
+
+  .action-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .info-icon {
+    width: 36px;
+    height: 36px;
   }
 }
 
-@media (max-width: 768px) {
+/* 小屏幕 (992px-1200px) - 底部三列改为两列布局 */
+@media (max-width: 1200px) {
+  .dashboard {
+    padding: 20px;
+  }
+
+  .welcome-banner {
+    padding: 28px 32px;
+  }
+
+  .banner-title {
+    font-size: 24px;
+  }
+
+  .stat-value {
+    font-size: 30px;
+  }
+
+  .stat-label {
+    font-size: 13px;
+  }
+
+  .stat-trend {
+    font-size: 12px;
+  }
+
+  .stat-icon {
+    width: 60px;
+    height: 60px;
+    margin-right: 16px;
+  }
+
+  .action-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .action-title {
+    font-size: 15px;
+  }
+
+  .action-desc {
+    font-size: 12px;
+  }
+
+  .info-label {
+    font-size: 12px;
+  }
+
+  .info-value {
+    font-size: 14px;
+  }
+}
+
+/* 平板 (768px-992px) - 图表垂直堆叠,统计卡片改为2列 */
+@media (max-width: 992px) {
   .dashboard {
     padding: 16px;
   }
 
+  /* 欢迎横幅调整 */
   .welcome-banner {
     padding: 24px;
-    flex-direction: column;
-    text-align: center;
+    border-radius: 12px;
+  }
+
+  .banner-title {
+    font-size: 22px;
+  }
+
+  .banner-subtitle {
+    font-size: 13px;
   }
 
   .banner-icon {
-    margin-top: 16px;
+    opacity: 0.15;
   }
 
+  /* 统计卡片调整为2列 */
+  .stats-row :deep(.el-col) {
+    width: 50% !important;
+    max-width: 50%;
+  }
+
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+    margin-right: 0;
+    margin-bottom: 12px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+  }
+
+  /* 快捷操作改为单列 */
   .quick-actions {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
+  .action-card {
+    padding: 16px;
+  }
+
+  /* 系统信息改为单列 */
   .info-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .info-item {
+    padding: 14px;
+  }
+
+  .info-icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* 在线用户卡片 */
+  .online-users {
+    max-height: 300px;
+  }
+
+  .online-user-item {
+    padding: 12px;
+  }
+
+  .user-name {
+    font-size: 14px;
+  }
+
+  .user-meta {
+    font-size: 11px;
+  }
+}
+
+/* 手机 (<768px) - 所有内容改为单列布局 */
+@media (max-width: 768px) {
+  .dashboard {
+    padding: 12px;
+  }
+
+  /* 欢迎横幅 - 垂直居中 */
+  .welcome-banner {
+    padding: 20px;
+    flex-direction: column;
+    text-align: center;
+    border-radius: 12px;
+  }
+
+  .banner-content {
+    margin-bottom: 16px;
+  }
+
+  .banner-title {
+    font-size: 20px;
+  }
+
+  .banner-subtitle {
+    font-size: 13px;
+  }
+
+  .banner-icon {
+    opacity: 0.15;
+  }
+
+  /* 统计卡片 - 改为单列或2列网格 */
+  .stats-row :deep(.el-col) {
+    width: 50% !important;
+    max-width: 50%;
+  }
+
+  .stats-row {
+    margin-bottom: 12px;
   }
 
   .stat-card {
@@ -1618,8 +1792,256 @@ onBeforeUnmount(() => {
   }
 
   .stat-icon {
+    width: 48px;
+    height: 48px;
     margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .stat-value {
+    font-size: 24px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
+  .stat-trend {
+    font-size: 11px;
+  }
+
+  /* 图表 - 改为单列堆叠 */
+  .chart-row {
+    margin-top: 12px !important;
+  }
+
+  .chart-row :deep(.el-col) {
+    width: 100% !important;
+    max-width: 100%;
     margin-bottom: 12px;
+  }
+
+  .el-card {
+    margin-bottom: 12px;
+  }
+
+  /* 快捷操作 - 单列 */
+  .quick-actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .action-card {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .action-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .action-title {
+    font-size: 14px;
+  }
+
+  .action-desc {
+    font-size: 12px;
+  }
+
+  /* 系统信息 - 单列显示 */
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .info-item {
+    padding: 12px;
+  }
+
+  .info-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .info-label {
+    font-size: 11px;
+  }
+
+  .info-value {
+    font-size: 13px;
+  }
+
+  .memory-label {
+    font-size: 12px;
+  }
+
+  /* 在线用户 */
+  .online-users {
+    max-height: 250px;
+  }
+
+  .online-user-item {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .user-avatar :deep(.el-avatar) {
+    width: 36px;
+    height: 36px;
+  }
+
+  .user-name {
+    font-size: 13px;
+  }
+
+  .user-meta {
+    font-size: 11px;
+  }
+
+  .online-user-item .el-button {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+
+  /* 表格 - 支持横向滚动 */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .el-table {
+    min-width: 800px;
+  }
+
+  /* 卡片头部 */
+  .header-title {
+    font-size: 14px;
+  }
+
+  /* 调整卡片间距 */
+  .el-row[style*="margin-top"] {
+    margin-top: 12px !important;
+  }
+
+  .bottom-row {
+    margin-top: 12px;
+  }
+}
+
+/* 超小手机 (<480px) */
+@media (max-width: 480px) {
+  .dashboard {
+    padding: 10px;
+  }
+
+  .welcome-banner {
+    padding: 16px;
+  }
+
+  .banner-title {
+    font-size: 18px;
+  }
+
+  .banner-subtitle {
+    font-size: 12px;
+  }
+
+  .banner-icon :deep(.el-icon) {
+    font-size: 60px !important;
+  }
+
+  /* 统计卡片改为单列 */
+  .stats-row :deep(.el-col) {
+    width: 100% !important;
+    max-width: 100%;
+  }
+
+  .stat-card {
+    padding: 14px;
+  }
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .stat-trend {
+    font-size: 10px;
+  }
+
+  /* 快捷操作 */
+  .action-card {
+    padding: 12px;
+  }
+
+  .action-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .action-title {
+    font-size: 13px;
+  }
+
+  .action-desc {
+    font-size: 11px;
+  }
+
+  /* 系统信息 */
+  .info-item {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .info-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .info-label {
+    font-size: 11px;
+  }
+
+  .info-value {
+    font-size: 12px;
+  }
+
+  /* 在线用户 */
+  .online-user-item {
+    padding: 8px;
+  }
+
+  .user-avatar :deep(.el-avatar) {
+    width: 32px;
+    height: 32px;
+  }
+
+  .user-name {
+    font-size: 12px;
+  }
+
+  .user-meta {
+    font-size: 10px;
+  }
+
+  .online-user-item .el-button {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
+
+  /* 对话框 */
+  .el-dialog {
+    width: 95% !important;
+    margin: 0 auto;
   }
 }
 
@@ -1635,5 +2057,18 @@ onBeforeUnmount(() => {
 
 .online-users::-webkit-scrollbar-track {
   background-color: transparent;
+}
+
+.table-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background-color: #D1D5DB;
+  border-radius: 3px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background-color: #F7F8FA;
 }
 </style>
