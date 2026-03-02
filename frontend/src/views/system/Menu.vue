@@ -796,8 +796,6 @@ const getData = async () => {
     const data = await getMenuTree()
 
     // 后端返回的树形结构有问题（children 都是空），需要重新构建
-    console.log('检测到树形结构不完整，重新构建...')
-
     // 扁平化所有节点
     const allNodes = []
     const flatten = (nodes) => {
@@ -810,12 +808,9 @@ const getData = async () => {
     }
     flatten(data)
 
-    // 按 sortOrder 排序
-    allNodes.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
-
     // 重新构建树形结构（递归函数）
     const buildTree = (parentId, level) => {
-      const children = allNodes
+      return allNodes
         .filter(node => node.parentId === parentId)
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
         .map(node => {
@@ -824,15 +819,11 @@ const getData = async () => {
           const newNode = { ...node }
           newNode.level = level
           newNode.children = nodeChildren
-          // 打印调试信息
-          console.log(`[L${level}] ${node.name} (type: ${node.type}, id: ${node.id}) - 子节点数: ${nodeChildren.length}`)
           return newNode
         })
-      return children
     }
 
     tableData.value = buildTree('0', 1)
-    console.log('最终菜单树结构:', JSON.stringify(tableData.value, null, 2))
   } catch {
     ElMessage.error('获取菜单树失败')
   } finally {
