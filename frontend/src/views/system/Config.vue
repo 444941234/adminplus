@@ -5,7 +5,10 @@
         <div class="card-header">
           <span>参数配置</span>
           <div class="header-actions">
-            <el-button type="primary" @click="handleAdd">
+            <el-button
+              type="primary"
+              @click="handleAdd"
+            >
               <el-icon><Plus /></el-icon>
               新增配置
             </el-button>

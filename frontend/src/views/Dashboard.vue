@@ -158,7 +158,10 @@
       class="charts-row"
     >
       <el-col :span="16">
-        <el-card shadow="hover" class="chart-card">
+        <el-card
+          shadow="hover"
+          class="chart-card"
+        >
           <template #header>
             <div class="card-header">
               <span>用户增长趋势</span>
@@ -172,7 +175,10 @@
       </el-col>
 
       <el-col :span="8">
-        <el-card shadow="hover" class="chart-card">
+        <el-card
+          shadow="hover"
+          class="chart-card"
+        >
           <template #header>
             <div class="card-header">
               <span>角色分布</span>
@@ -191,7 +197,10 @@
       class="charts-row"
     >
       <el-col :span="24">
-        <el-card shadow="hover" class="chart-card">
+        <el-card
+          shadow="hover"
+          class="chart-card"
+        >
           <template #header>
             <div class="card-header">
               <span>菜单类型分布</span>
