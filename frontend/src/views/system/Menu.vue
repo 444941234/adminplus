@@ -795,23 +795,33 @@ const getData = async () => {
   try {
     const data = await getMenuTree()
 
-    // 为每个节点添加层级属性
-    const addLevel = (nodes, level = 1) => {
-      if (!nodes || !Array.isArray(nodes)) return
+    // 扁平化所有节点
+    const allNodes = []
+    const flatten = (nodes) => {
       nodes.forEach(node => {
-        Object.defineProperty(node, 'level', {
-          value: level,
-          writable: true,
-          enumerable: true,
-          configurable: true
-        })
+        allNodes.push(node)
         if (node.children && node.children.length > 0) {
-          addLevel(node.children, level + 1)
+          flatten(node.children)
         }
       })
     }
-    addLevel(data)
-    tableData.value = data
+    flatten(data)
+
+    // 重新构建树形结构
+    const buildTree = (parentId, level) => {
+      return allNodes
+        .filter(node => node.parentId === parentId)
+        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+        .map(node => {
+          const children = buildTree(node.id, level + 1)
+          const newNode = { ...node }
+          newNode.level = level
+          newNode.children = children
+          return newNode
+        })
+    }
+
+    tableData.value = buildTree('0', 1)
   } catch {
     ElMessage.error('获取菜单树失败')
   } finally {

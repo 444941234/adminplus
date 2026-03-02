@@ -33,16 +33,16 @@ public record MenuResp(
 
     @Override
     public String getId() {
-        return id;
+        return id();
     }
 
     @Override
     public String getParentId() {
-        return parentId;
+        return parentId();
     }
 
     @Override
     public List<?> getChildren() {
-        return children;
+        return children();
     }
 }
