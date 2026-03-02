@@ -97,11 +97,11 @@
         <el-table-column
           prop="name"
           label="菜单名称"
-          width="280"
+          min-width="280"
         >
-          <template #default="{ row, $index }">
-            <div class="menu-name-cell" :class="`level-${getMenuLevel(row, $index)}`">
-              <span class="level-indicator">L{{ getMenuLevel(row, $index) }}</span>
+          <template #default="{ row }">
+            <div class="menu-name-cell" :class="`level-${row.level || 1}`">
+              <span class="level-indicator">L{{ row.level || 1 }}</span>
               <div class="name-wrapper">
                 <el-icon
                   v-if="row.icon && isValidIcon(row.icon)"
@@ -760,27 +760,6 @@ const getMenuTypeTip = (type) => {
   return tips[type] || ''
 }
 
-// 计算菜单层级
-const getMenuLevel = (row, index) => {
-  // 简单的层级计算：通过查找父级关系
-  const findLevel = (menu, level = 1) => {
-    if (menu.id === row.id) return level
-    if (menu.children) {
-      for (const child of menu.children) {
-        const found = findLevel(child, level + 1)
-        if (found) return found
-      }
-    }
-    return null
-  }
-
-  for (const menu of tableData.value) {
-    const level = findLevel(menu)
-    if (level) return level
-  }
-  return 1
-}
-
 // 智能默认值 - 监听表单变化自动填充
 watch(() => form.name, (newName) => {
   if (!isEdit.value && newName) {
@@ -810,7 +789,18 @@ watch(() => form.type, (newType) => {
 const getData = async () => {
   loading.value = true
   try {
-    tableData.value = await getMenuTree()
+    const data = await getMenuTree()
+    // 为每个节点添加层级属性
+    const addLevel = (nodes, level = 1) => {
+      nodes.forEach(node => {
+        node.level = level
+        if (node.children && node.children.length > 0) {
+          addLevel(node.children, level + 1)
+        }
+      })
+    }
+    addLevel(data)
+    tableData.value = data
   } catch {
     ElMessage.error('获取菜单树失败')
   } finally {
@@ -1414,26 +1404,6 @@ onMounted(() => {
   background-color: #f5f7fa !important;
 }
 
-:deep(.el-table__row--level-1 .menu-name-cell) {
-  padding-left: 8px;
-}
-
-:deep(.el-table__row--level-2 .menu-name-cell) {
-  padding-left: 16px;
-}
-
-:deep(.el-table__row--level-3 .menu-name-cell) {
-  padding-left: 24px;
-}
-
-:deep(.el-table__row--level-4 .menu-name-cell) {
-  padding-left: 32px;
-}
-
-:deep(.el-table__row--level-5 .menu-name-cell) {
-  padding-left: 40px;
-}
-
 /* 树形展开图标样式优化 */
 :deep(.el-table__expand-icon) {
   color: #909399;
@@ -1441,5 +1411,10 @@ onMounted(() => {
 
 :deep(.el-table__expand-icon:hover) {
   color: #409eff;
+}
+
+/* 调整 el-table 默认缩进，让层级更明显 */
+:deep(.el-table .el-table__expand-icon) {
+  padding-right: 8px;
 }
 </style>
