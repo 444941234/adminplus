@@ -11,6 +11,9 @@
 // 引入 Element Plus 主题变量（不使用 as *，避免冲突）
 @use './element-variables.scss';
 
+// 引入通用页面样式
+@use './views.scss';
+
 // ===== 全局基础样式 =====
 * {
   box-sizing: border-box;
