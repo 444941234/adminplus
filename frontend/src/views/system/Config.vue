@@ -255,12 +255,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.config-page {
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
 </style>

@@ -222,7 +222,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 记录登出审计日志
-            logService.log("认证管理", OperationType.OTHER, "用户��出: " + maskUsername(username));
+            logService.log("认证管理", OperationType.OTHER, "用户退出: " + maskUsername(username));
 
         } catch (Exception e) {
             log.error("登出时处理 Token 黑名单失败", e);

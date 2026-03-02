@@ -468,12 +468,7 @@ a {
   gap: $spacing-sm;
 }
 
-// 页面容器
-.page-container {
-  padding: $spacing-lg;
-  min-height: 100%;
-  background-color: $bg-color;
-}
+// 页面容器 - 使用 views.scss 中的定义
 
 // 卡片容器
 .card-container {

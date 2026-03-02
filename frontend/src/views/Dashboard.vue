@@ -1375,13 +1375,6 @@ onBeforeUnmount(() => {
   height: 300px;
 }
 
-/* 卡片头部 */
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .header-title {
   display: flex;
   align-items: center;

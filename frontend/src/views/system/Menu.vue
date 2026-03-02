@@ -1095,32 +1095,6 @@ onMounted(() => {
 .menu-page {
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.batch-bar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  background: #f5f7fa;
-  border-radius: 4px;
-  margin-bottom: 15px;
-}
-
-.batch-info {
-  font-weight: 500;
-  color: #606266;
-}
-
 .menu-name-cell {
   display: flex;
   align-items: center;

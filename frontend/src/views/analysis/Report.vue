@@ -358,13 +358,7 @@ onMounted(() => {
 .report-page {
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.pagination {
+//.pagination {
   margin-top: 20px;
   text-align: right;
 }

@@ -771,12 +771,6 @@ onMounted(() => {
   height: calc(100vh - 120px);
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .header-left {
   display: flex;
   align-items: center;

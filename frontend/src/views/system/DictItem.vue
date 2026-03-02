@@ -402,12 +402,6 @@ onMounted(() => {
 .dict-item-page {
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .header-left {
   display: flex;
   align-items: center;
@@ -417,9 +411,5 @@ onMounted(() => {
 .header-title {
   font-size: 16px;
   font-weight: 500;
-}
-
-.search-form {
-  margin-bottom: 20px;
 }
 </style>

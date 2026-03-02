@@ -622,26 +622,6 @@ onMounted(() => {
   min-height: calc(100vh - 84px);
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-/* 搜索表单 */
-.search-form {
-  margin-bottom: 16px;
-  padding: 16px;
-  background-color: #fafafa;
-  border-radius: 4px;
-}
-
 /* 部门树卡片 */
 .dept-tree-card {
   height: calc(100vh - 108px);

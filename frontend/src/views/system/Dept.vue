@@ -358,12 +358,6 @@ onMounted(() => {
 .dept-page {
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 /* 树形连接线样式 */
 .dept-tree {
   background-color: #fafbfc;
