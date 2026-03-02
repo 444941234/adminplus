@@ -87,6 +87,7 @@
         border
         row-key="id"
         :tree-props="{ children: 'children', indent: 50 }"
+        :row-class-name="getRowClassName"
         default-expand-all
         class="menu-table"
         @selection-change="handleSelectionChange"
@@ -793,22 +794,35 @@ const getData = async () => {
   loading.value = true
   try {
     const data = await getMenuTree()
-    // 为每个节点添加层级属性
+    // 为每个节点添加层级属性（递归处理所有层级）
     const addLevel = (nodes, level = 1) => {
+      if (!nodes || !Array.isArray(nodes)) return
       nodes.forEach(node => {
-        node.level = level
+        // 使用 Object.defineProperty 确保 level 属性可以被访问
+        Object.defineProperty(node, 'level', {
+          value: level,
+          writable: true,
+          enumerable: true,
+          configurable: true
+        })
         if (node.children && node.children.length > 0) {
           addLevel(node.children, level + 1)
         }
       })
     }
     addLevel(data)
+    console.log('菜单树数据:', data) // 调试用
     tableData.value = data
   } catch {
     ElMessage.error('获取菜单树失败')
   } finally {
     loading.value = false
   }
+}
+
+// 获取行类名（用于添加层级样式）
+const getRowClassName = ({ row }) => {
+  return `menu-level-${row.level || 1}`
 }
 
 // 表格选择变化
