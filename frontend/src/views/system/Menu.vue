@@ -97,17 +97,20 @@
         <el-table-column
           prop="name"
           label="菜单名称"
-          width="200"
+          width="280"
         >
-          <template #default="{ row }">
-            <div class="menu-name-cell">
-              <el-icon
-                v-if="row.icon && isValidIcon(row.icon)"
-                class="menu-icon"
-              >
-                <component :is="row.icon" />
-              </el-icon>
-              <span>{{ row.name }}</span>
+          <template #default="{ row, $index }">
+            <div class="menu-name-cell" :class="`level-${getMenuLevel(row, $index)}`">
+              <span class="level-indicator">L{{ getMenuLevel(row, $index) }}</span>
+              <div class="name-wrapper">
+                <el-icon
+                  v-if="row.icon && isValidIcon(row.icon)"
+                  class="menu-icon"
+                >
+                  <component :is="row.icon" />
+                </el-icon>
+                <span class="name-text">{{ row.name }}</span>
+              </div>
             </div>
           </template>
         </el-table-column>
@@ -749,6 +752,27 @@ const getMenuTypeTip = (type) => {
   return tips[type] || ''
 }
 
+// 计算菜单层级
+const getMenuLevel = (row, index) => {
+  // 简单的层级计算：通过查找父级关系
+  const findLevel = (menu, level = 1) => {
+    if (menu.id === row.id) return level
+    if (menu.children) {
+      for (const child of menu.children) {
+        const found = findLevel(child, level + 1)
+        if (found) return found
+      }
+    }
+    return null
+  }
+
+  for (const menu of tableData.value) {
+    const level = findLevel(menu)
+    if (level) return level
+  }
+  return 1
+}
+
 // 智能默认值 - 监听表单变化自动填充
 watch(() => form.name, (newName) => {
   if (!isEdit.value && newName) {
@@ -1088,7 +1112,101 @@ onMounted(() => {
 .menu-name-cell {
   display: flex;
   align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-left: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.menu-name-cell:hover {
+  background-color: #f5f7fa;
+  border-radius: 4px;
+  padding-left: 8px;
+}
+
+/* 层级指示器 */
+.menu-name-cell .level-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 22px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* 不同层级的样式 */
+.menu-name-cell.level-1 {
+  border-left-color: #67c23a;
+}
+
+.menu-name-cell.level-1 .level-indicator {
+  color: #67c23a;
+  background: linear-gradient(135deg, #f0f9ff 0%, #d4f4dd 100%);
+  border: 1px solid #b3e19d;
+}
+
+.menu-name-cell.level-1 .name-text {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1a1a1a;
+}
+
+.menu-name-cell.level-2 {
+  border-left-color: #409eff;
+}
+
+.menu-name-cell.level-2 .level-indicator {
+  color: #409eff;
+  background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
+  border: 1px solid #b3d8ff;
+}
+
+.menu-name-cell.level-3 {
+  border-left-color: #e6a23c;
+}
+
+.menu-name-cell.level-3 .level-indicator {
+  color: #e6a23c;
+  background: linear-gradient(135deg, #fef9f0 0%, #fdf0d4 100%);
+  border: 1px solid #f5dab1;
+}
+
+.menu-name-cell.level-4 {
+  border-left-color: #f56c6c;
+}
+
+.menu-name-cell.level-4 .level-indicator {
+  color: #f56c6c;
+  background: linear-gradient(135deg, #fef0f0 0%, #fde2e2 100%);
+  border: 1px solid #fab6b6;
+}
+
+.menu-name-cell.level-5,
+.menu-name-cell.level-6 {
+  border-left-color: #909399;
+}
+
+.menu-name-cell.level-5 .level-indicator,
+.menu-name-cell.level-6 .level-indicator {
+  color: #909399;
+  background: linear-gradient(135deg, #f4f4f5 0%, #e9e9eb 100%);
+  border: 1px solid #d3d4d6;
+}
+
+.name-wrapper {
+  display: flex;
+  align-items: center;
   gap: 8px;
+  flex: 1;
+}
+
+.name-text {
+  font-size: 14px;
+  color: #303133;
 }
 
 .menu-icon {
@@ -1210,5 +1328,51 @@ onMounted(() => {
   font-size: 12px;
   overflow-x: auto;
   margin: 0;
+}
+
+/* 表格树形缩进增强 */
+:deep(.el-table__body tr) {
+  background-color: #ffffff;
+}
+
+:deep(.el-table__body--wrapper) {
+  background-color: #fafbfc;
+}
+
+:deep(.el-table__row) {
+  background-color: #ffffff;
+}
+
+:deep(.el-table__row:hover) {
+  background-color: #f5f7fa !important;
+}
+
+:deep(.el-table__row--level-1 .menu-name-cell) {
+  padding-left: 8px;
+}
+
+:deep(.el-table__row--level-2 .menu-name-cell) {
+  padding-left: 16px;
+}
+
+:deep(.el-table__row--level-3 .menu-name-cell) {
+  padding-left: 24px;
+}
+
+:deep(.el-table__row--level-4 .menu-name-cell) {
+  padding-left: 32px;
+}
+
+:deep(.el-table__row--level-5 .menu-name-cell) {
+  padding-left: 40px;
+}
+
+/* 树形展开图标样式优化 */
+:deep(.el-table__expand-icon) {
+  color: #909399;
+}
+
+:deep(.el-table__expand-icon:hover) {
+  color: #409eff;
 }
 </style>
