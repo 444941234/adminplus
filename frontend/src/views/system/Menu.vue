@@ -795,60 +795,43 @@ const getData = async () => {
   try {
     const data = await getMenuTree()
 
-    // 检查树形结构是否正确构建，如果没有 children 则重新构建
-    const needsRebuild = data.some(node => {
-      const hasChildrenWithValidParent = data.some(n => n.parentId === node.id && n.parentId !== '0')
-      return hasChildrenWithValidParent && (!node.children || node.children.length === 0)
-    })
+    // 后端返回的树形结构有问题（children 都是空），需要重新构建
+    console.log('检测到树形结构不完整，重新构建...')
 
-    if (needsRebuild) {
-      console.log('检测到树形结构不完整，重新构建...')
-      // 扁平化所有节点
-      const allNodes = []
-      const flatten = (nodes) => {
-        nodes.forEach(node => {
-          allNodes.push(node)
-          if (node.children && node.children.length > 0) {
-            flatten(node.children)
-          }
-        })
-      }
-      flatten(data)
+    // 扁平化所有节点
+    const allNodes = []
+    const flatten = (nodes) => {
+      nodes.forEach(node => {
+        allNodes.push(node)
+        if (node.children && node.children.length > 0) {
+          flatten(node.children)
+        }
+      })
+    }
+    flatten(data)
 
-      // 重新构建树形结构
-      const buildTree = (parentId, level) => {
-        return allNodes
-          .filter(node => node.parentId === parentId)
-          .map(node => {
-            const children = buildTree(node.id, level + 1)
-            return {
-              ...node,
-              level,
-              children
-            }
-          })
-      }
-      tableData.value = buildTree('0', 1)
-    } else {
-      // 为每个节点添加层级属性（递归处理所有层级）
-      const addLevel = (nodes, level = 1) => {
-        if (!nodes || !Array.isArray(nodes)) return
-        nodes.forEach(node => {
-          Object.defineProperty(node, 'level', {
-            value: level,
-            writable: true,
-            enumerable: true,
-            configurable: true
-          })
-          if (node.children && node.children.length > 0) {
-            addLevel(node.children, level + 1)
-          }
+    // 按 sortOrder 排序
+    allNodes.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+
+    // 重新构建树形结构（递归函数）
+    const buildTree = (parentId, level) => {
+      const children = allNodes
+        .filter(node => node.parentId === parentId)
+        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+        .map(node => {
+          const nodeChildren = buildTree(node.id, level + 1)
+          // 创建新对象，确保 level 和 children 正确设置
+          const newNode = { ...node }
+          newNode.level = level
+          newNode.children = nodeChildren
+          // 打印调试信息
+          console.log(`[L${level}] ${node.name} (type: ${node.type}, id: ${node.id}) - 子节点数: ${nodeChildren.length}`)
+          return newNode
         })
-      }
-      addLevel(data)
-      tableData.value = data
+      return children
     }
 
+    tableData.value = buildTree('0', 1)
     console.log('最终菜单树结构:', JSON.stringify(tableData.value, null, 2))
   } catch {
     ElMessage.error('获取菜单树失败')
