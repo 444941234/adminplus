@@ -794,27 +794,62 @@ const getData = async () => {
   loading.value = true
   try {
     const data = await getMenuTree()
-    // 为每个节点添加层级属性（递归处理所有层级）
-    const addLevel = (nodes, level = 1) => {
-      if (!nodes || !Array.isArray(nodes)) return
-      nodes.forEach(node => {
-        // 使用 Object.defineProperty 确保 level 属性可以被访问
-        Object.defineProperty(node, 'level', {
-          value: level,
-          writable: true,
-          enumerable: true,
-          configurable: true
+
+    // 检查树形结构是否正确构建，如果没有 children 则重新构建
+    const needsRebuild = data.some(node => {
+      const hasChildrenWithValidParent = data.some(n => n.parentId === node.id && n.parentId !== '0')
+      return hasChildrenWithValidParent && (!node.children || node.children.length === 0)
+    })
+
+    if (needsRebuild) {
+      console.log('检测到树形结构不完整，重新构建...')
+      // 扁平化所有节点
+      const allNodes = []
+      const flatten = (nodes) => {
+        nodes.forEach(node => {
+          allNodes.push(node)
+          if (node.children && node.children.length > 0) {
+            flatten(node.children)
+          }
         })
-        // 调试：打印每个节点的信息
-        console.log(`节点: ${node.name}, 类型: ${node.type}, 父ID: ${node.parentId}, 层级: ${level}, 子节点数: ${node.children?.length || 0}`)
-        if (node.children && node.children.length > 0) {
-          addLevel(node.children, level + 1)
-        }
-      })
+      }
+      flatten(data)
+
+      // 重新构建树形结构
+      const buildTree = (parentId, level) => {
+        return allNodes
+          .filter(node => node.parentId === parentId)
+          .map(node => {
+            const children = buildTree(node.id, level + 1)
+            return {
+              ...node,
+              level,
+              children
+            }
+          })
+      }
+      tableData.value = buildTree('0', 1)
+    } else {
+      // 为每个节点添加层级属性（递归处理所有层级）
+      const addLevel = (nodes, level = 1) => {
+        if (!nodes || !Array.isArray(nodes)) return
+        nodes.forEach(node => {
+          Object.defineProperty(node, 'level', {
+            value: level,
+            writable: true,
+            enumerable: true,
+            configurable: true
+          })
+          if (node.children && node.children.length > 0) {
+            addLevel(node.children, level + 1)
+          }
+        })
+      }
+      addLevel(data)
+      tableData.value = data
     }
-    addLevel(data)
-    console.log('菜单树完整结构:', JSON.stringify(data, null, 2))
-    tableData.value = data
+
+    console.log('最终菜单树结构:', JSON.stringify(tableData.value, null, 2))
   } catch {
     ElMessage.error('获取菜单树失败')
   } finally {
