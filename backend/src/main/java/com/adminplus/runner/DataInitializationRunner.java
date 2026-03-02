@@ -9,8 +9,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import javax.sql.DataSource;
-import java.sql.*;
+
+import java.util.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,8 +33,9 @@ public class DataInitializationRunner implements CommandLineRunner {
     private final DeptRepository deptRepository;
     private final UserRoleRepository userRoleRepository;
     private final RoleMenuRepository roleMenuRepository;
+    private final DictRepository dictRepository;
+    private final DictItemRepository dictItemRepository;
     private final PasswordEncoder passwordEncoder;
-    private final DataSource dataSource;
 
     @Override
     @Transactional
@@ -42,9 +43,6 @@ public class DataInitializationRunner implements CommandLineRunner {
         log.info("开始执行数据初始化...");
 
         try {
-            // 确保中间表存在
-            ensureIntermediateTablesExist();
-
             // 检查是否已经初始化过
             if (isAlreadyInitialized()) {
                 log.info("数据已经初始化过，跳过初始化过程");
@@ -65,6 +63,9 @@ public class DataInitializationRunner implements CommandLineRunner {
 
             // 初始化权限关联
             initializePermissions();
+
+            // 初始化字典数据
+            initializeDicts();
 
             log.info("数据初始化完成！");
             
@@ -510,96 +511,117 @@ public class DataInitializationRunner implements CommandLineRunner {
     /**
      * 确保中间表存在，不存在则创建
      */
-    private void ensureIntermediateTablesExist() {
-        try (Connection conn = dataSource.getConnection()) {
-            DatabaseMetaData meta = conn.getMetaData();
-
-            // 检查并创建 sys_user_role 表
-            if (!tableExists(meta, "sys_user_role")) {
-                log.info("创建中间表: sys_user_role");
-                createUserRoleTable(conn);
-            }
-
-            // 检查并创建 sys_role_menu 表
-            if (!tableExists(meta, "sys_role_menu")) {
-                log.info("创建中间表: sys_role_menu");
-                createRoleMenuTable(conn);
-            }
-
-        } catch (SQLException e) {
-            log.error("检查/创建中间表失败", e);
-            throw new RuntimeException("无法创建中间表", e);
+    /**
+     * 初始化字典数据
+     */
+    private void initializeDicts() {
+        if (dictRepository.count() > 0) {
+            log.info("字典数据已存在，跳过初始化");
+            return;
         }
+
+        // 1. 用户状态字典
+        DictEntity userStatusDict = createDict("用户状态", "user_status", "系统用户状态配置");
+        userStatusDict = dictRepository.save(userStatusDict);
+        List<DictItemEntity> userStatusItems = Arrays.asList(
+                createDictItem(userStatusDict.getId(), null, "正常", "1", "启用状态", 1),
+                createDictItem(userStatusDict.getId(), null, "禁用", "0", "禁用状态", 2)
+        );
+        dictItemRepository.saveAll(userStatusItems);
+        log.info("初始化用户状态字典完成");
+
+        // 2. 性别字典
+        DictEntity genderDict = createDict("性别", "gender", "用户性别配置");
+        genderDict = dictRepository.save(genderDict);
+        List<DictItemEntity> genderItems = Arrays.asList(
+                createDictItem(genderDict.getId(), null, "男", "1", "男性", 1),
+                createDictItem(genderDict.getId(), null, "女", "0", "女性", 2),
+                createDictItem(genderDict.getId(), null, "未知", "2", "未知性别", 3)
+        );
+        dictItemRepository.saveAll(genderItems);
+        log.info("初始化性别字典完成");
+
+        // 3. 菜单类型字典
+        DictEntity menuTypeDict = createDict("菜单类型", "menu_type", "系统菜单类型配置");
+        menuTypeDict = dictRepository.save(menuTypeDict);
+        List<DictItemEntity> menuTypeItems = Arrays.asList(
+                createDictItem(menuTypeDict.getId(), null, "目录", "0", "菜单目录", 1),
+                createDictItem(menuTypeDict.getId(), null, "菜单", "1", "菜单项", 2),
+                createDictItem(menuTypeDict.getId(), null, "按钮", "2", "按钮权限", 3)
+        );
+        dictItemRepository.saveAll(menuTypeItems);
+        log.info("初始化菜单类型字典完成");
+
+        // 4. 操作状态字典
+        DictEntity operationStatusDict = createDict("操作状态", "operation_status", "操作结果状态配置");
+        operationStatusDict = dictRepository.save(operationStatusDict);
+        List<DictItemEntity> operationStatusItems = Arrays.asList(
+                createDictItem(operationStatusDict.getId(), null, "成功", "1", "操作成功", 1),
+                createDictItem(operationStatusDict.getId(), null, "失败", "0", "操作失败", 2)
+        );
+        dictItemRepository.saveAll(operationStatusItems);
+        log.info("初始化操作状态字典完成");
+
+        // 5. 是否字典
+        DictEntity yesNoDict = createDict("是否", "yes_no", "布尔值配置");
+        yesNoDict = dictRepository.save(yesNoDict);
+        List<DictItemEntity> yesNoItems = Arrays.asList(
+                createDictItem(yesNoDict.getId(), null, "是", "1", "是/启用", 1),
+                createDictItem(yesNoDict.getId(), null, "否", "0", "否/禁用", 2)
+        );
+        dictItemRepository.saveAll(yesNoItems);
+        log.info("初始化是否字典完成");
+
+        // 6. 系统环境字典
+        DictEntity envDict = createDict("系统环境", "system_env", "系统运行环境配置");
+        envDict = dictRepository.save(envDict);
+        List<DictItemEntity> envItems = Arrays.asList(
+                createDictItem(envDict.getId(), null, "开发环境", "dev", "开发环境", 1),
+                createDictItem(envDict.getId(), null, "测试环境", "test", "测试环境", 2),
+                createDictItem(envDict.getId(), null, "生产环境", "prod", "生产环境", 3)
+        );
+        dictItemRepository.saveAll(envItems);
+        log.info("初始化系统环境字典完成");
+
+        log.info("初始化字典数据完成，共 {} 个字典", 6);
     }
 
     /**
-     * 检查表是否存在
+     * 创建字典实体
      */
-    private boolean tableExists(DatabaseMetaData meta, String tableName) throws SQLException {
-        try (ResultSet rs = meta.getTables(null, null, tableName, new String[]{"TABLE"})) {
-            return rs.next();
-        }
+    private DictEntity createDict(String dictName, String dictType, String remark) {
+        DictEntity dict = new DictEntity();
+        dict.setDictName(dictName);
+        dict.setDictType(dictType);
+        dict.setStatus(1);
+        dict.setRemark(remark);
+        dict.setCreateUser("system");
+        dict.setUpdateUser("system");
+        return dict;
     }
 
     /**
-     * 创建 sys_user_role 表
+     * 创建字典项实体
      */
-    private void createUserRoleTable(Connection conn) throws SQLException {
-        String sql = """
-            CREATE TABLE sys_user_role (
-                id VARCHAR(50) PRIMARY KEY,
-                user_id VARCHAR(50) NOT NULL,
-                role_id VARCHAR(50) NOT NULL,
-                CONSTRAINT uk_user_role_user_role UNIQUE (user_id, role_id)
-            )
-            """;
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
+    private DictItemEntity createDictItem(String dictId, String parentId, String label, String value, String remark, Integer sortOrder) {
+        DictItemEntity item = new DictItemEntity();
+        item.setDictId(dictId);
+        item.setLabel(label);
+        item.setValue(value);
+        item.setStatus(1);
+        item.setRemark(remark);
+        item.setSortOrder(sortOrder);
+        item.setCreateUser("system");
+        item.setUpdateUser("system");
+
+        // 处理父子关系
+        if (parentId != null && !parentId.isEmpty()) {
+            DictItemEntity parent = new DictItemEntity();
+            parent.setId(parentId);
+            item.setParent(parent);
+            // 需要先保存父节点获取完整信息
         }
 
-        // 创建索引
-        String[] indexes = {
-            "CREATE INDEX idx_user_role_user_id ON sys_user_role(user_id)",
-            "CREATE INDEX idx_user_role_role_id ON sys_user_role(role_id)"
-        };
-        for (String indexSql : indexes) {
-            try (Statement stmt = conn.createStatement()) {
-                stmt.execute(indexSql);
-            } catch (SQLException e) {
-                // 索引可能已存在，忽略错误
-                log.debug("创建索引时出现警告: {}", e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * 创建 sys_role_menu 表
-     */
-    private void createRoleMenuTable(Connection conn) throws SQLException {
-        String sql = """
-            CREATE TABLE sys_role_menu (
-                id VARCHAR(50) PRIMARY KEY,
-                role_id VARCHAR(50) NOT NULL,
-                menu_id VARCHAR(50) NOT NULL,
-                CONSTRAINT uk_role_menu_role_menu UNIQUE (role_id, menu_id)
-            )
-            """;
-        try (Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
-        }
-
-        // 创建索引
-        String[] indexes = {
-            "CREATE INDEX idx_role_menu_role_id ON sys_role_menu(role_id)",
-            "CREATE INDEX idx_role_menu_menu_id ON sys_role_menu(menu_id)"
-        };
-        for (String indexSql : indexes) {
-            try (Statement stmt = conn.createStatement()) {
-                stmt.execute(indexSql);
-            } catch (SQLException e) {
-                // 索引可能已存在，忽略错误
-                log.debug("创建索引时出现警告: {}", e.getMessage());
-            }
-        }
+        return item;
     }
 }
