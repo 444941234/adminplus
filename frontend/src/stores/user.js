@@ -110,7 +110,13 @@ export const useUserStore = defineStore('user', () => {
       token.value = await getEncryptedSession('token', '')
       user.value = await getEncryptedSession('user', null)
       permissions.value = await getEncryptedSession('permissions', [])
-      hasLoadedRoutes.value = sessionStorage.getItem('hasLoadedRoutes') === 'true'
+
+      // 路由只在内存中，页面刷新后需要重新加载
+      // 但 initialize 可能在短时间内被多次调用（路由守卫每次都调用）
+      // 所以只在用户信息为空时（首次初始化）才重置 hasLoadedRoutes
+      if (!user.value) {
+        hasLoadedRoutes.value = false
+      }
     } catch (error) {
       console.error('[UserStore] 初始化失败:', error)
       // 如果解密失败，清除所有数据

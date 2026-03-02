@@ -28,4 +28,20 @@ public record DictItemResp(
         Instant createTime,
         Instant updateTime
 ) implements TreeUtils.ReadonlyTreeNode<DictItemResp> {
+
+    /**
+     * 重写 getId 方法，提供 id 字段值
+     */
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    /**
+     * 重写 getParentId 方法，提供 parentId 字段值
+     */
+    @Override
+    public String getParentId() {
+        return parentId;
+    }
 }

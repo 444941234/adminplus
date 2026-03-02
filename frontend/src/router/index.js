@@ -80,7 +80,8 @@ const hasLayoutRoute = () => router.hasRoute(ROUTE_NAME.LAYOUT);
  * @returns {boolean}
  */
 const shouldLoadDynamicRoutes = (userStore) => {
-  return !userStore.hasLoadedRoutes || !hasLayoutRoute();
+  // 只检查 Layout 路由是否存在，hasLoadedRoutes 可能不准确
+  return !hasLayoutRoute();
 };
 
 /**

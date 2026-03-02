@@ -52,8 +52,10 @@ const filterUniqueRoutes = (routes) => {
     if (r.meta?.hidden) {
       return false;
     }
-    // 过滤掉没有 component 的路由（如只有 redirect 的路由）
-    if (!r.components?.default && !r.component) {
+    // 过滤掉没有 component 的路由（目录类型除外）
+    // 目录 type=0 不需要 component，但需要有子路由
+    const isDirectory = r.meta?.type === 0;
+    if (!isDirectory && !r.components?.default && !r.component) {
       return false;
     }
     // 去重：根据 path 判断
