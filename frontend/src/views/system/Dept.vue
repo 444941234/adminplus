@@ -23,14 +23,18 @@
         :data="treeData"
         :props="treeProps"
         node-key="id"
-        :indent="16"
+        :indent="40"
         :expand-on-click-node="false"
         :default-expand-all="true"
         highlight-current
+        class="dept-tree"
         @node-click="handleNodeClick"
       >
         <template #default="{ node, data }">
-          <div class="tree-node">
+          <div class="tree-node" :class="`level-${node.level}`">
+            <div class="level-indicator">
+              <span class="level-number">L{{ node.level }}</span>
+            </div>
             <div class="node-info">
               <div class="node-name-row">
                 <span class="node-name">{{ node.label }}</span>
@@ -361,19 +365,156 @@ onMounted(() => {
   align-items: center;
 }
 
+/* 树形连接线样式 */
+.dept-tree {
+  background-color: #fafbfc;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+:deep(.el-tree-node) {
+  position: relative;
+}
+
+:deep(.el-tree-node__expand-icon) {
+  font-size: 14px;
+  color: #909399;
+}
+
+:deep(.el-tree-node__expand-icon.is-leaf) {
+  color: transparent;
+}
+
+:deep(.el-tree-node__children) {
+  position: relative;
+}
+
+/* 树形连接线 - 水平线 */
+:deep(.el-tree-node__children .el-tree-node) {
+  position: relative;
+}
+
+:deep(.el-tree-node__children .el-tree-node::before) {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 0;
+  height: 100%;
+  width: 1px;
+  background-color: #e4e7ed;
+}
+
+:deep(.el-tree-node__children .el-tree-node:last-child::before) {
+  height: 24px;
+}
+
+/* 树形连接线 - 垂直线连接到父节点 */
+:deep(.el-tree-node__children .el-tree-node::after) {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 24px;
+  width: 18px;
+  height: 1px;
+  background-color: #e4e7ed;
+}
+
 .tree-node {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   width: 100%;
-  padding: 16px 12px;
+  padding: 12px 16px;
   gap: 16px;
   border-radius: 6px;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  background-color: #ffffff;
+  border-left: 3px solid transparent;
 }
 
 .tree-node:hover {
-  background-color: #f5f7fa;
+  background-color: #ecf5ff;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
+}
+
+/* 层级指示器 */
+.level-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.level-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 24px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #409eff;
+  background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
+  border-radius: 12px;
+  border: 1px solid #b3d8ff;
+}
+
+/* 不同层级的视觉效果 */
+.tree-node.level-1 {
+  border-left-color: #67c23a;
+}
+
+.tree-node.level-1 .level-number {
+  color: #67c23a;
+  background: linear-gradient(135deg, #f0f9ff 0%, #d4f4dd 100%);
+  border-color: #b3e19d;
+}
+
+.tree-node.level-2 {
+  border-left-color: #409eff;
+}
+
+.tree-node.level-2 .level-number {
+  color: #409eff;
+  background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
+  border-color: #b3d8ff;
+}
+
+.tree-node.level-3 {
+  border-left-color: #e6a23c;
+}
+
+.tree-node.level-3 .level-number {
+  color: #e6a23c;
+  background: linear-gradient(135deg, #fef9f0 0%, #fdf0d4 100%);
+  border-color: #f5dab1;
+}
+
+.tree-node.level-4 {
+  border-left-color: #f56c6c;
+}
+
+.tree-node.level-4 .level-number {
+  color: #f56c6c;
+  background: linear-gradient(135deg, #fef0f0 0%, #fde2e2 100%);
+  border-color: #fab6b6;
+}
+
+.tree-node.level-5,
+.tree-node.level-6,
+.tree-node.level-7,
+.tree-node.level-8 {
+  border-left-color: #909399;
+}
+
+.tree-node.level-5 .level-number,
+.tree-node.level-6 .level-number,
+.tree-node.level-7 .level-number,
+.tree-node.level-8 .level-number {
+  color: #909399;
+  background: linear-gradient(135deg, #f4f4f5 0%, #e9e9eb 100%);
+  border-color: #d3d4d6;
 }
 
 .node-info {
@@ -389,9 +530,16 @@ onMounted(() => {
 }
 
 .node-name {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   color: #303133;
+}
+
+/* 根节点字体稍大 */
+.tree-node.level-1 .node-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
 }
 
 .status-tag {
@@ -401,7 +549,7 @@ onMounted(() => {
 .node-details {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px 32px;
+  gap: 20px 28px;
 }
 
 .detail-row {
@@ -424,7 +572,7 @@ onMounted(() => {
 
 .node-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-shrink: 0;
   align-items: flex-start;
 }
@@ -432,28 +580,50 @@ onMounted(() => {
 /* 树形组件内容区域的样式优化 */
 :deep(.el-tree-node__content) {
   height: auto !important;
-  padding: 8px 0 !important;
+  padding: 6px 0 !important;
+  margin-bottom: 4px;
 }
 
 :deep(.el-tree-node__content:hover) {
   background-color: transparent !important;
 }
 
+/* 当前选中节点高亮 */
+:deep(.el-tree-node.is-current > .el-tree-node__content) {
+  background-color: transparent !important;
+}
+
+:deep(.el-tree-node.is-current > .el-tree-node__content .tree-node) {
+  background-color: #ecf5ff !important;
+  border-left-color: #409eff;
+  box-shadow: 0 2px 12px rgba(64, 158, 255, 0.2);
+}
+
 /* 响应式：小屏幕时优化布局 */
 @media (max-width: 768px) {
+  .dept-tree {
+    padding: 12px;
+  }
+
   .tree-node {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
+    padding: 10px 12px;
   }
 
   .node-actions {
     width: 100%;
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .node-details {
     gap: 12px 16px;
+  }
+
+  .level-indicator {
+    align-self: flex-start;
   }
 }
 </style>
