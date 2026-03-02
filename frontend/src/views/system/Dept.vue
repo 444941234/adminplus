@@ -232,9 +232,21 @@ const rules = {
 const getData = async () => {
   loading.value = true;
   try {
-    treeData.value = await getDeptTree();
-  } catch {
+    const data = await getDeptTree();
+
+    // 后端现在直接返回树形结构
+    if (Array.isArray(data)) {
+      treeData.value = data;
+    } else if (data && Array.isArray(data.data)) {
+      treeData.value = data.data;
+    } else {
+      console.warn('部门树数据格式异常:', data);
+      treeData.value = [];
+    }
+  } catch (error) {
+    console.error('获取部门数据失败:', error);
     ElMessage.error('获取部门数据失败');
+    treeData.value = [];
   } finally {
     loading.value = false;
   }

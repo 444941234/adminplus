@@ -28,4 +28,19 @@ public record DeptResp(
         Instant createTime,
         Instant updateTime
 ) implements TreeUtils.ReadonlyTreeNode<DeptResp> {
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public String getParentId() {
+        return parentId;
+    }
+
+    @Override
+    public List<?> getChildren() {
+        return children;
+    }
 }

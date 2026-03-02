@@ -48,8 +48,14 @@ public class DeptServiceImpl implements DeptService {
             if (currentDeptId == null) {
                 return List.of();
             }
+
+            // 获取本部门及所有子部门
             List<String> accessibleDeptIds = getDeptAndChildrenIds(currentDeptId);
+
+            // 对于非根部门，需要调整其 parentId 为 "0" 以便构建树
+            // 这样用户的当前部门会成为树的根节点
             allDepts = deptRepository.findAllById(accessibleDeptIds);
+
             // 按sortOrder排序
             allDepts.sort((a, b) -> {
                 if (a.getSortOrder() == null && b.getSortOrder() == null) return 0;
@@ -60,7 +66,33 @@ public class DeptServiceImpl implements DeptService {
         }
 
         // 转换为 VO（扁平结构，children 为 null）
-        List<DeptResp> deptResps = allDepts.stream().map(this::toResp).toList();
+        List<DeptResp> deptResps = allDepts.stream()
+                .map(dept -> {
+                    DeptResp resp = toResp(dept);
+                    // 对于非管理员用户，如果当前部门不是根部门（parentId != "0"），
+                    // 则将其 parentId 改为 "0"，使其成为树的根节点
+                    if (!SecurityUtils.isAdmin() && dept.getId().equals(SecurityUtils.getCurrentUserDeptId())) {
+                        if (resp.parentId() != null && !resp.parentId().equals("0")) {
+                            // 创建新的 DeptResp，parentId 设为 "0"
+                            return new DeptResp(
+                                    resp.id(),
+                                    "0",  // 设为根节点
+                                    resp.name(),
+                                    resp.code(),
+                                    resp.leader(),
+                                    resp.phone(),
+                                    resp.email(),
+                                    resp.sortOrder(),
+                                    resp.status(),
+                                    resp.children(),
+                                    resp.createTime(),
+                                    resp.updateTime()
+                            );
+                        }
+                    }
+                    return resp;
+                })
+                .toList();
 
         // 使用 TreeUtils.buildTreeForRecord 构建树形结构
         return TreeUtils.buildTreeForRecord(deptResps, this::createWithChildren);
