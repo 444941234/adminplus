@@ -805,13 +805,15 @@ const getData = async () => {
           enumerable: true,
           configurable: true
         })
+        // 调试：打印每个节点的信息
+        console.log(`节点: ${node.name}, 类型: ${node.type}, 父ID: ${node.parentId}, 层级: ${level}, 子节点数: ${node.children?.length || 0}`)
         if (node.children && node.children.length > 0) {
           addLevel(node.children, level + 1)
         }
       })
     }
     addLevel(data)
-    console.log('菜单树数据:', data) // 调试用
+    console.log('菜单树完整结构:', JSON.stringify(data, null, 2))
     tableData.value = data
   } catch {
     ElMessage.error('获取菜单树失败')
