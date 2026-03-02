@@ -768,7 +768,6 @@ onMounted(() => {
 
 <style scoped>
 .dict-container {
-  padding: 20px;
   height: calc(100vh - 120px);
 }
 

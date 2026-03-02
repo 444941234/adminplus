@@ -611,7 +611,6 @@ onMounted(async () => {
 
 <style scoped>
 .profile-page {
-  padding: 20px;
 }
 
 .profile-card {

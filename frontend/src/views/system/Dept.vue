@@ -356,7 +356,6 @@ onMounted(() => {
 
 <style scoped>
 .dept-page {
-  padding: 20px;
 }
 
 .card-header {

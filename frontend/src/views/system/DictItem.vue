@@ -400,7 +400,6 @@ onMounted(() => {
 
 <style scoped>
 .dict-item-page {
-  padding: 20px;
 }
 
 .card-header {

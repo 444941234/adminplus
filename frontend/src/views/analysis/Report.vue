@@ -356,7 +356,6 @@ onMounted(() => {
 
 <style scoped>
 .report-page {
-  padding: 20px;
 }
 
 .card-header {

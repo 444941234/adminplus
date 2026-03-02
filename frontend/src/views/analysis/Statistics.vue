@@ -209,7 +209,6 @@ onUnmounted(() => {
 
 <style scoped>
 .statistics-page {
-  padding: 20px;
 }
 
 .card-header {

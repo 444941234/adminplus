@@ -256,7 +256,6 @@ onMounted(() => {
 
 <style scoped>
 .config-page {
-  padding: 20px;
 }
 
 .card-header {

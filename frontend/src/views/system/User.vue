@@ -619,8 +619,6 @@ onMounted(() => {
 
 <style scoped>
 .user-page {
-  padding: 24px;
-  background-color: #f5f7fa;
   min-height: calc(100vh - 84px);
 }
 
@@ -638,7 +636,7 @@ onMounted(() => {
 
 /* 搜索表单 */
 .search-form {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   padding: 16px;
   background-color: #fafafa;
   border-radius: 4px;

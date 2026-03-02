@@ -422,7 +422,5 @@ onMounted(() => {
 
 <style scoped>
 .role-page {
-  padding: 20px;
 }
-
 </style>
