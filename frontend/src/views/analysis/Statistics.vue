@@ -4,6 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>数据统计</span>
+          <el-button type="primary" :icon="Refresh" circle @click="loadData" :loading="loading" />
         </div>
       </template>
 
@@ -63,30 +64,35 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Refresh } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
+import { getStatistics, getVisitTrend } from '@/api/dashboard'
+
+const loading = ref(false)
 
 const statsData = ref([
   {
     title: '总用户数',
-    value: '1,234',
+    value: '0',
     icon: 'User',
     color: '#409EFF'
   },
   {
     title: '今日访问',
-    value: '567',
+    value: '0',
     icon: 'View',
     color: '#67C23A'
   },
   {
     title: '活跃用户',
-    value: '890',
+    value: '0',
     icon: 'TrendCharts',
     color: '#E6A23C'
   },
   {
-    title: '新增注册',
-    value: '45',
+    title: '今日新增',
+    value: '0',
     icon: 'Plus',
     color: '#F56C6C'
   }
@@ -97,17 +103,85 @@ const visitChartRef = ref()
 let userChart = null
 let visitChart = null
 
+// 加载统计数据
+const loadData = async () => {
+  loading.value = true
+  try {
+    const [statsResp, visitResp] = await Promise.all([
+      getStatistics(),
+      getVisitTrend()
+    ])
+
+    console.log('统计数据响应:', statsResp)
+    console.log('访问量数据响应:', visitResp)
+
+    // 响应拦截器已返回 data 部分，直接使用
+    if (statsResp) {
+      // 使用模块中的 ref 变量，而非 API 返回的普通对象
+      statsData.value = [
+        {
+          title: '总用户数',
+          value: formatNumber(statsResp.totalUsers || 0),
+          icon: 'User',
+          color: '#409EFF'
+        },
+        {
+          title: '今日访问',
+          value: formatNumber(statsResp.todayVisits || 0),
+          icon: 'View',
+          color: '#67C23A'
+        },
+        {
+          title: '活跃用户',
+          value: formatNumber(statsResp.activeUsers || 0),
+          icon: 'TrendCharts',
+          color: '#E6A23C'
+        },
+        {
+          title: '今日新增',
+          value: formatNumber(statsResp.todayNewUsers || 0),
+          icon: 'Plus',
+          color: '#F56C6C'
+        }
+      ]
+
+      // 更新用户增长图表
+      if (statsResp.userGrowthData) {
+        updateUserChart(statsResp.userGrowthData)
+      }
+    }
+
+    if (visitResp) {
+      // 更新访问量图表
+      updateVisitChart(visitResp)
+    }
+  } catch (error) {
+    console.error('加载统计数据失败:', error)
+    ElMessage.error('加载统计数据失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 格式化数字
+const formatNumber = (num) => {
+  if (num >= 10000) {
+    return (num / 10000).toFixed(1) + 'w'
+  }
+  return num.toLocaleString()
+}
+
 // 初始化用户增长图表
-const initUserChart = () => {
+const initUserChart = (data) => {
   if (!userChartRef.value) return
-  
+
   userChart = echarts.init(userChartRef.value)
   const option = {
     tooltip: {
       trigger: 'axis'
     },
     legend: {
-      data: ['新增用户', '活跃用户']
+      data: ['新增用户']
     },
     grid: {
       left: '3%',
@@ -118,7 +192,7 @@ const initUserChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      data: data?.labels || []
     },
     yAxis: {
       type: 'value'
@@ -127,31 +201,43 @@ const initUserChart = () => {
       {
         name: '新增用户',
         type: 'line',
-        data: [120, 132, 101, 134, 90, 230, 210],
+        data: data?.values || [],
         smooth: true,
         lineStyle: {
           color: '#5470C6'
-        }
-      },
-      {
-        name: '活跃用户',
-        type: 'line',
-        data: [220, 182, 191, 234, 290, 330, 310],
-        smooth: true,
-        lineStyle: {
-          color: '#91CC75'
+        },
+        areaStyle: {
+          color: 'rgba(84, 112, 198, 0.1)'
         }
       }
     ]
   }
-  
+
   userChart.setOption(option)
 }
 
+// 更新用户增长图表
+const updateUserChart = (data) => {
+  if (userChart) {
+    userChart.setOption({
+      xAxis: {
+        data: data.labels || []
+      },
+      series: [
+        {
+          data: data.values || []
+        }
+      ]
+    })
+  } else {
+    initUserChart(data)
+  }
+}
+
 // 初始化访问量图表
-const initVisitChart = () => {
+const initVisitChart = (data) => {
   if (!visitChartRef.value) return
-  
+
   visitChart = echarts.init(visitChartRef.value)
   const option = {
     tooltip: {
@@ -168,7 +254,7 @@ const initVisitChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      data: data?.labels || []
     },
     yAxis: {
       type: 'value'
@@ -177,15 +263,33 @@ const initVisitChart = () => {
       {
         name: '访问量',
         type: 'bar',
-        data: [320, 332, 301, 334, 390, 330, 320],
+        data: data?.values || [],
         itemStyle: {
           color: '#91CC75'
         }
       }
     ]
   }
-  
+
   visitChart.setOption(option)
+}
+
+// 更新访问量图表
+const updateVisitChart = (data) => {
+  if (visitChart) {
+    visitChart.setOption({
+      xAxis: {
+        data: data.labels || []
+      },
+      series: [
+        {
+          data: data.values || []
+        }
+      ]
+    })
+  } else {
+    initVisitChart(data)
+  }
 }
 
 // 响应式调整图表大小
@@ -194,9 +298,18 @@ const resizeCharts = () => {
   visitChart?.resize()
 }
 
-onMounted(() => {
-  initUserChart()
-  initVisitChart()
+onMounted(async () => {
+  // 等待数据加载后初始化图表
+  await loadData()
+
+  // 如果图表还未初始化，则初始化
+  if (!userChart && userChartRef.value) {
+    initUserChart({ labels: [], values: [] })
+  }
+  if (!visitChart && visitChartRef.value) {
+    initVisitChart({ labels: [], values: [] })
+  }
+
   window.addEventListener('resize', resizeCharts)
 })
 
@@ -212,6 +325,9 @@ onUnmounted(() => {
 }
 
 .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-weight: 500;
 }
 
