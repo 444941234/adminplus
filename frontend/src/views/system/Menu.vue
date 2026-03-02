@@ -116,12 +116,15 @@
         </el-table-column>
         <el-table-column
           label="类型"
-          width="100"
+          width="130"
         >
           <template #default="{ row }">
-            <el-tag v-bind="getMenuTypeTag(row.type) ? { type: getMenuTypeTag(row.type) } : {}">
-              {{ getMenuTypeText(row.type) }}
-            </el-tag>
+            <div class="menu-type-badge" :class="`type-${row.type}`">
+              <el-icon class="type-icon">
+                <component :is="getMenuTypeIcon(row.type)" />
+              </el-icon>
+              <span class="type-text">{{ getMenuTypeText(row.type) }}</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column
@@ -550,7 +553,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { MagicStick, ArrowDown, Upload, Plus, InfoFilled, Search } from '@element-plus/icons-vue'
+import { MagicStick, ArrowDown, Upload, Plus, InfoFilled, Search, Folder, Menu as MenuIcon, Grid } from '@element-plus/icons-vue'
 import { getMenuTree, createMenu, updateMenu, deleteMenu, batchUpdateMenuStatus, batchDeleteMenu } from '@/api/menu'
 import { useForm } from '@/composables/useForm'
 import { useConfirm } from '@/composables/useConfirm'
@@ -741,6 +744,11 @@ const getMenuTypeTag = (type) => {
 const getMenuTypeText = (type) => {
   const texts = { 0: '目录', 1: '菜单', 2: '按钮' }
   return texts[type] || '未知'
+}
+
+const getMenuTypeIcon = (type) => {
+  const icons = { 0: 'Folder', 1: 'MenuIcon', 2: 'Grid' }
+  return icons[type] || 'Document'
 }
 
 const getMenuTypeTip = (type) => {
@@ -1211,6 +1219,65 @@ onMounted(() => {
 
 .menu-icon {
   font-size: 16px;
+}
+
+/* 菜单类型徽章样式 */
+.menu-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+.menu-type-badge.type-0 {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e1f3d8 100%);
+  border-color: #b3e19d;
+  color: #67c23a;
+}
+
+.menu-type-badge.type-0 .type-icon {
+  background-color: #67c23a;
+  color: #ffffff;
+}
+
+.menu-type-badge.type-1 {
+  background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
+  border-color: #b3d8ff;
+  color: #409eff;
+}
+
+.menu-type-badge.type-1 .type-icon {
+  background-color: #409eff;
+  color: #ffffff;
+}
+
+.menu-type-badge.type-2 {
+  background: linear-gradient(135deg, #fef9f0 0%, #fdf0d4 100%);
+  border-color: #f5dab1;
+  color: #e6a23c;
+}
+
+.menu-type-badge.type-2 .type-icon {
+  background-color: #e6a23c;
+  color: #ffffff;
+}
+
+.menu-type-badge .type-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.menu-type-badge .type-text {
+  font-weight: 600;
 }
 
 /* 折叠面板样式 */
