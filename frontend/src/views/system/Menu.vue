@@ -86,8 +86,9 @@
         :data="tableData"
         border
         row-key="id"
-        :tree-props="{ children: 'children' }"
+        :tree-props="{ children: 'children', indent: 50 }"
         default-expand-all
+        class="menu-table"
         @selection-change="handleSelectionChange"
       >
         <el-table-column
@@ -97,11 +98,13 @@
         <el-table-column
           prop="name"
           label="菜单名称"
-          min-width="280"
+          min-width="320"
         >
           <template #default="{ row }">
             <div class="menu-name-cell" :class="`level-${row.level || 1}`">
-              <span class="level-indicator">L{{ row.level || 1 }}</span>
+              <div class="level-indicator">
+                <span class="level-number">L{{ row.level || 1 }}</span>
+              </div>
               <div class="name-wrapper">
                 <el-icon
                   v-if="row.icon && isValidIcon(row.icon)"
@@ -1110,41 +1113,50 @@ onMounted(() => {
 .menu-name-cell {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 0;
-  border-left: 3px solid transparent;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border-left: 4px solid transparent;
   transition: all 0.2s;
+  background-color: #ffffff;
 }
 
 .menu-name-cell:hover {
-  background-color: #f5f7fa;
-  border-radius: 4px;
-  padding-left: 8px;
+  background-color: #ecf5ff;
+  box-shadow: 0 2px 6px rgba(64, 158, 255, 0.1);
 }
 
 /* 层级指示器 */
 .menu-name-cell .level-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.menu-name-cell .level-number {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 32px;
-  height: 22px;
-  padding: 0 6px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 10px;
-  flex-shrink: 0;
+  min-width: 36px;
+  height: 26px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 13px;
+  border: 1px solid;
 }
 
 /* 不同层级的样式 */
 .menu-name-cell.level-1 {
   border-left-color: #67c23a;
+  background: linear-gradient(90deg, rgba(103, 194, 58, 0.05) 0%, transparent 100%);
 }
 
-.menu-name-cell.level-1 .level-indicator {
+.menu-name-cell.level-1 .level-number {
   color: #67c23a;
   background: linear-gradient(135deg, #f0f9ff 0%, #d4f4dd 100%);
-  border: 1px solid #b3e19d;
+  border-color: #b3e19d;
 }
 
 .menu-name-cell.level-1 .name-text {
@@ -1155,44 +1167,48 @@ onMounted(() => {
 
 .menu-name-cell.level-2 {
   border-left-color: #409eff;
+  background: linear-gradient(90deg, rgba(64, 158, 255, 0.05) 0%, transparent 100%);
 }
 
-.menu-name-cell.level-2 .level-indicator {
+.menu-name-cell.level-2 .level-number {
   color: #409eff;
   background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
-  border: 1px solid #b3d8ff;
+  border-color: #b3d8ff;
 }
 
 .menu-name-cell.level-3 {
   border-left-color: #e6a23c;
+  background: linear-gradient(90deg, rgba(230, 162, 60, 0.05) 0%, transparent 100%);
 }
 
-.menu-name-cell.level-3 .level-indicator {
+.menu-name-cell.level-3 .level-number {
   color: #e6a23c;
   background: linear-gradient(135deg, #fef9f0 0%, #fdf0d4 100%);
-  border: 1px solid #f5dab1;
+  border-color: #f5dab1;
 }
 
 .menu-name-cell.level-4 {
   border-left-color: #f56c6c;
+  background: linear-gradient(90deg, rgba(245, 108, 108, 0.05) 0%, transparent 100%);
 }
 
-.menu-name-cell.level-4 .level-indicator {
+.menu-name-cell.level-4 .level-number {
   color: #f56c6c;
   background: linear-gradient(135deg, #fef0f0 0%, #fde2e2 100%);
-  border: 1px solid #fab6b6;
+  border-color: #fab6b6;
 }
 
 .menu-name-cell.level-5,
 .menu-name-cell.level-6 {
   border-left-color: #909399;
+  background: linear-gradient(90deg, rgba(144, 147, 153, 0.05) 0%, transparent 100%);
 }
 
-.menu-name-cell.level-5 .level-indicator,
-.menu-name-cell.level-6 .level-indicator {
+.menu-name-cell.level-5 .level-number,
+.menu-name-cell.level-6 .level-number {
   color: #909399;
   background: linear-gradient(135deg, #f4f4f5 0%, #e9e9eb 100%);
-  border: 1px solid #d3d4d6;
+  border-color: #d3d4d6;
 }
 
 .name-wrapper {
@@ -1388,6 +1404,10 @@ onMounted(() => {
 }
 
 /* 表格树形缩进增强 */
+.menu-table {
+  background-color: #fafbfc;
+}
+
 :deep(.el-table__body tr) {
   background-color: #ffffff;
 }
@@ -1407,14 +1427,21 @@ onMounted(() => {
 /* 树形展开图标样式优化 */
 :deep(.el-table__expand-icon) {
   color: #909399;
+  font-size: 14px;
 }
 
 :deep(.el-table__expand-icon:hover) {
   color: #409eff;
 }
 
-/* 调整 el-table 默认缩进，让层级更明显 */
-:deep(.el-table .el-table__expand-icon) {
-  padding-right: 8px;
+/* 子级行添加左侧连接线效果 */
+:deep(.el-table__row .el-table__indent) {
+  border-left: 1px dashed #e4e7ed;
+  margin-left: 8px;
+}
+
+/* 增加层级间的间距 */
+:deep(.el-table td) {
+  padding: 8px 0;
 }
 </style>
