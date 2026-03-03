@@ -19,6 +19,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Dashboard 服务实现
@@ -156,15 +157,21 @@ public class DashboardServiceImpl implements DashboardService {
         List<String> roleNames = new ArrayList<>();
         List<Long> userCounts = new ArrayList<>();
 
-        // 获取所有角色及其用户数
+        // 获取所有角色及其用户数 - 批量查询避免 N+1
         List<RoleEntity> roles = roleRepository.findByDeletedFalse();
         log.debug("找到角色数: {}", roles.size());
 
+        // 批量查询所有用户角色关系
+        List<UserRoleEntity> allUserRoles = userRoleRepository.findAll();
+        Map<String, Long> roleUserCountMap = allUserRoles.stream()
+                .collect(java.util.stream.Collectors.groupingBy(
+                        UserRoleEntity::getRoleId,
+                        java.util.stream.Collectors.counting()));
+
         for (RoleEntity role : roles) {
             roleNames.add(role.getName());
-            List<UserRoleEntity> userRoles = userRoleRepository.findByRoleId(role.getId());
-            userCounts.add((long) userRoles.size());
-            log.debug("角色: {}, 用户数: {}", role.getName(), userRoles.size());
+            userCounts.add(roleUserCountMap.getOrDefault(role.getId(), 0L));
+            log.debug("角色: {}, 用户数: {}", role.getName(), roleUserCountMap.getOrDefault(role.getId(), 0L));
         }
 
         log.debug("获取角色分布数据 - 完成, 角色数: {}", roleNames.size());

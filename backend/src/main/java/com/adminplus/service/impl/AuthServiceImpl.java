@@ -31,6 +31,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -81,11 +82,16 @@ public class AuthServiceImpl implements AuthService {
             // 获取用户信息
             UserEntity user = userService.getUserByUsername(req.username());
 
-            // 查询用户角色
+            // 查询用户角色 - 批量查询避免 N+1
             List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
+            List<String> roleIds = userRoles.stream()
+                    .map(UserRoleEntity::getRoleId)
+                    .toList();
+            Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
+                    .collect(Collectors.toMap(RoleEntity::getId, r -> r));
             List<RoleEntity> roles = userRoles.stream()
                     .map(UserRoleEntity::getRoleId)
-                    .map(roleId -> roleRepository.findById(roleId).orElse(null))
+                    .map(roleMap::get)
                     .filter(Objects::nonNull)
                     .filter(role -> role.getStatus() == 1)
                     .toList();
@@ -158,11 +164,16 @@ public class AuthServiceImpl implements AuthService {
     public UserResp getCurrentUser(String username) {
         UserEntity user = userService.getUserByUsername(username);
 
-        // 查询用户角色
+        // 查询用户角色 - 批量查询避免 N+1
         List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
+        List<String> roleIds = userRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .toList();
+        Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
+                .collect(Collectors.toMap(RoleEntity::getId, r -> r));
         List<String> roleNames = userRoles.stream()
                 .map(UserRoleEntity::getRoleId)
-                .map(roleId -> roleRepository.findById(roleId).orElse(null))
+                .map(roleMap::get)
                 .filter(Objects::nonNull)
                 .map(RoleEntity::getName)
                 .collect(Collectors.toList());

@@ -5,6 +5,7 @@ import com.adminplus.pojo.entity.FileEntity;
 import com.adminplus.repository.FileRepository;
 import com.adminplus.service.FileService;
 import com.adminplus.service.FileStorageService;
+import com.adminplus.utils.FileContentValidator;
 import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,11 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public FileEntity uploadFile(MultipartFile file, String directory) {
+        // 验证文件内容类型（Magic Number）
+        if (!FileContentValidator.isAllowedImageType(file, file.getContentType())) {
+            throw new BizException("文件类型不匹配或文件内容无效");
+        }
+
         // 调用存储服务上传文件
         String fileUrl = fileStorageService.uploadFile(file, directory);
 
@@ -70,10 +76,50 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    @Transactional
+    public boolean deleteFileWithAuth(String fileId) {
+        FileEntity fileEntity = fileRepository.findByIdAndDeletedFalse(fileId)
+                .orElseThrow(() -> new BizException("文件不存在"));
+
+        // 权限验证：文件所有者或管理员可删除
+        String currentUserId = SecurityUtils.getCurrentUserId();
+        boolean isAdmin = SecurityUtils.isAdmin();
+        if (!isAdmin && !fileEntity.getCreateUser().equals(currentUserId)) {
+            throw new BizException("无权删除此文件");
+        }
+
+        // 调用存储服务删除文件
+        boolean deleted = fileStorageService.deleteFile(fileEntity.getFileUrl());
+
+        // 逻辑删除文件记录
+        fileEntity.setDeleted(true);
+        fileRepository.save(fileEntity);
+
+        log.info("文件删除成功，ID: {}, 操作人: {}", fileId, currentUserId);
+        return deleted;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public FileEntity getFileById(String fileId) {
         return fileRepository.findByIdAndDeletedFalse(fileId)
                 .orElseThrow(() -> new BizException("文件不存在"));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public FileEntity getFileWithAuth(String fileId) {
+        FileEntity fileEntity = fileRepository.findByIdAndDeletedFalse(fileId)
+                .orElseThrow(() -> new BizException("文件不存在"));
+
+        // 权限验证：文件所有者或管理员可查看
+        String currentUserId = SecurityUtils.getCurrentUserId();
+        boolean isAdmin = SecurityUtils.isAdmin();
+        if (!isAdmin && !fileEntity.getCreateUser().equals(currentUserId)) {
+            throw new BizException("无权查看此文件");
+        }
+
+        return fileEntity;
     }
 
     @Override

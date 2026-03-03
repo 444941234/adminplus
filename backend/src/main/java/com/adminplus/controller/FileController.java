@@ -41,7 +41,7 @@ public class FileController {
     @Operation(summary = "删除文件")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<Void> deleteFile(@PathVariable String fileId) {
-        fileService.deleteFile(fileId);
+        fileService.deleteFileWithAuth(fileId);
         return ApiResponse.ok();
     }
 
@@ -49,7 +49,7 @@ public class FileController {
     @Operation(summary = "获取文件信息")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<FileEntity> getFile(@PathVariable String fileId) {
-        FileEntity fileEntity = fileService.getFileById(fileId);
+        FileEntity fileEntity = fileService.getFileWithAuth(fileId);
         return ApiResponse.ok(fileEntity);
     }
 

@@ -157,10 +157,17 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new BizException("用户不存在"));
 
         List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(id);
+
+        // 批量查询角色信息，避免 N+1 问题
+        List<String> roleIds = userRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .toList();
+        Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
+                .collect(Collectors.toMap(RoleEntity::getId, r -> r));
         List<String> roleNames = userRoles.stream()
                 .map(UserRoleEntity::getRoleId)
-                .map(roleId -> roleRepository.findById(roleId).orElse(null))
-                .filter(role -> role != null)
+                .map(roleMap::get)
+                .filter(Objects::nonNull)
                 .map(RoleEntity::getName)
                 .toList();
 
@@ -408,11 +415,13 @@ public class UserServiceImpl implements UserService {
             userRoleRepository.saveAll(userRoles);
         }
 
-        // 记录审计日志
+        // 记录审计日志 - 使用批量查询避免 N+1
         var user = userRepository.findById(userId).orElse(null);
         if (user != null) {
+            Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
+                    .collect(Collectors.toMap(RoleEntity::getId, r -> r));
             String roleNames = roleIds.stream()
-                    .map(roleId -> roleRepository.findById(roleId).orElse(null))
+                    .map(roleMap::get)
                     .filter(Objects::nonNull)
                     .map(RoleEntity::getName)
                     .collect(Collectors.joining(", "));

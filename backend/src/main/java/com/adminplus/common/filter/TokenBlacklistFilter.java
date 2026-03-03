@@ -36,7 +36,7 @@ public class TokenBlacklistFilter extends OncePerRequestFilter {
 
             // 检查 Token 是否在黑名单中
             if (tokenBlacklistService.isTokenBlacklisted(token)) {
-                log.warn("Token 已被撤销: {}", token.substring(0, Math.min(token.length(), 20)) + "...");
+                log.warn("Token 已被撤销，拒绝访问: {}", request.getRequestURI());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"code\":401,\"message\":\"Token 已被撤销，请重新登录\"}");

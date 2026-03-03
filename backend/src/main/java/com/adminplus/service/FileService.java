@@ -30,12 +30,28 @@ public interface FileService {
     boolean deleteFile(String fileId);
 
     /**
+     * 带权限验证的删除文件
+     *
+     * @param fileId 文件ID
+     * @return 是否删除成功
+     */
+    boolean deleteFileWithAuth(String fileId);
+
+    /**
      * 获取文件信息
      *
      * @param fileId 文件ID
      * @return 文件实体
      */
     FileEntity getFileById(String fileId);
+
+    /**
+     * 带权限验证的获取文件信息
+     *
+     * @param fileId 文件ID
+     * @return 文件实体
+     */
+    FileEntity getFileWithAuth(String fileId);
 
     /**
      * 获取当前用户上传的文件列表
