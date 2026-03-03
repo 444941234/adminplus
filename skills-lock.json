@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "skills": {
+    "create-adaptable-composable": {
+      "source": "vuejs-ai/skills",
+      "sourceType": "github",
+      "computedHash": "3d044f8c43ddaee6a58ab28acc9d6315775aed150c3a9ab059d2714768be5bec"
+    },
+    "create-web-form": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "2fb5aaf1a1d352e6c32e765668475e1221486f5df8f3cd164e5f3dab4c6cec86"
+    },
+    "java-concurrency": {
+      "source": "pluginagentmarketplace/custom-plugin-java",
+      "sourceType": "github",
+      "computedHash": "30a6a2994542103db7fb3b1531c742dd1e6b4801ca05db714a02099a28a385de"
+    },
+    "java-docs": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "76cf49efcd6e99d95031c78e56615dbaf641a756e852acf7e87f9197dfab43e0"
+    },
+    "java-junit": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "fbf3cb0d47ffb44bdb6e1ebcc4d89dd7083208efdfc5b88f316c8bc2b58250b5"
+    },
+    "java-springboot": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "f1b9c6b1277178fc33e5a612761c1cd1cf6ab5f946d05d69d52026d142c0a0c1"
+    },
+    "markdown-to-html": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "fc87b1a02397a9dbcfdff39cdcf627659d433608bafbd347c60049dd2766a227"
+    },
+    "postgresql-optimization": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "8022448de70ba9a485e3b5bce34c5bbc644f93eb39b68431c9f7dabcf03aeb09"
+    },
+    "vue-best-practices": {
+      "source": "vuejs-ai/skills",
+      "sourceType": "github",
+      "computedHash": "21132f6c11c765bd11d0d6ad081122dd858630073e2123b651e58f17b399b131"
+    },
+    "vue-pinia-best-practices": {
+      "source": "vuejs-ai/skills",
+      "sourceType": "github",
+      "computedHash": "ab191c9cc34d755e5e2133bbedc56bd5f9ba0841e242a7b54c818780a5c78a9c"
+    },
+    "vue-router-best-practices": {
+      "source": "vuejs-ai/skills",
+      "sourceType": "github",
+      "computedHash": "5a8f2f8021fe27cef48d8cf053b4cdb9375c0dc5d5e066330888229d0370f55c"
+    }
+  }
+}
