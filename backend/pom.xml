@@ -117,6 +117,13 @@
             <version>1.6.2</version>
         </dependency>
 
+        <!-- MinIO SDK -->
+        <dependency>
+            <groupId>io.minio</groupId>
+            <artifactId>minio</artifactId>
+            <version>8.5.9</version>
+        </dependency>
+
         <!-- Test Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

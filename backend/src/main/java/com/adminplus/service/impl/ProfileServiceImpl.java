@@ -8,6 +8,7 @@ import com.adminplus.pojo.dto.resp.ProfileResp;
 import com.adminplus.pojo.dto.resp.SettingsResp;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.repository.ProfileRepository;
+import com.adminplus.service.FileService;
 import com.adminplus.service.ProfileService;
 import com.adminplus.service.VirusScanService;
 import com.adminplus.utils.PasswordUtils;
@@ -20,16 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
 /**
  * 个人中心服务实现
@@ -45,6 +38,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final ProfileRepository profileRepository;
     private final PasswordEncoder passwordEncoder;
     private final VirusScanService virusScanService;
+    private final FileService fileService;
 
     // 允许的图片格式
     private static final String[] ALLOWED_IMAGE_TYPES = {
@@ -52,15 +46,6 @@ public class ProfileServiceImpl implements ProfileService {
             "image/png",
             "image/gif",
             "image/webp"
-    };
-
-    // 允许的文件扩展名
-    private static final String[] ALLOWED_EXTENSIONS = {
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".gif",
-            ".webp"
     };
 
     // 最大文件大小 2MB
@@ -133,7 +118,7 @@ public class ProfileServiceImpl implements ProfileService {
             throw new BizException("新密码和确认密码不一致");
         }
 
-        // 验证新密码不能与原密码���同
+        // 验证新密码不能与原密码相同
         if (Objects.equals(req.oldPassword(), req.newPassword())) {
             throw new BizException("新密码不能与原密码相同");
         }
@@ -171,70 +156,11 @@ public class ProfileServiceImpl implements ProfileService {
             throw new BizException("文件包含病毒，上传被拒绝");
         }
 
-        try {
-            // 获取并验证原始文件名
-            String originalFilename = file.getOriginalFilename();
-            if (originalFilename == null || originalFilename.isEmpty()) {
-                throw new BizException("文件名不能为空");
-            }
+        // 使用统一的文件服务上传（包含数据库记录）
+        String avatarUrl = fileService.uploadFile(file, "avatars").getFileUrl();
+        log.info("头像上传成功: {}", avatarUrl);
 
-            // 验证文件名不包含非法字符
-            String sanitizedFilename = XssUtils.sanitizeFilename(originalFilename);
-            if (!originalFilename.equals(sanitizedFilename)) {
-                throw new BizException("文件名包含非法字符");
-            }
-
-            // 验证文件扩展名
-            if (!XssUtils.isAllowedExtension(originalFilename, ALLOWED_EXTENSIONS)) {
-                throw new BizException("不支持的文件格式");
-            }
-
-            // 生成唯一文件名（使用 UUID 避免文件名冲突）
-            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String filename = UUID.randomUUID() + extension;
-
-            // 按日期创建目录（使用相对路径，防止路径遍历）
-            String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
-
-            // 验证路径安全性
-            if (!XssUtils.isSafePath(datePath)) {
-                throw new BizException("路径包含非法字符");
-            }
-
-            // 使用固定的上传根目录，防止路径遍历
-            Path uploadRoot = Paths.get("uploads").toAbsolutePath().normalize();
-            Path uploadPath = uploadRoot.resolve("avatars").resolve(datePath).normalize();
-
-            // 确保路径在上传根目录内
-            if (!uploadPath.startsWith(uploadRoot)) {
-                throw new BizException("非法的文件路径");
-            }
-
-            // 创建目录（如果不存在）
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-
-            // 保存文件
-            Path filePath = uploadPath.resolve(filename).normalize();
-
-            // 再次验证文件路径
-            if (!filePath.startsWith(uploadPath)) {
-                throw new BizException("非法的文件路径");
-            }
-
-            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-            // 返回访问URL（相对路径）
-            String fileUrl = "/uploads/avatars/" + datePath + "/" + filename;
-            log.info("头像上传成功: {}", fileUrl);
-
-            return fileUrl;
-
-        } catch (IOException e) {
-            log.error("头像上传失败", e);
-            throw new BizException("头像上传失败: " + e.getMessage());
-        }
+        return avatarUrl;
     }
 
     @Override

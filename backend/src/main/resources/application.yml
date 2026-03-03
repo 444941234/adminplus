@@ -132,6 +132,29 @@ app:
         host: ${CLAMAV_HOST:localhost}
         port: ${CLAMAV_PORT:3310}
       timeout: 30000
+  file-storage:
+    # 存储类型: LOCAL 或 MINIO
+    type: ${FILE_STORAGE_TYPE:local}
+    local:
+      # 本地存储根目录
+      base-path: ${FILE_STORAGE_LOCAL_PATH:uploads}
+      # 访问URL前缀
+      access-prefix: ${FILE_STORAGE_LOCAL_PREFIX:/uploads}
+      # 最大文件大小 (MB)
+      max-size: 10
+    minio:
+      # MinIO服务器地址
+      endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+      # 访问Key
+      access-key: ${MINIO_ACCESS_KEY:}
+      # 密钥
+      secret-key: ${MINIO_SECRET_KEY:}
+      # 存储桶名称
+      bucket-name: ${MINIO_BUCKET_NAME:adminplus}
+      # 访问域名(用于生成访问URL)
+      access-domain: ${MINIO_ACCESS_DOMAIN:}
+      # 是否使用SSL
+      secure: ${MINIO_SECURE:false}
 
 # 日志配置（具体配置在 application-dev.yml 和 application-prod.yml 中）
 logging:
