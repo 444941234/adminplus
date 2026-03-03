@@ -36,6 +36,13 @@ public abstract class TreeEntity<E extends TreeEntity<E>> extends BaseEntity {
     protected String name;
 
     /**
+     * 设置节点名称（供子类调用）
+     */
+    protected void setNameValue(String name) {
+        this.name = name;
+    }
+
+    /**
      * 父节点
      * <p>
      * 规范1: fetch = LAZY (必须懒加载，防止级联全表查询)

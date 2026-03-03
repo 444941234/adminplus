@@ -24,6 +24,7 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true, exclude = {"parent", "children"})
 @ToString(callSuper = true, exclude = {"parent", "children"})
 @Entity
+@AttributeOverride(name = "name", column = @Column(name = "label", nullable = false, length = 100))
 @Table(name = "sys_dict_item",
        indexes = {
            @Index(name = "idx_dict_item_dict_id", columnList = "dict_id"),
@@ -42,15 +43,6 @@ public class DictItemEntity extends TreeEntity<DictItemEntity> {
      */
     @Column(name = "dict_id", nullable = false)
     private String dictId;
-
-    /**
-     * 字典标签（显示名称）
-     * <p>
-     * 注意：TreeEntity 中的 name 字段映射到此实体的 label
-     * </p>
-     */
-    @Column(name = "label", nullable = false, length = 100)
-    private String label;
 
     /**
      * 字典值（实际值）
@@ -107,25 +99,16 @@ public class DictItemEntity extends TreeEntity<DictItemEntity> {
     }
 
     /**
-     * 获取显示名称（与 label 字段同义，用于 TreeEntity 的 name 字段）
+     * 获取字典标签（通过 @AttributeOverride 映射 name -> label）
      */
-    @Override
-    public String getName() {
-        return this.label;
+    public String getLabel() {
+        return getName();
     }
 
     /**
-     * 设置显示名称
+     * 设置字典标签
      */
-    @Override
-    public void setName(String name) {
-        this.label = name;
-    }
-
-    /**
-     * 检查是否启用
-     */
-    public boolean isEnabled() {
-        return this.status != null && this.status == 1;
+    public void setLabel(String label) {
+        setName(label);
     }
 }

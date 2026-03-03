@@ -43,13 +43,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         log.info("开始执行数据初始化...");
 
         try {
-            // 检查是否已经初始化过
-            if (isAlreadyInitialized()) {
-                log.info("数据已经初始化过，跳过初始化过程");
-                return;
-            }
-
-            // 初始化部门数据
+            // 初始化部门数据（每个模块单独判断）
             initializeDepartments();
 
             // 初始化角色数据
@@ -68,7 +62,7 @@ public class DataInitializationRunner implements CommandLineRunner {
             initializeDicts();
 
             log.info("数据初始化完成！");
-            
+
         } catch (Exception e) {
             log.error("数据初始化失败", e);
             throw e;
@@ -76,10 +70,10 @@ public class DataInitializationRunner implements CommandLineRunner {
     }
 
     /**
-     * 检查是否已经初始化过
+     * 检查是否已经初始化过（保留方法但总是返回false，由各模块单独判断）
      */
     private boolean isAlreadyInitialized() {
-        return userRepository.count() > 0 && roleRepository.count() > 0;
+        return false;
     }
 
     /**
@@ -316,6 +310,11 @@ public class DataInitializationRunner implements CommandLineRunner {
      * 初始化权限关联
      */
     private void initializePermissions() {
+        if (roleMenuRepository.count() > 0) {
+            log.info("权限关联数据已存在，跳过初始化");
+            return;
+        }
+
         // 先获取所有角色和菜单
         List<RoleEntity> roles = roleRepository.findAll();
         List<MenuEntity> menus = menuRepository.findAll();
