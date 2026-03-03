@@ -76,3 +76,25 @@ export const getOnlineUsers = () => {
     method: 'get'
   })
 }
+
+/**
+ * 获取统计数据（Statistics 页面）
+ * @returns {Promise} 返回统计数据（总用户数、今日访问、活跃用户、今日新增等）
+ */
+export const getStatistics = () => {
+  return request({
+    url: '/v1/sys/dashboard/statistics',
+    method: 'get'
+  })
+}
+
+/**
+ * 获取访问量趋势
+ * @returns {Promise} 返回图表数据
+ */
+export const getVisitTrend = () => {
+  return request({
+    url: '/v1/sys/dashboard/visit-trend',
+    method: 'get'
+  })
+}

@@ -422,5 +422,135 @@ onMounted(() => {
 
 <style scoped>
 .role-page {
+  min-height: calc(100vh - 84px);
+}
+
+/* 页面标题 */
+.role-page :deep(.el-card__header) {
+  padding: 16px 20px;
+  border-bottom: 1px solid $border-light;
+}
+
+.role-page :deep(.el-card__body) {
+  padding: 20px;
+}
+
+/* 表格容器 */
+.table-container {
+  margin-bottom: 24px;
+}
+
+.table-container :deep(.el-table) {
+  border-radius: $radius-md;
+  overflow: hidden;
+}
+
+.table-container :deep(.el-table th) {
+  background-color: $bg-light;
+  font-weight: 600;
+  color: $text-regular;
+}
+
+.table-container :deep(.el-table__body-wrapper) {
+  border-radius: 0 0 $radius-md $radius-md;
+}
+
+/* 分页容器 */
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: $spacing-sm;
+}
+
+/* 角色卡片项样式 */
+.role-card {
+  padding: $spacing-md;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  margin-bottom: $spacing-sm;
+  transition: all $transition-base;
+  cursor: pointer;
+  background-color: $bg-white;
+
+  &:hover {
+    border-color: $primary-color;
+    box-shadow: $shadow-md;
+  }
+
+  &.active {
+    border-color: $primary-color;
+    background-color: rgba($primary-color, 0.05);
+  }
+}
+
+/* 菜单树样式 */
+.menu-tree-container {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: $spacing-sm;
+  border: 1px solid $border-color;
+  border-radius: $radius-md;
+  background-color: $bg-light;
+}
+
+/* 响应式样式 */
+@media (max-width: 992px) {
+  .role-page {
+    padding: $spacing-md;
+  }
+
+  .search-form {
+    padding: $spacing-base;
+  }
+}
+
+@media (max-width: 768px) {
+  .role-page {
+    padding: $spacing-base;
+  }
+
+  .table-container {
+    margin-bottom: $spacing-md;
+  }
+
+  .pagination-container {
+    justify-content: center;
+  }
+
+  .pagination-container :deep(.el-pagination) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .role-page {
+    padding: $spacing-base $spacing-sm;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $spacing-base;
+  }
+}
+
+/* 滚动条样式优化 */
+:deep(.el-table__body-wrapper)::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+:deep(.el-table__body-wrapper)::-webkit-scrollbar-thumb {
+  background-color: $border-dark;
+  border-radius: 3px;
+
+  &:hover {
+    background-color: color.scale($border-dark, $lightness: -10%);
+  }
+}
+
+:deep(.el-table__body-wrapper)::-webkit-scrollbar-track {
+  background-color: transparent;
 }
 </style>

@@ -356,13 +356,26 @@ onMounted(() => {
 
 <style scoped>
 .report-page {
+  min-height: calc(100vh - 84px);
 }
 
-//.pagination {
+/* 卡片样式 */
+.report-page :deep(.el-card__header) {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.report-page :deep(.el-card__body) {
+  padding: 20px;
+}
+
+/* 分页 */
+.pagination {
   margin-top: 20px;
   text-align: right;
 }
 
+/* 报表详情 */
 .report-detail {
   height: 100%;
 }
@@ -376,12 +389,15 @@ onMounted(() => {
 .report-header h2 {
   margin: 0 0 10px 0;
   color: #303133;
+  font-size: 20px;
+  font-weight: 600;
 }
 
 .report-meta {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   color: #909399;
+  font-size: 14px;
 }
 
 .report-content {
@@ -389,11 +405,118 @@ onMounted(() => {
   overflow-y: auto;
 }
 
+/* 图表容器 */
 .chart-container {
   height: 400px;
   width: 100%;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
 }
 
+/* 响应式样式 */
+@media (max-width: 992px) {
+  .report-page {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .report-page {
+    padding: 12px;
+  }
+
+  .pagination {
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .pagination :deep(.el-pagination) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .report-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .report-header h2 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 576px) {
+  .report-page {
+    padding: 12px 8px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .report-content {
+    height: auto;
+  }
+
+  .chart-container {
+    height: 250px;
+  }
+}
+
+/* 滚动条样式优化 */
+:deep(.el-table__body-wrapper)::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+:deep(.el-table__body-wrapper)::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 3px;
+}
+
+:deep(.el-table__body-wrapper)::-webkit-scrollbar-thumb:hover {
+  background-color: #c0c4cc;
+}
+
+:deep(.el-table__body-wrapper)::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+:deep(.report-content)::-webkit-scrollbar {
+  width: 6px;
+}
+
+:deep(.report-content)::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 3px;
+}
+
+/* 卡片头部 */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 报表类型标签 */
+:deep(.el-tag) {
+  border-radius: 4px;
+}
+
+/* 间隔类 */
 .mt-20 {
   margin-top: 20px;
 }
