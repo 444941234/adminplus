@@ -140,7 +140,8 @@ public class ProfileServiceImpl implements ProfileService {
 
         // 验证新密码强度
         if (!PasswordUtils.isStrongPassword(req.newPassword())) {
-            throw new BizException(PasswordUtils.getPasswordStrengthHint(req.newPassword()));
+            int errorCode = PasswordUtils.getPasswordStrengthHint(req.newPassword());
+            throw new BizException(PasswordUtils.getErrorMessage(errorCode));
         }
 
         String userId = SecurityUtils.getCurrentUserId();

@@ -24,7 +24,8 @@ public record PasswordChangeReq(
     public PasswordChangeReq {
         // 自定义验证：新密码强度
         if (newPassword != null && !PasswordUtils.isStrongPassword(newPassword)) {
-            throw new IllegalArgumentException(PasswordUtils.getPasswordStrengthHint(newPassword));
+            int errorCode = PasswordUtils.getPasswordStrengthHint(newPassword);
+            throw new IllegalArgumentException(PasswordUtils.getErrorMessage(errorCode));
         }
     }
 }

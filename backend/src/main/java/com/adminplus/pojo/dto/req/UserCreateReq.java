@@ -40,7 +40,8 @@ public record UserCreateReq(
     public UserCreateReq {
         // 自定义验证：密码强度
         if (password != null && !PasswordUtils.isStrongPassword(password)) {
-            throw new IllegalArgumentException(PasswordUtils.getPasswordStrengthHint(password));
+            int errorCode = PasswordUtils.getPasswordStrengthHint(password);
+            throw new IllegalArgumentException(PasswordUtils.getErrorMessage(errorCode));
         }
     }
 }

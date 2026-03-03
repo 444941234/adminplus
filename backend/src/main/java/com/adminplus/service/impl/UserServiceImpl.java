@@ -219,7 +219,8 @@ public class UserServiceImpl implements UserService {
 
         // 验证密码强度
         if (!PasswordUtils.isStrongPassword(req.password())) {
-            throw new BizException(PasswordUtils.getPasswordStrengthHint(req.password()));
+            int errorCode = PasswordUtils.getPasswordStrengthHint(req.password());
+            throw new BizException(PasswordUtils.getErrorMessage(errorCode));
         }
 
         // 验证部门是否存在
@@ -357,7 +358,8 @@ public class UserServiceImpl implements UserService {
 
         // 验证新密码强度（确保所有密码修改操作都使用相同的密码强度规则）
         if (!PasswordUtils.isStrongPassword(newPassword)) {
-            throw new BizException(PasswordUtils.getPasswordStrengthHint(newPassword));
+            int errorCode = PasswordUtils.getPasswordStrengthHint(newPassword);
+            throw new BizException(PasswordUtils.getErrorMessage(errorCode));
         }
 
         user.setPassword(passwordEncoder.encode(newPassword));
