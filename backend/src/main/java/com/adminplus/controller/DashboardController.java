@@ -104,4 +104,27 @@ public class DashboardController {
         List<OnlineUserResp> users = dashboardService.getOnlineUsers();
         return ApiResponse.ok(users);
     }
+
+    @GetMapping("/statistics")
+    @Operation(summary = "获取统计数据（Statistics页面）")
+    public ApiResponse<StatisticsResp> getStatistics() {
+        log.info("获取 Statistics 页面统计数据");
+        StatisticsResp stats = dashboardService.getStatistics();
+        return ApiResponse.ok(stats);
+    }
+
+    @GetMapping("/visit-trend")
+    @Operation(summary = "获取访问量趋势")
+    public ApiResponse<ChartDataResp> getVisitTrend() {
+        log.info("获取访问量趋势数据 - 开始");
+        try {
+            ChartDataResp data = dashboardService.getVisitTrendData();
+            log.info("获取访问量趋势数据 - 成功, labels: {}, values: {}",
+                    data.labels(), data.values());
+            return ApiResponse.ok(data);
+        } catch (Exception e) {
+            log.error("获取访问量趋势数据 - 失败", e);
+            throw e;
+        }
+    }
 }

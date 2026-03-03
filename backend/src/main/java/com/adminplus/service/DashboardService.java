@@ -60,4 +60,18 @@ public interface DashboardService {
      * @return 在线用户列表
      */
     List<OnlineUserResp> getOnlineUsers();
+
+    /**
+     * 获取统计数据（用于 Statistics 页面）
+     *
+     * @return 统计数据
+     */
+    StatisticsResp getStatistics();
+
+    /**
+     * 获取访问量趋势数据（最近7天）
+     *
+     * @return 图表数据
+     */
+    ChartDataResp getVisitTrendData();
 }
