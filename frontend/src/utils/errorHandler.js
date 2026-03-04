@@ -84,6 +84,12 @@ export function setupErrorHandler(app) {
 
   // 捕获全局错误
   window.addEventListener('error', (event) => {
+    // 忽略 ResizeObserver 警告（这是无害的浏览器警告）
+    if (event.message && event.message.includes('ResizeObserver loop')) {
+      event.preventDefault()
+      return
+    }
+
     if (process.env.NODE_ENV === 'development') {
       console.error('[Global Error]:', {
         message: event.message,
@@ -94,7 +100,8 @@ export function setupErrorHandler(app) {
         stack: event.error?.stack
       })
     }
-    // 阻止默认错误消息，避免重复弹窗
+    // 只在非 ResizeObserver 错误时显示消息
+    ElMessage.error('发生系统错误')
     event.preventDefault()
   })
 }
