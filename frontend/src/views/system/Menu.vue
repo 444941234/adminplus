@@ -557,7 +557,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { MagicStick, ArrowDown, Upload, Plus, InfoFilled, Search, Folder, Menu as MenuIcon, Grid } from '@element-plus/icons-vue'
+import { MagicStick, ArrowDown, Upload, Plus, InfoFilled, Search, Folder, Menu as MenuIcon, Grid, Document } from '@element-plus/icons-vue'
 import { getIconComponent } from '@/constants/icons'
 import { getMenuTree, createMenu, updateMenu, deleteMenu, batchUpdateMenuStatus, batchDeleteMenu } from '@/api/menu'
 import { useForm } from '@/composables/useForm'
@@ -752,8 +752,8 @@ const getMenuTypeText = (type) => {
 }
 
 const getMenuTypeIcon = (type) => {
-  const icons = { 0: 'Folder', 1: 'MenuIcon', 2: 'Grid' }
-  return icons[type] || 'Document'
+  const icons = { 0: Folder, 1: MenuIcon, 2: Grid }
+  return icons[type] || Document
 }
 
 const getMenuTypeTip = (type) => {
