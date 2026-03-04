@@ -4,16 +4,20 @@ import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.req.LogQueryDTO;
 import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.service.LogExportService;
 import com.adminplus.service.LogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -30,6 +34,7 @@ import java.util.List;
 public class LogController {
 
     private final LogService logService;
+    private final LogExportService logExportService;
 
     @GetMapping
     @Operation(summary = "分页查询日志列表")
@@ -37,6 +42,7 @@ public class LogController {
     public ApiResponse<PageResultResp<LogPageVO>> getLogList(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) Integer logType,
             @RequestParam(required = false) String username,
             @RequestParam(required = false) String module,
             @RequestParam(required = false) Integer operationType,
@@ -47,6 +53,7 @@ public class LogController {
         var query = new LogQueryDTO();
         query.setPage(page);
         query.setSize(size);
+        query.setLogType(logType);
         query.setUsername(username);
         query.setModule(module);
         query.setOperationType(operationType);
@@ -82,5 +89,85 @@ public class LogController {
     public ApiResponse<Void> deleteLogsBatch(@RequestBody List<String> ids) {
         logService.deleteByIds(ids);
         return ApiResponse.ok();
+    }
+
+    @DeleteMapping("/condition")
+    @Operation(summary = "根据条件删除日志")
+    @OperationLog(module = "日志管理", operationType = 4, description = "根据条件删除日志")
+    @PreAuthorize("hasAuthority('log:delete')")
+    public ApiResponse<Integer> deleteLogsByCondition(@Valid @RequestBody LogQueryDTO query) {
+        Integer count = logService.deleteByCondition(query);
+        return ApiResponse.ok(count);
+    }
+
+    @PostMapping("/cleanup")
+    @Operation(summary = "清理过期日志")
+    @OperationLog(module = "日志管理", operationType = 4, description = "清理过期日志")
+    @PreAuthorize("hasAuthority('log:delete')")
+    public ApiResponse<Integer> cleanupExpiredLogs() {
+        Integer count = logService.cleanupExpiredLogs();
+        return ApiResponse.ok(count);
+    }
+
+    @GetMapping("/statistics")
+    @Operation(summary = "获取日志统计")
+    @PreAuthorize("hasAuthority('log:query')")
+    public ApiResponse<LogStatisticsResp> getStatistics() {
+        LogStatisticsResp statistics = logService.getStatistics();
+        return ApiResponse.ok(statistics);
+    }
+
+    @GetMapping("/export/excel")
+    @Operation(summary = "导出日志为Excel")
+    @OperationLog(module = "日志管理", operationType = 5, description = "导出日志为Excel")
+    @PreAuthorize("hasAuthority('log:export')")
+    public ResponseEntity<byte[]> exportToExcel(
+            @RequestParam(required = false) Integer logType,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String module,
+            @RequestParam(required = false) Integer operationType,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime
+    ) throws IOException {
+        var query = new LogQueryDTO();
+        query.setPage(1);
+        query.setSize(10000);
+        query.setLogType(logType);
+        query.setUsername(username);
+        query.setModule(module);
+        query.setOperationType(operationType);
+        query.setStatus(status);
+        query.setStartTime(startTime);
+        query.setEndTime(endTime);
+
+        return logExportService.exportToExcel(query);
+    }
+
+    @GetMapping("/export/csv")
+    @Operation(summary = "导出日志为CSV")
+    @OperationLog(module = "日志管理", operationType = 5, description = "导出日志为CSV")
+    @PreAuthorize("hasAuthority('log:export')")
+    public ResponseEntity<byte[]> exportToCsv(
+            @RequestParam(required = false) Integer logType,
+            @RequestParam(required = false) String username,
+            @RequestParam(required = false) String module,
+            @RequestParam(required = false) Integer operationType,
+            @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String startTime,
+            @RequestParam(required = false) String endTime
+    ) throws IOException {
+        var query = new LogQueryDTO();
+        query.setPage(1);
+        query.setSize(10000);
+        query.setLogType(logType);
+        query.setUsername(username);
+        query.setModule(module);
+        query.setOperationType(operationType);
+        query.setStatus(status);
+        query.setStartTime(startTime);
+        query.setEndTime(endTime);
+
+        return logExportService.exportToCsv(query);
     }
 }

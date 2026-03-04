@@ -156,6 +156,36 @@ app:
       # 是否使用SSL
       secure: ${MINIO_SECURE:false}
 
+  # 日志存储配置
+  logging:
+    storage:
+      # 存储模式: DATABASE, ELASTICSEARCH, AUTO
+      mode: ${LOG_STORAGE_MODE:auto}
+      elasticsearch:
+        # 是否启用 Elasticsearch
+        enabled: ${LOG_ES_ENABLED:false}
+        # ES 服务器地址
+        urls: ${LOG_ES_URLS:http://localhost:9200}
+        # 索引名称前缀
+        index-prefix: ${LOG_ES_INDEX_PREFIX:adminplus-log}
+        # 用户名
+        username: ${LOG_ES_USERNAME:}
+        # 密码
+        password: ${LOG_ES_PASSWORD:}
+        # 连接超时（秒）
+        connection-timeout: 10
+        # Socket 超时（秒）
+        socket-timeout: 30
+      cleanup:
+        # 是否启用自动清理
+        enabled: ${LOG_CLEANUP_ENABLED:true}
+        # 日志保留天数
+        retention-days: ${LOG_RETENTION_DAYS:90}
+        # 清理任务 Cron 表达式（每天凌晨2点）
+        cron: "0 0 2 * * ?"
+        # 每次清理的最大批次大小
+        batch-size: 1000
+
 # 日志配置（具体配置在 application-dev.yml 和 application-prod.yml 中）
 logging:
   level:

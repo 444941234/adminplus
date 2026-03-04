@@ -1,6 +1,7 @@
 package com.adminplus.pojo.dto.resp;
 
 import com.adminplus.constants.LogStatus;
+import com.adminplus.constants.LogType;
 import com.adminplus.constants.OperationType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -24,11 +25,20 @@ public record LogPageVO(
         @Schema(description = "操作模块")
         String module,
 
+        @Schema(description = "日志类型（1=操作日志，2=登录日志，3=系统日志）")
+        Integer logType,
+
         @Schema(description = "操作类型")
         Integer operationType,
 
         @Schema(description = "操作描述")
         String description,
+
+        @Schema(description = "请求方法")
+        String method,
+
+        @Schema(description = "请求参数")
+        String params,
 
         @Schema(description = "请求IP")
         String ip,
@@ -42,9 +52,27 @@ public record LogPageVO(
         @Schema(description = "状态（1=成功，0=失败）")
         Integer status,
 
+        @Schema(description = "异常信息")
+        String errorMsg,
+
         @Schema(description = "创建时间")
         Instant createTime
 ) {
+
+    /**
+     * 获取日志类型描述
+     */
+    public String getLogTypeDesc() {
+        if (logType == null) {
+            return "未知";
+        }
+        return switch (logType) {
+            case LogType.OPERATION -> "操作日志";
+            case LogType.LOGIN -> "登录日志";
+            case LogType.SYSTEM -> "系统日志";
+            default -> "未知";
+        };
+    }
 
     /**
      * 获取操作类型描述

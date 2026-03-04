@@ -23,6 +23,7 @@ import org.hibernate.annotations.Where;
            @Index(name = "idx_log_user_id", columnList = "user_id"),
            @Index(name = "idx_log_create_time", columnList = "create_time"),
            @Index(name = "idx_log_operation_type", columnList = "operation_type"),
+           @Index(name = "idx_log_type", columnList = "log_type"),
            @Index(name = "idx_log_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_log SET deleted = true WHERE id = ?")
@@ -46,6 +47,12 @@ public class LogEntity extends BaseEntity {
      */
     @Column(name = "module", length = 50)
     private String module;
+
+    /**
+     * 日志类型（1=操作日志，2=登录日志，3=系统日志）
+     */
+    @Column(name = "log_type")
+    private Integer logType = 1;
 
     /**
      * 操作类型（1=查询，2=新增，3=修改，4=删除，5=导出，6=导入，7=其他）

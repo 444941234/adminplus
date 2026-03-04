@@ -4,8 +4,26 @@
       <template #header>
         <div class="card-header">
           <span class="card-title">日志管理</span>
+          <div class="header-actions">
+            <el-button
+              v-if="selectedRows.length > 0"
+              type="danger"
+              @click="handleBatchDelete"
+            >
+              <el-icon><Delete /></el-icon>
+              批量删除
+            </el-button>
+          </div>
         </div>
       </template>
+
+      <!-- 日志类型选项卡 -->
+      <el-tabs v-model="activeLogType" @tab-change="handleLogTypeChange">
+        <el-tab-pane label="全部" name=""></el-tab-pane>
+        <el-tab-pane label="操作日志" name="1"></el-tab-pane>
+        <el-tab-pane label="登录日志" name="2"></el-tab-pane>
+        <el-tab-pane label="系统日志" name="3"></el-tab-pane>
+      </el-tabs>
 
       <!-- 搜索表单 -->
       <el-form
@@ -84,7 +102,12 @@
         stripe
         border
         style="width: 100%"
+        @selection-change="handleSelectionChange"
       >
+        <el-table-column
+          type="selection"
+          width="55"
+        />
         <el-table-column
           prop="username"
           label="操作人"
@@ -190,6 +213,11 @@
       width="700px"
     >
       <el-descriptions :column="2" border>
+        <el-descriptions-item label="日志类型">
+          <el-tag :type="getLogTypeTag(currentLog.logType)">
+            {{ getLogTypeDesc(currentLog.logType) }}
+          </el-tag>
+        </el-descriptions-item>
         <el-descriptions-item label="操作人">
           {{ currentLog.username }}
         </el-descriptions-item>
@@ -238,13 +266,17 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh } from '@element-plus/icons-vue'
-import { getLogList, getLogById, deleteLog } from '@/api/log'
+import { Search, Refresh, Delete } from '@element-plus/icons-vue'
+import { getLogList, getLogById, deleteLog, deleteLogsBatch } from '@/api/log'
+
+// 当前激活的日志类型
+const activeLogType = ref('')
 
 // 查询表单
 const queryForm = reactive({
   page: 1,
   size: 10,
+  logType: null,
   username: '',
   module: '',
   operationType: null,
@@ -261,9 +293,32 @@ const loading = ref(false)
 const logList = ref([])
 const total = ref(0)
 
+// 选中的行
+const selectedRows = ref([])
+
 // 详情对话框
 const detailDialogVisible = ref(false)
 const currentLog = ref({})
+
+// 日志类型映射
+const logTypeMap = {
+  1: '操作日志',
+  2: '登录日志',
+  3: '系统日志'
+}
+
+const getLogTypeDesc = (type) => {
+  return logTypeMap[type] || '未知'
+}
+
+const getLogTypeTag = (type) => {
+  const tagMap = {
+    1: 'primary',
+    2: 'success',
+    3: 'warning'
+  }
+  return tagMap[type] || ''
+}
 
 // 操作类型映射
 const operationTypeMap = {
@@ -330,7 +385,9 @@ const handleSearch = () => {
 
 // 重置
 const handleReset = () => {
+  activeLogType.value = ''
   queryForm.page = 1
+  queryForm.logType = null
   queryForm.username = ''
   queryForm.module = ''
   queryForm.operationType = null
@@ -339,6 +396,47 @@ const handleReset = () => {
   queryForm.endTime = ''
   dateRange.value = []
   loadLogList()
+}
+
+// 日志类型切换
+const handleLogTypeChange = (tabName) => {
+  queryForm.logType = tabName ? parseInt(tabName) : null
+  queryForm.page = 1
+  loadLogList()
+}
+
+// 选择变化
+const handleSelectionChange = (selection) => {
+  selectedRows.value = selection
+}
+
+// 批量删除
+const handleBatchDelete = () => {
+  if (selectedRows.value.length === 0) {
+    ElMessage.warning('请至少选择一条日志')
+    return
+  }
+  ElMessageBox.confirm(
+    `确定要删除选中的 ${selectedRows.value.length} 条日志吗？`,
+    '批量删除',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(async () => {
+    try {
+      const ids = selectedRows.value.map(row => row.id)
+      const res = await deleteLogsBatch(ids)
+      if (res.code === 200) {
+        ElMessage.success('删除成功')
+        selectedRows.value = []
+        loadLogList()
+      }
+    } catch (error) {
+      console.error('批量删除日志失败:', error)
+    }
+  }).catch(() => {})
 }
 
 // 分页大小变化

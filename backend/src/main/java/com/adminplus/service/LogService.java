@@ -2,6 +2,7 @@ package com.adminplus.service;
 
 import com.adminplus.pojo.dto.req.LogQueryDTO;
 import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.LogEntity;
 
@@ -60,6 +61,24 @@ public interface LogService {
              Integer status, String errorMsg);
 
     /**
+     * 记录登录日志
+     *
+     * @param username 用户名
+     * @param status   状态（1=成功，0=失败）
+     * @param errorMsg 异常信息
+     */
+    void logLogin(String username, Integer status, String errorMsg);
+
+    /**
+     * 记录系统日志
+     *
+     * @param module   模块
+     * @param message  日志消息
+     * @param errorMsg 异常信息（如有）
+     */
+    void logSystem(String module, String message, String errorMsg);
+
+    /**
      * 分页查询日志列表
      *
      * @param query 查询条件
@@ -88,4 +107,26 @@ public interface LogService {
      * @param ids 日志ID列表
      */
     void deleteByIds(List<String> ids);
+
+    /**
+     * 根据条件删除日志
+     *
+     * @param query 查询条件
+     * @return 删除的记录数
+     */
+    Integer deleteByCondition(LogQueryDTO query);
+
+    /**
+     * 清理过期日志
+     *
+     * @return 清理的记录数
+     */
+    Integer cleanupExpiredLogs();
+
+    /**
+     * 获取日志统计
+     *
+     * @return 统计数据
+     */
+    LogStatisticsResp getStatistics();
 }

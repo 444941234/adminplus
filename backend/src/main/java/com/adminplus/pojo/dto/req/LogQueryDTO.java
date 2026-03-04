@@ -26,6 +26,12 @@ public class LogQueryDTO {
     private String module;
 
     /**
+     * 日志类型（1=操作日志，2=登录日志，3=系统日志）
+     */
+    @Schema(description = "日志类型")
+    private Integer logType;
+
+    /**
      * 操作类型（1=查询，2=新增，3=修改，4=删除，5=导出，6=导入，7=其他）
      */
     @Schema(description = "操作类型")

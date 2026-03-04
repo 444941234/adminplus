@@ -185,7 +185,8 @@ public class DataInitializationRunner implements CommandLineRunner {
         menuData.add(new Object[]{"M23", "M2", 1, "菜单管理", "/system/menu", "system/Menu", "system:menu:list", "Menu", 3, 1, 1});
         menuData.add(new Object[]{"M24", "M2", 1, "字典管理", "/system/dict", "system/Dict", "system:dict:list", "Document", 4, 1, 1});
         menuData.add(new Object[]{"M25", "M2", 1, "部门管理", "/system/dept", "system/Dept", "system:dept:list", "OfficeBuilding", 5, 1, 1});
-        menuData.add(new Object[]{"M26", "M2", 1, "参数配置", "/system/config", "system/Config", "system:config:list", "Tools", 6, 1, 1});
+        menuData.add(new Object[]{"M26", "M2", 1, "日志管理", "/system/log", "system/Log", "system:log:list", "DocumentCopy", 6, 1, 1});
+        menuData.add(new Object[]{"M27", "M2", 1, "参数配置", "/system/config", "system/Config", "system:config:list", "Tools", 7, 1, 1});
 
         // 用户管理按钮权限
         menuData.add(new Object[]{"M211", "M21", 2, "新增用户", null, null, "user:add", null, 1, 0, 1});
@@ -216,6 +217,11 @@ public class DataInitializationRunner implements CommandLineRunner {
         menuData.add(new Object[]{"M253", "M25", 2, "删除部门", null, null, "dept:delete", null, 3, 0, 1});
         menuData.add(new Object[]{"M254", "M25", 2, "查询部门", null, null, "dept:query", null, 4, 0, 1});
         menuData.add(new Object[]{"M255", "M25", 2, "部门列表", null, null, "dept:list", null, 5, 0, 1});
+
+        // 日志管理按钮权限
+        menuData.add(new Object[]{"M261", "M26", 2, "查询日志", null, null, "log:query", null, 1, 0, 1});
+        menuData.add(new Object[]{"M262", "M26", 2, "删除日志", null, null, "log:delete", null, 2, 0, 1});
+        menuData.add(new Object[]{"M263", "M26", 2, "导出日志", null, null, "log:export", null, 3, 0, 1});
 
         // 数据分析子菜单
         menuData.add(new Object[]{"M31", "M3", 1, "数据统计", "/analysis/statistics", "analysis/Statistics", "analysis:statistics:view", "TrendCharts", 1, 1, 1});

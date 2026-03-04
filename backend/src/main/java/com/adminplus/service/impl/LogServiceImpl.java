@@ -1,34 +1,33 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.common.config.LogStorageProperties;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.LogStatus;
+import com.adminplus.constants.LogType;
 import com.adminplus.pojo.dto.req.LogQueryDTO;
 import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.LogEntity;
-import com.adminplus.repository.LogRepository;
 import com.adminplus.service.LogService;
+import com.adminplus.service.LogStatisticsService;
+import com.adminplus.service.LogStorageStrategy;
 import com.adminplus.utils.SecurityUtils;
-import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 日志服务实现
+ * 使用存储策略模式支持数据库和 ES 双存储
  *
  * @author AdminPlus
  * @since 2026-02-07
@@ -38,9 +37,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LogServiceImpl implements LogService {
 
-    private final LogRepository logRepository;
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final LogStorageStrategySelector storageStrategySelector;
+    private final LogStorageProperties logStorageProperties;
+    private final LogStatisticsService logStatisticsService;
 
     @Override
     @Async
@@ -55,7 +54,6 @@ public class LogServiceImpl implements LogService {
     public void log(String module, Integer operationType, String description,
                     String method, String params, String ip) {
         try {
-            // 检查 SecurityContext 是否包含用户信息，如果为空则跳过日志保存
             if (!SecurityUtils.isAuthenticated()) {
                 log.debug("用户已登出，跳过日志保存: module={}, operationType={}, description={}", module, operationType, description);
                 return;
@@ -65,6 +63,7 @@ public class LogServiceImpl implements LogService {
             logEntity.setUserId(SecurityUtils.getCurrentUserId());
             logEntity.setUsername(SecurityUtils.getCurrentUsername());
             logEntity.setModule(module);
+            logEntity.setLogType(LogType.OPERATION);
             logEntity.setOperationType(operationType);
             logEntity.setDescription(description);
             logEntity.setMethod(method);
@@ -73,7 +72,7 @@ public class LogServiceImpl implements LogService {
             logEntity.setStatus(LogStatus.SUCCESS);
             logEntity.setCostTime(0L);
 
-            logRepository.save(logEntity);
+            getStorageStrategy().save(logEntity);
         } catch (Exception e) {
             log.error("保存操作日志失败", e);
         }
@@ -84,7 +83,6 @@ public class LogServiceImpl implements LogService {
     @Transactional
     public void log(String module, Integer operationType, String description, Long costTime) {
         try {
-            // 检查 SecurityContext 是否包含用户信息，如果为空则跳过日志保存
             if (!SecurityUtils.isAuthenticated()) {
                 log.debug("用户已登出，跳过日志保存: module={}, operationType={}, description={}", module, operationType, description);
                 return;
@@ -94,12 +92,13 @@ public class LogServiceImpl implements LogService {
             logEntity.setUserId(SecurityUtils.getCurrentUserId());
             logEntity.setUsername(SecurityUtils.getCurrentUsername());
             logEntity.setModule(module);
+            logEntity.setLogType(LogType.OPERATION);
             logEntity.setOperationType(operationType);
             logEntity.setDescription(description);
             logEntity.setCostTime(costTime);
             logEntity.setStatus(LogStatus.SUCCESS);
 
-            logRepository.save(logEntity);
+            getStorageStrategy().save(logEntity);
         } catch (Exception e) {
             log.error("保存操作日志失败", e);
         }
@@ -111,7 +110,6 @@ public class LogServiceImpl implements LogService {
     public void log(String module, Integer operationType, String description,
                     Integer status, String errorMsg) {
         try {
-            // 检查 SecurityContext 是否包含用户信息，如果为空则跳过日志保存
             if (!SecurityUtils.isAuthenticated()) {
                 log.debug("用户已登出，跳过日志保存: module={}, operationType={}, description={}", module, operationType, description);
                 return;
@@ -121,109 +119,121 @@ public class LogServiceImpl implements LogService {
             logEntity.setUserId(SecurityUtils.getCurrentUserId());
             logEntity.setUsername(SecurityUtils.getCurrentUsername());
             logEntity.setModule(module);
+            logEntity.setLogType(LogType.OPERATION);
             logEntity.setOperationType(operationType);
             logEntity.setDescription(description);
             logEntity.setStatus(status);
             logEntity.setErrorMsg(errorMsg);
 
-            logRepository.save(logEntity);
+            getStorageStrategy().save(logEntity);
         } catch (Exception e) {
             log.error("保存操作日志失败", e);
         }
     }
 
     @Override
+    @Async
+    @Transactional
+    public void logLogin(String username, Integer status, String errorMsg) {
+        try {
+            LogEntity logEntity = new LogEntity();
+            logEntity.setUserId(username);
+            logEntity.setUsername(username);
+            logEntity.setModule("用户登录");
+            logEntity.setLogType(LogType.LOGIN);
+            logEntity.setOperationType(status == LogStatus.SUCCESS ? 1 : 2);
+            logEntity.setDescription(status == LogStatus.SUCCESS ? "用户登录成功" : "用户登录失败");
+            logEntity.setStatus(status);
+            logEntity.setErrorMsg(errorMsg);
+            logEntity.setCostTime(0L);
+
+            getStorageStrategy().save(logEntity);
+        } catch (Exception e) {
+            log.error("保存登录日志失败", e);
+        }
+    }
+
+    @Override
+    @Async
+    @Transactional
+    public void logSystem(String module, String message, String errorMsg) {
+        try {
+            LogEntity logEntity = new LogEntity();
+            logEntity.setUserId("system");
+            logEntity.setUsername("system");
+            logEntity.setModule(module);
+            logEntity.setLogType(LogType.SYSTEM);
+            logEntity.setOperationType(7); // 其他
+            logEntity.setDescription(message);
+            logEntity.setStatus(errorMsg == null ? LogStatus.SUCCESS : LogStatus.FAILED);
+            logEntity.setErrorMsg(errorMsg);
+            logEntity.setCostTime(0L);
+
+            getStorageStrategy().save(logEntity);
+        } catch (Exception e) {
+            log.error("保存系统日志失败", e);
+        }
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public PageResultResp<LogPageVO> findPage(LogQueryDTO query) {
-        var pageable = PageRequest.of(query.getPage() - 1, query.getSize(), Sort.by(Sort.Direction.DESC, "createTime"));
-
-        Specification<LogEntity> spec = buildSpecification(query);
-        Page<LogEntity> pageResult = logRepository.findAll(spec, pageable);
-
-        List<LogPageVO> records = pageResult.getContent().stream()
-                .map(this::toLogPageVO)
-                .toList();
-
-        return new PageResultResp<>(
-                records,
-                pageResult.getTotalElements(),
-                pageResult.getNumber() + 1,
-                pageResult.getSize()
-        );
+        return getStorageStrategy().findPage(query);
     }
 
     @Override
     @Transactional(readOnly = true)
     public LogPageVO findById(String id) {
-        var logEntity = logRepository.findById(id)
-                .orElseThrow(() -> new BizException("日志不存在"));
+        LogEntity logEntity = getStorageStrategy().findById(id);
+        if (logEntity == null) {
+            throw new BizException("日志不存在");
+        }
         return toLogPageVO(logEntity);
     }
 
     @Override
     @Transactional
     public void deleteById(String id) {
-        if (!logRepository.existsById(id)) {
-            throw new BizException("日志不存在");
-        }
-        logRepository.deleteById(id);
+        getStorageStrategy().deleteById(id);
     }
 
     @Override
     @Transactional
     public void deleteByIds(List<String> ids) {
-        List<LogEntity> logs = logRepository.findAllById(ids);
-        if (logs.isEmpty()) {
-            throw new BizException("日志不存在");
+        getStorageStrategy().deleteByIds(ids);
+    }
+
+    @Override
+    @Transactional
+    public Integer deleteByCondition(LogQueryDTO query) {
+        return getStorageStrategy().deleteByCondition(query);
+    }
+
+    @Override
+    @Transactional
+    public Integer cleanupExpiredLogs() {
+        var cleanupConfig = logStorageProperties.getCleanup();
+        if (!cleanupConfig.isEnabled()) {
+            log.info("日志清理功能未启用");
+            return 0;
         }
-        logRepository.deleteAll(logs);
+        return getStorageStrategy().cleanupExpiredLogs(
+                cleanupConfig.getRetentionDays(),
+                cleanupConfig.getBatchSize()
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LogStatisticsResp getStatistics() {
+        return logStatisticsService.getStatistics();
     }
 
     /**
-     * 构建查询条件
+     * 获取当前存储策略
      */
-    private Specification<LogEntity> buildSpecification(LogQueryDTO query) {
-        return (root, criteriaQuery, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-
-            // 用户名模糊查询
-            if (query.getUsername() != null && !query.getUsername().isEmpty()) {
-                predicates.add(criteriaBuilder.like(root.get("username"), "%" + query.getUsername() + "%"));
-            }
-
-            // 模块精确查询
-            if (query.getModule() != null && !query.getModule().isEmpty()) {
-                predicates.add(criteriaBuilder.equal(root.get("module"), query.getModule()));
-            }
-
-            // 操作类型精确查询
-            if (query.getOperationType() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("operationType"), query.getOperationType()));
-            }
-
-            // 状态精确查询
-            if (query.getStatus() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("status"), query.getStatus()));
-            }
-
-            // 时间范围查询
-            if (query.getStartTime() != null && !query.getStartTime().isEmpty()) {
-                LocalDateTime startDateTime = LocalDateTime.parse(query.getStartTime(), DATE_TIME_FORMATTER);
-                Instant startInstant = startDateTime.atZone(ZoneOffset.UTC).toInstant();
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createTime"), startInstant));
-            }
-
-            if (query.getEndTime() != null && !query.getEndTime().isEmpty()) {
-                LocalDateTime endDateTime = LocalDateTime.parse(query.getEndTime(), DATE_TIME_FORMATTER);
-                Instant endInstant = endDateTime.atZone(ZoneOffset.UTC).toInstant();
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createTime"), endInstant));
-            }
-
-            // 默认只查询未删除的
-            predicates.add(criteriaBuilder.equal(root.get("deleted"), false));
-
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
-        };
+    private LogStorageStrategy getStorageStrategy() {
+        return storageStrategySelector.getStrategy();
     }
 
     /**
@@ -234,12 +244,16 @@ public class LogServiceImpl implements LogService {
                 entity.getId(),
                 entity.getUsername(),
                 entity.getModule(),
+                entity.getLogType(),
                 entity.getOperationType(),
                 entity.getDescription(),
+                entity.getMethod(),
+                entity.getParams(),
                 entity.getIp(),
                 entity.getLocation(),
                 entity.getCostTime(),
                 entity.getStatus(),
+                entity.getErrorMsg(),
                 entity.getCreateTime()
         );
     }
