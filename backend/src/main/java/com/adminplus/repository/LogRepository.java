@@ -2,6 +2,7 @@ package com.adminplus.repository;
 
 import com.adminplus.pojo.entity.LogEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * @since 2026-02-07
  */
 @Repository
-public interface LogRepository extends JpaRepository<LogEntity, String> {
+public interface LogRepository extends JpaRepository<LogEntity, String>, JpaSpecificationExecutor<LogEntity> {
 
     /**
      * 统计未删除的日志数量

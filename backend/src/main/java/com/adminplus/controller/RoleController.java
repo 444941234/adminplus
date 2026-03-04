@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.req.RoleCreateReq;
 import com.adminplus.pojo.dto.req.RoleUpdateReq;
@@ -33,6 +34,7 @@ public class RoleController {
 
     @GetMapping
     @Operation(summary = "查询角色列表")
+    @OperationLog(module = "角色管理", operationType = 1, description = "查询角色列表")
     @PreAuthorize("hasAuthority('role:list')")
     public ApiResponse<Map<String, Object>> getRoleList() {
         List<RoleResp> roles = roleService.getRoleList();
@@ -44,6 +46,7 @@ public class RoleController {
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询角色")
+    @OperationLog(module = "角色管理", operationType = 1, description = "查询角色详情 {#id}")
     @PreAuthorize("hasAuthority('role:query')")
     public ApiResponse<RoleResp> getRoleById(@PathVariable String id) {
         RoleResp role = roleService.getRoleById(id);
@@ -52,6 +55,7 @@ public class RoleController {
 
     @PostMapping
     @Operation(summary = "创建角色")
+    @OperationLog(module = "角色管理", operationType = 2, description = "新增角色 {#req.roleName}")
     @PreAuthorize("hasAuthority('role:add')")
     public ApiResponse<RoleResp> createRole(@Valid @RequestBody RoleCreateReq req) {
         RoleResp role = roleService.createRole(req);
@@ -60,6 +64,7 @@ public class RoleController {
 
     @PutMapping("/{id}")
     @Operation(summary = "更新角色")
+    @OperationLog(module = "角色管理", operationType = 3, description = "修改角色 {#id}")
     @PreAuthorize("hasAuthority('role:edit')")
     public ApiResponse<RoleResp> updateRole(@PathVariable String id, @Valid @RequestBody RoleUpdateReq req) {
         RoleResp role = roleService.updateRole(id, req);
@@ -68,6 +73,7 @@ public class RoleController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除角色")
+    @OperationLog(module = "角色管理", operationType = 4, description = "删除角色 {#id}")
     @PreAuthorize("hasAuthority('role:delete')")
     public ApiResponse<Void> deleteRole(@PathVariable String id) {
         roleService.deleteRole(id);
@@ -76,6 +82,7 @@ public class RoleController {
 
     @PutMapping("/{id}/menus")
     @Operation(summary = "为角色分配菜单权限")
+    @OperationLog(module = "角色管理", operationType = 3, description = "分配角色菜单 {#id}")
     @PreAuthorize("hasAuthority('role:assign')")
     public ApiResponse<Void> assignMenus(
             @PathVariable String id,
@@ -87,6 +94,7 @@ public class RoleController {
 
     @GetMapping("/{id}/menus")
     @Operation(summary = "查询角色的菜单ID列表")
+    @OperationLog(module = "角色管理", operationType = 1, description = "查询角色菜单 {#id}")
     @PreAuthorize("hasAuthority('role:query')")
     public ApiResponse<List<String>> getRoleMenuIds(@PathVariable String id) {
         List<String> menuIds = roleService.getRoleMenuIds(id);

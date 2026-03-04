@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.req.MenuBatchDeleteReq;
 import com.adminplus.pojo.dto.req.MenuBatchStatusReq;
@@ -35,6 +36,7 @@ public class MenuController {
 
     @GetMapping("/tree")
     @Operation(summary = "查询菜单树形列表")
+    @OperationLog(module = "菜单管理", operationType = 1, description = "查询菜单树形列表")
     @PreAuthorize("hasAuthority('menu:list')")
     public ApiResponse<List<MenuResp>> getMenuTree() {
         List<MenuResp> menus = menuService.getMenuTree();
@@ -43,6 +45,7 @@ public class MenuController {
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询菜单")
+    @OperationLog(module = "菜单管理", operationType = 1, description = "查询菜单详情 {#id}")
     @PreAuthorize("hasAuthority('menu:query')")
     public ApiResponse<MenuResp> getMenuById(@PathVariable String id) {
         MenuResp menu = menuService.getMenuById(id);
@@ -51,6 +54,7 @@ public class MenuController {
 
     @PostMapping
     @Operation(summary = "创建菜单")
+    @OperationLog(module = "菜单管理", operationType = 2, description = "新增菜单 {#req.menuName}")
     @PreAuthorize("hasAuthority('menu:add')")
     public ApiResponse<MenuResp> createMenu(@Valid @RequestBody MenuCreateReq req) {
         MenuResp menu = menuService.createMenu(req);
@@ -59,6 +63,7 @@ public class MenuController {
 
     @PutMapping("/{id}")
     @Operation(summary = "更新菜单")
+    @OperationLog(module = "菜单管理", operationType = 3, description = "修改菜单 {#id}")
     @PreAuthorize("hasAuthority('menu:edit')")
     public ApiResponse<MenuResp> updateMenu(@PathVariable String id, @Valid @RequestBody MenuUpdateReq req) {
         MenuResp menu = menuService.updateMenu(id, req);
@@ -67,6 +72,7 @@ public class MenuController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除菜单")
+    @OperationLog(module = "菜单管理", operationType = 4, description = "删除菜单 {#id}")
     @PreAuthorize("hasAuthority('menu:delete')")
     public ApiResponse<Void> deleteMenu(@PathVariable String id) {
         menuService.deleteMenu(id);
