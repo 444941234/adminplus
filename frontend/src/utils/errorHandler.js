@@ -85,8 +85,16 @@ export function setupErrorHandler(app) {
   // 捕获全局错误
   window.addEventListener('error', (event) => {
     if (process.env.NODE_ENV === 'development') {
-      console.error('[Global Error]:', event.error)
+      console.error('[Global Error]:', {
+        message: event.message,
+        filename: event.filename,
+        lineno: event.lineno,
+        colno: event.colno,
+        error: event.error,
+        stack: event.error?.stack
+      })
     }
-    ElMessage.error('发生系统错误')
+    // 阻止默认错误消息，避免重复弹窗
+    event.preventDefault()
   })
 }

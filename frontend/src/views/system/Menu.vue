@@ -123,9 +123,7 @@
         >
           <template #default="{ row }">
             <div class="menu-type-badge" :class="`type-${row.type}`">
-              <el-icon class="type-icon">
-                <component :is="getMenuTypeIcon(row.type)" />
-              </el-icon>
+              <component :is="getMenuTypeIcon(row.type)" class="type-icon" />
               <span class="type-text">{{ getMenuTypeText(row.type) }}</span>
             </div>
           </template>
@@ -554,7 +552,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onErrorCaptured } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MagicStick, ArrowDown, Upload, Plus, InfoFilled, Search, Folder, Menu as MenuIcon, Grid, Document } from '@element-plus/icons-vue'
 import { getIconComponent } from '@/constants/icons'
@@ -566,6 +564,12 @@ import {
   STATUS,
   VISIBLE
 } from '@/constants'
+
+// 捕获组件内的错误
+onErrorCaptured((err, instance, info) => {
+  console.error('[Menu.vue] 组件错误捕获:', err, info)
+  return false // 阻止错误继续传播
+})
 
 // 图标白名单
 const ALLOWED_ICONS = [
@@ -727,23 +731,39 @@ const rules = computed(() => {
 
 // 用于选择的菜单树（不包含当前编辑的菜单及其子菜单）
 const menuSelectData = computed(() => {
-  if (!tableData.value || !Array.isArray(tableData.value)) {
+  try {
+    if (!tableData.value || !Array.isArray(tableData.value) || tableData.value.length === 0) {
+      return []
+    }
+    return buildMenuSelectData(tableData.value, isEdit.value ? form.id : null)
+  } catch (error) {
+    console.error('[Menu.vue] menuSelectData 计算错误:', error)
     return []
   }
-  return buildMenuSelectData(tableData.value, isEdit.value ? form.id : null)
 })
 
 const buildMenuSelectData = (menus, excludeId) => {
-  if (!menus || !Array.isArray(menus)) {
+  try {
+    if (!menus || !Array.isArray(menus)) {
+      return []
+    }
+    return menus
+      .filter(menu => menu && menu.id !== excludeId)
+      .map(menu => {
+        if (!menu || !menu.id) return null
+        return {
+          id: menu.id,
+          name: menu.name || '未命名',
+          children: menu.children && menu.children.length > 0
+            ? buildMenuSelectData(menu.children, excludeId)
+            : undefined
+        }
+      })
+      .filter(Boolean) // 移除 null 值
+  } catch (error) {
+    console.error('[Menu.vue] buildMenuSelectData 错误:', error)
     return []
   }
-  return menus
-    .filter(menu => menu && menu.id !== excludeId)
-    .map(menu => ({
-      id: menu.id,
-      name: menu.name || '',
-      children: menu.children ? buildMenuSelectData(menu.children, excludeId) : undefined
-    }))
 }
 
 const getMenuTypeTag = (type) => {
@@ -1109,7 +1129,12 @@ const handleBatchDelete = async () => {
 }
 
 onMounted(() => {
-  getData()
+  try {
+    getData()
+  } catch (error) {
+    console.error('[Menu.vue] onMounted 错误:', error)
+    ElMessage.error('页面初始化失败')
+  }
 })
 </script>
 
