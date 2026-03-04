@@ -43,7 +43,10 @@ export const ICON_MAP = {
  * @returns {Object} 图标组件
  */
 export const getIconComponent = (iconName) => {
-  return ICON_MAP[iconName] || Menu;
+  if (!iconName) {
+    return Document; // 默认图标
+  }
+  return ICON_MAP[iconName] || Document;
 };
 
 export default ICON_MAP;
