@@ -204,8 +204,8 @@ onMounted(() => {
 
 <style scoped>
 .pending-approval-page {
-  padding: 20px;
-  min-height: calc(100vh - 84px);
+  height: 100%;
+  min-height: 500px;
 }
 
 .card-header {

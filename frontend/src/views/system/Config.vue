@@ -256,41 +256,51 @@ onMounted(() => {
 
 <style scoped>
 .config-page {
-  min-height: calc(100vh - 84px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-/* 卡片样式 */
 .config-page :deep(.el-card) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   border-radius: $radius-md;
 }
 
 .config-page :deep(.el-card__header) {
   padding: $spacing-md $spacing-lg;
   border-bottom: 1px solid $border-light;
+  flex-shrink: 0;
 }
 
 .config-page :deep(.el-card__body) {
-  padding: $spacing-lg;
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* 表格容器 */
 .table-container {
-  margin-bottom: $spacing-lg;
+  flex: 1;
+  min-height: 0;
+  padding: $spacing-lg;
+  overflow: hidden;
 }
 
 .table-container :deep(.el-table) {
+  height: 100%;
   border-radius: $radius-md;
-  overflow: hidden;
 }
 
 .table-container :deep(.el-table th) {
   background-color: $bg-light;
   font-weight: 600;
   color: $text-regular;
-}
-
-.table-container :deep(.el-table__body-wrapper) {
-  border-radius: 0 0 $radius-md $radius-md;
 }
 
 /* 配置键样式 */

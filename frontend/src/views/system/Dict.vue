@@ -768,7 +768,9 @@ onMounted(() => {
 
 <style scoped>
 .dict-container {
-  height: calc(100vh - 120px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .header-left {
@@ -783,27 +785,37 @@ onMounted(() => {
 
 /* 左侧字典列表卡片 */
 .dict-list-card {
-  height: 100%;
+  flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+}
+
+.dict-list-card :deep(.el-card__header) {
+  flex-shrink: 0;
 }
 
 .dict-list-card :deep(.el-card__body) {
   flex: 1;
+  min-height: 0;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  padding: 16px;
 }
 
 .search-form {
   margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .dict-list-wrapper {
   flex: 1;
-  overflow-y: auto;
-  padding-right: 4px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.dict-list-wrapper :deep(.el-table) {
+  height: 100%;
 }
 
 /* 字典列表项 */

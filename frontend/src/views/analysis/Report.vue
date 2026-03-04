@@ -356,7 +356,8 @@ onMounted(() => {
 
 <style scoped>
 .report-page {
-  min-height: calc(100vh - 84px);
+  height: 100%;
+  min-height: 500px;
 }
 
 /* 卡片样式 */

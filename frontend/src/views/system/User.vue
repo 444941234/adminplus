@@ -619,28 +619,106 @@ onMounted(() => {
 
 <style scoped>
 .user-page {
-  min-height: calc(100vh - 84px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-page :deep(.el-row) {
+  flex: 1;
+  min-height: 0; /* 重要：允许缩小 */
+}
+
+.user-page :deep(.el-col) {
+  height: 100%;
 }
 
 /* 部门树卡片 */
 .dept-tree-card {
-  height: calc(100vh - 108px);
-  transition: all 0.3s ease;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .dept-tree-card :deep(.el-card__header) {
   padding: 16px 20px;
   border-bottom: 1px solid #e4e7ed;
+  flex-shrink: 0;
 }
 
 .dept-tree-card :deep(.el-card__body) {
-  height: calc(100% - 57px);
+  flex: 1;
+  min-height: 0;
   padding: 16px;
   overflow: auto;
 }
 
 .dept-tree-card :deep(.el-card__body:hover) {
   overflow-y: auto;
+}
+
+.dept-filter {
+  margin-bottom: 12px;
+}
+
+.dept-tree-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.dept-name {
+  flex: 1;
+}
+
+.dept-count {
+  color: #909399;
+  font-size: 12px;
+}
+
+/* 用户列表卡片 */
+.user-list-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.user-list-card :deep(.el-card__header) {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e4e7ed;
+  flex-shrink: 0;
+}
+
+.user-list-card :deep(.el-card__body) {
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 搜索表单 */
+.search-form {
+  padding: 16px;
+  flex-shrink: 0;
+}
+
+/* 表格容器 */
+.table-container {
+  flex: 1;
+  min-height: 0;
+  padding: 0 16px 16px;
+}
+
+/* 分页 */
+.pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 16px;
+  flex-shrink: 0;
+  border-top: 1px solid #e4e7ed;
 }
 
 .dept-filter {

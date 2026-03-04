@@ -1,6 +1,6 @@
 <template>
-  <div class="log-page">
-    <el-card class="log-card">
+  <div class="page-container">
+    <el-card class="page-card">
       <template #header>
         <div class="card-header">
           <span class="card-title">日志管理</span>
@@ -17,192 +17,197 @@
         </div>
       </template>
 
-      <!-- 日志类型选项卡 -->
-      <el-tabs v-model="activeLogType" @tab-change="handleLogTypeChange">
-        <el-tab-pane label="全部" name=""></el-tab-pane>
-        <el-tab-pane label="操作日志" name="1"></el-tab-pane>
-        <el-tab-pane label="登录日志" name="2"></el-tab-pane>
-        <el-tab-pane label="系统日志" name="3"></el-tab-pane>
-      </el-tabs>
+      <div class="page-card-body">
+        <!-- 日志类型选项卡 -->
+        <el-tabs v-model="activeLogType" @tab-change="handleLogTypeChange">
+          <el-tab-pane label="全部" name=""></el-tab-pane>
+          <el-tab-pane label="操作日志" name="1"></el-tab-pane>
+          <el-tab-pane label="登录日志" name="2"></el-tab-pane>
+          <el-tab-pane label="系统日志" name="3"></el-tab-pane>
+        </el-tabs>
 
-      <!-- 搜索表单 -->
-      <el-form
-        :inline="true"
-        :model="queryForm"
-        class="search-form"
-      >
-        <el-form-item label="用户名">
-          <el-input
-            v-model="queryForm.username"
-            clearable
-            placeholder="请输入用户名"
-          />
-        </el-form-item>
-        <el-form-item label="操作模块">
-          <el-input
-            v-model="queryForm.module"
-            clearable
-            placeholder="请输入模块名称"
-          />
-        </el-form-item>
-        <el-form-item label="操作类型">
-          <el-select
-            v-model="queryForm.operationType"
-            clearable
-            placeholder="请选择操作类型"
-          >
-            <el-option label="查询" :value="1" />
-            <el-option label="新增" :value="2" />
-            <el-option label="修改" :value="3" />
-            <el-option label="删除" :value="4" />
-            <el-option label="导出" :value="5" />
-            <el-option label="导入" :value="6" />
-            <el-option label="其他" :value="7" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-select
-            v-model="queryForm.status"
-            clearable
-            placeholder="请选择状态"
-          >
-            <el-option label="成功" :value="1" />
-            <el-option label="失败" :value="0" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="时间范围">
-          <el-date-picker
-            v-model="dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            value-format="YYYY-MM-DD"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            type="primary"
-            @click="handleSearch"
-          >
-            <el-icon><Search /></el-icon>
-            搜索
-          </el-button>
-          <el-button @click="handleReset">
-            <el-icon><Refresh /></el-icon>
-            重置
-          </el-button>
-        </el-form-item>
-      </el-form>
-
-      <!-- 日志列表 -->
-      <el-table
-        v-loading="loading"
-        :data="logList"
-        stripe
-        border
-        style="width: 100%"
-        @selection-change="handleSelectionChange"
-      >
-        <el-table-column
-          type="selection"
-          width="55"
-        />
-        <el-table-column
-          prop="username"
-          label="操作人"
-          width="120"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="module"
-          label="操作模块"
-          width="120"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="operationType"
-          label="操作类型"
-          width="100"
+        <!-- 搜索表单 -->
+        <el-form
+          :inline="true"
+          :model="queryForm"
+          class="search-form"
         >
-          <template #default="{ row }">
-            <el-tag :type="getOperationTypeTag(row.operationType)">
-              {{ getOperationTypeDesc(row.operationType) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="description"
-          label="操作描述"
-          min-width="200"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="ip"
-          label="IP地址"
-          width="140"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="costTime"
-          label="执行时长"
-          width="100"
-        >
-          <template #default="{ row }">
-            {{ row.costTime }}ms
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="status"
-          label="状态"
-          width="80"
-        >
-          <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? '成功' : '失败' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="createTime"
-          label="操作时间"
-          width="180"
-        />
-        <el-table-column
-          label="操作"
-          width="150"
-          fixed="right"
-        >
-          <template #default="{ row }">
+          <el-form-item label="用户名">
+            <el-input
+              v-model="queryForm.username"
+              clearable
+              placeholder="请输入用户名"
+            />
+          </el-form-item>
+          <el-form-item label="操作模块">
+            <el-input
+              v-model="queryForm.module"
+              clearable
+              placeholder="请输入模块名称"
+            />
+          </el-form-item>
+          <el-form-item label="操作类型">
+            <el-select
+              v-model="queryForm.operationType"
+              clearable
+              placeholder="请选择操作类型"
+            >
+              <el-option label="查询" :value="1" />
+              <el-option label="新增" :value="2" />
+              <el-option label="修改" :value="3" />
+              <el-option label="删除" :value="4" />
+              <el-option label="导出" :value="5" />
+              <el-option label="导入" :value="6" />
+              <el-option label="其他" :value="7" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="状态">
+            <el-select
+              v-model="queryForm.status"
+              clearable
+              placeholder="请选择状态"
+            >
+              <el-option label="成功" :value="1" />
+              <el-option label="失败" :value="0" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="时间范围">
+            <el-date-picker
+              v-model="dateRange"
+              type="daterange"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              value-format="YYYY-MM-DD"
+            />
+          </el-form-item>
+          <el-form-item>
             <el-button
-              link
               type="primary"
-              @click="handleView(row)"
+              @click="handleSearch"
             >
-              查看
+              <el-icon><Search /></el-icon>
+              搜索
             </el-button>
-            <el-button
-              link
-              type="danger"
-              @click="handleDelete(row)"
-            >
-              删除
+            <el-button @click="handleReset">
+              <el-icon><Refresh /></el-icon>
+              重置
             </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          </el-form-item>
+        </el-form>
 
-      <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination
-          v-model:current-page="queryForm.page"
-          v-model:page-size="queryForm.size"
-          :page-sizes="[10, 20, 50, 100]"
-          :total="total"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
+        <!-- 日志列表容器 -->
+        <div class="table-container">
+          <el-table
+            v-loading="loading"
+            :data="logList"
+            stripe
+            border
+            style="width: 100%"
+            height="100%"
+            @selection-change="handleSelectionChange"
+          >
+            <el-table-column
+              type="selection"
+              width="55"
+            />
+            <el-table-column
+              prop="username"
+              label="操作人"
+              width="120"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="module"
+              label="操作模块"
+              width="120"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="operationType"
+              label="操作类型"
+              width="100"
+            >
+              <template #default="{ row }">
+                <el-tag :type="getOperationTypeTag(row.operationType)">
+                  {{ getOperationTypeDesc(row.operationType) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="description"
+              label="操作描述"
+              min-width="200"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="ip"
+              label="IP地址"
+              width="140"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="costTime"
+              label="执行时长"
+              width="100"
+            >
+              <template #default="{ row }">
+                {{ row.costTime }}ms
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="status"
+              label="状态"
+              width="80"
+            >
+              <template #default="{ row }">
+                <el-tag :type="row.status === 1 ? 'success' : 'danger'">
+                  {{ row.status === 1 ? '成功' : '失败' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="createTime"
+              label="操作时间"
+              width="180"
+            />
+            <el-table-column
+              label="操作"
+              width="150"
+              fixed="right"
+            >
+              <template #default="{ row }">
+                <el-button
+                  link
+                  type="primary"
+                  @click="handleView(row)"
+                >
+                  查看
+                </el-button>
+                <el-button
+                  link
+                  type="danger"
+                  @click="handleDelete(row)"
+                >
+                  删除
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination-container">
+          <el-pagination
+            v-model:current-page="queryForm.page"
+            v-model:page-size="queryForm.size"
+            :page-sizes="[10, 20, 50, 100]"
+            :total="total"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+          />
+        </div>
       </div>
     </el-card>
 
@@ -366,10 +371,9 @@ const loadLogList = async () => {
     })
 
     const res = await getLogList(params)
-    if (res.code === 200) {
-      logList.value = res.data.list || []
-      total.value = res.data.total || 0
-    }
+    // 响应拦截器已经返回 data 字段，res 就是 PageResultResp
+    logList.value = res.records || []
+    total.value = res.total || 0
   } catch (error) {
     console.error('加载日志列表失败:', error)
   } finally {
@@ -427,12 +431,10 @@ const handleBatchDelete = () => {
   ).then(async () => {
     try {
       const ids = selectedRows.value.map(row => row.id)
-      const res = await deleteLogsBatch(ids)
-      if (res.code === 200) {
-        ElMessage.success('删除成功')
-        selectedRows.value = []
-        loadLogList()
-      }
+      await deleteLogsBatch(ids)
+      ElMessage.success('删除成功')
+      selectedRows.value = []
+      loadLogList()
     } catch (error) {
       console.error('批量删除日志失败:', error)
     }
@@ -454,11 +456,9 @@ const handleCurrentChange = (page) => {
 // 查看详情
 const handleView = async (row) => {
   try {
-    const res = await getLogById(row.id)
-    if (res.code === 200) {
-      currentLog.value = res.data
-      detailDialogVisible.value = true
-    }
+    const log = await getLogById(row.id)
+    currentLog.value = log
+    detailDialogVisible.value = true
   } catch (error) {
     console.error('获取日志详情失败:', error)
   }
@@ -472,11 +472,9 @@ const handleDelete = (row) => {
     type: 'warning'
   }).then(async () => {
     try {
-      const res = await deleteLog(row.id)
-      if (res.code === 200) {
-        ElMessage.success('删除成功')
-        loadLogList()
-      }
+      await deleteLog(row.id)
+      ElMessage.success('删除成功')
+      loadLogList()
     } catch (error) {
       console.error('删除日志失败:', error)
     }
@@ -490,14 +488,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.log-page {
-  padding: 20px;
-}
-
-.log-card {
-  min-height: calc(100vh - 120px);
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -510,13 +500,24 @@ onMounted(() => {
 }
 
 .search-form {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  flex-shrink: 0; /* 防止搜索表单被压缩 */
+}
+
+.table-container {
+  flex: 1;
+  min-height: 0; /* 重要：允许缩小 */
+  margin-bottom: 16px;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .pagination-container {
+  flex-shrink: 0; /* 防止分页被压缩 */
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  padding: 12px 0;
 }
 
 .params-content,

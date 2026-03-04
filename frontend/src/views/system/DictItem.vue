@@ -400,17 +400,32 @@ onMounted(() => {
 
 <style scoped>
 .dict-item-page {
-  min-height: calc(100vh - 84px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dict-item-page :deep(.el-card) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* 页面容器 */
 .dict-item-page :deep(.el-card__header) {
   padding: 16px 20px;
   border-bottom: 1px solid #e4e7ed;
+  flex-shrink: 0;
 }
 
 .dict-item-page :deep(.el-card__body) {
-  padding: 20px;
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* 搜索表单 */
@@ -419,6 +434,7 @@ onMounted(() => {
   padding: 16px;
   background-color: #f5f7fa;
   border-radius: 8px;
+  flex-shrink: 0;
 }
 
 .search-form :deep(.el-form-item) {
@@ -428,12 +444,15 @@ onMounted(() => {
 
 /* 表格容器 */
 .table-container {
-  margin-bottom: 20px;
+  flex: 1;
+  min-height: 0;
+  padding: 0 20px 20px;
+  overflow: hidden;
 }
 
 .table-container :deep(.el-table) {
+  height: 100%;
   border-radius: 8px;
-  overflow: hidden;
 }
 
 .table-container :deep(.el-table th) {
@@ -446,7 +465,8 @@ onMounted(() => {
 .pagination-container {
   display: flex;
   justify-content: flex-end;
-  padding-top: 12px;
+  padding: 12px 20px;
+  flex-shrink: 0;
 }
 
 /* 空状态 */

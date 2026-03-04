@@ -6,10 +6,33 @@
 @use 'sass:color';
 @use './variables.scss' as *;
 
-// ===== 页面容器 =====
+// ===== 页面容器 - 高度自适应 =====
 .page-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* 重要：允许 flex 子元素缩小 */
+}
+
+.page-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* 重要：允许 flex 子元素缩小 */
+  overflow: hidden; /* 防止卡片本身出现滚动条 */
+}
+
+.page-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
   padding: $spacing-md;
-  min-height: 100%;
+}
+
+.page-padding {
+  padding: $spacing-md;
   background-color: $bg-color;
 }
 

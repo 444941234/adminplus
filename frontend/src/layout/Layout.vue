@@ -95,6 +95,7 @@ const convertRoutesToMenus = (routes, parentPath = '') => {
 .layout-container {
   height: 100vh;
   width: 100%;
+  overflow: hidden; /* 防止整个布局出现滚动条 */
 }
 
 /* 内容区域容器 - 占据剩余空间 */
@@ -102,13 +103,23 @@ const convertRoutesToMenus = (routes, parentPath = '') => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* 防止内容溢出 */
+  min-width: 0;
+  min-height: 0; /* 重要：允许 flex 子元素缩小 */
+  overflow: hidden;
 }
 
 :deep(.el-main) {
   background-color: #f7f8fa;
-  padding: 20px;
-  flex: 1; /* 主内容区域占据剩余空间 */
-  overflow: auto; /* 内容溢出时滚动 */
+  padding: 16px;
+  flex: 1;
+  min-height: 0; /* 重要：允许内容缩小 */
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 确保页面容器填充整个 main 区域 */
+:deep(.el-main) > * {
+  height: 100%;
+  min-height: 0;
 }
 </style>

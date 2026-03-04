@@ -422,27 +422,45 @@ onMounted(() => {
 
 <style scoped>
 .role-page {
-  min-height: calc(100vh - 84px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.role-page :deep(.el-card) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* 页面标题 */
 .role-page :deep(.el-card__header) {
   padding: 16px 20px;
   border-bottom: 1px solid $border-light;
+  flex-shrink: 0;
 }
 
 .role-page :deep(.el-card__body) {
-  padding: 20px;
+  flex: 1;
+  min-height: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* 表格容器 */
 .table-container {
-  margin-bottom: 24px;
+  flex: 1;
+  min-height: 0;
+  padding: 20px;
+  overflow: hidden;
 }
 
 .table-container :deep(.el-table) {
+  height: 100%;
   border-radius: $radius-md;
-  overflow: hidden;
 }
 
 .table-container :deep(.el-table th) {
@@ -451,15 +469,13 @@ onMounted(() => {
   color: $text-regular;
 }
 
-.table-container :deep(.el-table__body-wrapper) {
-  border-radius: 0 0 $radius-md $radius-md;
-}
-
 /* 分页容器 */
 .pagination-container {
   display: flex;
   justify-content: flex-end;
-  padding-top: $spacing-sm;
+  padding: 12px 20px;
+  flex-shrink: 0;
+  border-top: 1px solid $border-light;
 }
 
 /* 角色卡片项样式 */
