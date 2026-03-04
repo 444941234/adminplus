@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.req.ApprovalActionReq;
 import com.adminplus.pojo.dto.req.WorkflowStartReq;
@@ -34,6 +35,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/draft")
     @Operation(summary = "创建工作流草稿")
+    @OperationLog(module = "工作流管理", operationType = 2, description = "创建工作流草稿 {#req.title}")
     @PreAuthorize("hasAuthority('workflow:create')")
     public ApiResponse<WorkflowInstanceResp> createDraft(@Valid @RequestBody WorkflowStartReq req) {
         log.info("创建工作流草稿: title={}", req.title());
@@ -43,6 +45,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/submit")
     @Operation(summary = "提交工作流")
+    @OperationLog(module = "工作流管理", operationType = 2, description = "提交工作流 {#instanceId}")
     @PreAuthorize("hasAuthority('workflow:create')")
     public ApiResponse<WorkflowInstanceResp> submit(@PathVariable String instanceId) {
         log.info("提交工作流: instanceId={}", instanceId);
@@ -52,6 +55,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/start")
     @Operation(summary = "发起并提交工作流")
+    @OperationLog(module = "工作流管理", operationType = 2, description = "发起工作流 {#req.title}")
     @PreAuthorize("hasAuthority('workflow:create')")
     public ApiResponse<WorkflowInstanceResp> start(@Valid @RequestBody WorkflowStartReq req) {
         log.info("发起工作流: title={}", req.title());
@@ -94,6 +98,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/approve")
     @Operation(summary = "同意审批")
+    @OperationLog(module = "工作流管理", operationType = 3, description = "同意审批 {#instanceId}")
     @PreAuthorize("hasAuthority('workflow:approve')")
     public ApiResponse<WorkflowInstanceResp> approve(
             @PathVariable String instanceId,
@@ -105,6 +110,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/reject")
     @Operation(summary = "拒绝审批")
+    @OperationLog(module = "工作流管理", operationType = 3, description = "拒绝审批 {#instanceId}")
     @PreAuthorize("hasAuthority('workflow:approve')")
     public ApiResponse<WorkflowInstanceResp> reject(
             @PathVariable String instanceId,
@@ -116,6 +122,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/cancel")
     @Operation(summary = "取消工作流")
+    @OperationLog(module = "工作流管理", operationType = 4, description = "取消工作流 {#instanceId}")
     @PreAuthorize("hasAuthority('workflow:create')")
     public ApiResponse<Void> cancel(@PathVariable String instanceId) {
         log.info("取消工作流: instanceId={}", instanceId);
@@ -125,6 +132,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/withdraw")
     @Operation(summary = "撤回工作流")
+    @OperationLog(module = "工作流管理", operationType = 3, description = "撤回工作流 {#instanceId}")
     @PreAuthorize("hasAuthority('workflow:create')")
     public ApiResponse<Void> withdraw(@PathVariable String instanceId) {
         log.info("撤回工作流: instanceId={}", instanceId);

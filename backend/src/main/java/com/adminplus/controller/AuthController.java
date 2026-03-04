@@ -36,6 +36,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "用户登录")
+    @LoginLog(type = 1, description = "用户登录")
     public ApiResponse<LoginResp> login(@Valid @RequestBody UserLoginReq req) {
         log.info("用户登录: {}", req.username());
         LoginResp resp = authService.login(req);
@@ -65,6 +66,7 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "用户登出")
     @PreAuthorize("isAuthenticated()")
+    @LoginLog(type = 2, description = "用户登出")
     public ApiResponse<Void> logout() {
         authService.logout();
         return ApiResponse.ok();

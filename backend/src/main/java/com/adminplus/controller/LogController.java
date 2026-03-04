@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.req.LogQueryDTO;
 import com.adminplus.pojo.dto.resp.LogPageVO;
@@ -67,6 +68,7 @@ public class LogController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除单条日志")
+    @OperationLog(module = "日志管理", operationType = 4, description = "删除单条日志 {#id}")
     @PreAuthorize("hasAuthority('log:delete')")
     public ApiResponse<Void> deleteLog(@PathVariable String id) {
         logService.deleteById(id);
@@ -75,6 +77,7 @@ public class LogController {
 
     @DeleteMapping("/batch")
     @Operation(summary = "批量删除日志")
+    @OperationLog(module = "日志管理", operationType = 4, description = "批量删除日志")
     @PreAuthorize("hasAuthority('log:delete')")
     public ApiResponse<Void> deleteLogsBatch(@RequestBody List<String> ids) {
         logService.deleteByIds(ids);

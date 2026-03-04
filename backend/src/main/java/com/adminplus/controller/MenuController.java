@@ -81,6 +81,7 @@ public class MenuController {
 
     @PutMapping("/batch/status")
     @Operation(summary = "批量更新菜单状态")
+    @OperationLog(module = "菜单管理", operationType = 3, description = "批量更新菜单状态")
     @PreAuthorize("hasAuthority('menu:edit')")
     public ApiResponse<Void> batchUpdateStatus(@Valid @RequestBody MenuBatchStatusReq req) {
         menuService.batchUpdateStatus(req);
@@ -89,6 +90,7 @@ public class MenuController {
 
     @DeleteMapping("/batch")
     @Operation(summary = "批量删除菜单")
+    @OperationLog(module = "菜单管理", operationType = 4, description = "批量删除菜单")
     @PreAuthorize("hasAuthority('menu:delete')")
     public ApiResponse<Void> batchDelete(@Valid @RequestBody MenuBatchDeleteReq req) {
         menuService.batchDelete(req);

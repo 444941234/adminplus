@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.entity.FileEntity;
 import com.adminplus.service.FileService;
@@ -29,6 +30,7 @@ public class FileController {
 
     @PostMapping("/upload")
     @Operation(summary = "上传文件")
+    @OperationLog(module = "文件管理", operationType = 2, description = "上传文件 {#file.originalFilename}")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<FileEntity> uploadFile(
             @RequestParam("file") MultipartFile file,
@@ -39,6 +41,7 @@ public class FileController {
 
     @DeleteMapping("/{fileId}")
     @Operation(summary = "删除文件")
+    @OperationLog(module = "文件管理", operationType = 4, description = "删除文件 {#fileId}")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<Void> deleteFile(@PathVariable String fileId) {
         fileService.deleteFileWithAuth(fileId);

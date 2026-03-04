@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.req.DictCreateReq;
 import com.adminplus.pojo.dto.req.DictUpdateReq;
@@ -34,6 +35,7 @@ public class DictController {
 
     @GetMapping
     @Operation(summary = "分页查询字典列表")
+    @OperationLog(module = "字典管理", operationType = 1, description = "查询字典列表")
     @PreAuthorize("hasAuthority('dict:list')")
     public ApiResponse<PageResultResp<DictResp>> getDictList(
             @RequestParam(defaultValue = "1") Integer page,
@@ -46,6 +48,7 @@ public class DictController {
 
     @GetMapping("/type/{dictType}")
     @Operation(summary = "根据字典类型查询")
+    @OperationLog(module = "字典管理", operationType = 1, description = "查询字典类型 {#dictType}")
     @PreAuthorize("hasAuthority('dict:query')")
     public ApiResponse<DictResp> getDictByType(@PathVariable String dictType) {
         DictResp dict = dictService.getDictByType(dictType);
@@ -54,6 +57,7 @@ public class DictController {
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询字典")
+    @OperationLog(module = "字典管理", operationType = 1, description = "查询字典详情 {#id}")
     @PreAuthorize("hasAuthority('dict:query')")
     public ApiResponse<DictResp> getDictById(@PathVariable String id) {
         DictResp dict = dictService.getDictById(id);
@@ -62,6 +66,7 @@ public class DictController {
 
     @PostMapping
     @Operation(summary = "创建字典")
+    @OperationLog(module = "字典管理", operationType = 2, description = "新增字典 {#req.dictName}")
     @PreAuthorize("hasAuthority('dict:add')")
     public ApiResponse<DictResp> createDict(@Valid @RequestBody DictCreateReq req) {
         DictResp dict = dictService.createDict(req);
@@ -70,6 +75,7 @@ public class DictController {
 
     @PutMapping("/{id}")
     @Operation(summary = "更新字典")
+    @OperationLog(module = "字典管理", operationType = 3, description = "修改字典 {#id}")
     @PreAuthorize("hasAuthority('dict:edit')")
     public ApiResponse<DictResp> updateDict(@PathVariable String id, @Valid @RequestBody DictUpdateReq req) {
         DictResp dict = dictService.updateDict(id, req);
@@ -78,6 +84,7 @@ public class DictController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除字典")
+    @OperationLog(module = "字典管理", operationType = 4, description = "删除字典 {#id}")
     @PreAuthorize("hasAuthority('dict:delete')")
     public ApiResponse<Void> deleteDict(@PathVariable String id) {
         dictService.deleteDict(id);
@@ -94,6 +101,7 @@ public class DictController {
 
     @PutMapping("/{id}/status")
     @Operation(summary = "更新字典状态")
+    @OperationLog(module = "字典管理", operationType = 3, description = "修改字典状态 {#id}")
     @PreAuthorize("hasAuthority('dict:edit')")
     public ApiResponse<Void> updateDictStatus(
             @PathVariable String id,

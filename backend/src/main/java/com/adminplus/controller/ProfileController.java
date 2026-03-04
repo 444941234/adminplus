@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.req.PasswordChangeReq;
 import com.adminplus.pojo.dto.req.ProfileUpdateReq;
@@ -42,6 +43,7 @@ public class ProfileController {
 
     @PutMapping
     @Operation(summary = "更新当前用户信息")
+    @OperationLog(module = "个人中心", operationType = 3, description = "更新个人信息")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<ProfileResp> updateProfile(@Valid @RequestBody ProfileUpdateReq req) {
         ProfileResp profile = profileService.updateCurrentProfile(req);
@@ -50,6 +52,7 @@ public class ProfileController {
 
     @PostMapping("/password")
     @Operation(summary = "修改密码")
+    @OperationLog(module = "个人中心", operationType = 3, description = "修改密码")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<Void> changePassword(@Valid @RequestBody PasswordChangeReq req) {
         profileService.changePassword(req);
@@ -58,6 +61,7 @@ public class ProfileController {
 
     @PostMapping("/avatar")
     @Operation(summary = "上传头像")
+    @OperationLog(module = "个人中心", operationType = 3, description = "上传头像")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<AvatarUploadResp> uploadAvatar(@RequestParam("file") MultipartFile file) {
         String avatarUrl = profileService.uploadAvatar(file);
@@ -79,6 +83,7 @@ public class ProfileController {
 
     @PutMapping("/settings")
     @Operation(summary = "更新用户设置")
+    @OperationLog(module = "个人中心", operationType = 3, description = "更新用户设置")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<SettingsResp> updateSettings(@Valid @RequestBody SettingsUpdateReq req) {
         SettingsResp settings = profileService.updateSettings(req);
