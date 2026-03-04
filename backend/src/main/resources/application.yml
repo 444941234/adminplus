@@ -160,7 +160,7 @@ app:
   logging:
     storage:
       # 存储模式: DATABASE, ELASTICSEARCH, AUTO
-      mode: ${LOG_STORAGE_MODE:auto}
+      mode: ${LOG_STORAGE_MODE:DATABASE}
       elasticsearch:
         # 是否启用 Elasticsearch
         enabled: ${LOG_ES_ENABLED:false}
