@@ -22,7 +22,7 @@
               :style="{ background: stat.color }"
             >
               <el-icon :size="24">
-                <component :is="stat.icon" />
+                <component :is="getIconComponent(stat.icon)" />
               </el-icon>
             </div>
             <div class="stat-info">
@@ -66,6 +66,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
+import { getIconComponent } from '@/constants/icons'
 import * as echarts from 'echarts'
 import { getStatistics, getVisitTrend } from '@/api/dashboard'
 

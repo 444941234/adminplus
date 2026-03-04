@@ -23,6 +23,7 @@
     <el-menu
       :default-active="activeMenu"
       :collapse="collapsed"
+      :router="true"
       background-color="#FFFFFF"
       text-color="#333333"
       active-text-color="#0066FF"

@@ -20,7 +20,7 @@
                     :key="key"
                     :command="key"
                   >
-                    <el-icon><component :is="template.icon" /></el-icon>
+                    <el-icon><component :is="getIconComponent(template.icon)" /></el-icon>
                     {{ template.name }}
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -111,7 +111,7 @@
                   v-if="row.icon && isValidIcon(row.icon)"
                   class="menu-icon"
                 >
-                  <component :is="row.icon" />
+                  <component :is="getIconComponent(row.icon)" />
                 </el-icon>
                 <span class="name-text">{{ row.name }}</span>
               </div>
@@ -151,7 +151,7 @@
         >
           <template #default="{ row }">
             <el-icon v-if="row.icon && isValidIcon(row.icon)">
-              <component :is="row.icon" />
+              <component :is="getIconComponent(row.icon)" />
             </el-icon>
           </template>
         </el-table-column>
@@ -338,7 +338,7 @@
                 >
                   <template #prefix>
                     <el-icon v-if="form.icon && isValidIcon(form.icon)">
-                      <component :is="form.icon" />
+                      <component :is="getIconComponent(form.icon)" />
                     </el-icon>
                   </template>
                   <template #append>
@@ -465,7 +465,7 @@
             @click="selectIcon(icon)"
           >
             <el-icon :size="24">
-              <component :is="icon" />
+              <component :is="getIconComponent(icon)" />
             </el-icon>
             <span class="icon-name">{{ icon }}</span>
           </div>
@@ -558,6 +558,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { MagicStick, ArrowDown, Upload, Plus, InfoFilled, Search, Folder, Menu as MenuIcon, Grid } from '@element-plus/icons-vue'
+import { getIconComponent } from '@/constants/icons'
 import { getMenuTree, createMenu, updateMenu, deleteMenu, batchUpdateMenuStatus, batchDeleteMenu } from '@/api/menu'
 import { useForm } from '@/composables/useForm'
 import { useConfirm } from '@/composables/useConfirm'
