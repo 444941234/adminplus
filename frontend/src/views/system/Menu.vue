@@ -728,15 +728,21 @@ const rules = computed(() => {
 
 // 用于选择的菜单树（不包含当前编辑的菜单及其子菜单）
 const menuSelectData = computed(() => {
+  if (!tableData.value || !Array.isArray(tableData.value)) {
+    return []
+  }
   return buildMenuSelectData(tableData.value, isEdit.value ? form.id : null)
 })
 
 const buildMenuSelectData = (menus, excludeId) => {
+  if (!menus || !Array.isArray(menus)) {
+    return []
+  }
   return menus
-    .filter(menu => menu.id !== excludeId)
+    .filter(menu => menu && menu.id !== excludeId)
     .map(menu => ({
       id: menu.id,
-      name: menu.name,
+      name: menu.name || '',
       children: menu.children ? buildMenuSelectData(menu.children, excludeId) : undefined
     }))
 }
@@ -752,6 +758,9 @@ const getMenuTypeText = (type) => {
 }
 
 const getMenuTypeIcon = (type) => {
+  if (type === null || type === undefined) {
+    return Document
+  }
   const icons = { 0: Folder, 1: MenuIcon, 2: Grid }
   return icons[type] || Document
 }
@@ -821,6 +830,7 @@ const getData = async () => {
 
 // 获取行类名（用于添加层级样式）
 const getRowClassName = ({ row }) => {
+  if (!row) return ''
   return `menu-level-${row.level || 1}`
 }
 

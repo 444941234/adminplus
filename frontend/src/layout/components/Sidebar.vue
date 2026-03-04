@@ -23,7 +23,8 @@
     <el-menu
       :default-active="activeMenu"
       :collapse="collapsed"
-      :router="true"
+      :router="false"
+      @select="handleMenuSelect"
       background-color="#FFFFFF"
       text-color="#333333"
       active-text-color="#0066FF"
@@ -50,8 +51,8 @@
 
 <script setup>
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
- 
+import { useRoute, useRouter } from 'vue-router';
+
 import { Expand, Fold } from '@element-plus/icons-vue';
 import SidebarMenu from './SidebarMenu.vue';
 
@@ -74,6 +75,7 @@ const props = defineProps({
 const emit = defineEmits(['update:collapsed']);
 
 const route = useRoute();
+const router = useRouter();
 
 const activeMenu = computed(() => route.path);
 
@@ -83,6 +85,19 @@ const sidebarWidth = computed(() => {
 
 const toggleCollapse = () => {
   emit('update:collapsed', !props.collapsed);
+};
+
+// 处理菜单选择，添加错误处理
+const handleMenuSelect = (index) => {
+  if (!index || index === route.path) {
+    return; // 避免重复导航
+  }
+  router.push(index).catch((err) => {
+    // 忽略 NavigationDuplicated 错误
+    if (err?.name !== 'NavigationDuplicated') {
+      console.error('[Sidebar] 路由导航错误:', err);
+    }
+  });
 };
 </script>
 

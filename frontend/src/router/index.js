@@ -248,28 +248,34 @@ const handlePublicRoute = (to, userStore, next) => {
 
 // 全局前置守卫
 router.beforeEach(async (to, from, next) => {
-  const userStore = useUserStore();
+  try {
+    const userStore = useUserStore();
 
-  // 初始化用户 store
-  await userStore.initialize();
+    // 初始化用户 store
+    await userStore.initialize();
 
-  const isRouteMatched = to.matched.length > 0;
-  const requiresAuth = to.meta.requiresAuth !== false;
+    const isRouteMatched = to.matched.length > 0;
+    const requiresAuth = to.meta.requiresAuth !== false;
 
-  // 1. 处理未匹配的路由
-  if (!isRouteMatched) {
-    await handleUnmatchedRoute(to, userStore, next);
-    return;
+    // 1. 处理未匹配的路由
+    if (!isRouteMatched) {
+      await handleUnmatchedRoute(to, userStore, next);
+      return;
+    }
+
+    // 2. 处理无需认证的路由
+    if (!requiresAuth) {
+      handlePublicRoute(to, userStore, next);
+      return;
+    }
+
+    // 3. 处理需要认证的路由
+    await handleAuthRequiredRoute(to, userStore, next);
+  } catch (error) {
+    console.error('[Router] 路由守卫错误:', error);
+    // 确保即使出错也调用 next，避免路由挂起
+    next(ROUTE_PATH.NOT_FOUND);
   }
-
-  // 2. 处理无需认证的路由
-  if (!requiresAuth) {
-    handlePublicRoute(to, userStore, next);
-    return;
-  }
-
-  // 3. 处理需要认证的路由
-  await handleAuthRequiredRoute(to, userStore, next);
 });
 
 export default router;
