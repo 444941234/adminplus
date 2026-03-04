@@ -271,8 +271,8 @@ public class DataInitializationRunner implements CommandLineRunner {
             deptCodeMap.put(dept.getCode(), dept.getId());
         }
 
-        // 使用系统的PasswordEncoder动态生成密码（123456）
-        String encryptedPassword = passwordEncoder.encode("123456");
+        // 使用系统的PasswordEncoder动态生成密码（admin123）
+        String encryptedPassword = passwordEncoder.encode("admin123");
 
         // 总部
         String hqId = deptCodeMap.getOrDefault("HQ", null);
