@@ -87,7 +87,6 @@
         border
         row-key="id"
         :tree-props="{ children: 'children', indent: 50 }"
-        :row-class-name="getRowClassName"
         default-expand-all
         class="menu-table"
         @selection-change="handleSelectionChange"
@@ -247,7 +246,7 @@
               <el-tree-select
                 v-model="form.parentId"
                 :data="menuSelectData"
-                :props="{ label: 'name', value: 'id' }"
+                :props="{ label: 'name', value: 'id', children: 'children' }"
                 placeholder="不选则为顶级菜单"
                 clearable
                 check-strictly
@@ -805,33 +804,45 @@ const getData = async () => {
   try {
     const data = await getMenuTree()
 
+    // 检查数据是否有效
+    if (!data || !Array.isArray(data)) {
+      console.warn('获取到的菜单树数据无效:', data)
+      tableData.value = []
+      return
+    }
+
     // 直接在树形结构上添加 level 属性（后端已返回正确树形结构）
     const addLevel = (nodes, level = 1) => {
       if (!nodes || !Array.isArray(nodes)) {
         return []
       }
       return nodes.map(node => {
+        if (!node) return null
         const newNode = Object.assign({}, node, { level })
         if (node.children && node.children.length > 0) {
           newNode.children = addLevel(node.children, level + 1)
         }
         return newNode
-      })
+      }).filter(Boolean) // 过滤掉 null 值
     }
 
     tableData.value = addLevel(data)
   } catch (err) {
     console.error('获取菜单树失败:', err)
     ElMessage.error('获取菜单树失败')
+    tableData.value = [] // 确保出错时有空数组
   } finally {
     loading.value = false
   }
 }
 
 // 获取行类名（用于添加层级样式）
-const getRowClassName = ({ row }) => {
+const getRowClassName = (params) => {
+  // Element Plus 可能传递不同的参数格式
+  const row = params?.row || params
   if (!row) return ''
-  return `menu-level-${row.level || 1}`
+  const level = row.level ?? row?.level ?? 1
+  return `menu-level-${level}`
 }
 
 // 表格选择变化
