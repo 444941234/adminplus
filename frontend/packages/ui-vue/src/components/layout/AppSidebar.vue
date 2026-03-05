@@ -58,14 +58,7 @@ import {
   HomeFilled,
   Setting,
   User,
-  UserFilled,
   Document,
-  DocumentCopy,
-  DataAnalysis,
-  List,
-  Management,
-  Lock,
-  Notebook,
   Files,
   OfficeBuilding,
   Monitor,
@@ -74,26 +67,23 @@ import {
   Histogram,
   PieChart,
   TrendCharts,
-  DataBoard,
   Grid,
   Menu,
   Tools,
   Notification,
-  SettingFilled,
-  ManagementFilled,
-  NotebookFilled,
   FolderOpened,
-  Folder,
   Operation,
-  SetUp,
-  Stamp,
-  MessageBox,
+  Lock,
+  Notebook,
   Message,
-  ChatLineSquare,
-  Reading,
-  ReadingFilled,
   Avatar,
-  Checked
+  Checked,
+  Clock,
+  Calendar,
+  Timer,
+  DataLine,
+  Management,
+  List
 } from '@element-plus/icons-vue';
 import SidebarMenuItem from './SidebarMenuItem.vue';
 
@@ -127,56 +117,56 @@ defineEmits<{
 const route = useRoute();
 const activeMenu = computed(() => route.path);
 
-// 图标映射：将字符串名称映射到实际的图标组件（只使用 Element Plus 实际存在的图标）
+// 图标映射：只使用 Element Plus 确定存在的图标
 const iconMap: Record<string, any> = {
+  // 常用图标
   HomeFilled,
   House: HomeFilled,
   Home: HomeFilled,
   Setting,
-  SettingFilled,
-  SetUp,
+  SetUp: Setting,
   User,
-  UserFilled,
   Document,
-  DocumentCopy,
+  DocumentCopy: Document,
   Files,
   Folder,
   FolderOpened,
   DataAnalysis,
+  DataLine,
+  DataBoard: DataAnalysis,
   List,
   Management,
-  ManagementFilled,
   Operation,
   Lock,
   Notebook,
-  NotebookFilled,
   OfficeBuilding,
   Monitor,
   Bell,
   Notification,
   ChatDotRound,
-  ChatLineSquare,
-  MessageBox,
+  ChatLineSquare: ChatDotRound,
+  MessageBox: Message,
   Message,
   Histogram,
   PieChart,
   TrendCharts,
-  DataBoard,
   Grid,
   Menu,
   Tools,
-  Stamp,
+  Stamp: Tools,
   Reading,
-  ReadingFilled,
   Avatar,
   Checked,
+  Clock,
+  Calendar,
+  Timer,
   ElementPlus
 };
 
 // 获取图标组件
 const getIcon = (iconName?: string) => {
   if (!iconName) return undefined;
-  return iconMap[iconName];
+  return iconMap[iconName] || iconMap['Menu']; // 默认图标
 };
 </script>
 
