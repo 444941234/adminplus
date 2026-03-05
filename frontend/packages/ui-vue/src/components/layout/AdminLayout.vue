@@ -128,7 +128,9 @@ onUnmounted(() => {
 <style scoped>
 .admin-layout {
   display: flex;
+  width: 100%;
   min-height: 100vh;
+  overflow-x: hidden;
   background: var(--bg-page);
 }
 
@@ -136,6 +138,7 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  width: 100%;
   margin-left: var(--sidebar-width);
   transition: margin-left var(--transition-normal);
   min-height: 100vh;
@@ -147,7 +150,9 @@ onUnmounted(() => {
 
 .content-area {
   flex: 1;
+  width: 100%;
   padding: var(--space-lg);
+  overflow-x: hidden;
   overflow-y: auto;
 }
 
