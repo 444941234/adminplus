@@ -129,6 +129,7 @@ onUnmounted(() => {
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  height: 100%;
   background: var(--bg-page);
 }
 
@@ -136,7 +137,6 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
   min-width: 0;
 }
 

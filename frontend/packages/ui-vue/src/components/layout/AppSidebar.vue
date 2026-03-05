@@ -90,7 +90,7 @@ const activeMenu = computed(() => route.path);
 <style scoped>
 .app-sidebar {
   width: var(--sidebar-width);
-  height: 100vh;
+  height: 100%;
   background: var(--bg-dark);
   position: relative;
   transition: width var(--transition-normal);
