@@ -33,7 +33,20 @@ export default defineConfig({
         // 压缩配置
         chunkFileNames: 'js/[name]-[hash].js',
         entryFileNames: 'js/[name]-[hash].js',
-        assetFileNames: '[ext]/[name]-[hash].[ext]'
+        assetFileNames: '[ext]/[name]-[hash].[ext]',
+        // 手动分包策略
+        manualChunks: {
+          // Vue 核心库
+          'vue-vendor': ['vue', 'vue-router', 'pinia'],
+          // Element Plus UI 库
+          'element-plus': ['element-plus', '@element-plus/icons-vue'],
+          // UI 组件库
+          'adminplus-ui': ['@adminplus/ui-vue'],
+          // ECharts 图表库
+          'charts': ['echarts'],
+          // 其他第三方库
+          'vendor': ['axios', 'dayjs']
+        }
       }
     },
     // 启用压缩
