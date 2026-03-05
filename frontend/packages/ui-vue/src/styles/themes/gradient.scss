@@ -1,9 +1,9 @@
-// 渐变鲜艳主题 - 粉紫渐变（参考 Vue Shop 设计）
+// 渐变鲜艳主题 - 蓝紫渐变（参考 Vue Shop Vite 设计）
 .theme-gradient {
-  --primary-color: #ec4899;
-  --primary-light: #f472b6;
-  --primary-dark: #db2777;
-  --primary-gradient: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
-  --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
-  --bg-page: linear-gradient(180deg, #fdf4ff 0%, #fae8ff 100%);
+  --primary-color: #5b7fff;
+  --primary-light: #7b9fff;
+  --primary-dark: #4a6ef7;
+  --primary-gradient: linear-gradient(135deg, #4a90e2 0%, #7b68ee 100%);
+  --success-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+  --bg-page: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
 }

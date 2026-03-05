@@ -206,15 +206,15 @@ const initCharts = () => {
         smooth: true,
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(236, 72, 153, 0.3)' },
-            { offset: 1, color: 'rgba(236, 72, 153, 0)' }
+            { offset: 0, color: 'rgba(74, 144, 226, 0.3)' },
+            { offset: 1, color: 'rgba(74, 144, 226, 0)' }
           ])
         },
         lineStyle: {
-          color: '#ec4899'
+          color: '#4a90e2'
         },
         itemStyle: {
-          color: '#ec4899'
+          color: '#4a90e2'
         }
       }]
     });

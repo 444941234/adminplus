@@ -1,10 +1,10 @@
 // ========== 颜色系统 ==========
 :root {
-  // 主色调 - 渐变鲜艳风 (粉紫渐变，参考 Vue Shop 设计)
-  --primary-color: #ec4899;
-  --primary-light: #f472b6;
-  --primary-dark: #db2777;
-  --primary-gradient: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
+  // 主色调 - 渐变鲜艳风（蓝紫渐变，参考 Vue Shop Vite 设计）
+  --primary-color: #5b7fff;
+  --primary-light: #7b9fff;
+  --primary-dark: #4a6ef7;
+  --primary-gradient: linear-gradient(135deg, #4a90e2 0%, #7b68ee 100%);
 
   // 辅助色
   --success-color: #10b981;
