@@ -3,7 +3,9 @@
     :menus="menus"
     :user="userInfo"
     @command="handleCommand"
-  />
+  >
+    <router-view />
+  </AdminLayout>
 </template>
 
 <script setup lang="ts">
