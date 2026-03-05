@@ -116,12 +116,12 @@ const getIcon = (iconName: string) => {
 }
 
 .action-primary {
-  background: linear-gradient(135deg, rgba(78, 136, 243, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
   color: var(--primary-color);
 }
 
 .action-primary:hover {
-  background: linear-gradient(135deg, rgba(78, 136, 243, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
 }
 
 .action-success {

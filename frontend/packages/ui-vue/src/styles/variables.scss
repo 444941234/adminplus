@@ -1,10 +1,10 @@
 // ========== 颜色系统 ==========
 :root {
-  // 主色调 - 渐变鲜艳风
-  --primary-color: #4e88f3;
-  --primary-light: #7aa9f8;
-  --primary-dark: #2563eb;
-  --primary-gradient: linear-gradient(135deg, #4e88f3 0%, #6366f1 100%);
+  // 主色调 - 渐变鲜艳风 (粉紫渐变，参考 Vue Shop 设计)
+  --primary-color: #ec4899;
+  --primary-light: #f472b6;
+  --primary-dark: #db2777;
+  --primary-gradient: linear-gradient(135deg, #ec4899 0%, #a855f7 100%);
 
   // 辅助色
   --success-color: #10b981;
@@ -114,7 +114,7 @@
 
 // 渐变主题变量
 .theme-gradient {
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --success-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
-  --card-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  --primary-gradient: linear-gradient(135deg, #f472b6 0%, #c084fc 100%);
+  --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  --card-gradient: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 100%);
 }

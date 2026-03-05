@@ -1,9 +1,17 @@
 // 暗黑主题
 .theme-dark {
+  --primary-color: #f472b6;
+  --primary-light: #f9a8d4;
+  --primary-dark: #ec4899;
+  --primary-gradient: linear-gradient(135deg, #f472b6 0%, #c084fc 100%);
   --bg-primary: #1e293b;
   --bg-secondary: #0f172a;
   --bg-tertiary: #334155;
+  --bg-page: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
   --text-primary: #f1f5f9;
   --text-secondary: #cbd5e1;
+  --text-tertiary: #94a3b8;
   --border-color: #334155;
+  --border-light: #1e293b;
+  --border-dark: #475569;
 }
