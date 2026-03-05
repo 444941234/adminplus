@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { useBreakpoint } from '@adminplus/ui-vue/src/composables/useBreakpoint';
+import { useBreakpoint } from '@adminplus/ui-vue';
 import { ref } from 'vue';
 
 describe('useBreakpoint', () => {

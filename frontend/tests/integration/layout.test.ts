@@ -1,9 +1,24 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia } from 'pinia';
 import { h } from 'vue';
-import AdminLayout from '@adminplus/ui-vue/src/components/layout/AdminLayout.vue';
+import { createRouter, createWebHistory } from 'vue-router';
+import { AdminLayout } from '@adminplus/ui-vue';
 import type { MenuItem } from '@adminplus/ui-vue';
+
+// Mock vue-router
+const mockRouter = createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: '/', component: { template: '<div>Home</div>' } },
+    { path: '/users', component: { template: '<div>Users</div>' } }
+  ]
+});
+
+vi.mock('vue-router', () => ({
+  useRoute: () => ({ path: '/' }),
+  useRouter: () => mockRouter
+}));
 
 describe('Layout Integration', () => {
   let pinia: ReturnType<typeof createPinia>;
