@@ -1,18 +1,46 @@
 <template>
-  <AdminLayout :menus="menus" />
+  <AdminLayout
+    :menus="menus"
+    :user="userInfo"
+    @command="handleCommand"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { AdminLayout } from '@adminplus/ui-vue';
-import type { MenuItem } from '@adminplus/ui-vue';
+import type { MenuItem, UserInfo } from '@adminplus/ui-vue';
+import { useUserStore } from '@/stores/user';
 
 defineOptions({
   name: 'Layout'
 });
 
 const router = useRouter();
+const userStore = useUserStore();
+
+// 用户信息
+const userInfo = computed<UserInfo>(() => ({
+  nickname: userStore.user?.nickname || 'Admin',
+  avatar: userStore.user?.avatar || ''
+}));
+
+// 处理头部命令
+const handleCommand = async (command: string) => {
+  switch (command) {
+    case 'profile':
+      await router.push('/profile');
+      break;
+    case 'settings':
+      await router.push('/system/config');
+      break;
+    case 'logout':
+      userStore.logout();
+      await router.push('/login');
+      break;
+  }
+};
 
 // 从路由配置中获取菜单数据
 const menus = computed<MenuItem[]>(() => {
