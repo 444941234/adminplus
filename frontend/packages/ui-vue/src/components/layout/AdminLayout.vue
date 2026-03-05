@@ -128,9 +128,7 @@ onUnmounted(() => {
 <style scoped>
 .admin-layout {
   display: flex;
-  width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
   background: var(--bg-page);
 }
 
@@ -138,21 +136,21 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  width: 100%;
-  margin-left: var(--sidebar-width);
-  transition: margin-left var(--transition-normal);
+  position: relative;
+  left: var(--sidebar-width);
+  width: calc(100vw - var(--sidebar-width));
   min-height: 100vh;
+  transition: left var(--transition-normal), width var(--transition-normal);
 }
 
 .main-wrapper.sidebar-collapsed {
-  margin-left: var(--sidebar-collapsed-width);
+  left: var(--sidebar-collapsed-width);
+  width: calc(100vw - var(--sidebar-collapsed-width));
 }
 
 .content-area {
   flex: 1;
-  width: 100%;
   padding: var(--space-lg);
-  overflow-x: hidden;
   overflow-y: auto;
 }
 
@@ -165,7 +163,8 @@ onUnmounted(() => {
 
 @media (max-width: 767px) {
   .main-wrapper {
-    margin-left: 0;
+    left: 0;
+    width: 100vw;
   }
 
   .content-area {
