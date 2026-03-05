@@ -1,0 +1,67 @@
+// 布局组件样式
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-page);
+}
+
+.app-sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--bg-dark);
+  position: fixed;
+  left: 0;
+  top: 0;
+  transition: width var(--transition-normal);
+  z-index: var(--z-fixed);
+
+  &.collapsed {
+    width: var(--sidebar-collapsed-width);
+  }
+}
+
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin-left: var(--sidebar-width);
+  transition: margin-left var(--transition-normal);
+
+  &.sidebar-collapsed {
+    margin-left: var(--sidebar-collapsed-width);
+  }
+}
+
+.app-header {
+  height: var(--header-height);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-lg);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.content-area {
+  flex: 1;
+  padding: var(--space-lg);
+  overflow-y: auto;
+  @include custom-scrollbar;
+}
+
+@include mobile {
+  .app-sidebar {
+    transform: translateX(-100%);
+
+    &.mobile-open {
+      transform: translateX(0);
+    }
+  }
+
+  .main-wrapper {
+    margin-left: 0;
+  }
+}

@@ -1,0 +1,6 @@
+// 渐变鲜艳主题
+.theme-gradient {
+  --primary-color: #6366f1;
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --bg-page: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
+}
