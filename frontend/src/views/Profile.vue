@@ -4,21 +4,10 @@
       <!-- 左侧：个人信息卡片 -->
       <el-col :span="8">
         <UserCard
-          :name="userInfo.username || '-'"
-          :nickname="userInfo.nickname || '-'"
-          :avatar="avatarUrl || ''"
-          :email="userInfo.email || ''"
-          :phone="userInfo.phone || ''"
-          :tags="userTags"
-          :motto="userMotto"
+          :user="userCardInfo"
+          :show-details="true"
           @avatar-click="showAvatarDialog = true"
-        >
-          <template #actions>
-            <el-button type="primary" size="small" @click="showAvatarDialog = true">
-              更换头像
-            </el-button>
-          </template>
-        </UserCard>
+        />
       </el-col>
 
       <!-- 右侧：编辑信息、修改密码、个人设置 -->
@@ -258,6 +247,19 @@ const userTags = computed(() => {
 const userMotto = computed(() => {
   return userInfo.value.motto || '保持热爱，奔赴山海';
 });
+
+// UserCard 组件所需的用户信息
+const userCardInfo = computed<UserCardInfo>(() => ({
+  name: userInfo.value.username || '-',
+  nickname: userInfo.value.nickname || '-',
+  avatar: avatarUrl.value || '',
+  email: userInfo.value.email || '',
+  phone: userInfo.value.phone || '',
+  motto: userMotto.value,
+  department: userInfo.value.department,
+  role: userInfo.value.role,
+  tags: userTags.value
+}));
 
 // 个人信息表单
 const profileFormRef = ref();
