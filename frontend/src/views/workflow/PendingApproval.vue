@@ -201,33 +201,3 @@ onMounted(() => {
   loadCount()
 })
 </script>
-
-<style scoped>
-.pending-approval-page {
-  height: 100%;
-  min-height: 500px;
-}
-
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.header-left h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.badge :deep(.el-badge__content) {
-  transform: translateY(-50%);
-}
-
-.table-container {
-  min-height: 300px;
-}
-</style>

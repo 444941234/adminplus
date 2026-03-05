@@ -119,7 +119,8 @@
         </el-table-column>
         <el-table-column
           label="类型"
-          width="130"
+          width="140"
+          align="center"
         >
           <template #default="{ row }">
             <div class="menu-type-badge" :class="`type-${row.type}`">
@@ -131,20 +132,23 @@
         <el-table-column
           prop="path"
           label="路由路径"
+          min-width="180"
         />
         <el-table-column
           prop="component"
           label="组件路径"
+          min-width="150"
         />
         <el-table-column
           prop="permKey"
           label="权限标识"
-          width="150"
+          min-width="160"
         />
         <el-table-column
           prop="icon"
           label="图标"
           width="80"
+          align="center"
         >
           <template #default="{ row }">
             <el-icon v-if="row.icon && isValidIcon(row.icon)">
@@ -156,10 +160,12 @@
           prop="sortOrder"
           label="排序"
           width="80"
+          align="center"
         />
         <el-table-column
           label="可见"
           width="80"
+          align="center"
         >
           <template #default="{ row }">
             <el-tag
@@ -173,6 +179,7 @@
         <el-table-column
           label="状态"
           width="80"
+          align="center"
         >
           <template #default="{ row }">
             <el-tag
@@ -187,6 +194,7 @@
           label="操作"
           width="250"
           fixed="right"
+          align="center"
         >
           <template #default="{ row }">
             <el-button
@@ -1139,274 +1147,222 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 页面容器 */
 .menu-page {
+  padding: 0;
 }
 
-.menu-name-cell {
+/* 卡片头部优化 */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.card-header > span {
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.header-actions {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  border-left: 4px solid transparent;
-  transition: all 0.2s;
-  background-color: #ffffff;
 }
 
-.menu-name-cell:hover {
-  background-color: #ecf5ff;
-  box-shadow: 0 2px 6px rgba(64, 158, 255, 0.1);
-}
-
-/* 层级指示器 */
-.menu-name-cell .level-indicator {
+/* 批量操作栏 */
+.batch-bar {
   display: flex;
   align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #ecf5ff 0%, #f0f9ff 100%);
+  border-radius: 8px;
+  border: 1px solid #d9ecff;
+}
+
+.batch-info {
+  font-size: 14px;
+  color: #409eff;
+  font-weight: 500;
+}
+
+/* 菜单表格样式 */
+.menu-table {
+  width: 100%;
+}
+
+:deep(.menu-table .el-table__body-wrapper) {
+  overflow-x: auto;
+}
+
+/* 确保树形表格展开按钮正常显示 */
+:deep(.menu-table .el-table__expand-icon) {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+}
+
+/* 菜单名称列单元格垂直居中 */
+:deep(.menu-table .el-table__cell) {
+  vertical-align: middle;
+}
+
+/* 菜单名称列样式 */
+.menu-name-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.level-indicator {
   flex-shrink: 0;
 }
 
-.menu-name-cell .level-number {
+.level-number {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 36px;
   height: 26px;
-  padding: 0 8px;
+  padding: 0 10px;
   font-size: 12px;
-  font-weight: 700;
-  border-radius: 13px;
-  border: 1px solid;
-}
-
-/* 不同层级的样式 */
-.menu-name-cell.level-1 {
-  border-left-color: #67c23a;
-  background: linear-gradient(90deg, rgba(103, 194, 58, 0.05) 0%, transparent 100%);
-}
-
-.menu-name-cell.level-1 .level-number {
-  color: #67c23a;
-  background: linear-gradient(135deg, #f0f9ff 0%, #d4f4dd 100%);
-  border-color: #b3e19d;
-}
-
-.menu-name-cell.level-1 .name-text {
   font-weight: 600;
-  font-size: 15px;
-  color: #1a1a1a;
 }
 
-.menu-name-cell.level-2 {
-  border-left-color: #409eff;
-  background: linear-gradient(90deg, rgba(64, 158, 255, 0.05) 0%, transparent 100%);
-}
-
-.menu-name-cell.level-2 .level-number {
+/* 不同层级的颜色 - 只有文字颜色 */
+.level-1 .level-number {
   color: #409eff;
-  background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
-  border-color: #b3d8ff;
 }
 
-.menu-name-cell.level-3 {
-  border-left-color: #e6a23c;
-  background: linear-gradient(90deg, rgba(230, 162, 60, 0.05) 0%, transparent 100%);
+.level-2 .level-number {
+  color: #67c23a;
 }
 
-.menu-name-cell.level-3 .level-number {
+.level-3 .level-number {
   color: #e6a23c;
-  background: linear-gradient(135deg, #fef9f0 0%, #fdf0d4 100%);
-  border-color: #f5dab1;
 }
 
-.menu-name-cell.level-4 {
-  border-left-color: #f56c6c;
-  background: linear-gradient(90deg, rgba(245, 108, 108, 0.05) 0%, transparent 100%);
-}
-
-.menu-name-cell.level-4 .level-number {
-  color: #f56c6c;
-  background: linear-gradient(135deg, #fef0f0 0%, #fde2e2 100%);
-  border-color: #fab6b6;
-}
-
-.menu-name-cell.level-5,
-.menu-name-cell.level-6 {
-  border-left-color: #909399;
-  background: linear-gradient(90deg, rgba(144, 147, 153, 0.05) 0%, transparent 100%);
-}
-
-.menu-name-cell.level-5 .level-number,
-.menu-name-cell.level-6 .level-number {
+.level-4 .level-number,
+.level-5 .level-number {
   color: #909399;
-  background: linear-gradient(135deg, #f4f4f5 0%, #e9e9eb 100%);
-  border-color: #d3d4d6;
 }
 
 .name-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   flex: 1;
+  min-width: 0;
+}
+
+.menu-icon {
+  font-size: 18px;
+  color: #909399;
+  flex-shrink: 0;
 }
 
 .name-text {
   font-size: 14px;
-  color: #303133;
+  font-weight: 500;
+  color: #606266;
 }
 
-.menu-icon {
-  font-size: 16px;
-}
-
-/* 菜单类型徽章样式 */
+/* 类型徽章样式 */
 .menu-type-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 4px 12px;
-  border-radius: 16px;
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 500;
-  border: 1px solid;
+  white-space: nowrap;
 }
 
-.menu-type-badge.type-0 {
-  background: linear-gradient(135deg, #f0f9ff 0%, #e1f3d8 100%);
-  border-color: #b3e19d;
-  color: #67c23a;
-}
-
-.menu-type-badge.type-0 .type-icon {
-  background-color: #67c23a;
-  color: #ffffff;
-}
-
-.menu-type-badge.type-1 {
-  background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
-  border-color: #b3d8ff;
-  color: #409eff;
-}
-
-.menu-type-badge.type-1 .type-icon {
-  background-color: #409eff;
-  color: #ffffff;
-}
-
-.menu-type-badge.type-2 {
-  background: linear-gradient(135deg, #fef9f0 0%, #fdf0d4 100%);
-  border-color: #f5dab1;
+.type-0 {
+  background-color: #fdf6ec;
   color: #e6a23c;
 }
 
-.menu-type-badge.type-2 .type-icon {
-  background-color: #e6a23c;
-  color: #ffffff;
+.type-1 {
+  background-color: #ecf5ff;
+  color: #409eff;
 }
 
-.menu-type-badge .type-icon {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
+.type-2 {
+  background-color: #f0f9ff;
+  color: #67c23a;
 }
 
-.menu-type-badge .type-text {
-  font-weight: 600;
+.type-icon {
+  font-size: 14px;
 }
 
-/* 折叠面板样式 */
-.form-collapse {
-  border: none;
-  box-shadow: none;
+.type-text {
+  line-height: 1;
 }
 
-.form-collapse :deep(.el-collapse-item__header) {
-  font-weight: 500;
-  background: #f5f7fa;
-  margin-bottom: 10px;
-}
-
-.form-collapse :deep(.el-collapse-item__wrap) {
-  border: none;
-  padding: 0 10px 20px 10px;
-}
-
-.form-tip {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-top: 5px;
-  font-size: 12px;
-  color: #909399;
-}
-
-.form-tip-text {
-  margin-left: 10px;
-  font-size: 12px;
-  color: #909399;
-}
-
-/* 图标选择器样式 */
-.icon-selector {
-  width: 100%;
-}
-
+/* 图标选择器对话框样式 */
 .icon-selector-dialog {
-  max-height: 500px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .icon-search {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .icon-tabs {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .icon-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 10px;
+  gap: 8px;
   max-height: 400px;
   overflow-y: auto;
-  padding: 10px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  padding: 8px;
+  background-color: #fafafa;
+  border-radius: 8px;
 }
 
 .icon-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 15px 10px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
+  gap: 8px;
+  padding: 16px 8px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
+  background-color: #fff;
+  border: 2px solid transparent;
 }
 
 .icon-item:hover {
+  background-color: #ecf5ff;
   border-color: #409eff;
-  background: #ecf5ff;
+  transform: translateY(-2px);
 }
 
 .icon-item.active {
+  background-color: #ecf5ff;
   border-color: #409eff;
-  background: #ecf5ff;
-  color: #409eff;
+  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.3);
 }
 
 .icon-name {
-  margin-top: 8px;
-  font-size: 12px;
+  font-size: 11px;
+  color: #909399;
   text-align: center;
   word-break: break-all;
 }
@@ -1415,65 +1371,67 @@ onMounted(() => {
   text-align: center;
   padding: 40px;
   color: #909399;
-}
-
-/* 批量导入样式 */
-.import-tip {
-  margin-bottom: 20px;
-}
-
-.import-tip p {
-  margin: 5px 0 10px 0;
-}
-
-.json-example {
-  background: #f5f7fa;
-  padding: 10px;
-  border-radius: 4px;
-  font-size: 12px;
-  overflow-x: auto;
-  margin: 0;
-}
-
-/* 表格树形缩进增强 */
-.menu-table {
-  background-color: #fafbfc;
-}
-
-:deep(.el-table__body tr) {
-  background-color: #ffffff;
-}
-
-:deep(.el-table__body--wrapper) {
-  background-color: #fafbfc;
-}
-
-:deep(.el-table__row) {
-  background-color: #ffffff;
-}
-
-:deep(.el-table__row:hover) {
-  background-color: #f5f7fa !important;
-}
-
-/* 树形展开图标样式优化 */
-:deep(.el-table__expand-icon) {
-  color: #909399;
   font-size: 14px;
 }
 
-:deep(.el-table__expand-icon:hover) {
+/* 表单提示 */
+.form-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  background-color: #ecf5ff;
+  border-radius: 6px;
   color: #409eff;
+  font-size: 12px;
+  line-height: 1.6;
 }
 
-/* 子级行添加左侧连接线效果 */
-:deep(.el-table__row .el-table__indent) {
-  border-left: 1px dashed #e4e7ed;
+.form-tip-text {
+  color: #909399;
+  font-size: 12px;
   margin-left: 8px;
 }
 
-/* 增加层级间的间距 */
-:deep(.el-table td) {
-  padding: 8px 0;
+/* 导入提示 */
+.import-tip {
+  margin-bottom: 16px;
+}
+
+.json-example {
+  background-color: #f5f7fa;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 12px;
+  color: #606266;
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .header-actions {
+    flex-wrap: wrap;
+  }
+
+  .menu-table {
+    font-size: 12px;
+  }
+
+  .menu-name-cell {
+    gap: 8px;
+  }
+
+  .level-number {
+    min-width: 28px;
+    height: 22px;
+    padding: 0 6px;
+    font-size: 11px;
+  }
+
+  .name-text {
+    font-size: 13px;
+  }
 }
 </style>

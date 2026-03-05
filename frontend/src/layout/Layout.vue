@@ -112,14 +112,8 @@ const convertRoutesToMenus = (routes, parentPath = '') => {
   background-color: #f7f8fa;
   padding: 16px;
   flex: 1;
-  min-height: 0; /* 重要：允许内容缩小 */
+  min-height: 0; /* 关键：允许 flex 元素收缩并显示滚动条 */
   overflow-y: auto;
   overflow-x: hidden;
-}
-
-/* 确保页面容器填充整个 main 区域 */
-:deep(.el-main) > * {
-  height: 100%;
-  min-height: 0;
 }
 </style>

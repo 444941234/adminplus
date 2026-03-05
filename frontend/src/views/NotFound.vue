@@ -22,29 +22,3 @@ const goHome = () => {
   router.push('/')
 }
 </script>
-
-<style scoped>
-.not-found-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #f5f5f5;
-}
-
-.not-found-content {
-  text-align: center;
-}
-
-.not-found-content h1 {
-  font-size: 120px;
-  color: #409eff;
-  margin: 0;
-}
-
-.not-found-content p {
-  font-size: 18px;
-  color: #666;
-  margin: 20px 0 30px;
-}
-</style>
