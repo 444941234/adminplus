@@ -136,6 +136,7 @@ onUnmounted(() => {
   flex-direction: column;
   min-height: 100vh;
   padding-left: var(--sidebar-width);
+  box-sizing: border-box;
   transition: padding-left var(--transition-normal);
 }
 
@@ -147,6 +148,7 @@ onUnmounted(() => {
   flex: 1;
   padding: var(--space-lg);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .mobile-overlay {
