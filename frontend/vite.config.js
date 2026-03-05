@@ -23,7 +23,15 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@adminplus/ui-vue': fileURLToPath(new URL('./packages/ui-vue/src', import.meta.url))
+      '@adminplus/ui-vue': fileURLToPath(new URL('./packages/ui-vue/src', import.meta.url)),
+      '@adminplus/ui-vue/styles': fileURLToPath(new URL('./packages/ui-vue/src/styles', import.meta.url))
+    }
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        additionalData: `@use "@adminplus/ui-vue/styles/mixins.scss" as *;`
+      }
     }
   },
   build: {

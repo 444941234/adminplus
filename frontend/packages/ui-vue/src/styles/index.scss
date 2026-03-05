@@ -1,8 +1,8 @@
 // 导入变量
-@use './variables.scss';
+@use './variables.scss' as *;
 
-// 导入 mixins
-@use './mixins.scss';
+// 导入 mixins (全局使用)
+@use './mixins.scss' as *;
 
 // 导入主题
 @use './themes/default.scss';

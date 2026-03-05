@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-import '@adminplus/ui-vue/styles' // 导入 UI 组件库样式
+import '@adminplus/ui-vue/styles/index.scss' // 导入 UI 组件库样式
 import router from './router'
 import App from './App.vue'
 import { setupDirectives } from './directives'
