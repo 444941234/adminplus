@@ -92,14 +92,14 @@ const activeMenu = computed(() => route.path);
   width: var(--sidebar-width);
   height: 100vh;
   background: var(--bg-dark);
-  position: fixed;
-  left: 0;
+  position: sticky;
   top: 0;
   transition: width var(--transition-normal);
-  z-index: var(--z-fixed);
+  z-index: var(--z-sticky);
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-xl);
+  flex-shrink: 0;
 }
 
 .app-sidebar.collapsed {
@@ -266,6 +266,8 @@ const activeMenu = computed(() => route.path);
 
 @media (max-width: 767px) {
   .app-sidebar {
+    position: fixed;
+    left: 0;
     transform: translateX(-100%);
   }
 

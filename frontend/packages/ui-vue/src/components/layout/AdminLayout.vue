@@ -127,28 +127,23 @@ onUnmounted(() => {
 
 <style scoped>
 .admin-layout {
+  display: flex;
   min-height: 100vh;
   background: var(--bg-page);
 }
 
 .main-wrapper {
+  flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding-left: var(--sidebar-width);
-  box-sizing: border-box;
-  transition: padding-left var(--transition-normal);
-}
-
-.main-wrapper.sidebar-collapsed {
-  padding-left: var(--sidebar-collapsed-width);
+  min-width: 0;
 }
 
 .content-area {
   flex: 1;
   padding: var(--space-lg);
   overflow-y: auto;
-  overflow-x: hidden;
 }
 
 .mobile-overlay {
@@ -159,10 +154,6 @@ onUnmounted(() => {
 }
 
 @media (max-width: 767px) {
-  .main-wrapper {
-    padding-left: 0;
-  }
-
   .content-area {
     padding: var(--space-md);
   }
