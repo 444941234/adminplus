@@ -2,37 +2,11 @@
 @use '../mixins.scss' as *;
 
 // 布局组件样式
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
-  background: var(--bg-page);
-}
+// 注意：AdminLayout 组件已经使用 scoped 样式定义了布局
+// 这里不再重复定义，避免样式冲突
 
 .app-sidebar {
-  width: var(--sidebar-width);
-  height: 100vh;
-  background: var(--bg-dark);
-  position: fixed;
-  left: 0;
-  top: 0;
-  transition: width var(--transition-normal);
-  z-index: var(--z-fixed);
-
-  &.collapsed {
-    width: var(--sidebar-collapsed-width);
-  }
-}
-
-.main-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  margin-left: var(--sidebar-width);
-  transition: margin-left var(--transition-normal);
-
-  &.sidebar-collapsed {
-    margin-left: var(--sidebar-collapsed-width);
-  }
+  // 侧边栏样式已移至组件内部
 }
 
 .app-header {
@@ -53,18 +27,4 @@
   padding: var(--space-lg);
   overflow-y: auto;
   @include custom-scrollbar;
-}
-
-@include mobile {
-  .app-sidebar {
-    transform: translateX(-100%);
-
-    &.mobile-open {
-      transform: translateX(0);
-    }
-  }
-
-  .main-wrapper {
-    margin-left: 0;
-  }
 }
