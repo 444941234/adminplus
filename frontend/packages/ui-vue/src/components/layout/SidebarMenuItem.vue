@@ -3,7 +3,7 @@
   <el-sub-menu v-if="menu.children && menu.children.length" :index="menu.id">
     <template #title>
       <el-icon v-if="menu.icon">
-        <component :is="menu.icon" />
+        <component :is="getIcon(menu.icon)" />
       </el-icon>
       <span>{{ menu.name }}</span>
     </template>
@@ -17,7 +17,7 @@
   <!-- 无子菜单 -->
   <el-menu-item v-else :index="menu.path" class="submenu-item">
     <el-icon v-if="menu.icon">
-      <component :is="menu.icon" />
+      <component :is="getIcon(menu.icon)" />
     </el-icon>
     <template #title>
       <span>{{ menu.name }}</span>
@@ -27,6 +27,50 @@
 
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue';
+import {
+  HomeFilled,
+  Setting,
+  User,
+  UserFilled,
+  Document,
+  DocumentCopy,
+  DataAnalysis,
+  List,
+  Management,
+  Lock,
+  Notebook,
+  Files,
+  OfficeBuilding,
+  Monitor,
+  Bell,
+  ChatDotRound,
+  Histogram,
+  PieChart,
+  TrendCharts,
+  DataBoard,
+  Grid,
+  Menu,
+  Tools,
+  Notification,
+  SettingFilled,
+  ManagementFilled,
+  NotebookFilled,
+  FilesFilled,
+  FolderOpened,
+  DataLine,
+  Operation,
+  SetUp,
+  Stamp,
+  NotebookFilled2,
+  MessageBox,
+  Message,
+  ChatLineSquare,
+  Reading,
+  ReadingFilled,
+  Avatar,
+  Checked,
+  ElementPlus
+} from '@element-plus/icons-vue';
 
 export interface MenuItem {
   id: string;
@@ -48,6 +92,59 @@ defineProps<Props>();
 
 // 递归组件
 const SidebarMenuItem = defineAsyncComponent(() => import('./SidebarMenuItem.vue'));
+
+// 图标映射
+const iconMap: Record<string, any> = {
+  HomeFilled,
+  House: HomeFilled,
+  Home: HomeFilled,
+  Setting,
+  SettingFilled,
+  SetUp,
+  User,
+  UserFilled,
+  Document,
+  DocumentCopy,
+  Files,
+  FilesFilled,
+  FolderOpened,
+  DataAnalysis,
+  DataLine,
+  List,
+  Management,
+  ManagementFilled,
+  Operation,
+  Lock,
+  Notebook,
+  NotebookFilled,
+  NotebookFilled2,
+  OfficeBuilding,
+  Monitor,
+  Bell,
+  Notification,
+  ChatDotRound,
+  ChatLineSquare,
+  MessageBox,
+  Message,
+  Histogram,
+  PieChart,
+  TrendCharts,
+  DataBoard,
+  Grid,
+  Menu,
+  Tools,
+  Stamp,
+  Reading,
+  ReadingFilled,
+  Avatar,
+  Checked,
+  ElementPlus
+};
+
+const getIcon = (iconName?: string) => {
+  if (!iconName) return undefined;
+  return iconMap[iconName];
+};
 </script>
 
 <style scoped>
