@@ -55,13 +55,11 @@ import {
   SettingFilled,
   ManagementFilled,
   NotebookFilled,
-  FilesFilled,
   FolderOpened,
-  DataLine,
+  Folder,
   Operation,
   SetUp,
   Stamp,
-  NotebookFilled2,
   MessageBox,
   Message,
   ChatLineSquare,
@@ -93,7 +91,7 @@ defineProps<Props>();
 // 递归组件
 const SidebarMenuItem = defineAsyncComponent(() => import('./SidebarMenuItem.vue'));
 
-// 图标映射
+// 图标映射（只使用 Element Plus 实际存在的图标）
 const iconMap: Record<string, any> = {
   HomeFilled,
   House: HomeFilled,
@@ -106,10 +104,9 @@ const iconMap: Record<string, any> = {
   Document,
   DocumentCopy,
   Files,
-  FilesFilled,
+  Folder,
   FolderOpened,
   DataAnalysis,
-  DataLine,
   List,
   Management,
   ManagementFilled,
@@ -117,7 +114,6 @@ const iconMap: Record<string, any> = {
   Lock,
   Notebook,
   NotebookFilled,
-  NotebookFilled2,
   OfficeBuilding,
   Monitor,
   Bell,

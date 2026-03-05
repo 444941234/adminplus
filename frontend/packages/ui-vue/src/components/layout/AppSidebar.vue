@@ -82,13 +82,11 @@ import {
   SettingFilled,
   ManagementFilled,
   NotebookFilled,
-  FilesFilled,
   FolderOpened,
-  DataLine,
+  Folder,
   Operation,
   SetUp,
   Stamp,
-  NotebookFilled2,
   MessageBox,
   Message,
   ChatLineSquare,
@@ -129,7 +127,7 @@ defineEmits<{
 const route = useRoute();
 const activeMenu = computed(() => route.path);
 
-// 图标映射：将字符串名称映射到实际的图标组件
+// 图标映射：将字符串名称映射到实际的图标组件（只使用 Element Plus 实际存在的图标）
 const iconMap: Record<string, any> = {
   HomeFilled,
   House: HomeFilled,
@@ -142,10 +140,9 @@ const iconMap: Record<string, any> = {
   Document,
   DocumentCopy,
   Files,
-  FilesFilled,
+  Folder,
   FolderOpened,
   DataAnalysis,
-  DataLine,
   List,
   Management,
   ManagementFilled,
@@ -153,7 +150,6 @@ const iconMap: Record<string, any> = {
   Lock,
   Notebook,
   NotebookFilled,
-  NotebookFilled2,
   OfficeBuilding,
   Monitor,
   Bell,
