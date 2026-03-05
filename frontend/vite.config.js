@@ -22,7 +22,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@adminplus/ui-vue': fileURLToPath(new URL('./packages/ui-vue/src', import.meta.url))
     }
   },
   build: {
