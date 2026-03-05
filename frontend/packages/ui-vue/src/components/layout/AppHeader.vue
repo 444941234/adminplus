@@ -129,6 +129,7 @@ const handleCommand = (command: string) => {
   border-bottom: 1px solid var(--border-light);
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 var(--space-lg);
   position: sticky;
   top: 0;
@@ -153,7 +154,7 @@ const handleCommand = (command: string) => {
 .header-center {
   flex: 1;
   max-width: 500px;
-  margin: 0 var(--space-lg);
+  margin: 0;
 }
 
 .search-input {
