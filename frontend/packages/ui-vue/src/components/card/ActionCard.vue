@@ -68,10 +68,14 @@ const getIcon = (iconName: string) => {
 .action-card {
   @include card-style;
   padding: var(--space-lg);
+  position: relative;
+  overflow: hidden;
 }
 
 .action-card-title {
   margin-bottom: var(--space-lg);
+  position: relative;
+  z-index: 1;
 }
 
 .action-card-title h3 {
@@ -79,12 +83,25 @@ const getIcon = (iconName: string) => {
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.action-card-title h3::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  background: var(--primary-gradient);
+  border-radius: var(--radius-full);
 }
 
 .action-list {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-md);
+  position: relative;
+  z-index: 1;
 }
 
 .action-list.column {
@@ -95,60 +112,97 @@ const getIcon = (iconName: string) => {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-md);
+  padding: var(--space-md) var(--space-lg);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-normal);
   background: var(--bg-secondary);
   color: var(--text-primary);
   flex: 1;
   min-width: 120px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+.action-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.action-button:hover::before {
+  transform: translateX(100%);
 }
 
 .action-button:hover {
-  background: var(--bg-tertiary);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
   box-shadow: var(--shadow-md);
+  border-color: var(--border-color);
 }
 
 .action-button:active {
-  transform: translateY(0);
+  transform: translateY(-1px);
+}
+
+.action-button .el-icon {
+  font-size: 20px;
+  transition: transform var(--transition-normal);
+}
+
+.action-button:hover .el-icon {
+  transform: scale(1.1);
 }
 
 .action-primary {
   background: linear-gradient(135deg, rgba(74, 144, 226, 0.1) 0%, rgba(123, 104, 238, 0.1) 100%);
   color: var(--primary-color);
+  border: 1px solid rgba(74, 144, 226, 0.2);
 }
 
 .action-primary:hover {
   background: linear-gradient(135deg, rgba(74, 144, 226, 0.2) 0%, rgba(123, 104, 238, 0.2) 100%);
+  border-color: rgba(74, 144, 226, 0.4);
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.2);
 }
 
 .action-success {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
   color: var(--success-color);
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .action-success:hover {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
 .action-warning {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
   color: var(--warning-color);
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .action-warning:hover {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
+  border-color: rgba(245, 158, 11, 0.4);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
 }
 
 .action-danger {
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
   color: var(--danger-color);
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .action-danger:hover {
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .action-label {
@@ -156,9 +210,14 @@ const getIcon = (iconName: string) => {
   font-weight: 500;
 }
 
+/* 响应式 */
 @media (max-width: 767px) {
   .action-list.column .action-button {
     min-width: 100%;
+  }
+
+  .action-button {
+    min-width: calc(50% - var(--space-sm));
   }
 }
 </style>

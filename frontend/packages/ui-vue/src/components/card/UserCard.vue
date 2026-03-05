@@ -105,25 +105,65 @@ const getTagType = (tag: string) => {
   @include card-style;
   padding: var(--space-xl);
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 顶部装饰条 */
+.user-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--primary-gradient);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.user-card:hover::before {
+  opacity: 1;
 }
 
 .user-header {
   display: flex;
   gap: var(--space-lg);
   align-items: center;
+  position: relative;
+}
+
+/* 头像容器 */
+.user-header :deep(.el-avatar) {
+  border: 3px solid var(--bg-primary);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
+}
+
+.user-card:hover .user-header :deep(.el-avatar) {
+  box-shadow: var(--shadow-lg);
+  transform: scale(1.05);
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .user-name {
   font-size: 20px;
-  font-weight: bold;
+  font-weight: 700;
   color: var(--text-primary);
   margin-bottom: var(--space-xs);
+  line-height: 1.3;
 }
 
 .user-motto {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-secondary);
   font-style: italic;
+  line-height: 1.4;
+  opacity: 0.8;
 }
 
 .user-info-list {
@@ -136,9 +176,28 @@ const getTagType = (tag: string) => {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-md);
   color: var(--text-secondary);
   font-size: 14px;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.info-item:hover {
+  background: var(--bg-secondary);
+  color: var(--primary-color);
+}
+
+.info-item .el-icon {
+  font-size: 16px;
+  color: var(--primary-color);
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
+}
+
+.info-item:hover .el-icon {
+  opacity: 1;
 }
 
 .user-tags {
@@ -148,11 +207,53 @@ const getTagType = (tag: string) => {
   margin-top: var(--space-lg);
 }
 
+.user-tags :deep(.el-tag) {
+  border-radius: var(--radius-full);
+  padding: 4px 12px;
+  font-weight: 500;
+  border: none;
+}
+
 .user-actions {
   display: flex;
   gap: var(--space-sm);
   margin-top: var(--space-lg);
   padding-top: var(--space-lg);
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid var(--border-light);
+}
+
+.user-actions :deep(.el-button) {
+  border-radius: var(--radius-md);
+  font-weight: 500;
+}
+
+.user-actions :deep(.el-button--primary) {
+  background: var(--primary-gradient);
+  border: none;
+}
+
+.user-actions :deep(.el-button--primary:hover) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+/* 响应式 */
+@media (max-width: 480px) {
+  .user-card {
+    padding: var(--space-lg);
+  }
+
+  .user-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .user-info {
+    width: 100%;
+  }
+
+  .user-name {
+    font-size: 18px;
+  }
 }
 </style>

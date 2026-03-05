@@ -87,8 +87,8 @@ const handleClearCache = () => {
 }
 
 .panel-trigger {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   background: var(--primary-gradient);
   border-radius: var(--radius-full);
   display: flex;
@@ -96,23 +96,54 @@ const handleClearCache = () => {
   justify-content: center;
   color: white;
   cursor: pointer;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 8px 24px rgba(74, 144, 226, 0.4);
   transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.panel-trigger::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.panel-trigger:hover::before {
+  opacity: 1;
 }
 
 .panel-trigger:hover {
-  transform: scale(1.1);
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 12px 32px rgba(74, 144, 226, 0.5);
+}
+
+.panel-trigger:active {
+  transform: scale(1.05) rotate(90deg);
+}
+
+.panel-trigger .el-icon {
+  font-size: 24px;
+  transition: transform var(--transition-normal);
+}
+
+.expanded .panel-trigger .el-icon {
+  transform: rotate(45deg);
 }
 
 .panel-content {
   position: absolute;
-  bottom: 60px;
+  bottom: 70px;
   right: 0;
   background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-xl);
-  padding: var(--space-md);
-  min-width: 180px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-2xl);
+  padding: var(--space-sm);
+  min-width: 200px;
+  border: 1px solid var(--border-light);
+  backdrop-filter: blur(20px);
 }
 
 .panel-item {
@@ -121,20 +152,46 @@ const handleClearCache = () => {
   gap: var(--space-sm);
   padding: var(--space-sm) var(--space-md);
   cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
   color: var(--text-primary);
   font-size: 14px;
+  font-weight: 500;
 }
 
 .panel-item:hover {
   background: var(--bg-secondary);
+  color: var(--primary-color);
+  transform: translateX(-4px);
+}
+
+.panel-item:active {
+  transform: translateX(-2px);
+}
+
+.panel-item .el-icon {
+  font-size: 18px;
+  transition: transform var(--transition-fast);
+}
+
+.panel-item:hover .el-icon {
+  transform: scale(1.2);
 }
 
 .panel-divider {
   height: 1px;
-  background: var(--border-color);
-  margin: var(--space-sm) 0;
+  background: var(--border-light);
+  margin: var(--space-sm) var(--space-md);
+}
+
+.panel-item.collapse {
+  color: var(--text-secondary);
+}
+
+.panel-item.collapse:hover {
+  background: transparent;
+  color: var(--text-tertiary);
+  transform: none;
 }
 
 .slide-up-enter-active,
@@ -144,11 +201,25 @@ const handleClearCache = () => {
 
 .slide-up-enter-from {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(20px) scale(0.95);
 }
 
 .slide-up-leave-to {
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(10px) scale(0.98);
+}
+
+/* 脉冲动画 */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 8px 24px rgba(74, 144, 226, 0.4);
+  }
+  50% {
+    box-shadow: 0 8px 32px rgba(74, 144, 226, 0.6);
+  }
+}
+
+.panel-trigger:not(:hover) {
+  animation: pulse 2s ease-in-out infinite;
 }
 </style>

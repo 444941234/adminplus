@@ -123,22 +123,31 @@ const handleCommand = (command: string) => {
 <style scoped>
 .app-header {
   height: var(--header-height);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-light);
   display: flex;
   align-items: center;
   padding: 0 var(--space-lg);
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
+  transition: all var(--transition-normal);
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: var(--space-lg);
+}
+
+.header-left :deep(.el-button) {
+  transition: all var(--transition-normal);
+}
+
+.header-left :deep(.el-button:hover) {
+  transform: rotate(180deg);
 }
 
 .header-center {
@@ -154,12 +163,38 @@ const handleCommand = (command: string) => {
 :deep(.search-input .el-input__wrapper) {
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-light);
+  transition: all var(--transition-normal);
+  background: var(--bg-secondary);
+}
+
+:deep(.search-input .el-input__wrapper:hover) {
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-color);
+}
+
+:deep(.search-input .el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 3px rgba(91, 127, 255, 0.1);
+  border-color: var(--primary-color);
+  background: var(--bg-primary);
 }
 
 .header-right {
   display: flex;
   align-items: center;
   gap: var(--space-md);
+}
+
+.header-right :deep(.el-badge) {
+  cursor: pointer;
+}
+
+.header-right :deep(.el-button) {
+  transition: all var(--transition-normal);
+}
+
+.header-right :deep(.el-button:hover) {
+  transform: scale(1.1);
 }
 
 .user-info {
@@ -169,11 +204,21 @@ const handleCommand = (command: string) => {
   cursor: pointer;
   padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-md);
-  transition: background var(--transition-fast);
+  transition: all var(--transition-normal);
 }
 
 .user-info:hover {
   background: var(--bg-secondary);
+}
+
+.user-info :deep(.el-avatar) {
+  border: 2px solid var(--border-light);
+  transition: all var(--transition-normal);
+}
+
+.user-info:hover :deep(.el-avatar) {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(91, 127, 255, 0.1);
 }
 
 .user-name {
@@ -182,7 +227,12 @@ const handleCommand = (command: string) => {
   color: var(--text-primary);
 }
 
+/* 响应式 */
 @media (max-width: 767px) {
+  .app-header {
+    padding: 0 var(--space-md);
+  }
+
   .header-center {
     display: none;
   }

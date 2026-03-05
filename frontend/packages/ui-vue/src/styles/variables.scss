@@ -85,6 +85,7 @@
   --transition-normal: 250ms ease;
   --transition-slow: 350ms ease;
   --transition-slower: 500ms ease;
+  --transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   // Z-index
   --z-dropdown: 1000;

@@ -73,6 +73,8 @@ const subtitle = computed(() => {
   overflow: hidden;
   background: var(--primary-gradient);
   min-height: 200px;
+  border: none;
+  box-shadow: 0 10px 40px rgba(74, 144, 226, 0.25);
 }
 
 .welcome-banner.compact {
@@ -80,14 +82,52 @@ const subtitle = computed(() => {
   padding: var(--space-xl);
 }
 
+/* 背景装饰 - 多层渐变圆 */
 .banner-bg {
   position: absolute;
   top: -50%;
   right: -20%;
   width: 400px;
   height: 400px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 20s ease-in-out infinite;
+}
+
+.banner-bg::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  right: 30%;
+  width: 200px;
+  height: 200px;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
   border-radius: 50%;
+  animation: float 15s ease-in-out infinite reverse;
+}
+
+.banner-bg::after {
+  content: '';
+  position: absolute;
+  bottom: 10%;
+  left: 10%;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: float 12s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
 }
 
 .banner-content {
@@ -97,15 +137,18 @@ const subtitle = computed(() => {
 
 .banner-title {
   font-size: 28px;
-  font-weight: bold;
+  font-weight: 700;
   margin: 0 0 var(--space-sm) 0;
   line-height: 1.3;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .banner-subtitle {
   font-size: 16px;
-  opacity: 0.9;
+  opacity: 0.95;
   margin: 0 0 var(--space-lg) 0;
+  font-weight: 400;
 }
 
 .banner-greeting {
@@ -118,6 +161,19 @@ const subtitle = computed(() => {
   border-radius: var(--radius-md);
   backdrop-filter: blur(10px);
   font-size: 14px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all var(--transition-normal);
+}
+
+.banner-greeting:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.banner-greeting .el-icon {
+  font-size: 16px;
 }
 
 .banner-action {
@@ -125,22 +181,47 @@ const subtitle = computed(() => {
 }
 
 :deep(.banner-action .el-button) {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   color: var(--primary-color);
   border: none;
-
-  &:hover {
-    background: white;
-  }
+  font-weight: 600;
+  padding: 12px 28px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all var(--transition-normal);
 }
 
+:deep(.banner-action .el-button:hover) {
+  background: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+:deep(.banner-action .el-button:active) {
+  transform: translateY(0);
+}
+
+/* 响应式 */
 @media (max-width: 767px) {
+  .welcome-banner {
+    padding: var(--space-xl);
+    min-height: 180px;
+  }
+
   .banner-title {
     font-size: 24px;
   }
 
   .banner-subtitle {
     font-size: 14px;
+  }
+
+  .banner-greeting {
+    font-size: 13px;
+  }
+
+  :deep(.banner-action .el-button) {
+    width: 100%;
   }
 }
 </style>

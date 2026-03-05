@@ -152,55 +152,94 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0066FF 0%, #7B5FD6 100%);
+  background: var(--primary-gradient);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 背景装饰 */
+.login-container::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(50px, 50px) rotate(180deg); }
 }
 
 .login-card {
-  width: 400px;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 102, 255, 0.2);
+  width: 420px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.95);
+  position: relative;
+  z-index: 1;
+  transition: all var(--transition-normal);
+}
+
+.login-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 30px 60px rgba(74, 144, 226, 0.3);
 }
 
 .card-header {
   text-align: center;
+  padding: var(--space-lg) 0;
 }
 
 .card-header h2 {
-  margin: 0 0 10px 0;
-  color: #0066FF;
-  font-size: 28px;
-  font-weight: bold;
-  background: linear-gradient(135deg, #0066FF 0%, #7B5FD6 100%);
+  margin: 0 0 var(--space-sm) 0;
+  font-size: 32px;
+  font-weight: 700;
+  background: var(--primary-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.5px;
 }
 
 .card-header p {
   margin: 0;
-  color: #666666;
+  color: var(--text-secondary);
   font-size: 14px;
+  font-weight: 400;
 }
 
 .captcha-container {
   display: flex;
-  gap: 10px;
+  gap: var(--space-sm);
   width: 100%;
+  align-items: stretch;
 }
 
 .captcha-image {
   width: 120px;
   height: 40px;
   cursor: pointer;
-  border-radius: 8px;
-  border: 1px solid #E5E7EB;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
   flex-shrink: 0;
-  transition: all 0.3s;
+  transition: all var(--transition-normal);
+  overflow: hidden;
 }
 
 .captcha-image:hover {
-  border-color: #0066FF;
-  box-shadow: 0 0 0 2px rgba(0, 102, 255, 0.1);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(91, 127, 255, 0.1);
+  transform: scale(1.02);
+}
+
+.captcha-image:active {
+  transform: scale(0.98);
 }
 
 .image-placeholder {
@@ -210,40 +249,52 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  color: #999999;
-  background-color: #F7F8FA;
-  border-radius: 8px;
+  color: var(--text-tertiary);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
 }
 
 .login-footer {
   text-align: center;
-  color: #999999;
+  color: var(--text-tertiary);
   font-size: 12px;
-  margin-top: 20px;
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border-light);
 }
 
 /* 验证码提示文本样式 */
 .captcha-hint {
   font-size: 12px;
-  color: #999999;
-  margin-top: 4px;
+  color: var(--text-tertiary);
+  margin-top: var(--space-xs);
   text-align: left;
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.captcha-hint::before {
+  content: 'ℹ️';
+  font-size: 14px;
 }
 
 /* 登录按钮样式 */
 :deep(.el-button--primary) {
-  background: linear-gradient(135deg, #0066FF 0%, #7B5FD6 100%);
+  background: var(--primary-gradient);
   border: none;
   font-size: 16px;
   font-weight: 600;
   height: 48px;
-  border-radius: 8px;
-  transition: all 0.3s;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-md);
 }
 
 :deep(.el-button--primary:hover) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 102, 255, 0.3);
+  box-shadow: var(--shadow-lg);
+  filter: brightness(1.1);
 }
 
 :deep(.el-button--primary:active) {
@@ -252,15 +303,50 @@ onMounted(() => {
 
 /* 输入框样式 */
 :deep(.el-input__wrapper) {
-  border-radius: 8px;
-  transition: all 0.3s;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-xs);
 }
 
 :deep(.el-input__wrapper:hover) {
-  box-shadow: 0 0 0 1px #0066FF inset;
+  box-shadow: 0 0 0 1px var(--primary-color) inset;
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 1px #0066FF inset;
+  box-shadow: 0 0 0 2px var(--primary-color) inset;
+}
+
+/* 前缀图标样式 */
+:deep(.el-input__prefix) {
+  color: var(--text-secondary);
+}
+
+:deep(.el-input__wrapper.is-focus .el-input__prefix) {
+  color: var(--primary-color);
+}
+
+/* 表单项间距 */
+:deep(.el-form-item) {
+  margin-bottom: var(--space-lg);
+}
+
+:deep(.el-form-item:last-child) {
+  margin-bottom: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .login-card {
+    width: calc(100vw - 40px);
+    max-width: 380px;
+  }
+
+  .card-header h2 {
+    font-size: 28px;
+  }
+
+  .captcha-image {
+    width: 100px;
+  }
 }
 </style>
