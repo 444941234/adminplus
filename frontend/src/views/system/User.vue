@@ -1,4 +1,4 @@
-﻿﻿<template>
+<template>
   <div class="user-page">
     <el-row :gutter="24">
       <!-- 左侧部门树 -->
@@ -7,11 +7,7 @@
           <template #header>
             <div class="card-header">
               <span class="card-title">部门列表</span>
-              <el-button
-                link
-                type="primary"
-                @click="handleResetDept"
-              >
+              <el-button link type="primary" @click="handleResetDept">
                 重置
               </el-button>
             </div>
@@ -40,10 +36,7 @@
               <span class="dept-tree-node">
                 <el-icon><OfficeBuilding /></el-icon>
                 <span class="dept-name">{{ node.label }}</span>
-                <span
-                  v-if="data.children && data.children.length > 0"
-                  class="dept-count"
-                >
+                <span v-if="data.children && data.children.length > 0" class="dept-count">
                   ({{ data.children.length }})
                 </span>
               </span>
@@ -58,10 +51,7 @@
           <template #header>
             <div class="card-header">
               <span class="card-title">用户管理</span>
-              <el-button
-                type="primary"
-                @click="handleAdd"
-              >
+              <el-button type="primary" @click="handleAdd">
                 <el-icon><Plus /></el-icon>
                 新增用户
               </el-button>
@@ -69,11 +59,7 @@
           </template>
 
           <!-- 搜索表单 -->
-          <el-form
-            :inline="true"
-            :model="queryForm"
-            class="search-form"
-          >
+          <el-form :inline="true" :model="queryForm" class="search-form">
             <el-form-item label="用户名">
               <el-input
                 v-model="queryForm.keyword"
@@ -82,10 +68,7 @@
               />
             </el-form-item>
             <el-form-item>
-              <el-button
-                type="primary"
-                @click="handleSearch"
-              >
+              <el-button type="primary" @click="handleSearch">
                 <el-icon><Search /></el-icon>
                 搜索
               </el-button>
@@ -106,134 +89,74 @@
           />
 
           <div class="table-container">
-          <el-table
-            v-loading="loading"
-            :data="tableData"
-            border
-          >
-            <el-table-column
-              label="ID"
-              prop="id"
-              width="80"
-            />
-            <el-table-column
-              label="用户名"
-              prop="username"
-              width="120"
-            />
-            <el-table-column
-              label="昵称"
-              prop="nickname"
-              width="120"
-            />
-            <el-table-column
-              label="所属部门"
-              prop="deptName"
-              width="150"
+            <el-table
+              v-loading="loading"
+              :data="tableData"
+              border
             >
-              <template #default="{ row }">
-                <el-tag
-                  v-if="row.deptName"
-                  size="small"
-                  type="info"
-                >
-                  {{ row.deptName }}
-                </el-tag>
-                <span
-                  v-else>
-                  <span class="empty-text">-</span>
-                </span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="邮箱"
-              prop="email"
-              width="180"
-            />
-            <el-table-column
-              label="手机号"
-              prop="phone"
-              width="130"
-            />
-            <el-table-column
-              label="角色"
-              width="180"
-            >
-              <template #default="{ row }">
-                <el-tag
-                  v-for="role in row.roles"
-                  :key="role"
-                  size="small"
-                  class="role-tag"
-                >
-                  {{ role }}
-                </el-tag>
-                <span
-                  v-if="!row.roles || row.roles.length === 0"
-                  class="empty-text"
-                >无</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="状态"
-              width="100"
-            >
-              <template #default="{ row }">
-                <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-                  {{ row.status === 1 ? '正常' : '禁用' }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              fixed="right"
-              label="操作"
-              width="320"
-            >
-              <template #default="{ row }">
-                <el-button
-                  size="small"
-                  type="primary"
-                  @click="handleEdit(row)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  size="small"
-                  type="info"
-                  @click="handleAssignRole(row)"
-                >
-                  分配角色
-                </el-button>
-                <el-button
-                  size="small"
-                  type="warning"
-                  @click="handleStatus(row)"
-                >
-                  {{ row.status === 1 ? '禁用' : '启用' }}
-                </el-button>
-                <el-button
-                  size="small"
-                  type="danger"
-                  @click="handleDelete(row)"
-                >
-                  删除
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
+              <el-table-column label="ID" prop="id" width="80" />
+              <el-table-column label="用户名" prop="username" width="120" />
+              <el-table-column label="昵称" prop="nickname" width="120" />
+              <el-table-column label="所属部门" prop="deptName" width="150">
+                <template #default="{ row }">
+                  <el-tag v-if="row.deptName" size="small" type="info">
+                    {{ row.deptName }}
+                  </el-tag>
+                  <span v-else class="empty-text">-</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="邮箱" prop="email" width="180" />
+              <el-table-column label="手机号" prop="phone" width="130" />
+              <el-table-column label="角色" width="180">
+                <template #default="{ row }">
+                  <el-tag
+                    v-for="role in row.roles"
+                    :key="role"
+                    size="small"
+                    class="role-tag"
+                  >
+                    {{ role }}
+                  </el-tag>
+                  <span v-if="!row.roles || row.roles.length === 0" class="empty-text">无</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="状态" width="100">
+                <template #default="{ row }">
+                  <el-tag :type="row.status === 1 ? 'success' : 'danger'">
+                    {{ row.status === 1 ? '正常' : '禁用' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
+              <el-table-column fixed="right" label="操作" width="320">
+                <template #default="{ row }">
+                  <el-button size="small" type="primary" @click="handleEdit(row)">
+                    编辑
+                  </el-button>
+                  <el-button size="small" type="info" @click="handleAssignRole(row)">
+                    分配角色
+                  </el-button>
+                  <el-button size="small" type="warning" @click="handleStatus(row)">
+                    {{ row.status === 1 ? '禁用' : '启用' }}
+                  </el-button>
+                  <el-button size="small" type="danger" @click="handleDelete(row)">
+                    删除
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
           </div>
 
           <!-- 分页 -->
           <div class="pagination-container">
-          <el-pagination
-            v-model:current-page="queryForm.page"
-            v-model:page-size="queryForm.size"
-            :page-sizes="[10, 20, 50, 100]"
-            :total="total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="getData"
-            @current-change="getData"
-          />
+            <el-pagination
+              v-model:current-page="queryForm.page"
+              v-model:page-size="queryForm.size"
+              :page-sizes="[10, 20, 50, 100]"
+              :total="total"
+              layout="total, sizes, prev, pager, next, jumper"
+              @size-change="getData"
+              @current-change="getData"
+            />
           </div>
         </el-card>
       </el-col>
@@ -252,40 +175,27 @@
         :rules="rules"
         label-width="80px"
       >
-        <el-form-item
-          label="用户名"
-          prop="username"
-        >
+        <el-form-item label="用户名" prop="username">
           <el-input
             v-model="form.username"
             placeholder="请输入用户名"
             :disabled="isEdit"
           />
         </el-form-item>
-        <el-form-item
-          v-if="!isEdit"
-          label="密码"
-          prop="password"
-        >
+        <el-form-item v-if="!isEdit" label="密码" prop="password">
           <el-input
             v-model="form.password"
             type="password"
             placeholder="请输入密码"
           />
         </el-form-item>
-        <el-form-item
-          label="昵称"
-          prop="nickname"
-        >
+        <el-form-item label="昵称" prop="nickname">
           <el-input
             v-model="form.nickname"
             placeholder="请输入昵称"
           />
         </el-form-item>
-        <el-form-item
-          label="所属部门"
-          prop="deptId"
-        >
+        <el-form-item label="所属部门" prop="deptId">
           <el-tree-select
             v-model="form.deptId"
             :data="deptTreeData"
@@ -296,19 +206,13 @@
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item
-          label="邮箱"
-          prop="email"
-        >
+        <el-form-item label="邮箱" prop="email">
           <el-input
             v-model="form.email"
             placeholder="请输入邮箱"
           />
         </el-form-item>
-        <el-form-item
-          label="手机号"
-          prop="phone"
-        >
+        <el-form-item label="手机号" prop="phone">
           <el-input
             v-model="form.phone"
             placeholder="请输入手机号"
@@ -316,9 +220,7 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">
-          取消
-        </el-button>
+        <el-button @click="dialogVisible = false">取消</el-button>
         <el-button
           type="primary"
           :loading="submitLoading"
@@ -346,9 +248,7 @@
         </el-checkbox>
       </el-checkbox-group>
       <template #footer>
-        <el-button @click="roleDialogVisible = false">
-          取消
-        </el-button>
+        <el-button @click="roleDialogVisible = false">取消</el-button>
         <el-button
           type="primary"
           :loading="roleSubmitLoading"
@@ -361,7 +261,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { OfficeBuilding, Plus, Refresh, Search } from '@element-plus/icons-vue';
@@ -377,6 +277,10 @@ import {
 import { getRoleList } from '@/api/role';
 import { getDeptTree } from '@/api/dept';
 import { useConfirm } from '@/composables/useConfirm';
+
+defineOptions({
+  name: 'User'
+});
 
 const loading = ref(false);
 const submitLoading = ref(false);
@@ -445,7 +349,7 @@ watch(deptFilterText, (val) => {
   deptTreeRef.value?.filter(val);
 });
 
-const filterDeptNode = (value, data) => {
+const filterDeptNode = (value: string, data: any) => {
   if (!value) return true;
   return data.name.includes(value);
 };
@@ -459,7 +363,7 @@ const getDeptTreeData = async () => {
   }
 };
 
-const handleDeptClick = (data) => {
+const handleDeptClick = (data: any) => {
   queryForm.deptId = data.id;
   selectedDeptName.value = data.name;
   queryForm.page = 1;
@@ -513,7 +417,7 @@ const handleAdd = () => {
   dialogVisible.value = true;
 };
 
-const handleEdit = (row) => {
+const handleEdit = (row: any) => {
   isEdit.value = true;
   dialogTitle.value = '编辑用户';
   Object.assign(form, row);
@@ -554,7 +458,7 @@ const handleSubmit = async () => {
   }
 };
 
-const handleStatus = async (row) => {
+const handleStatus = async (row: any) => {
   const newStatus = row.status === 1 ? 0 : 1;
   const action = newStatus === 1 ? '启用' : '禁用';
 
@@ -568,7 +472,7 @@ const handleStatus = async (row) => {
   }
 };
 
-const handleDelete = async (row) => {
+const handleDelete = async (row: any) => {
   try {
     await confirmDelete();
     await deleteUser(row.id);
@@ -579,7 +483,7 @@ const handleDelete = async (row) => {
   }
 };
 
-const handleAssignRole = async (row) => {
+const handleAssignRole = async (row: any) => {
   currentUserId.value = row.id;
   roleDialogVisible.value = true;
 
@@ -617,5 +521,101 @@ onMounted(() => {
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.user-page {
+  padding: 0;
+}
+
+.dept-tree-card,
+.user-list-card {
+  @include card-style;
+
+  :deep(.el-card__header) {
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--space-md) var(--space-lg);
+  }
+
+  :deep(.el-card__body) {
+    padding: var(--space-lg);
+  }
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+}
+
+.dept-filter {
+  margin-bottom: var(--space-md);
+}
+
+.dept-tree-node {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex: 1;
+
+  .dept-name {
+    flex: 1;
+  }
+
+  .dept-count {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+}
+
+.search-form {
+  margin-bottom: var(--space-md);
+}
+
+.dept-alert {
+  margin-bottom: var(--space-md);
+}
+
+.table-container {
+  margin-bottom: var(--space-md);
+}
+
+.empty-text {
+  color: var(--text-placeholder);
+}
+
+.role-tag {
+  margin-right: var(--space-xs);
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 767px) {
+  .dept-tree-card,
+  .user-list-card {
+    margin-bottom: var(--space-md);
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .pagination-container {
+    justify-content: center;
+
+    :deep(.el-pagination) {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  }
+}
 </style>

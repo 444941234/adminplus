@@ -1,37 +1,21 @@
 <template>
-  <el-container class="layout-container">
-    <Sidebar
-      v-model:collapsed="isCollapsed"
-      :menus="menus"
-    />
-
-    <el-container class="content-container">
-      <LayoutHeader />
-
-      <el-main>
-        <router-view />
-      </el-main>
-    </el-container>
-  </el-container>
+  <AdminLayout :menus="menus" />
 </template>
 
-<script setup>
-import { ref, computed } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import Sidebar from './components/Sidebar.vue';
-import LayoutHeader from './components/LayoutHeader.vue';
+import { AdminLayout } from '@adminplus/ui-vue';
+import type { MenuItem } from '@adminplus/ui-vue';
 
 defineOptions({
-  name: 'Layout',
+  name: 'Layout'
 });
 
 const router = useRouter();
 
-// 侧边栏折叠状态
-const isCollapsed = ref(false);
-
 // 从路由配置中获取菜单数据
-const menus = computed(() => {
+const menus = computed<MenuItem[]>(() => {
   const allRoutes = router.getRoutes();
   const layoutRoute = allRoutes.find((r) => r.name === 'Layout');
 
@@ -45,7 +29,7 @@ const menus = computed(() => {
 });
 
 // 过滤重复路由和无效路由（没有 component 的不显示为菜单项）
-const filterUniqueRoutes = (routes) => {
+const filterUniqueRoutes = (routes: any[]) => {
   const seen = new Set();
   return routes.filter((r) => {
     // 过滤掉隐藏的路由
@@ -68,7 +52,7 @@ const filterUniqueRoutes = (routes) => {
 };
 
 // 将路由配置转换为菜单格式
-const convertRoutesToMenus = (routes, parentPath = '') => {
+const convertRoutesToMenus = (routes: any[], parentPath = ''): MenuItem[] => {
   return routes.map((r) => {
     // 构建完整路径
     let fullPath = r.path;
@@ -92,28 +76,5 @@ const convertRoutesToMenus = (routes, parentPath = '') => {
 </script>
 
 <style scoped>
-.layout-container {
-  height: 100vh;
-  width: 100%;
-  overflow: hidden; /* 防止整个布局出现滚动条 */
-}
-
-/* 内容区域容器 - 占据剩余空间 */
-:deep(.content-container) {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0; /* 重要：允许 flex 子元素缩小 */
-  overflow: hidden;
-}
-
-:deep(.el-main) {
-  background-color: #f7f8fa;
-  padding: 16px;
-  flex: 1;
-  min-height: 0; /* 关键：允许 flex 元素收缩并显示滚动条 */
-  overflow-y: auto;
-  overflow-x: hidden;
-}
+/* 布局样式由 AdminLayout 组件内部处理 */
 </style>
