@@ -15,6 +15,9 @@ export { default as UserCard } from './components/card/UserCard.vue';
 export { default as WelcomeBanner } from './components/card/WelcomeBanner.vue';
 export { default as ActionCard } from './components/card/ActionCard.vue';
 
+// 导出 BigModel 组件
+export * from './components/bigmodel';
+
 // 导出类型
 export type { MenuItem } from './components/layout/SidebarMenuItem.vue';
 export type { UserInfo, BreadcrumbItem } from './components/layout/AppHeader.vue';

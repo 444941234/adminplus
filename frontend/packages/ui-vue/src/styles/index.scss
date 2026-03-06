@@ -1,20 +1,22 @@
-// 导入 BigModel 主题变量
+// BigModel Theme - 导入 BigModel 主题变量
 @use './themes/bigmodel.scss' as *;
 
-// 导入变量
+// Base Variables - 导入变量
 @use './variables.scss' as *;
 
-// 导入 mixins (全局使用)
+// Global Mixins - 导入 mixins (全局使用)
 @use './mixins.scss' as *;
 
-// 导入主题
+// Theme Imports - 导入主题
 @use './themes/default.scss';
 @use './themes/gradient.scss';
 @use './themes/dark.scss';
 
-// 导入组件样式
-@use './components/layout.scss';
+// Component Styles - 导入组件样式
+@use './components/button.scss';
 @use './components/card.scss';
+@use './components/table.scss';
+@use './components/layout.scss';
 
 // 全局样式
 * {
