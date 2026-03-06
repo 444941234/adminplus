@@ -3,25 +3,25 @@
 // ============================================
 
 @forward 'element-plus/theme-chalk/src/common/var.scss' with (
-  // 主色调 - 科技蓝
+  // 主色调 - 智谱AI风格科技蓝
   $colors: (
     'primary': (
-      'base': #0066FF,
+      'base': #1890ff,
     ),
     'success': (
-      'base': #10B981,
+      'base': #52c41a,
     ),
     'warning': (
-      'base': #F59E0B,
+      'base': #fa8c16,
     ),
     'danger': (
-      'base': #EF4444,
+      'base': #ff4d4f,
     ),
     'error': (
-      'base': #EF4444,
+      'base': #ff4d4f,
     ),
     'info': (
-      'base': #3B82F6,
+      'base': #1890ff,
     ),
   ),
 

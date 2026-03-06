@@ -130,7 +130,7 @@ onUnmounted(() => {
   display: flex;
   min-height: 100vh;
   height: 100%;
-  background: var(--bg-page);
+  background: #f0f2f5;
 }
 
 .main-wrapper {
@@ -138,19 +138,28 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  margin-left: 0;
+  transition: margin-left 0.2s ease;
+}
+
+.main-wrapper.sidebar-collapsed {
+  margin-left: 0;
 }
 
 .content-area {
   flex: 1;
   padding: var(--space-lg);
   overflow-y: auto;
+  background: #f0f2f5;
+  min-height: calc(100vh - var(--header-height));
 }
 
 .mobile-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.45);
   z-index: calc(var(--z-fixed) - 1);
+  backdrop-filter: blur(2px);
 }
 
 @media (max-width: 767px) {

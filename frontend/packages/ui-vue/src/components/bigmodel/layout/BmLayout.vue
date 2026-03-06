@@ -90,7 +90,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<{
   toggle: [];
-  update:collapsed: [value: boolean];
+  'update:collapsed': [value: boolean];
 }>();
 
 const internalCollapsed = ref(props.collapsed);

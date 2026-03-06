@@ -1,7 +1,5 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
 import '@adminplus/ui-vue/styles/index.scss' // 导入 UI 组件库样式
 import router from './router'
 import App from './App.vue'
@@ -20,7 +18,6 @@ setupDirectives(app)
 
 app.use(pinia)
 app.use(router)
-app.use(ElementPlus)
 
 // 设置全局错误处理
 setupErrorHandler(app)

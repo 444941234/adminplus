@@ -1,9 +1,9 @@
-// 渐变鲜艳主题 - 蓝紫渐变（参考 Vue Shop Vite 设计）
+// 渐变鲜艳主题 - 智谱AI风格
 .theme-gradient {
-  --primary-color: #5b7fff;
-  --primary-light: #7b9fff;
-  --primary-dark: #4a6ef7;
-  --primary-gradient: linear-gradient(135deg, #4a90e2 0%, #7b68ee 100%);
-  --success-gradient: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+  --primary-color: #1890ff;
+  --primary-light: #40a9ff;
+  --primary-dark: #096dd9;
+  --primary-gradient: linear-gradient(135deg, #1890ff 0%, #6366F1 100%);
+  --success-gradient: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
   --bg-page: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%);
 }

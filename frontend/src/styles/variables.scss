@@ -5,28 +5,28 @@
 // 引入 Sass color 模块
 @use 'sass:color';
 
-// ===== 主色调 =====
-$primary-color: #0066FF;           // 科技蓝 - 主色
-$primary-light: #3385FF;          // 科技蓝 - 浅色
-$primary-lighter: #66A3FF;        // 科技蓝 - 更浅
-$primary-dark: #0052CC;           // 科技蓝 - 深色
-$primary-darker: #003D99;         // 科技蓝 - 更深
+// ===== 主色调 - 智谱AI风格 =====
+$primary-color: #1890ff;           // 科技蓝 - 主色
+$primary-light: #40a9ff;          // 科技蓝 - 浅色
+$primary-lighter: #69c0ff;        // 科技蓝 - 更浅
+$primary-dark: #096dd9;           // 科技蓝 - 深色
+$primary-darker: #0050b3;         // 科技蓝 - 更深
 
-// ===== 辅助色 - 紫色渐变 =====
-$secondary-start: #7B5FD6;        // 紫色渐变 - 起始色
-$secondary-end: #9F7AEA;          // 紫色渐变 - 结束色
-$secondary-color: #7B5FD6;        // 紫色 - 主色
-$secondary-light: #9F7AEA;        // 紫色 - 浅色
+// ===== 辅助色 - 靛蓝渐变 =====
+$secondary-color: #6366F1;        // 靛蓝 - 主色
+$secondary-light: #818CF8;        // 靛蓝 - 浅色
+$secondary-start: #1890ff;        // 渐变 - 起始色
+$secondary-end: #6366F1;          // 渐变 - 结束色
 
 // ===== 渐变色 =====
-$gradient-primary: linear-gradient(135deg, #0066FF 0%, #7B5FD6 100%);
-$gradient-secondary: linear-gradient(135deg, #7B5FD6 0%, #9F7AEA 100%);
-$gradient-blue: linear-gradient(135deg, #0066FF 0%, #3385FF 100%);
-$gradient-purple: linear-gradient(135deg, #7B5FD6 0%, #9F7AEA 100%);
-$gradient-success: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-$gradient-warning: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
-$gradient-danger: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
-$gradient-info: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+$gradient-primary: linear-gradient(135deg, #1890ff 0%, #6366F1 100%);
+$gradient-secondary: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+$gradient-blue: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+$gradient-purple: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+$gradient-success: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+$gradient-warning: linear-gradient(135deg, #fa8c16 0%, #ffa940 100%);
+$gradient-danger: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+$gradient-info: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
 
 // ===== 背景色 =====
 $bg-color: #F7F8FA;               // 页面背景 - 浅灰
@@ -47,24 +47,24 @@ $text-white: #FFFFFF;             // 白色文字
 $border-color: #E5E7EB;           // 边框 - 浅灰
 $border-light: #F0F0F0;           // 浅边框
 $border-dark: #D1D5DB;            // 深边框
-$border-focus: #0066FF;           // 聚焦边框
+$border-focus: #1890ff;           // 聚焦边框
 
 // ===== 功能色 =====
-$success-color: #10B981;          // 成功 - 绿色
-$success-light: #34D399;          // 成功 - 浅色
-$success-lighter: #6EE7B7;        // 成功 - 更浅
+$success-color: #52c41a;          // 成功 - 绿色
+$success-light: #73d13d;          // 成功 - 浅色
+$success-lighter: #95de64;        // 成功 - 更浅
 
-$warning-color: #F59E0B;          // 警告 - 橙色
-$warning-light: #FBBF24;          // 警告 - 浅色
-$warning-lighter: #FCD34D;        // 警告 - 更浅
+$warning-color: #fa8c16;          // 警告 - 橙色
+$warning-light: #ffa940;          // 警告 - 浅色
+$warning-lighter: #ffc069;        // 警告 - 更浅
 
-$danger-color: #EF4444;           // 危险 - 红色
-$danger-light: #F87171;           // 危险 - 浅色
-$danger-lighter: #FCA5A5;         // 危险 - 更浅
+$danger-color: #ff4d4f;           // 危险 - 红色
+$danger-light: #ff7875;           // 危险 - 浅色
+$danger-lighter: #ffa39e;         // 危险 - 更浅
 
-$info-color: #3B82F6;             // 信息 - 蓝色
-$info-light: #60A5FA;             // 信息 - 浅色
-$info-lighter: #93C5FD;           // 信息 - 更浅
+$info-color: #1890ff;             // 信息 - 蓝色
+$info-light: #40a9ff;             // 信息 - 浅色
+$info-lighter: #69c0ff;           // 信息 - 更浅
 
 // ===== 阴影 =====
 $shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -115,9 +115,9 @@ $line-height-base: 1.5;
 $line-height-loose: 1.75;
 
 // ===== 过渡动画 =====
-$transition-fast: 0.15s ease;
-$transition-base: 0.3s ease;
-$transition-slow: 0.5s ease;
+$transition-fast: 0.1s ease;
+$transition-base: 0.2s ease;
+$transition-slow: 0.3s ease;
 
 // ===== Z-index 层级 =====
 $z-index-dropdown: 1000;
@@ -129,36 +129,36 @@ $z-index-popover: 1060;
 $z-index-tooltip: 1070;
 
 // ===== 统计卡片配色 =====
-$card-gradient-1: linear-gradient(135deg, #0066FF 0%, #7B5FD6 100%);  // 用户 - 蓝紫渐变
-$card-gradient-2: linear-gradient(135deg, #7B5FD6 0%, #9F7AEA 100%);  // 角色 - 紫色渐变
-$card-gradient-3: linear-gradient(135deg, #3B82F6 0%, #0066FF 100%);  // 菜单 - 蓝色渐变
-$card-gradient-4: linear-gradient(135deg, #10B981 0%, #34D399 100%);  // 日志 - 绿色渐变
+$card-gradient-1: linear-gradient(135deg, #1890ff 0%, #6366F1 100%);  // 用户 - 蓝紫渐变
+$card-gradient-2: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);  // 角色 - 靛蓝渐变
+$card-gradient-3: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);  // 菜单 - 蓝色渐变
+$card-gradient-4: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);  // 日志 - 绿色渐变
 
 // ===== 图表配色 =====
 $chart-colors: (
-  #0066FF,  // 主色
-  #7B5FD6,  // 紫色
-  #10B981,  // 绿色
-  #F59E0B,  // 橙色
-  #EF4444,  // 红色
-  #3B82F6,  // 蓝色
-  #9F7AEA,  // 浅紫
-  #34D399,  // 浅绿
-  #FBBF24,  // 浅橙
-  #F87171   // 浅红
+  #1890ff,  // 主色
+  #6366F1,  // 靛蓝
+  #52c41a,  // 绿色
+  #fa8c16,  // 橙色
+  #ff4d4f,  // 红色
+  #40a9ff,  // 浅蓝
+  #818CF8,  // 浅靛蓝
+  #73d13d,  // 浅绿
+  #ffa940,  // 浅橙
+  #ff7875   // 浅红
 );
 
 // ===== 导航栏配色 =====
-$navbar-bg: #0066FF;              // 导航栏背景 - 科技蓝
+$navbar-bg: #1890ff;              // 导航栏背景 - 科技蓝
 $navbar-text: #FFFFFF;            // 导航栏文字 - 白色
-$navbar-height: 60px;
+$navbar-height: 56px;
 
 // ===== 侧边栏配色 =====
 $sidebar-bg: #FFFFFF;             // 侧边栏背景 - 纯白
 $sidebar-text: #333333;           // 侧边栏文字
-$sidebar-active-bg: #E8F0FE;      // 侧边栏激活背景
-$sidebar-active-text: #0066FF;    // 侧边栏激活文字
-$sidebar-width: 240px;
+$sidebar-active-bg: #e6f7ff;      // 侧边栏激活背景
+$sidebar-active-text: #1890ff;    // 侧边栏激活文字
+$sidebar-width: 200px;
 $sidebar-collapsed-width: 64px;
 
 // ===== Element Plus 主题变量覆盖 =====

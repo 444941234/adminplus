@@ -1,6 +1,8 @@
 // BmTable Component Styles
 // BigModel-style table component with sorting, slots, and theme support
 
+@use '../mixins.scss' as *;
+
 .bm-table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -14,7 +16,7 @@
   }
 
   // Custom scrollbar
-  @include custom-scrollbar(8px, var(--text-tertiary));
+  @include custom-scrollbar(8px, #ccc);
 }
 
 .bm-table {

@@ -138,7 +138,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onClickOutside } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 defineOptions({
   name: 'BmHeader'
@@ -197,8 +197,18 @@ const handleCommand = (command: string) => {
 };
 
 // Close dropdown when clicking outside
-onClickOutside(userDropdownRef, () => {
-  isUserMenuOpen.value = false;
+const handleClickOutside = (event: MouseEvent) => {
+  if (userDropdownRef.value && !userDropdownRef.value.contains(event.target as Node)) {
+    isUserMenuOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside);
 });
 </script>
 

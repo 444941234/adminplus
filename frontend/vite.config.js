@@ -2,22 +2,16 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
-import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   plugins: [
     vue(),
     AutoImport({
-      resolvers: [ElementPlusResolver()],
       imports: ['vue', 'vue-router', 'pinia']
     }),
     Components({
-      resolvers: [
-        ElementPlusResolver(),
-        // 图标按需导入
-        ElementPlusResolver({ importStyle: false })
-      ]
+      resolvers: []
     })
   ],
   resolve: {
@@ -46,8 +40,6 @@ export default defineConfig({
         manualChunks: {
           // Vue 核心库
           'vue-vendor': ['vue', 'vue-router', 'pinia'],
-          // Element Plus UI 库
-          'element-plus': ['element-plus', '@element-plus/icons-vue'],
           // UI 组件库
           'adminplus-ui': ['@adminplus/ui-vue'],
           // ECharts 图表库

@@ -1,6 +1,6 @@
 /**
  * 图标常量定义
- * 统一管理 Element Plus 图标映射
+ * 统一管理图标映射（使用兼容层替换 Element Plus 图标）
  */
 import {
   HomeFilled,
@@ -78,7 +78,10 @@ import {
   Histogram,
   Odometer,
   WarningFilled,
-} from '@element-plus/icons-vue';
+  Plus,
+  Expand,
+  Fold,
+} from '../utils/iconCompat';
 
 // 图标映射表
 export const ICON_MAP = {
