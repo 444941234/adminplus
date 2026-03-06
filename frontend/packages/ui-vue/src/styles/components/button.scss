@@ -1,0 +1,336 @@
+// BmButton Component Styles
+// BigModel-style button component with multiple types, sizes, and states
+
+.bm-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: nowrap;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  outline: none;
+  appearance: none;
+  background: transparent;
+
+  // Focus visible state
+  &:focus-visible {
+    outline: 2px solid var(--el-color-primary);
+    outline-offset: 2px;
+  }
+
+  // Disabled state
+  &.disabled,
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  // Long button (full width)
+  &.long {
+    width: 100%;
+  }
+
+  // Loading spinner
+  &__loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    animation: bm-button-spin 1s linear infinite;
+  }
+
+  // Icon slot
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  // Content
+  &__content {
+    display: inline-block;
+  }
+
+  // Size variants
+  &.mini {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    gap: 4px;
+  }
+
+  &.small {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 5px;
+    gap: 6px;
+  }
+
+  &.medium {
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: 6px;
+    gap: 8px;
+  }
+
+  &.large {
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 8px;
+    gap: 10px;
+  }
+
+  // Type: Primary
+  &.primary {
+    color: #ffffff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+
+    &:hover:not(.disabled):not(:disabled) {
+      background: linear-gradient(135deg, #5568d3 0%, #65408a 100%);
+      box-shadow: 0 4px 8px rgba(102, 126, 234, 0.4);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(.disabled):not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(102, 126, 234, 0.3);
+    }
+
+    // Plain variant
+    &.plain {
+      color: #667eea;
+      background: transparent;
+      border-color: #667eea;
+      box-shadow: none;
+
+      &:hover:not(.disabled):not(:disabled) {
+        color: #ffffff;
+        background: #667eea;
+      }
+    }
+  }
+
+  // Type: Default
+  &.default {
+    color: #333333;
+    background: #ffffff;
+    border-color: #d9d9d9;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+    &:hover:not(.disabled):not(:disabled) {
+      color: #667eea;
+      border-color: #667eea;
+      background: #f5f5f5;
+    }
+
+    &:active:not(.disabled):not(:disabled) {
+      background: #e8e8e8;
+    }
+
+    // Plain variant
+    &.plain {
+      background: transparent;
+      border-color: #d9d9d9;
+      box-shadow: none;
+    }
+  }
+
+  // Type: Text
+  &.text {
+    color: #333333;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
+
+    &:hover:not(.disabled):not(:disabled) {
+      color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+    }
+
+    &:active:not(.disabled):not(:disabled) {
+      background: rgba(102, 126, 234, 0.15);
+    }
+
+    // Plain variant (same as default for text)
+    &.plain {
+      background: transparent;
+    }
+  }
+
+  // Type: Danger
+  &.danger {
+    color: #ffffff;
+    background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+    border-color: transparent;
+    box-shadow: 0 2px 4px rgba(245, 101, 101, 0.3);
+
+    &:hover:not(.disabled):not(:disabled) {
+      background: linear-gradient(135deg, #e53e3e 0%, #9b2c2c 100%);
+      box-shadow: 0 4px 8px rgba(245, 101, 101, 0.4);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(.disabled):not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(245, 101, 101, 0.3);
+    }
+
+    // Plain variant
+    &.plain {
+      color: #f56565;
+      background: transparent;
+      border-color: #f56565;
+      box-shadow: none;
+
+      &:hover:not(.disabled):not(:disabled) {
+        color: #ffffff;
+        background: #f56565;
+      }
+    }
+  }
+
+  // Type: Success
+  &.success {
+    color: #ffffff;
+    background: linear-gradient(135deg, #48bb78 0%, #2f855a 100%);
+    border-color: transparent;
+    box-shadow: 0 2px 4px rgba(72, 187, 120, 0.3);
+
+    &:hover:not(.disabled):not(:disabled) {
+      background: linear-gradient(135deg, #38a169 0%, #276749 100%);
+      box-shadow: 0 4px 8px rgba(72, 187, 120, 0.4);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(.disabled):not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(72, 187, 120, 0.3);
+    }
+
+    // Plain variant
+    &.plain {
+      color: #48bb78;
+      background: transparent;
+      border-color: #48bb78;
+      box-shadow: none;
+
+      &:hover:not(.disabled):not(:disabled) {
+        color: #ffffff;
+        background: #48bb78;
+      }
+    }
+  }
+
+  // Type: Warning
+  &.warning {
+    color: #ffffff;
+    background: linear-gradient(135deg, #ed8936 0%, #c05621 100%);
+    border-color: transparent;
+    box-shadow: 0 2px 4px rgba(237, 137, 54, 0.3);
+
+    &:hover:not(.disabled):not(:disabled) {
+      background: linear-gradient(135deg, #dd6b20 0%, #9c4221 100%);
+      box-shadow: 0 4px 8px rgba(237, 137, 54, 0.4);
+      transform: translateY(-1px);
+    }
+
+    &:active:not(.disabled):not(:disabled) {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(237, 137, 54, 0.3);
+    }
+
+    // Plain variant
+    &.plain {
+      color: #ed8936;
+      background: transparent;
+      border-color: #ed8936;
+      box-shadow: none;
+
+      &:hover:not(.disabled):not(:disabled) {
+        color: #ffffff;
+        background: #ed8936;
+      }
+    }
+  }
+
+  // Loading state overlay
+  &.loading {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  // Dark mode support
+  @media (prefers-color-scheme: dark) {
+    &.default {
+      color: #e5e5e5;
+      background: #2a2a2a;
+      border-color: #404040;
+
+      &:hover:not(.disabled):not(:disabled) {
+        color: #667eea;
+        background: #333333;
+      }
+
+      &:active:not(.disabled):not(:disabled) {
+        background: #3a3a3a;
+      }
+    }
+
+    &.text {
+      color: #e5e5e5;
+
+      &:hover:not(.disabled):not(:disabled) {
+        background: rgba(102, 126, 234, 0.2);
+      }
+    }
+  }
+}
+
+// Keyframes for loading spinner
+@keyframes bm-button-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Additional dark mode class support
+.dark {
+  .bm-button {
+    &.default {
+      color: #e5e5e5;
+      background: #2a2a2a;
+      border-color: #404040;
+
+      &:hover:not(.disabled):not(:disabled) {
+        color: #667eea;
+        background: #333333;
+      }
+
+      &:active:not(.disabled):not(:disabled) {
+        background: #3a3a3a;
+      }
+    }
+
+    &.text {
+      color: #e5e5e5;
+
+      &:hover:not(.disabled):not(:disabled) {
+        background: rgba(102, 126, 234, 0.2);
+      }
+    }
+  }
+}
