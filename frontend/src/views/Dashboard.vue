@@ -9,8 +9,8 @@
     />
 
     <!-- 统计卡片 -->
-    <el-row :gutter="20" class="stats-row">
-      <el-col :xs="12" :sm="6" v-for="stat in stats" :key="stat.key">
+    <div class="stats-grid">
+      <div v-for="stat in stats" :key="stat.key" class="stats-grid-item">
         <StatCard
           :type="stat.type"
           :icon="stat.icon"
@@ -20,71 +20,54 @@
           :trend-up="stat.trendUp"
           :loading="loading"
         />
-      </el-col>
-    </el-row>
+      </div>
+    </div>
 
     <!-- 图表区域 -->
-    <el-row :gutter="20" class="charts-row">
-      <el-col :span="16">
-        <el-card class="chart-card">
-          <template #header>
-            <span>用户增长趋势</span>
-          </template>
+    <div class="charts-grid">
+      <div class="charts-grid-item charts-grid-item-main">
+        <BmCard title="用户增长趋势" shadow="small" class="chart-card">
           <div ref="userGrowthChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card class="chart-card">
-          <template #header>
-            <span>角色分布</span>
-          </template>
+        </BmCard>
+      </div>
+      <div class="charts-grid-item charts-grid-item-side">
+        <BmCard title="角色分布" shadow="small" class="chart-card">
           <div ref="roleDistributionChartRef" class="chart-container"></div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </BmCard>
+      </div>
+    </div>
 
-    <el-row :gutter="20" class="charts-row">
-      <el-col :span="24">
-        <el-card class="chart-card">
-          <template #header>
-            <span>菜单类型分布</span>
-          </template>
-          <div ref="menuDistributionChartRef" class="chart-container chart-container-small"></div>
-        </el-card>
-      </el-col>
-    </el-row>
+    <div class="charts-grid charts-grid-full">
+      <BmCard title="菜单类型分布" shadow="small" class="chart-card">
+        <div ref="menuDistributionChartRef" class="chart-container chart-container-small"></div>
+      </BmCard>
+    </div>
 
     <!-- 快捷操作、系统信息 -->
-    <el-row :gutter="20" class="bottom-row">
-      <el-col :span="8">
+    <div class="bottom-grid">
+      <div class="bottom-grid-item bottom-grid-item-actions">
         <ActionCard
           title="快捷操作"
           :actions="quickActions"
           @action="handleQuickAction"
         />
-      </el-col>
+      </div>
 
-      <el-col :span="16">
-        <el-card class="system-info-card">
-          <template #header>
-            <span>系统信息</span>
-          </template>
-          <div v-loading="systemInfoLoading" class="system-info">
-            <el-row :gutter="20">
-              <el-col :span="12" v-for="info in systemInfoList" :key="info.key">
-                <div class="info-item">
-                  <el-icon class="info-icon"><component :is="info.icon" /></el-icon>
-                  <div class="info-content">
-                    <div class="info-label">{{ info.label }}</div>
-                    <div class="info-value">{{ info.value }}</div>
-                  </div>
-                </div>
-              </el-col>
-            </el-row>
+      <div class="bottom-grid-item bottom-grid-item-info">
+        <BmCard title="系统信息" shadow="small" class="system-info-card">
+          <div v-if="systemInfoLoading" class="system-info-loading">加载中...</div>
+          <div v-else class="system-info">
+            <div v-for="info in systemInfoList" :key="info.key" class="info-item">
+              <BmIcon :icon="getIconSymbol(info.icon)" class="info-icon" />
+              <div class="info-content">
+                <div class="info-label">{{ info.label }}</div>
+                <div class="info-value">{{ info.value }}</div>
+              </div>
+            </div>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </BmCard>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -92,7 +75,7 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/user';
-import { WelcomeBanner, StatCard, ActionCard } from '@adminplus/ui-vue';
+import { WelcomeBanner, StatCard, ActionCard, BmCard, BmIcon } from '@adminplus/ui-vue';
 import type { ActionItem } from '@adminplus/ui-vue';
 import * as echarts from 'echarts';
 
@@ -105,6 +88,51 @@ const userStore = useUserStore();
 
 const loading = ref(false);
 const systemInfoLoading = ref(false);
+
+// 图标符号映射
+const getIconSymbol = (iconName: string): string => {
+  const iconMap: Record<string, string> = {
+    'House': '🏠',
+    'Document': '📄',
+    'Setting': '⚙️',
+    'Clock': '🕐',
+    'Monitor': '🖥️',
+    'User': '👤',
+    'UserFilled': '👥',
+    'Menu': '📋',
+    'Calendar': '📅',
+    'Location': '📍',
+    'Phone': '📞',
+    'Email': '📧',
+    'Lock': '🔒',
+    'Unlock': '🔓',
+    'View': '👁️',
+    'Hide': '🙈',
+    'Edit': '✏️',
+    'Delete': '🗑️',
+    'Add': '➕',
+    'Remove': '➖',
+    'Check': '✅',
+    'Close': '❌',
+    'Search': '🔍',
+    'Filter': '🔽',
+    'Sort': '🔼',
+    'Refresh': '🔄',
+    'Download': '⬇️',
+    'Upload': '⬆️',
+    'Share': '🔗',
+    'Star': '⭐',
+    'Heart': '❤️',
+    'Bell': '🔔',
+    'Info': 'ℹ️',
+    'Warning': '⚠️',
+    'Error': '❌',
+    'Success': '✅',
+    'Question': '❓',
+    'Help': '❓'
+  };
+  return iconMap[iconName] || '•';
+};
 
 // 统计数据
 const stats = ref([
@@ -190,7 +218,7 @@ let menuDistributionChart: echarts.ECharts | null = null;
 
 // 初始化图表
 const initCharts = () => {
-  // 用户增长趋势图
+  // 用户增长趋势图 - 智谱AI风格
   if (userGrowthChartRef.value) {
     userGrowthChart = echarts.init(userGrowthChartRef.value);
     userGrowthChart.setOption({
@@ -206,21 +234,22 @@ const initCharts = () => {
         smooth: true,
         areaStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: 'rgba(74, 144, 226, 0.3)' },
-            { offset: 1, color: 'rgba(74, 144, 226, 0)' }
+            { offset: 0, color: 'rgba(24, 144, 255, 0.3)' },
+            { offset: 1, color: 'rgba(24, 144, 255, 0)' }
           ])
         },
         lineStyle: {
-          color: '#4a90e2'
+          color: '#1890ff',
+          width: 3
         },
         itemStyle: {
-          color: '#4a90e2'
+          color: '#1890ff'
         }
       }]
     });
   }
 
-  // 角色分布图
+  // 角色分布图 - 智谱AI风格
   if (roleDistributionChartRef.value) {
     roleDistributionChart = echarts.init(roleDistributionChartRef.value);
     roleDistributionChart.setOption({
@@ -229,16 +258,16 @@ const initCharts = () => {
         type: 'pie',
         radius: ['40%', '70%'],
         data: [
-          { value: 1048, name: '管理员' },
-          { value: 735, name: '普通用户' },
-          { value: 580, name: '访客' },
-          { value: 484, name: '游客' }
+          { value: 1048, name: '管理员', itemStyle: { color: '#1890ff' } },
+          { value: 735, name: '普通用户', itemStyle: { color: '#6366F1' } },
+          { value: 580, name: '访客', itemStyle: { color: '#52c41a' } },
+          { value: 484, name: '游客', itemStyle: { color: '#fa8c16' } }
         ]
       }]
     });
   }
 
-  // 菜单类型分布图
+  // 菜单类型分布图 - 智谱AI风格
   if (menuDistributionChartRef.value) {
     menuDistributionChart = echarts.init(menuDistributionChartRef.value);
     menuDistributionChart.setOption({
@@ -247,9 +276,9 @@ const initCharts = () => {
         type: 'pie',
         radius: '60%',
         data: [
-          { value: 335, name: '目录' },
-          { value: 310, name: '菜单' },
-          { value: 234, name: '按钮' }
+          { value: 335, name: '目录', itemStyle: { color: '#1890ff' } },
+          { value: 310, name: '菜单', itemStyle: { color: '#6366F1' } },
+          { value: 234, name: '按钮', itemStyle: { color: '#52c41a' } }
         ]
       }]
     });
@@ -333,82 +362,178 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .dashboard {
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
 }
 
-.stats-row,
-.charts-row,
-.bottom-row {
-  margin-top: var(--space-lg);
+// 统计卡片网格
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stats-grid-item {
+  min-width: 0;
+}
+
+// 图表网格
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-lg);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.charts-grid-full {
+  grid-template-columns: 1fr;
+}
+
+.charts-grid-item {
+  min-width: 0;
 }
 
 .chart-card {
-  @include card-style;
+  height: 100%;
 
-  :deep(.el-card__header) {
-    border-bottom: 1px solid var(--border-color);
-    padding: var(--space-md) var(--space-lg);
-  }
-
-  :deep(.el-card__body) {
+  :deep(.bm-card__body) {
     padding: var(--space-lg);
   }
 }
 
 .chart-container {
   height: 300px;
+
+  @media (max-width: 768px) {
+    height: 250px;
+  }
 }
 
 .chart-container-small {
   height: 250px;
+
+  @media (max-width: 768px) {
+    height: 200px;
+  }
+}
+
+// 底部网格
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--space-lg);
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.bottom-grid-item {
+  min-width: 0;
 }
 
 .system-info-card {
-  @include card-style;
+  height: 100%;
 
-  :deep(.el-card__header) {
-    border-bottom: 1px solid var(--border-color);
+  :deep(.bm-card__body) {
+    padding: var(--space-lg);
   }
+}
+
+.system-info-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  color: var(--text-secondary);
 }
 
 .system-info {
-  .info-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    padding: var(--space-md);
-    margin-bottom: var(--space-sm);
-    background: var(--bg-secondary);
-    border-radius: var(--radius-md);
-  }
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
 
-  .info-icon {
-    font-size: 24px;
-    color: var(--primary-color);
-  }
-
-  .info-label {
-    font-size: 12px;
-    color: var(--text-secondary);
-  }
-
-  .info-value {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-primary);
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 767px) {
-  .stats-row {
-    :deep(.el-col) {
-      margin-bottom: var(--space-md);
-    }
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-normal);
+
+  &:hover {
+    background: var(--bg-tertiary);
+    transform: translateY(-2px);
+  }
+}
+
+.info-icon {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--primary-gradient);
+  color: var(--text-inverse);
+  border-radius: var(--radius-md);
+}
+
+.info-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.info-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+// 响应式调整
+@media (max-width: 768px) {
+  .dashboard {
+    gap: var(--space-md);
   }
 
-  .charts-row {
-    :deep(.el-col) {
-      margin-bottom: var(--space-md);
-    }
+  .stats-grid,
+  .charts-grid,
+  .bottom-grid {
+    gap: var(--space-md);
+  }
+
+  .info-item {
+    padding: var(--space-sm);
+  }
+
+  .info-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
   }
 }
 </style>
