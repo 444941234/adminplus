@@ -1,17 +1,17 @@
 <template>
   <div class="dept-page">
-    <el-card>
+    <BmCard>
       <template #header>
         <div class="card-header">
           <span>部门管理</span>
           <div class="header-actions">
-            <el-button
+            <BmButton
               type="primary"
               @click="handleAdd"
             >
-              <el-icon><Plus /></el-icon>
+              <span class="icon-plus">+</span>
               新增部门
-            </el-button>
+            </BmButton>
           </div>
         </div>
       </template>
@@ -38,13 +38,12 @@
             <div class="node-info">
               <div class="node-name-row">
                 <span class="node-name">{{ node.label }}</span>
-                <el-tag
-                  :type="data.status === 1 ? 'success' : 'info'"
+                <span
                   class="status-tag"
-                  size="small"
+                  :class="data.status === 1 ? 'status-enabled' : 'status-disabled'"
                 >
                   {{ data.status === 1 ? '启用' : '禁用' }}
-                </el-tag>
+                </span>
               </div>
               <div class="node-details">
                 <div class="detail-row">
@@ -62,36 +61,36 @@
               </div>
             </div>
             <div class="node-actions">
-              <el-button
+              <BmButton
                 type="primary"
                 size="small"
                 @click="handleAddChild(data)"
               >
                 添加子部门
-              </el-button>
-              <el-button
+              </BmButton>
+              <BmButton
                 type="warning"
                 size="small"
                 @click="handleEdit(data)"
               >
                 编辑
-              </el-button>
-              <el-button
+              </BmButton>
+              <BmButton
                 type="danger"
                 size="small"
                 @click="handleDelete(data)"
               >
                 删除
-              </el-button>
+              </BmButton>
             </div>
           </div>
         </template>
       </el-tree>
-    </el-card>
+    </BmCard>
 
     <!-- 部门编辑对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
+    <BmModal
+      v-model:visible="dialogVisible"
       :title="dialogTitle"
       width="500px"
     >
@@ -105,7 +104,7 @@
           label="部门名称"
           prop="name"
         >
-          <el-input
+          <BmInput
             v-model="form.name"
             placeholder="请输入部门名称"
           />
@@ -114,7 +113,7 @@
           label="部门编码"
           prop="code"
         >
-          <el-input
+          <BmInput
             v-model="form.code"
             placeholder="请输入部门编码"
           />
@@ -123,7 +122,7 @@
           label="负责人"
           prop="leader"
         >
-          <el-input
+          <BmInput
             v-model="form.leader"
             placeholder="请输入负责人"
           />
@@ -132,7 +131,7 @@
           label="联系电话"
           prop="phone"
         >
-          <el-input
+          <BmInput
             v-model="form.phone"
             placeholder="请输入联系电话"
           />
@@ -141,7 +140,7 @@
           label="状态"
           prop="status"
         >
-          <el-switch
+          <BmSwitch
             v-model="form.status"
             :active-value="1"
             :inactive-value="0"
@@ -161,7 +160,7 @@
           label="备注"
           prop="remark"
         >
-          <el-input
+          <BmInput
             v-model="form.remark"
             type="textarea"
             :rows="3"
@@ -170,25 +169,25 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">
+        <BmButton @click="dialogVisible = false">
           取消
-        </el-button>
-        <el-button
+        </BmButton>
+        <BmButton
           type="primary"
           :loading="submitLoading"
           @click="handleSubmit"
         >
           确定
-        </el-button>
+        </BmButton>
       </template>
-    </el-dialog>
+    </BmModal>
   </div>
 </template>
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Plus } from '@element-plus/icons-vue';
+import { BmCard, BmButton, BmModal, BmInput, BmSwitch } from '@adminplus/ui-vue';
 import { createDept, deleteDept, getDeptTree, updateDept } from '@/api/dept';
 
 const loading = ref(false);
@@ -536,7 +535,27 @@ onMounted(() => {
 }
 
 .status-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
   flex-shrink: 0;
+
+  &.status-enabled {
+    background-color: #f0f9ff;
+    color: #67c23a;
+  }
+
+  &.status-disabled {
+    background-color: #f4f4f5;
+    color: #909399;
+  }
+}
+
+.icon-plus {
+  font-size: 14px;
+  font-weight: bold;
 }
 
 .node-details {

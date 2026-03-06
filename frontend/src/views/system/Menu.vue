@@ -1,45 +1,32 @@
 <template>
   <div class="menu-page">
-    <el-card>
+    <BmCard>
       <template #header>
         <div class="card-header">
           <span>菜单管理</span>
           <div class="header-actions">
-            <el-dropdown @command="handleTemplateAction">
-              <el-button type="success">
-                <el-icon><MagicStick /></el-icon>
-                快速添加模板
-                <el-icon class="el-icon--right">
-                  <ArrowDown />
-                </el-icon>
-              </el-button>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item
-                    v-for="(template, key) in menuTemplates"
-                    :key="key"
-                    :command="key"
-                  >
-                    <el-icon><component :is="getIconComponent(template.icon)" /></el-icon>
-                    {{ template.name }}
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-            <el-button
+            <BmButton
+              type="success"
+              @click="handleTemplateAction"
+            >
+              <span class="icon-magic">✨</span>
+              快速添加模板
+              <span class="icon-arrow">▼</span>
+            </BmButton>
+            <BmButton
               type="primary"
               @click="handleBatchImport"
             >
-              <el-icon><Upload /></el-icon>
+              <span class="icon-upload">↑</span>
               批量导入
-            </el-button>
-            <el-button
+            </BmButton>
+            <BmButton
               type="primary"
               @click="handleAdd"
             >
-              <el-icon><Plus /></el-icon>
+              <span class="icon-plus">+</span>
               新增菜单
-            </el-button>
+            </BmButton>
           </div>
         </div>
       </template>
@@ -50,36 +37,36 @@
         class="batch-bar"
       >
         <span class="batch-info">已选择 {{ selectedRows.length }} 项</span>
-        <el-button
+        <BmButton
           type="success"
           size="small"
           @click="handleBatchEnable"
         >
           批量启用
-        </el-button>
-        <el-button
+        </BmButton>
+        <BmButton
           type="warning"
           size="small"
           @click="handleBatchDisable"
         >
           批量禁用
-        </el-button>
-        <el-button
+        </BmButton>
+        <BmButton
           type="danger"
           size="small"
           @click="handleBatchDelete"
         >
           批量删除
-        </el-button>
-        <el-button
+        </BmButton>
+        <BmButton
           size="small"
           @click="handleClearSelection"
         >
           取消选择
-        </el-button>
+        </BmButton>
       </div>
 
-      <!-- 菜单树表格 -->
+      <!-- 菜单树表格 (保留 Element Plus 表格因为需要树形结构支持) -->
       <el-table
         ref="tableRef"
         v-loading="loading"
@@ -168,12 +155,12 @@
           align="center"
         >
           <template #default="{ row }">
-            <el-tag
-              :type="row.visible === VISIBLE.SHOWN ? 'success' : 'info'"
-              size="small"
+            <span
+              class="status-tag"
+              :class="row.visible === VISIBLE.SHOWN ? 'tag-success' : 'tag-info'"
             >
               {{ row.visible === VISIBLE.SHOWN ? '显示' : '隐藏' }}
-            </el-tag>
+            </span>
           </template>
         </el-table-column>
         <el-table-column
@@ -182,12 +169,12 @@
           align="center"
         >
           <template #default="{ row }">
-            <el-tag
-              :type="row.status === STATUS.ENABLED ? 'success' : 'danger'"
-              size="small"
+            <span
+              class="status-tag"
+              :class="row.status === STATUS.ENABLED ? 'tag-success' : 'tag-danger'"
             >
               {{ row.status === STATUS.ENABLED ? '正常' : '禁用' }}
-            </el-tag>
+            </span>
           </template>
         </el-table-column>
         <el-table-column
@@ -197,35 +184,37 @@
           align="center"
         >
           <template #default="{ row }">
-            <el-button
-              type="primary"
-              size="small"
-              @click="handleAddChild(row)"
-            >
-              新增子菜单
-            </el-button>
-            <el-button
-              type="warning"
-              size="small"
-              @click="handleEdit(row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              type="danger"
-              size="small"
-              @click="handleDelete(row)"
-            >
-              删除
-            </el-button>
+            <div class="action-buttons">
+              <BmButton
+                type="primary"
+                size="small"
+                @click="handleAddChild(row)"
+              >
+                新增子菜单
+              </BmButton>
+              <BmButton
+                type="warning"
+                size="small"
+                @click="handleEdit(row)"
+              >
+                编辑
+              </BmButton>
+              <BmButton
+                type="danger"
+                size="small"
+                @click="handleDelete(row)"
+              >
+                删除
+              </BmButton>
+            </div>
           </template>
         </el-table-column>
       </el-table>
-    </el-card>
+    </BmCard>
 
     <!-- 新增/编辑对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
+    <BmModal
+      v-model:visible="dialogVisible"
       :title="dialogTitle"
       width="700px"
       @close="handleDialogClose"
@@ -263,19 +252,19 @@
               label="菜单类型"
               prop="type"
             >
-              <el-radio-group v-model="form.type">
-                <el-radio :value="MENU_TYPE.DIRECTORY">
+              <BmRadioGroup v-model="form.type">
+                <BmRadio :value="MENU_TYPE.DIRECTORY">
                   目录
-                </el-radio>
-                <el-radio :value="MENU_TYPE.MENU">
+                </BmRadio>
+                <BmRadio :value="MENU_TYPE.MENU">
                   菜单
-                </el-radio>
-                <el-radio :value="MENU_TYPE.BUTTON">
+                </BmRadio>
+                <BmRadio :value="MENU_TYPE.BUTTON">
                   按钮
-                </el-radio>
-              </el-radio-group>
+                </BmRadio>
+              </BmRadioGroup>
               <div class="form-tip">
-                <el-icon><InfoFilled /></el-icon>
+                <span class="icon-info">ℹ</span>
                 <span>{{ getMenuTypeTip(form.type) }}</span>
               </div>
             </el-form-item>
@@ -283,7 +272,7 @@
               label="菜单名称"
               prop="name"
             >
-              <el-input
+              <BmInput
                 v-model="form.name"
                 placeholder="请输入菜单名称"
                 clearable
@@ -312,7 +301,7 @@
               label="路由路径"
               prop="path"
             >
-              <el-input
+              <BmInput
                 v-model="form.path"
                 placeholder="如 /system/user（自动填入默认值）"
                 clearable
@@ -323,7 +312,7 @@
               label="组件路径"
               prop="component"
             >
-              <el-input
+              <BmInput
                 v-model="form.component"
                 placeholder="如 system/User（自动填入默认值）"
                 clearable
@@ -335,7 +324,7 @@
               prop="icon"
             >
               <div class="icon-selector">
-                <el-input
+                <BmInput
                   v-model="form.icon"
                   placeholder="选择或输入图标名称"
                   clearable
@@ -347,11 +336,11 @@
                     </el-icon>
                   </template>
                   <template #append>
-                    <el-button @click="showIconSelector = true">
+                    <BmButton @click="showIconSelector = true">
                       选择图标
-                    </el-button>
+                    </BmButton>
                   </template>
-                </el-input>
+                </BmInput>
               </div>
             </el-form-item>
           </el-collapse-item>
@@ -366,13 +355,13 @@
               label="权限标识"
               prop="permKey"
             >
-              <el-input
+              <BmInput
                 v-model="form.permKey"
                 placeholder="如 user:add（自动生成）"
                 clearable
               />
               <div class="form-tip">
-                <el-icon><MagicStick /></el-icon>
+                <span class="icon-magic">✨</span>
                 <span>会自动生成格式：模块:操作（如 system:user:add）</span>
               </div>
             </el-form-item>
@@ -387,7 +376,7 @@
               label="是否可见"
               prop="visible"
             >
-              <el-switch
+              <BmSwitch
                 v-model="form.visible"
                 :active-value="VISIBLE.SHOWN"
                 :inactive-value="VISIBLE.HIDDEN"
@@ -400,7 +389,7 @@
               label="状态"
               prop="status"
             >
-              <el-switch
+              <BmSwitch
                 v-model="form.status"
                 :active-value="STATUS.ENABLED"
                 :inactive-value="STATUS.DISABLED"
@@ -413,18 +402,18 @@
         </el-collapse>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">
+        <BmButton @click="dialogVisible = false">
           取消
-        </el-button>
-        <el-button
+        </BmButton>
+        <BmButton
           type="primary"
           :loading="submitLoading"
           @click="handleSubmit"
         >
           确定
-        </el-button>
+        </BmButton>
       </template>
-    </el-dialog>
+    </BmModal>
 
     <!-- 图标选择器对话框 -->
     <el-dialog
@@ -562,7 +551,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onErrorCaptured } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { MagicStick, ArrowDown, Upload, Plus, InfoFilled, Search, Folder, Menu as MenuIcon, Grid, Document } from '@element-plus/icons-vue'
+import { BmCard, BmButton, BmModal, BmInput, BmRadio, BmRadioGroup, BmSwitch } from '@adminplus/ui-vue'
 import { getIconComponent } from '@/constants/icons'
 import { getMenuTree, createMenu, updateMenu, deleteMenu, batchUpdateMenuStatus, batchDeleteMenu } from '@/api/menu'
 import { useForm } from '@/composables/useForm'
@@ -1305,6 +1294,65 @@ onMounted(() => {
 
 .type-text {
   line-height: 1;
+}
+
+/* 状态标签样式 */
+.status-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.tag-success {
+    background-color: #f0f9ff;
+    color: #67c23a;
+  }
+
+  &.tag-info {
+    background-color: #f4f4f5;
+    color: #909399;
+  }
+
+  &.tag-danger {
+    background-color: #fef0f0;
+    color: #f56c6c;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 图标样式 */
+.icon-plus {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.icon-magic {
+  font-size: 14px;
+}
+
+.icon-upload {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.icon-arrow {
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.icon-info {
+  font-size: 14px;
+}
+
+.icon-search-icon {
+  font-size: 14px;
 }
 
 /* 图标选择器对话框样式 */

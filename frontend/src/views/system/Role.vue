@@ -1,64 +1,52 @@
 <template>
   <div class="role-page">
-    <el-card class="role-table-card">
+    <BmCard class="role-table-card">
       <template #header>
-        <el-row justify="end">
-          <el-col :xs="24" :sm="24" :md="20" :lg="20" :xl="20">
-            <span class="card-title">角色管理</span>
-          </el-col>
-          <el-col :xs="24" :sm="24" :md="4" :lg="4" :xl="4">
-            <el-button type="primary" @click="handleAdd">
-              <el-icon><Plus /></el-icon>
-              新增角色
-            </el-button>
-          </el-col>
-        </el-row>
+        <div class="card-header">
+          <span class="card-title">角色管理</span>
+          <BmButton type="primary" @click="handleAdd">
+            <span class="icon-plus">+</span>
+            新增角色
+          </BmButton>
+        </div>
       </template>
 
       <!-- 数据表格 -->
-      <el-table
-        v-loading="loading"
+      <BmTable
         :data="tableData"
+        :columns="tableColumns"
+        :loading="loading"
         border
       >
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="code" label="角色编码" width="150" />
-        <el-table-column prop="name" label="角色名称" width="150" />
-        <el-table-column prop="description" label="描述" />
-        <el-table-column label="数据权限" width="120">
-          <template #default="{ row }">
-            <el-tag v-bind="getDataScopeType(row.dataScope) ? { type: getDataScopeType(row.dataScope) } : {}">
-              {{ getDataScopeText(row.dataScope) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? '正常' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="sortOrder" label="排序" width="80" />
-        <el-table-column label="操作" width="280" fixed="right">
-          <template #default="{ row }">
-            <el-button type="primary" size="small" @click="handleEdit(row)">
+        <template #dataScope="{ row }">
+          <span class="data-scope-tag" :class="`scope-${row.dataScope}`">
+            {{ getDataScopeText(row.dataScope) }}
+          </span>
+        </template>
+        <template #status="{ row }">
+          <span class="status-tag" :class="row.status === 1 ? 'status-enabled' : 'status-disabled'">
+            {{ row.status === 1 ? '正常' : '禁用' }}
+          </span>
+        </template>
+        <template #actions="{ row }">
+          <div class="action-buttons">
+            <BmButton type="primary" size="small" @click="handleEdit(row)">
               编辑
-            </el-button>
-            <el-button type="warning" size="small" @click="handleAssignMenu(row)">
+            </BmButton>
+            <BmButton type="warning" size="small" @click="handleAssignMenu(row)">
               分配权限
-            </el-button>
-            <el-button type="danger" size="small" @click="handleDelete(row)">
+            </BmButton>
+            <BmButton type="danger" size="small" @click="handleDelete(row)">
               删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+            </BmButton>
+          </div>
+        </template>
+      </BmTable>
+    </BmCard>
 
     <!-- 新增/编辑对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
+    <BmModal
+      v-model:visible="dialogVisible"
       :title="dialogTitle"
       width="500px"
       @close="handleDialogClose"
@@ -70,41 +58,41 @@
         label-width="100px"
       >
         <el-form-item label="角色编码" prop="code">
-          <el-input
+          <BmInput
             v-model="form.code"
             placeholder="请输入角色编码（如：ROLE_ADMIN）"
             :disabled="isEdit"
           />
         </el-form-item>
         <el-form-item label="角色名称" prop="name">
-          <el-input
+          <BmInput
             v-model="form.name"
             placeholder="请输入角色名称"
           />
         </el-form-item>
         <el-form-item label="描述" prop="description">
-          <el-input
+          <BmInput
             v-model="form.description"
             type="textarea"
             placeholder="请输入描述"
           />
         </el-form-item>
         <el-form-item label="数据权限" prop="dataScope">
-          <el-select
+          <BmSelect
             v-model="form.dataScope"
             placeholder="请选择数据权限"
           >
-            <el-option label="全部数据" :value="1" />
-            <el-option label="本部门" :value="2" />
-            <el-option label="本部门及以下" :value="3" />
-            <el-option label="仅本人" :value="4" />
-          </el-select>
+            <option label="全部数据" :value="1" />
+            <option label="本部门" :value="2" />
+            <option label="本部门及以下" :value="3" />
+            <option label="仅本人" :value="4" />
+          </BmSelect>
         </el-form-item>
         <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="form.status">
-            <el-radio :value="1">正常</el-radio>
-            <el-radio :value="0">禁用</el-radio>
-          </el-radio-group>
+          <BmRadioGroup v-model="form.status">
+            <BmRadio :value="1">正常</BmRadio>
+            <BmRadio :value="0">禁用</BmRadio>
+          </BmRadioGroup>
         </el-form-item>
         <el-form-item label="排序" prop="sortOrder">
           <el-input-number
@@ -114,20 +102,20 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button
+        <BmButton @click="dialogVisible = false">取消</BmButton>
+        <BmButton
           type="primary"
           :loading="submitLoading"
           @click="handleSubmit"
         >
           确定
-        </el-button>
+        </BmButton>
       </template>
-    </el-dialog>
+    </BmModal>
 
     <!-- 分配权限对话框 -->
-    <el-dialog
-      v-model="menuDialogVisible"
+    <BmModal
+      v-model:visible="menuDialogVisible"
       title="分配菜单权限"
       width="500px"
       @close="handleMenuDialogClose"
@@ -141,23 +129,23 @@
         default-expand-all
       />
       <template #footer>
-        <el-button @click="menuDialogVisible = false">取消</el-button>
-        <el-button
+        <BmButton @click="menuDialogVisible = false">取消</BmButton>
+        <BmButton
           type="primary"
           :loading="menuSubmitLoading"
           @click="handleMenuSubmit"
         >
           确定
-        </el-button>
+        </BmButton>
       </template>
-    </el-dialog>
+    </BmModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Plus } from '@element-plus/icons-vue';
+import { BmCard, BmButton, BmTable, BmModal, BmInput, BmSelect, BmRadio, BmRadioGroup } from '@adminplus/ui-vue';
 import { getRoleList, createRole, updateRole, deleteRole, assignMenus, getRoleMenuIds } from '@/api/role';
 import { getMenuTree } from '@/api/menu';
 import { useConfirm } from '@/composables/useConfirm';
@@ -194,16 +182,23 @@ const rules = {
   name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }]
 };
 
+// 表格列定义
+const tableColumns = [
+  { prop: 'id', label: 'ID', width: '80px', align: 'center' as const },
+  { prop: 'code', label: '角色编码', width: '150px' },
+  { prop: 'name', label: '角色名称', width: '150px' },
+  { prop: 'description', label: '描述' },
+  { prop: 'dataScope', label: '数据权限', width: '120px', align: 'center' as const },
+  { prop: 'status', label: '状态', width: '100px', align: 'center' as const },
+  { prop: 'sortOrder', label: '排序', width: '80px', align: 'center' as const },
+  { prop: 'actions', label: '操作', width: '280px', align: 'center' as const }
+];
+
 // 确认操作
 const confirmDelete = useConfirm({
   message: '确定要删除该角色吗？',
   type: 'warning'
 });
-
-const getDataScopeType = (scope: number) => {
-  const types: Record<number, string> = { 1: '', 2: 'warning', 3: 'info', 4: 'danger' };
-  return types[scope] || '';
-};
 
 const getDataScopeText = (scope: number) => {
   const texts: Record<number, string> = { 1: '全部数据', 2: '本部门', 3: '本部门及以下', 4: '仅本人' };
@@ -338,13 +333,20 @@ onMounted(() => {
 .role-table-card {
   @include card-style;
 
-  :deep(.el-card__header) {
+  :deep(.bm-card__header) {
     border-bottom: 1px solid var(--border-color);
     padding: var(--space-md) var(--space-lg);
   }
 
-  :deep(.el-card__body) {
+  :deep(.bm-card__body) {
     padding: var(--space-lg);
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
   }
 
   .card-title {
@@ -352,19 +354,77 @@ onMounted(() => {
     font-weight: 600;
     color: var(--text-primary);
   }
+
+  .icon-plus {
+    font-size: 14px;
+    font-weight: bold;
+  }
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.data-scope-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.scope-1 {
+    background-color: #ecf5ff;
+    color: #409eff;
+  }
+
+  &.scope-2 {
+    background-color: #fdf6ec;
+    color: #e6a23c;
+  }
+
+  &.scope-3 {
+    background-color: #f0f9ff;
+    color: #67c23a;
+  }
+
+  &.scope-4 {
+    background-color: #fef0f0;
+    color: #f56c6c;
+  }
+}
+
+.status-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.status-enabled {
+    background-color: #f0f9ff;
+    color: #67c23a;
+  }
+
+  &.status-disabled {
+    background-color: #fef0f0;
+    color: #f56c6c;
+  }
 }
 
 @media (max-width: 767px) {
-  :deep(.el-card__header) {
-    .el-col {
-      margin-bottom: var(--space-sm);
+  :deep(.bm-card__header) {
+    .card-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--space-sm);
     }
   }
 
-  :deep(.el-table-column) {
-    :deep(.el-button) {
-      margin-bottom: var(--space-xs);
-    }
+  .action-buttons {
+    flex-direction: column;
+    gap: 4px;
   }
 }
 </style>

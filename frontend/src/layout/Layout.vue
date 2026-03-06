@@ -1,17 +1,32 @@
 <template>
-  <AdminLayout
-    :menus="menus"
-    :user="userInfo"
-    @command="handleCommand"
+  <BmLayout
+    :collapsed="collapsed"
+    @toggle="handleToggle"
   >
+    <template #sidebar>
+      <AppSidebar
+        :menus="menus"
+        :collapsed="collapsed"
+      />
+    </template>
+
+    <template #header>
+      <AppHeader
+        :user="userInfo"
+        :collapsed="collapsed"
+        @toggle="handleToggle"
+        @command="handleCommand"
+      />
+    </template>
+
     <router-view />
-  </AdminLayout>
+  </BmLayout>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { AdminLayout } from '@adminplus/ui-vue';
+import { BmLayout, AppSidebar, AppHeader } from '@adminplus/ui-vue';
 import type { MenuItem, UserInfo } from '@adminplus/ui-vue';
 import { useUserStore } from '@/stores/user';
 
@@ -21,12 +36,18 @@ defineOptions({
 
 const router = useRouter();
 const userStore = useUserStore();
+const collapsed = ref(false);
 
 // 用户信息
 const userInfo = computed<UserInfo>(() => ({
   nickname: userStore.user?.nickname || 'Admin',
   avatar: userStore.user?.avatar || ''
 }));
+
+// 处理侧边栏折叠
+const handleToggle = () => {
+  collapsed.value = !collapsed.value;
+};
 
 // 处理头部命令
 const handleCommand = async (command: string) => {

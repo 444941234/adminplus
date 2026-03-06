@@ -1,19 +1,19 @@
 <template>
   <div class="profile-page">
-    <el-row :gutter="20">
+    <div class="profile-grid">
       <!-- 左侧：个人信息卡片 -->
-      <el-col :span="8">
+      <div class="profile-left">
         <UserCard
           :user="userCardInfo"
           :show-details="true"
           @avatar-click="showAvatarDialog = true"
         />
-      </el-col>
+      </div>
 
       <!-- 右侧：编辑信息、修改密码、个人设置 -->
-      <el-col :span="16">
+      <div class="profile-right">
         <!-- 编辑信息 -->
-        <el-card class="section-card">
+        <BmCard class="section-card">
           <template #header>
             <span>编辑信息</span>
           </template>
@@ -25,45 +25,45 @@
             label-width="100px"
           >
             <el-form-item label="用户名" prop="username">
-              <el-input
+              <BmInput
                 v-model="profileForm.username"
                 placeholder="请输入用户名"
                 disabled
               />
             </el-form-item>
             <el-form-item label="昵称" prop="nickname">
-              <el-input
+              <BmInput
                 v-model="profileForm.nickname"
                 placeholder="请输入昵称"
                 maxlength="50"
               />
             </el-form-item>
             <el-form-item label="邮箱" prop="email">
-              <el-input
+              <BmInput
                 v-model="profileForm.email"
                 placeholder="请输入邮箱"
               />
             </el-form-item>
             <el-form-item label="手机号" prop="phone">
-              <el-input
+              <BmInput
                 v-model="profileForm.phone"
                 placeholder="请输入手机号"
                 maxlength="11"
               />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="profileLoading" @click="handleUpdateProfile">
+              <BmButton type="primary" :loading="profileLoading" @click="handleUpdateProfile">
                 保存修改
-              </el-button>
-              <el-button @click="resetProfileForm">
+              </BmButton>
+              <BmButton @click="resetProfileForm">
                 重置
-              </el-button>
+              </BmButton>
             </el-form-item>
           </el-form>
-        </el-card>
+        </BmCard>
 
         <!-- 修改密码 -->
-        <el-card class="section-card">
+        <BmCard class="section-card">
           <template #header>
             <span>修改密码</span>
           </template>
@@ -75,7 +75,7 @@
             label-width="100px"
           >
             <el-form-item label="当前密码" prop="oldPassword">
-              <el-input
+              <BmInput
                 v-model="passwordForm.oldPassword"
                 type="password"
                 placeholder="请输入当前密码"
@@ -83,7 +83,7 @@
               />
             </el-form-item>
             <el-form-item label="新密码" prop="newPassword">
-              <el-input
+              <BmInput
                 v-model="passwordForm.newPassword"
                 type="password"
                 placeholder="请输入新密码"
@@ -91,7 +91,7 @@
               />
             </el-form-item>
             <el-form-item label="确认密码" prop="confirmPassword">
-              <el-input
+              <BmInput
                 v-model="passwordForm.confirmPassword"
                 type="password"
                 placeholder="请再次输入新密码"
@@ -99,18 +99,18 @@
               />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="passwordLoading" @click="handleChangePassword">
+              <BmButton type="primary" :loading="passwordLoading" @click="handleChangePassword">
                 修改密码
-              </el-button>
-              <el-button @click="resetPasswordForm">
+              </BmButton>
+              <BmButton @click="resetPasswordForm">
                 重置
-              </el-button>
+              </BmButton>
             </el-form-item>
           </el-form>
-        </el-card>
+        </BmCard>
 
         <!-- 个人设置 -->
-        <el-card class="section-card">
+        <BmCard class="section-card">
           <template #header>
             <span>个人设置</span>
           </template>
@@ -121,34 +121,34 @@
             label-width="100px"
           >
             <el-form-item label="主题">
-              <el-radio-group v-model="settingsForm.theme">
-                <el-radio value="light">浅色</el-radio>
-                <el-radio value="dark">深色</el-radio>
-                <el-radio value="auto">跟随系统</el-radio>
-              </el-radio-group>
+              <div class="radio-group">
+                <BmRadio v-model="settingsForm.theme" label="light">浅色</BmRadio>
+                <BmRadio v-model="settingsForm.theme" label="dark">深色</BmRadio>
+                <BmRadio v-model="settingsForm.theme" label="auto">跟随系统</BmRadio>
+              </div>
             </el-form-item>
             <el-form-item label="语言">
-              <el-select
+              <BmSelect
                 v-model="settingsForm.language"
                 placeholder="请选择语言"
               >
-                <el-option label="简体中文" value="zh-CN" />
-                <el-option label="English" value="en-US" />
-              </el-select>
+                <option label="简体中文" value="zh-CN" />
+                <option label="English" value="en-US" />
+              </BmSelect>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" :loading="settingsLoading" @click="handleSaveSettings">
+              <BmButton type="primary" :loading="settingsLoading" @click="handleSaveSettings">
                 保存设置
-              </el-button>
+              </BmButton>
             </el-form-item>
           </el-form>
-        </el-card>
-      </el-col>
-    </el-row>
+        </BmCard>
+      </div>
+    </div>
 
     <!-- 头像上传对话框 -->
-    <el-dialog
-      v-model="showAvatarDialog"
+    <BmModal
+      v-model:visible="showAvatarDialog"
       title="更换头像"
       width="400px"
       @close="handleAvatarDialogClose"
@@ -167,33 +167,32 @@
           :src="previewAvatar"
           class="avatar-preview"
         >
-        <el-icon v-else class="avatar-uploader-icon">
-          <Plus />
-        </el-icon>
+        <div v-else class="avatar-uploader-icon">
+          <span class="icon-plus">+</span>
+        </div>
       </el-upload>
       <div class="upload-tips">
         支持 JPG、PNG 格式，文件大小不超过 2MB
       </div>
       <template #footer>
-        <el-button @click="showAvatarDialog = false">取消</el-button>
-        <el-button
+        <BmButton @click="showAvatarDialog = false">取消</BmButton>
+        <BmButton
           type="primary"
           :loading="avatarLoading"
           :disabled="!selectedAvatar"
           @click="handleAvatarUpload"
         >
           确认上传
-        </el-button>
+        </BmButton>
       </template>
-    </el-dialog>
+    </BmModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { Plus } from '@element-plus/icons-vue';
-import { UserCard } from '@adminplus/ui-vue';
+import { UserCard, BmCard, BmButton, BmModal, BmInput, BmRadio, BmSelect } from '@adminplus/ui-vue';
 import type { UserInfo as UserCardInfo } from '@adminplus/ui-vue';
 import { useUserStore } from '@/stores/user';
 import {
@@ -544,23 +543,36 @@ onMounted(async () => {
   padding: 0;
 }
 
+.profile-grid {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.profile-left {
+  position: sticky;
+  top: var(--space-lg);
+}
+
+.profile-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
 .section-card {
   @include card-style;
-  margin-bottom: var(--space-lg);
 
-  :deep(.el-card__header) {
+  :deep(.bm-card__header) {
     border-bottom: 1px solid var(--border-color);
     font-weight: 600;
     padding: var(--space-md) var(--space-lg);
   }
 
-  :deep(.el-card__body) {
+  :deep(.bm-card__body) {
     padding: var(--space-lg);
   }
-}
-
-.section-card:last-child {
-  margin-bottom: 0;
 }
 
 /* 头像上传 */
@@ -596,6 +608,11 @@ onMounted(async () => {
     border-color: var(--primary-color);
     color: var(--primary-color);
   }
+
+  .icon-plus {
+    font-size: 60px;
+    font-weight: 300;
+  }
 }
 
 .upload-tips {
@@ -605,9 +622,29 @@ onMounted(async () => {
   font-size: 12px;
 }
 
+@media (max-width: 1024px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-left {
+    position: static;
+  }
+}
+
 @media (max-width: 767px) {
+  .profile-grid {
+    gap: var(--space-md);
+  }
+
   .section-card {
     margin-bottom: var(--space-md);
   }
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
 }
 </style>
