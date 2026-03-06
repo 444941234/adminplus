@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/elementCompat'
 import router from '@/router'
 import { getEncryptedSession, setEncryptedSession } from '@/utils/encryption'
 

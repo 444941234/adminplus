@@ -74,7 +74,7 @@ import {
   User,
   Setting,
   SwitchButton
-} from '@element-plus/icons-vue';
+} from '../../utils/icons';
 
 export interface BreadcrumbItem {
   title: string;
@@ -123,10 +123,11 @@ const handleCommand = (command: string) => {
 <style scoped>
 .app-header {
   height: var(--header-height);
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-light);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -134,27 +135,31 @@ const handleCommand = (command: string) => {
   position: sticky;
   top: 0;
   z-index: var(--z-sticky);
-  transition: all var(--transition-normal);
+  transition: all 0.2s ease;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: var(--space-lg);
+  gap: var(--space-md);
 }
 
 .header-left :deep(.el-button) {
-  transition: all var(--transition-normal);
+  transition: all 0.2s ease;
+  border: none;
+  background: var(--bg-secondary);
 }
 
 .header-left :deep(.el-button:hover) {
+  background: var(--primary-color);
+  color: white;
   transform: rotate(180deg);
 }
 
 .header-center {
   flex: 1;
-  max-width: 500px;
-  margin: 0;
+  max-width: 400px;
+  margin: 0 var(--space-lg);
 }
 
 .search-input {
@@ -162,22 +167,30 @@ const handleCommand = (command: string) => {
 }
 
 :deep(.search-input .el-input__wrapper) {
-  border-radius: var(--radius-full);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--border-light);
-  transition: all var(--transition-normal);
+  border-radius: 20px;
+  box-shadow: none;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
   background: var(--bg-secondary);
+  padding: 0 16px;
 }
 
 :deep(.search-input .el-input__wrapper:hover) {
-  box-shadow: var(--shadow-md);
-  border-color: var(--border-color);
+  border-color: var(--primary-color);
 }
 
 :deep(.search-input .el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 3px rgba(91, 127, 255, 0.1);
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
   border-color: var(--primary-color);
   background: var(--bg-primary);
+}
+
+:deep(.search-input .el-input__inner) {
+  font-size: 14px;
+}
+
+:deep(.search-input .el-input__inner::placeholder) {
+  color: var(--text-tertiary);
 }
 
 .header-right {
@@ -191,11 +204,14 @@ const handleCommand = (command: string) => {
 }
 
 .header-right :deep(.el-button) {
-  transition: all var(--transition-normal);
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
 }
 
 .header-right :deep(.el-button:hover) {
-  transform: scale(1.1);
+  background: var(--bg-secondary);
+  color: var(--primary-color);
 }
 
 .user-info {
@@ -203,9 +219,9 @@ const handleCommand = (command: string) => {
   align-items: center;
   gap: var(--space-sm);
   cursor: pointer;
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-normal);
+  padding: 6px var(--space-md);
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
 }
 
 .user-info:hover {
@@ -214,18 +230,22 @@ const handleCommand = (command: string) => {
 
 .user-info :deep(.el-avatar) {
   border: 2px solid var(--border-light);
-  transition: all var(--transition-normal);
+  transition: all 0.2s ease;
 }
 
 .user-info:hover :deep(.el-avatar) {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(91, 127, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.15);
 }
 
 .user-name {
   font-size: 14px;
   font-weight: 500;
   color: var(--text-primary);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* 响应式 */

@@ -54,7 +54,6 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import {
-  ElementPlus,
   HomeFilled,
   Setting,
   User,
@@ -84,7 +83,10 @@ import {
   DataLine,
   Management,
   List
-} from '@element-plus/icons-vue';
+} from '../../utils/icons';
+
+// ElementPlus icon - using emoji fallback
+const ElementPlus = { template: '<span>A+</span>' };
 import SidebarMenuItem from './SidebarMenuItem.vue';
 
 export interface MenuItem {
@@ -174,13 +176,13 @@ const getIcon = (iconName?: string) => {
 .app-sidebar {
   width: var(--sidebar-width);
   height: 100%;
-  background: var(--bg-dark);
+  background: linear-gradient(180deg, #001529 0%, #002140 100%);
   position: relative;
   transition: width var(--transition-normal);
   z-index: var(--z-sticky);
   display: flex;
   flex-direction: column;
-  box-shadow: var(--shadow-xl);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
 }
 
@@ -192,7 +194,7 @@ const getIcon = (iconName?: string) => {
   height: var(--header-height);
   display: flex;
   align-items: center;
-  padding: 0 var(--space-lg);
+  padding: 0 var(--space-md);
   cursor: pointer;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   transition: all var(--transition-normal);
@@ -217,27 +219,28 @@ const getIcon = (iconName?: string) => {
 }
 
 .logo-icon {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   background: var(--primary-gradient);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
   transition: all var(--transition-normal);
 }
 
 .logo-area:hover .logo-icon {
   transform: rotate(5deg) scale(1.05);
+  box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
 }
 
 .logo-text {
   margin-left: var(--space-md);
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
   color: white;
   white-space: nowrap;
   letter-spacing: -0.5px;
@@ -256,7 +259,7 @@ const getIcon = (iconName?: string) => {
   background: transparent;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: var(--space-sm) 0;
+  padding: var(--space-xs) 0;
 }
 
 /* 自定义滚动条 */
@@ -269,12 +272,12 @@ const getIcon = (iconName?: string) => {
 }
 
 .sidebar-menu::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: var(--radius-full);
 }
 
 .sidebar-menu::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .sidebar-menu:not(.el-menu--collapse) {
@@ -288,39 +291,59 @@ const getIcon = (iconName?: string) => {
 
 :deep(.el-menu-item),
 :deep(.el-sub-menu__title) {
-  color: rgba(255, 255, 255, 0.7) !important;
-  margin: 2px var(--space-md);
-  border-radius: var(--radius-md);
-  transition: all var(--transition-fast);
+  height: 48px;
+  line-height: 48px;
+  color: rgba(255, 255, 255, 0.65) !important;
+  margin: 2px var(--space-sm);
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  position: relative;
 }
 
 :deep(.el-menu-item .el-icon),
 :deep(.el-sub-menu__title .el-icon) {
   color: inherit;
+  font-size: 16px;
 }
 
 :deep(.el-menu-item:hover),
 :deep(.el-sub-menu__title:hover) {
-  background: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
   color: white !important;
 }
 
 :deep(.el-menu-item.is-active) {
-  background: var(--primary-gradient) !important;
-  color: white !important;
-  margin: 2px var(--space-md);
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.2) 0%, rgba(99, 102, 241, 0.2) 100%) !important;
+  color: #40a9ff !important;
+  margin: 2px var(--space-sm);
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  position: relative;
+}
+
+:deep(.el-menu-item.is-active::before) {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  background: var(--primary-color);
+  border-radius: 0 2px 2px 0;
 }
 
 :deep(.el-sub-menu .el-menu-item) {
-  background: rgba(0, 0, 0, 0.2) !important;
-  padding-left: var(--space-2xl) !important;
-  margin: 2px var(--space-md) 2px calc(var(--space-md) + var(--space-md));
+  background: rgba(0, 0, 0, 0.15) !important;
+  padding-left: calc(var(--space-2xl) + 4px) !important;
+  margin: 2px var(--space-sm) 2px var(--space-md);
+  height: 44px;
+  line-height: 44px;
 }
 
 :deep(.el-sub-menu .el-menu-item.is-active) {
-  background: var(--primary-gradient) !important;
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.25) 0%, rgba(99, 102, 241, 0.25) 100%) !important;
+  color: #69c0ff !important;
 }
 
 :deep(.el-sub-menu__title:hover) {
@@ -338,7 +361,7 @@ const getIcon = (iconName?: string) => {
 
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity var(--transition-fast);
+  transition: opacity 0.15s ease;
 }
 
 .fade-enter-from,

@@ -550,7 +550,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onErrorCaptured } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox } from '@/utils/elementCompat'
 import { BmCard, BmButton, BmModal, BmInput, BmRadio, BmRadioGroup, BmSwitch } from '@adminplus/ui-vue'
 import { getIconComponent } from '@/constants/icons'
 import { getMenuTree, createMenu, updateMenu, deleteMenu, batchUpdateMenuStatus, batchDeleteMenu } from '@/api/menu'

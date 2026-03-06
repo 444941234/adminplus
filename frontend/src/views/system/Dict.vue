@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Plus, Refresh, Search } from '@element-plus/icons-vue'
+import { ElMessage } from '@/utils/elementCompat'
+import { Plus, Refresh, Search } from '@/utils/iconCompat'
 import {
   getDictList,
   createDict,

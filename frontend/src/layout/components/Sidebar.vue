@@ -53,7 +53,7 @@
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { Expand, Fold } from '@element-plus/icons-vue';
+import { Expand, Fold } from '@/utils/iconCompat';
 import SidebarMenu from './SidebarMenu.vue';
 
 defineOptions({

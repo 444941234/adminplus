@@ -96,7 +96,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/elementCompat'
 import { getWorkflowDetail, approveWorkflow, rejectWorkflow } from '@/api/workflow'
 
 const props = defineProps({

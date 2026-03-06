@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ArrowUp, ArrowDown } from '@element-plus/icons-vue';
+import { ArrowUp, ArrowDown } from '../../utils/icons';
 
 defineOptions({
   name: 'StatCard'
@@ -93,19 +93,19 @@ const displayValue = computed(() => {
 }
 
 .stat-card-primary {
-  --stat-bg-color: rgba(74, 144, 226, 0.08);
+  --stat-bg-color: rgba(24, 144, 255, 0.08);
 }
 
 .stat-card-success {
-  --stat-bg-color: rgba(16, 185, 129, 0.08);
+  --stat-bg-color: rgba(82, 196, 26, 0.08);
 }
 
 .stat-card-warning {
-  --stat-bg-color: rgba(245, 158, 11, 0.08);
+  --stat-bg-color: rgba(250, 140, 22, 0.08);
 }
 
 .stat-card-danger {
-  --stat-bg-color: rgba(239, 68, 68, 0.08);
+  --stat-bg-color: rgba(255, 77, 79, 0.08);
 }
 
 .stat-icon {
@@ -155,23 +155,23 @@ const displayValue = computed(() => {
 }
 
 .stat-card-primary .stat-icon {
-  background: var(--primary-gradient);
-  box-shadow: 0 8px 16px rgba(74, 144, 226, 0.3);
+  background: linear-gradient(135deg, #1890ff 0%, #6366F1 100%);
+  box-shadow: 0 8px 16px rgba(24, 144, 255, 0.3);
 }
 
 .stat-card-success .stat-icon {
-  background: var(--success-gradient);
-  box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+  background: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
+  box-shadow: 0 8px 16px rgba(82, 196, 26, 0.3);
 }
 
 .stat-card-warning .stat-icon {
-  background: var(--warning-gradient);
-  box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+  background: linear-gradient(135deg, #fa8c16 0%, #ffa940 100%);
+  box-shadow: 0 8px 16px rgba(250, 140, 22, 0.3);
 }
 
 .stat-card-danger .stat-icon {
-  background: var(--danger-gradient);
-  box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
+  background: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
+  box-shadow: 0 8px 16px rgba(255, 77, 79, 0.3);
 }
 
 .stat-content {
@@ -214,13 +214,13 @@ const displayValue = computed(() => {
 }
 
 .stat-trend.trend-up {
-  color: var(--success-color);
-  background: rgba(16, 185, 129, 0.1);
+  color: #52c41a;
+  background: rgba(82, 196, 26, 0.1);
 }
 
 .stat-trend.trend-down {
-  color: var(--danger-color);
-  background: rgba(239, 68, 68, 0.1);
+  color: #ff4d4f;
+  background: rgba(255, 77, 79, 0.1);
 }
 
 .stat-card:hover .stat-trend {

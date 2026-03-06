@@ -1,4 +1,4 @@
-import { ElMessageBox } from 'element-plus'
+import { ElMessageBox } from '@/utils/elementCompat'
 
 /**
  * 确认操作组合式函数

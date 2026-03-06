@@ -57,7 +57,7 @@ import {
   DataLine,
   Management,
   List
-} from '@element-plus/icons-vue';
+} from '../../utils/icons';
 
 export interface MenuItem {
   id: string;

@@ -2,7 +2,7 @@
  * 全局错误处理器
  */
 
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/elementCompat'
 
 /**
  * 处理 API 错误

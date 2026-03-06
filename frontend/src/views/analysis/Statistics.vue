@@ -64,8 +64,8 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Refresh } from '@element-plus/icons-vue'
+import { ElMessage } from '@/utils/elementCompat'
+import { Refresh } from '@/utils/iconCompat'
 import { getIconComponent } from '@/constants/icons'
 import * as echarts from 'echarts'
 import { getStatistics, getVisitTrend } from '@/api/dashboard'

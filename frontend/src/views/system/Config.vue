@@ -142,8 +142,8 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from '@/utils/elementCompat'
+import { Plus } from '@/utils/iconCompat'
 
 const loading = ref(false)
 const tableData = ref([])

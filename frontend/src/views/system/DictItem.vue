@@ -215,8 +215,8 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Plus, Search, Refresh, ArrowLeft } from '@element-plus/icons-vue'
+import { ElMessage } from '@/utils/elementCompat'
+import { Plus, Search, Refresh, ArrowLeft } from '@/utils/iconCompat'
 import { getDictItemTree, createDictItem, updateDictItem, deleteDictItem, updateDictItemStatus } from '@/api/dict'
 import { useRoute, useRouter } from 'vue-router'
 import { useConfirm } from '@/composables/useConfirm'

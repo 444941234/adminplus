@@ -59,8 +59,8 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
-import { Avatar, ArrowDown, User, SwitchButton, CloseBold, FullScreen } from '@element-plus/icons-vue';
+import { ElMessage } from '@/utils/elementCompat';
+import { Avatar, ArrowDown, User, SwitchButton, CloseBold, FullScreen } from '@/utils/iconCompat';
 import { useUserStore } from '@/stores/user';
 import { useConfirm } from '@/composables/useConfirm';
 

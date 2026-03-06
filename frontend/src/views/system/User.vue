@@ -256,7 +256,9 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue';
-import { ElMessage, ElTree as ElTreeType } from 'element-plus';
+import { ElMessage } from '@/utils/elementCompat';
+// TreeInstance type - using any for compatibility
+type TreeInstance = any;
 import {
   assignRoles,
   createUser,

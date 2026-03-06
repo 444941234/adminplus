@@ -54,7 +54,10 @@
 </template>
 
 <script setup lang="ts">
-import { Message, Phone, OfficeBuilding, UserFilled } from '@element-plus/icons-vue';
+import { Message, OfficeBuilding, UserFilled } from '../../utils/icons';
+
+// Phone icon - using emoji fallback
+const Phone = { template: '<span>📞</span>' };
 
 defineOptions({
   name: 'UserCard'

@@ -109,7 +109,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage } from '@/utils/elementCompat'
 import BmCard from '@adminplus/ui-vue/components/bigmodel/card/BmCard.vue'
 import BmInput from '@adminplus/ui-vue/components/bigmodel/form/BmInput.vue'
 import BmButton from '@adminplus/ui-vue/components/bigmodel/button/BmButton.vue'

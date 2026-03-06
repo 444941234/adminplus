@@ -38,11 +38,13 @@ import { ref } from 'vue';
 import {
   Close,
   Operation,
-  Brush,
   Setting,
   Delete,
   ArrowDown
-} from '@element-plus/icons-vue';
+} from '../../utils/icons';
+
+// Brush icon - using emoji fallback
+const Brush = { template: '<span>🎨</span>' };
 
 defineOptions({
   name: 'FloatingPanel'

@@ -136,8 +136,8 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from '@/utils/elementCompat'
+import { Plus } from '@/utils/iconCompat'
 import { getMyWorkflows, startWorkflow, submitWorkflow, cancelWorkflow } from '@/api/workflow'
 import { listEnabledWorkflowDefinitions } from '@/api/workflow'
 import WorkflowDetail from './WorkflowDetail.vue'

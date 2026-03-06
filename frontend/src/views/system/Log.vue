@@ -270,8 +270,8 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Delete } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from '@/utils/elementCompat'
+import { Search, Refresh, Delete } from '@/utils/iconCompat'
 import { getLogList, getLogById, deleteLog, deleteLogsBatch } from '@/api/log'
 
 // 当前激活的日志类型

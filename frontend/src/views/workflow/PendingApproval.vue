@@ -81,8 +81,8 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Refresh } from '@element-plus/icons-vue'
+import { ElMessage } from '@/utils/elementCompat'
+import { Refresh } from '@/utils/iconCompat'
 import { getPendingApprovals, countPendingApprovals, approveWorkflow, rejectWorkflow } from '@/api/workflow'
 import WorkflowDetail from './WorkflowDetail.vue'
 

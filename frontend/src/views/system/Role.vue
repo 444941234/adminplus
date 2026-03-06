@@ -144,7 +144,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage } from '@/utils/elementCompat';
 import { BmCard, BmButton, BmTable, BmModal, BmInput, BmSelect, BmRadio, BmRadioGroup } from '@adminplus/ui-vue';
 import { getRoleList, createRole, updateRole, deleteRole, assignMenus, getRoleMenuIds } from '@/api/role';
 import { getMenuTree } from '@/api/menu';

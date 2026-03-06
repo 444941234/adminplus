@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { ChatDotRound } from '@element-plus/icons-vue';
+import { ChatDotRound } from '../../utils/icons';
 
 defineOptions({
   name: 'WelcomeBanner'
@@ -71,10 +71,10 @@ const subtitle = computed(() => {
   color: white;
   position: relative;
   overflow: hidden;
-  background: var(--primary-gradient);
+  background: linear-gradient(135deg, #1890ff 0%, #6366F1 100%);
   min-height: 200px;
   border: none;
-  box-shadow: 0 10px 40px rgba(74, 144, 226, 0.25);
+  box-shadow: 0 10px 40px rgba(24, 144, 255, 0.25);
 }
 
 .welcome-banner.compact {

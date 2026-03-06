@@ -186,7 +186,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage, ElMessageBox } from '@/utils/elementCompat';
 import { BmCard, BmButton, BmModal, BmInput, BmSwitch } from '@adminplus/ui-vue';
 import { createDept, deleteDept, getDeptTree, updateDept } from '@/api/dept';
 

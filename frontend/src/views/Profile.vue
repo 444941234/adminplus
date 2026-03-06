@@ -191,8 +191,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
-import { UserCard, BmCard, BmButton, BmModal, BmInput, BmRadio, BmSelect } from '@adminplus/ui-vue';
+import { ElMessage } from '@/utils/elementCompat';
+import { UserCard, BmCard, BmButton, BmModal, BmInput, BmRadio, BmRadioGroup, BmSelect } from '@adminplus/ui-vue';
 import type { UserInfo as UserCardInfo } from '@adminplus/ui-vue';
 import { useUserStore } from '@/stores/user';
 import {
