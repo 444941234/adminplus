@@ -1,0 +1,264 @@
+// BmTable Component Styles
+// BigModel-style table component with sorting, slots, and theme support
+
+.bm-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+
+  // Custom scrollbar
+  @include custom-scrollbar(8px, var(--text-tertiary));
+}
+
+.bm-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: 14px;
+  color: var(--text-primary);
+
+  // Header styles
+  &__header-cell {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border-bottom: 2px solid var(--border-color);
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+
+    &.is-sortable {
+      cursor: pointer;
+      user-select: none;
+
+      &:hover {
+        background: var(--bg-tertiary);
+        color: var(--primary-color);
+      }
+    }
+
+    &.is-left {
+      text-align: left;
+    }
+
+    &.is-center {
+      text-align: center;
+    }
+
+    &.is-right {
+      text-align: right;
+    }
+  }
+
+  &__header-content {
+    display: flex;
+    align-items: center;
+    justify-content: inherit;
+    gap: 8px;
+  }
+
+  &__header-label {
+    flex-shrink: 0;
+  }
+
+  &__sort-icon {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    color: var(--text-tertiary);
+    transition: color var(--transition-fast);
+  }
+
+  // Sort icon states
+  .sort-icon {
+    &--default {
+      opacity: 0.5;
+    }
+
+    &--asc,
+    &--desc {
+      opacity: 1;
+      color: var(--primary-color);
+      font-weight: bold;
+    }
+  }
+
+  // Row styles
+  &__row {
+    transition: all var(--transition-fast);
+    border-bottom: 1px solid var(--border-light);
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    // Hover effect
+    &.is-hover,
+    &:hover {
+      background: var(--bg-secondary);
+    }
+
+    // Stripe effect
+    .is-stripe &:nth-child(even) {
+      background: var(--bg-tertiary);
+
+      &:hover {
+        background: var(--bg-secondary);
+      }
+    }
+  }
+
+  // Cell styles
+  &__cell {
+    padding: 12px 16px;
+    text-align: left;
+    color: var(--text-primary);
+    border-right: 1px solid transparent;
+
+    &.is-left {
+      text-align: left;
+    }
+
+    &.is-center {
+      text-align: center;
+    }
+
+    &.is-right {
+      text-align: right;
+    }
+  }
+
+  &__cell-text {
+    display: block;
+    @include text-ellipsis();
+  }
+
+  // Border variant
+  .is-border & {
+    th,
+    td {
+      border-right: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+
+    th {
+      border-bottom: 2px solid var(--border-color);
+    }
+  }
+
+  // Empty state
+  &__empty-row {
+    background: var(--bg-secondary);
+  }
+
+  &__empty-cell {
+    padding: 40px 16px;
+  }
+
+  &__empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--text-tertiary);
+  }
+
+  .empty-icon {
+    font-size: 48px;
+    opacity: 0.5;
+  }
+
+  .empty-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+}
+
+// Dark mode support
+@media (prefers-color-scheme: dark) {
+  .bm-table {
+    &__header-cell {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+
+      &.is-sortable:hover {
+        background: var(--bg-secondary);
+        color: var(--primary-light);
+      }
+    }
+
+    &__row {
+      border-bottom-color: var(--border-dark);
+
+      &.is-hover,
+      &:hover {
+        background: var(--bg-tertiary);
+      }
+    }
+
+    .is-stripe &:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+
+      &:hover {
+        background: var(--bg-tertiary);
+      }
+    }
+  }
+}
+
+// Additional dark mode class support
+.dark {
+  .bm-table {
+    &__header-cell {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+
+      &.is-sortable:hover {
+        background: var(--bg-secondary);
+        color: var(--primary-light);
+      }
+    }
+
+    &__row {
+      border-bottom-color: var(--border-dark);
+
+      &.is-hover,
+      &:hover {
+        background: var(--bg-tertiary);
+      }
+    }
+
+    .is-stripe &:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+
+      &:hover {
+        background: var(--bg-tertiary);
+      }
+    }
+  }
+}
+
+// Responsive design
+@include mobile {
+  .bm-table {
+    font-size: 13px;
+
+    &__header-cell,
+    &__cell {
+      padding: 8px 12px;
+    }
+  }
+}
