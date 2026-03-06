@@ -3,25 +3,22 @@
     <el-row :gutter="24">
       <!-- 左侧部门树 -->
       <el-col :xs="24" :sm="24" :md="7" :lg="6" :xl="6">
-        <el-card class="dept-tree-card">
+        <BmCard class="dept-tree-card">
           <template #header>
             <div class="card-header">
               <span class="card-title">部门列表</span>
-              <el-button link type="primary" @click="handleResetDept">
+              <BmButton type="text" @click="handleResetDept">
                 重置
-              </el-button>
+              </BmButton>
             </div>
           </template>
-          <el-input
+          <BmInput
             v-model="deptFilterText"
             class="dept-filter"
             clearable
             placeholder="搜索部门"
-          >
-            <template #prefix>
-              <el-icon><Search /></el-icon>
-            </template>
-          </el-input>
+            prefix-icon="🔍"
+          />
           <el-tree
             ref="deptTreeRef"
             :data="deptTreeData"
@@ -34,7 +31,7 @@
           >
             <template #default="{ node, data }">
               <span class="dept-tree-node">
-                <el-icon><OfficeBuilding /></el-icon>
+                <span class="dept-icon">🏢</span>
                 <span class="dept-name">{{ node.label }}</span>
                 <span v-if="data.children && data.children.length > 0" class="dept-count">
                   ({{ data.children.length }})
@@ -42,132 +39,140 @@
               </span>
             </template>
           </el-tree>
-        </el-card>
+        </BmCard>
       </el-col>
 
       <!-- 右侧用户列表 -->
       <el-col :xs="24" :sm="24" :md="17" :lg="18" :xl="18">
-        <el-card class="user-list-card">
+        <BmCard class="user-list-card">
           <template #header>
             <div class="card-header">
               <span class="card-title">用户管理</span>
-              <el-button type="primary" @click="handleAdd">
-                <el-icon><Plus /></el-icon>
+              <BmButton type="primary" @click="handleAdd">
+                <span class="btn-icon">➕</span>
                 新增用户
-              </el-button>
+              </BmButton>
             </div>
           </template>
 
           <!-- 搜索表单 -->
           <el-form :inline="true" :model="queryForm" class="search-form">
             <el-form-item label="用户名">
-              <el-input
+              <BmInput
                 v-model="queryForm.keyword"
                 clearable
                 placeholder="请输入用户名"
               />
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="handleSearch">
-                <el-icon><Search /></el-icon>
+              <BmButton type="primary" @click="handleSearch">
+                <span class="btn-icon">🔍</span>
                 搜索
-              </el-button>
-              <el-button @click="handleReset">
-                <el-icon><Refresh /></el-icon>
+              </BmButton>
+              <BmButton @click="handleReset">
+                <span class="btn-icon">🔄</span>
                 重置
-              </el-button>
+              </BmButton>
             </el-form-item>
           </el-form>
 
           <!-- 当前选中的部门提示 -->
-          <el-alert
-            v-if="selectedDeptName"
-            :closable="false"
-            :title="`当前筛选部门: ${selectedDeptName}`"
-            class="dept-alert"
-            type="info"
-          />
+          <div v-if="selectedDeptName" class="dept-alert">
+            <span class="alert-icon">ℹ️</span>
+            <span>当前筛选部门: {{ selectedDeptName }}</span>
+          </div>
 
           <div class="table-container">
-            <el-table
-              v-loading="loading"
+            <BmTable
+              v-if="!loading && tableData.length > 0"
+              :columns="tableColumns"
               :data="tableData"
-              border
+              :border="true"
+              :stripe="true"
             >
-              <el-table-column label="ID" prop="id" width="80" />
-              <el-table-column label="用户名" prop="username" width="120" />
-              <el-table-column label="昵称" prop="nickname" width="120" />
-              <el-table-column label="所属部门" prop="deptName" width="150">
-                <template #default="{ row }">
-                  <el-tag v-if="row.deptName" size="small" type="info">
-                    {{ row.deptName }}
-                  </el-tag>
-                  <span v-else class="empty-text">-</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="邮箱" prop="email" width="180" />
-              <el-table-column label="手机号" prop="phone" width="130" />
-              <el-table-column label="角色" width="180">
-                <template #default="{ row }">
-                  <el-tag
+              <template #deptName="{ row }">
+                <BmBadge v-if="row.deptName" type="info">
+                  {{ row.deptName }}
+                </BmBadge>
+                <span v-else class="empty-text">-</span>
+              </template>
+              <template #roles="{ row }">
+                <span v-if="row.roles && row.roles.length > 0">
+                  <BmBadge
                     v-for="role in row.roles"
                     :key="role"
-                    size="small"
-                    class="role-tag"
+                    type="primary"
+                    class="role-badge"
                   >
                     {{ role }}
-                  </el-tag>
-                  <span v-if="!row.roles || row.roles.length === 0" class="empty-text">无</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="状态" width="100">
-                <template #default="{ row }">
-                  <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-                    {{ row.status === 1 ? '正常' : '禁用' }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column fixed="right" label="操作" width="320">
-                <template #default="{ row }">
-                  <el-button size="small" type="primary" @click="handleEdit(row)">
+                  </BmBadge>
+                </span>
+                <span v-else class="empty-text">无</span>
+              </template>
+              <template #status="{ row }">
+                <BmBadge :type="row.status === 1 ? 'success' : 'danger'">
+                  {{ row.status === 1 ? '正常' : '禁用' }}
+                </BmBadge>
+              </template>
+              <template #operations="{ row }">
+                <div class="operation-buttons">
+                  <BmButton size="small" type="primary" @click="handleEdit(row)">
                     编辑
-                  </el-button>
-                  <el-button size="small" type="info" @click="handleAssignRole(row)">
+                  </BmButton>
+                  <BmButton size="small" type="default" @click="handleAssignRole(row)">
                     分配角色
-                  </el-button>
-                  <el-button size="small" type="warning" @click="handleStatus(row)">
+                  </BmButton>
+                  <BmButton size="small" type="warning" @click="handleStatus(row)">
                     {{ row.status === 1 ? '禁用' : '启用' }}
-                  </el-button>
-                  <el-button size="small" type="danger" @click="handleDelete(row)">
+                  </BmButton>
+                  <BmButton size="small" type="danger" @click="handleDelete(row)">
                     删除
-                  </el-button>
-                </template>
-              </el-table-column>
-            </el-table>
+                  </BmButton>
+                </div>
+              </template>
+            </BmTable>
+
+            <!-- Loading state -->
+            <div v-if="loading" class="loading-state">
+              <span class="loading-spinner"></span>
+              <span>加载中...</span>
+            </div>
+
+            <!-- Empty state -->
+            <div v-if="!loading && tableData.length === 0" class="empty-state">
+              <span class="empty-icon">📭</span>
+              <span class="empty-text">暂无数据</span>
+            </div>
           </div>
 
           <!-- 分页 -->
           <div class="pagination-container">
-            <el-pagination
-              v-model:current-page="queryForm.page"
+            <BmPagination
+              v-model:current="queryForm.page"
               v-model:page-size="queryForm.size"
               :page-sizes="[10, 20, 50, 100]"
               :total="total"
-              layout="total, sizes, prev, pager, next, jumper"
-              @size-change="getData"
+              :show-total="true"
+              :show-jumper="true"
               @current-change="getData"
+              @size-change="getData"
             />
           </div>
-        </el-card>
+        </BmCard>
       </el-col>
     </el-row>
 
     <!-- 新增/编辑对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
+    <BmModal
+      v-model:visible="dialogVisible"
       :title="dialogTitle"
       width="500px"
-      @close="handleDialogClose"
+      :show-cancel-button="true"
+      :show-confirm-button="true"
+      cancel-text="取消"
+      confirm-text="确定"
+      @confirm="handleSubmit"
+      @cancel="dialogVisible = false"
     >
       <el-form
         ref="formRef"
@@ -176,21 +181,21 @@
         label-width="80px"
       >
         <el-form-item label="用户名" prop="username">
-          <el-input
+          <BmInput
             v-model="form.username"
             placeholder="请输入用户名"
             :disabled="isEdit"
           />
         </el-form-item>
         <el-form-item v-if="!isEdit" label="密码" prop="password">
-          <el-input
+          <BmInput
             v-model="form.password"
             type="password"
             placeholder="请输入密码"
           />
         </el-form-item>
         <el-form-item label="昵称" prop="nickname">
-          <el-input
+          <BmInput
             v-model="form.nickname"
             placeholder="请输入昵称"
           />
@@ -207,64 +212,51 @@
           />
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
-          <el-input
+          <BmInput
             v-model="form.email"
             placeholder="请输入邮箱"
           />
         </el-form-item>
         <el-form-item label="手机号" prop="phone">
-          <el-input
+          <BmInput
             v-model="form.phone"
             placeholder="请输入手机号"
           />
         </el-form-item>
       </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          :loading="submitLoading"
-          @click="handleSubmit"
-        >
-          确定
-        </el-button>
-      </template>
-    </el-dialog>
+    </BmModal>
 
     <!-- 分配角色对话框 -->
-    <el-dialog
-      v-model="roleDialogVisible"
+    <BmModal
+      v-model:visible="roleDialogVisible"
       title="分配角色"
       width="400px"
-      @close="handleRoleDialogClose"
+      :show-cancel-button="true"
+      :show-confirm-button="true"
+      cancel-text="取消"
+      confirm-text="确定"
+      :confirm-button-loading="roleSubmitLoading"
+      @confirm="handleRoleSubmit"
+      @cancel="roleDialogVisible = false"
     >
-      <el-checkbox-group v-model="selectedRoles">
-        <el-checkbox
+      <div class="role-checkbox-group">
+        <BmCheckbox
           v-for="role in allRoles"
           :key="role.id"
+          :model-value="selectedRoles.includes(role.id)"
           :label="role.id"
+          @update:model-value="toggleRole(role.id)"
         >
           {{ role.name }}
-        </el-checkbox>
-      </el-checkbox-group>
-      <template #footer>
-        <el-button @click="roleDialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          :loading="roleSubmitLoading"
-          @click="handleRoleSubmit"
-        >
-          确定
-        </el-button>
-      </template>
-    </el-dialog>
+        </BmCheckbox>
+      </div>
+    </BmModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue';
-import { ElMessage } from 'element-plus';
-import { OfficeBuilding, Plus, Refresh, Search } from '@element-plus/icons-vue';
+import { ElMessage, ElTree as ElTreeType } from 'element-plus';
 import {
   assignRoles,
   createUser,
@@ -277,6 +269,8 @@ import {
 import { getRoleList } from '@/api/role';
 import { getDeptTree } from '@/api/dept';
 import { useConfirm } from '@/composables/useConfirm';
+import { BmCard, BmButton, BmInput, BmTable, BmPagination, BmModal, BmBadge, BmCheckbox } from '@adminplus/ui-vue';
+import type { Column } from '@adminplus/ui-vue';
 
 defineOptions({
   name: 'User'
@@ -297,7 +291,7 @@ const currentUserId = ref(null);
 
 // 部门树相关
 const deptTreeData = ref([]);
-const deptTreeRef = ref();
+const deptTreeRef = ref<InstanceType<typeof ElTreeType>>();
 const deptFilterText = ref('');
 const selectedDeptName = ref('');
 
@@ -332,6 +326,19 @@ const rules = {
   email: [{ type: 'email', message: '请输入正确的邮箱', trigger: 'blur' }],
   phone: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }],
 };
+
+// 表格列定义
+const tableColumns = ref<Column[]>([
+  { label: 'ID', prop: 'id', width: '80px', align: 'center' },
+  { label: '用户名', prop: 'username', width: '120px' },
+  { label: '昵称', prop: 'nickname', width: '120px' },
+  { label: '所属部门', prop: 'deptName', width: '150px' },
+  { label: '邮箱', prop: 'email', width: '180px' },
+  { label: '手机号', prop: 'phone', width: '130px' },
+  { label: '角色', prop: 'roles', width: '180px' },
+  { label: '状态', prop: 'status', width: '100px', align: 'center' },
+  { label: '操作', prop: 'operations', width: '320px', align: 'center' },
+]);
 
 // 确认操作
 const confirmDelete = useConfirm({
@@ -496,6 +503,15 @@ const handleAssignRole = async (row: any) => {
   }
 };
 
+const toggleRole = (roleId: number) => {
+  const index = selectedRoles.value.indexOf(roleId);
+  if (index > -1) {
+    selectedRoles.value.splice(index, 1);
+  } else {
+    selectedRoles.value.push(roleId);
+  }
+};
+
 const handleRoleDialogClose = () => {
   selectedRoles.value = [];
 };
@@ -530,12 +546,12 @@ onMounted(() => {
 .user-list-card {
   @include card-style;
 
-  :deep(.el-card__header) {
+  :deep(.bm-card__header) {
     border-bottom: 1px solid var(--border-color);
     padding: var(--space-md) var(--space-lg);
   }
 
-  :deep(.el-card__body) {
+  :deep(.bm-card__body) {
     padding: var(--space-lg);
   }
 }
@@ -552,6 +568,10 @@ onMounted(() => {
   }
 }
 
+.btn-icon {
+  font-size: 16px;
+}
+
 .dept-filter {
   margin-bottom: var(--space-md);
 }
@@ -561,6 +581,10 @@ onMounted(() => {
   align-items: center;
   gap: var(--space-xs);
   flex: 1;
+
+  .dept-icon {
+    font-size: 16px;
+  }
 
   .dept-name {
     flex: 1;
@@ -577,24 +601,95 @@ onMounted(() => {
 }
 
 .dept-alert {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   margin-bottom: var(--space-md);
+  background: var(--primary-light, rgba(22, 93, 255, 0.1));
+  border: 1px solid var(--primary-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 14px;
+
+  .alert-icon {
+    font-size: 16px;
+  }
 }
 
 .table-container {
   margin-bottom: var(--space-md);
+  min-height: 300px;
+
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2xl);
+    gap: var(--space-md);
+    color: var(--text-secondary);
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border-color);
+      border-top-color: var(--primary-color);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-2xl);
+    gap: var(--space-md);
+    color: var(--text-tertiary);
+
+    .empty-icon {
+      font-size: 48px;
+      opacity: 0.5;
+    }
+
+    .empty-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty-text {
   color: var(--text-placeholder);
 }
 
-.role-tag {
+.role-badge {
   margin-right: var(--space-xs);
+}
+
+.operation-buttons {
+  display: flex;
+  gap: var(--space-xs);
+  flex-wrap: wrap;
 }
 
 .pagination-container {
   display: flex;
   justify-content: flex-end;
+}
+
+.role-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
 
 @media (max-width: 767px) {
@@ -612,9 +707,17 @@ onMounted(() => {
   .pagination-container {
     justify-content: center;
 
-    :deep(.el-pagination) {
+    :deep(.bm-pagination) {
       flex-wrap: wrap;
       justify-content: center;
+    }
+  }
+
+  .operation-buttons {
+    flex-direction: column;
+
+    .bm-button {
+      width: 100%;
     }
   }
 }
