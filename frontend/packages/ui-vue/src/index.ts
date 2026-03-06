@@ -18,9 +18,9 @@ export { default as ActionCard } from './components/card/ActionCard.vue';
 // 导出 BigModel 组件
 export * from './components/bigmodel';
 
-// 导出常用反馈组件别名（用于替换 Element Plus）
-export { BmToast, toast, useToast } from './components/bigmodel/feedback/useToast';
-export { BmConfirm, confirmDialog, useConfirm } from './components/bigmodel/feedback/useConfirm';
+// 导出常用反馈 composables（用于替换 Element Plus）
+export { useToast, toast } from './components/bigmodel/feedback/useToast';
+export { useConfirm, confirmDialog } from './components/bigmodel/feedback/useConfirm';
 
 // 导出类型
 export type { MenuItem } from './components/layout/SidebarMenuItem.vue';
