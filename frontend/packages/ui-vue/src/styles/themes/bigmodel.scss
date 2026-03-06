@@ -1,5 +1,5 @@
 // BigModel Style Theme Variables
-.theme-bigmodel {
+:root {
   // Background colors
   --bm-bg-page: #f5f7fa;
   --bm-bg-white: #ffffff;
@@ -97,4 +97,10 @@
   --bm-font-weight-normal: 400;
   --bm-font-weight-medium: 500;
   --bm-font-weight-semibold: 600;
+}
+
+// Theme class for explicit theme switching
+.theme-bigmodel {
+  // All variables are already defined at :root, this class can be used for
+  // explicit theme switching or to override variables when needed
 }
