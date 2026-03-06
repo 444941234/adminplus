@@ -1,0 +1,87 @@
+// BigModel Style Theme Variables
+:root {
+  // Background colors
+  --bm-bg-page: #f5f7fa;
+  --bm-bg-white: #ffffff;
+  --bm-bg-hover: #f8f9fb;
+  --bm-bg-active: #eff0f5;
+  --bm-bg-disabled: #f7f8fa;
+
+  // Text colors
+  --bm-text-primary: #1d2129;
+  --bm-text-secondary: #4e5969;
+  --bm-text-tertiary: #86909c;
+  --bm-text-disabled: #c9cdd4;
+
+  // Primary brand color
+  --bm-primary: #165dff;
+  --bm-primary-hover: #4080ff;
+  --bm-primary-active: #0e42d2;
+  --bm-primary-light: #e8eaff;
+
+  // Functional colors
+  --bm-success: #00b42a;
+  --bm-success-light: #e8ffea;
+  --bm-warning: #ff7d00;
+  --bm-warning-light: #fff7e8;
+  --bm-danger: #f53f3f;
+  --bm-danger-light: #ffece8;
+  --bm-info: #165dff;
+  --bm-info-light: #e8eaff;
+
+  // Border colors
+  --bm-border: #e5e6eb;
+  --bm-border-light: #f2f3f5;
+  --bm-border-dark: #c9cdd4;
+
+  // Shadow
+  --bm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --bm-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --bm-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  // Border radius
+  --bm-radius-xs: 2px;
+  --bm-radius-sm: 4px;
+  --bm-radius-md: 8px;
+  --bm-radius-lg: 12px;
+
+  // Spacing
+  --bm-space-xs: 4px;
+  --bm-space-sm: 8px;
+  --bm-space-md: 12px;
+  --bm-space-lg: 16px;
+  --bm-space-xl: 20px;
+  --bm-space-2xl: 24px;
+
+  // Layout
+  --bm-sidebar-width: 200px;
+  --bm-sidebar-collapsed-width: 64px;
+  --bm-header-height: 56px;
+
+  // Transitions
+  --bm-transition-fast: 100ms ease;
+  --bm-transition-normal: 200ms ease;
+
+  // Z-index
+  --bm-z-sidebar: 100;
+  --bm-z-header: 99;
+  --bm-z-modal: 1000;
+  --bm-z-dropdown: 1050;
+  --bm-z-toast: 1100;
+}
+
+// Typography
+:root {
+  --bm-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                    'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --bm-font-size-xs: 12px;
+  --bm-font-size-sm: 13px;
+  --bm-font-size-base: 14px;
+  --bm-font-size-md: 16px;
+  --bm-font-size-lg: 18px;
+  --bm-font-size-xl: 20px;
+
+  --bm-font-weight-normal: 400;
+  --bm-font-weight-medium: 500;
+  --bm-font-weight-semibold: 600;
+}
