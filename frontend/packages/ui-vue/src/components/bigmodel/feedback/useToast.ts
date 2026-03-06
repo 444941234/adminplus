@@ -1,4 +1,4 @@
-import { ref, render } from 'vue';
+import { createVNode, render } from 'vue';
 import BmToast from './BmToast.vue';
 
 interface ToastOptions {
@@ -34,7 +34,8 @@ const initToast = () => {
   container = document.createElement('div');
   document.body.appendChild(container);
 
-  const { vnode } = render(BmToast, container);
+  const vnode = createVNode(BmToast);
+  render(vnode, container);
   toastInstance = vnode.component?.exposed as ToastInstance;
 
   return toastInstance;
