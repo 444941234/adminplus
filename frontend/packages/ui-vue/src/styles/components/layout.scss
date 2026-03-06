@@ -28,3 +28,6 @@
   overflow-y: auto;
   @include custom-scrollbar;
 }
+
+// BigModel Sidebar 组件样式
+// BmSidebar 使用 scoped 样式，这里提供全局样式覆盖（如果需要）
