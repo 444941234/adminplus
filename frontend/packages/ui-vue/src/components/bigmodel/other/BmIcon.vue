@@ -7,6 +7,8 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
+defineOptions({ name: 'BmIcon' });
+
 interface Props {
   icon: string;
   size?: 'xs' | 'sm' | 'md' | 'lg';
