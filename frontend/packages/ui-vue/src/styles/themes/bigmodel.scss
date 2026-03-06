@@ -1,5 +1,5 @@
 // BigModel Style Theme Variables
-:root {
+.theme-bigmodel {
   // Background colors
   --bm-bg-page: #f5f7fa;
   --bm-bg-white: #ffffff;
@@ -29,15 +29,26 @@
   --bm-info: #165dff;
   --bm-info-light: #e8eaff;
 
+  // Gradients
+  --bm-primary-gradient: linear-gradient(135deg, #165dff 0%, #4080ff 100%);
+  --bm-success-gradient: linear-gradient(135deg, #00b42a 0%, #2dbf55 100%);
+  --bm-warning-gradient: linear-gradient(135deg, #ff7d00 0%, #ff9a2a 100%);
+  --bm-danger-gradient: linear-gradient(135deg, #f53f3f 0%, #ff6b6b 100%);
+  --bm-card-gradient: linear-gradient(135deg, #ffffff 0%, #f5f7fa 100%);
+
   // Border colors
   --bm-border: #e5e6eb;
   --bm-border-light: #f2f3f5;
   --bm-border-dark: #c9cdd4;
 
   // Shadow
+  --bm-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
   --bm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --bm-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
   --bm-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --bm-shadow-xl: 0 20px 50px rgba(0, 0, 0, 0.2);
+  --bm-shadow-2xl: 0 25px 60px rgba(0, 0, 0, 0.25);
+  --bm-shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.06);
 
   // Border radius
   --bm-radius-xs: 2px;
@@ -51,16 +62,20 @@
   --bm-space-md: 12px;
   --bm-space-lg: 16px;
   --bm-space-xl: 20px;
-  --bm-space-2xl: 24px;
+  --bm-space-2xl: 48px;
 
   // Layout
   --bm-sidebar-width: 200px;
   --bm-sidebar-collapsed-width: 64px;
   --bm-header-height: 56px;
+  --bm-footer-height: 50px;
 
   // Transitions
   --bm-transition-fast: 100ms ease;
   --bm-transition-normal: 200ms ease;
+  --bm-transition-slow: 300ms ease;
+  --bm-transition-slower: 500ms ease;
+  --bm-transition-bounce: 500ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
   // Z-index
   --bm-z-sidebar: 100;
@@ -68,10 +83,8 @@
   --bm-z-modal: 1000;
   --bm-z-dropdown: 1050;
   --bm-z-toast: 1100;
-}
 
-// Typography
-:root {
+  // Typography
   --bm-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
                     'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
   --bm-font-size-xs: 12px;
