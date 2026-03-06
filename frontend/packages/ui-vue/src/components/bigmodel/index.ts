@@ -7,6 +7,9 @@ export * from './card';
 // Data display components
 export * from './data';
 
+// Feedback components
+export * from './feedback';
+
 // Form components
 export * from './form';
 

@@ -1,6 +1,6 @@
-import BmModal from './BmModal.vue';
-import BmToast from './BmToast.vue';
-
-export { BmModal, BmToast };
-export { useToast } from './useToast';
+export { default as BmModal } from './BmModal.vue';
+export { default as BmToast } from './BmToast.vue';
+export { default as BmConfirm } from './BmConfirm.vue';
+export { useToast, toast } from './useToast';
+export { useConfirm, confirmDialog } from './useConfirm';
 export default BmModal;
