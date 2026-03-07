@@ -11,6 +11,92 @@
 // 引入通用页面样式
 @use './views.scss';
 
+// ===== CSS 自定义属性（动态主题） =====
+:root {
+  // 主色调
+  --primary-color: #{$primary-color};
+  --primary-light: #{$primary-light};
+  --primary-lighter: #{$primary-lighter};
+  --primary-dark: #{$primary-dark};
+
+  // 背景色
+  --bg-color: #{$bg-color};
+  --bg-card: #{$bg-white};
+  --bg-hover: #{$bg-hover};
+  --bg-active: #{$bg-active};
+
+  // 文字色
+  --text-primary: #{$text-primary};
+  --text-regular: #{$text-regular};
+  --text-secondary: #{$text-secondary};
+  --text-placeholder: #{$text-placeholder};
+
+  // 边框色
+  --border-color: #{$border-color};
+  --border-light: #{$border-light};
+  --border-dark: #{$border-dark};
+
+  // 功能色
+  --success-color: #{$success-color};
+  --warning-color: #{$warning-color};
+  --danger-color: #{$danger-color};
+  --info-color: #{$info-color};
+
+  // 侧边栏
+  --sidebar-bg: #{$sidebar-bg};
+  --sidebar-text: #{$sidebar-text};
+  --sidebar-active-bg: #{$sidebar-active-bg};
+  --sidebar-active-text: #{$sidebar-active-text};
+  --sidebar-hover-bg: #{$sidebar-hover-bg};
+  --sidebar-width: #{$sidebar-width};
+  --sidebar-collapsed-width: #{$sidebar-collapsed-width};
+
+  // 头部
+  --header-bg: #{$header-bg};
+  --header-height: #{$header-height};
+  --header-border: #{$header-border};
+
+  // 阴影
+  --shadow-sm: #{$shadow-sm};
+  --shadow-base: #{$shadow-base};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+
+  // 圆角
+  --radius-sm: #{$radius-sm};
+  --radius-base: #{$radius-base};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+
+  // 间距
+  --spacing-xs: #{$spacing-xs};
+  --spacing-sm: #{$spacing-sm};
+  --spacing-md: #{$spacing-md};
+  --spacing-lg: #{$spacing-lg};
+
+  // 过渡
+  --transition-fast: #{$transition-fast};
+  --transition-base: #{$transition-base};
+}
+
+// ===== 深色主题变量 =====
+[data-theme="dark"],
+.theme-dark {
+  --bg-color: #{$dark-bg-color};
+  --bg-card: #{$dark-bg-card};
+  --bg-hover: #{$dark-bg-hover};
+  --text-primary: #{$dark-text-primary};
+  --text-secondary: #{$dark-text-secondary};
+  --border-color: #334155;
+  --sidebar-bg: #{$dark-sidebar-bg};
+  --sidebar-text: #{$dark-sidebar-text};
+  --sidebar-active-bg: #{$dark-sidebar-active-bg};
+  --sidebar-active-text: #{$dark-sidebar-active-text};
+  --sidebar-hover-bg: #{$dark-sidebar-hover-bg};
+  --header-bg: #{$dark-bg-card};
+  --header-border: #334155;
+}
+
 // ===== 全局基础样式 =====
 * {
   box-sizing: border-box;
@@ -23,8 +109,8 @@ html, body {
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: $font-size-base;
-  color: $text-primary;
-  background-color: $bg-color;
+  color: var(--text-primary);
+  background-color: var(--bg-color);
   line-height: $line-height-base;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -58,16 +144,16 @@ html, body {
 
 // ===== 链接样式 =====
 a {
-  color: $primary-color;
+  color: var(--primary-color);
   text-decoration: none;
   transition: color $transition-fast;
 
   &:hover {
-    color: $primary-light;
+    color: var(--primary-light);
   }
 
   &:active {
-    color: $primary-dark;
+    color: var(--primary-dark);
   }
 }
 
@@ -97,11 +183,9 @@ a {
   gap: $spacing-sm;
 }
 
-// 页面容器 - 使用 views.scss 中的定义
-
 // 卡片容器
 .card-container {
-  background-color: $bg-white;
+  background-color: var(--bg-card);
   border-radius: $radius-md;
   box-shadow: $shadow-sm;
   padding: $spacing-lg;
@@ -115,7 +199,7 @@ a {
   align-items: center;
   justify-content: center;
   padding: $spacing-3xl 0;
-  color: $text-secondary;
+  color: var(--text-secondary);
 }
 
 // 加载状态
@@ -161,23 +245,23 @@ a {
 }
 
 .text-primary {
-  color: $primary-color;
+  color: var(--primary-color);
 }
 
 .text-success {
-  color: $success-color;
+  color: var(--success-color);
 }
 
 .text-warning {
-  color: $warning-color;
+  color: var(--warning-color);
 }
 
 .text-danger {
-  color: $danger-color;
+  color: var(--danger-color);
 }
 
 .text-secondary {
-  color: $text-secondary;
+  color: var(--text-secondary);
 }
 
 .mt-sm { margin-top: $spacing-sm; }

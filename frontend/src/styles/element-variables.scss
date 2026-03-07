@@ -1,57 +1,58 @@
 // ============================================
-// Element Plus 主题变量 - 智谱AI风格
+// Element Plus 主题变量 - 现代设计风格
+// 基于 UI 设计规范
 // ============================================
 
 @forward 'element-plus/theme-chalk/src/common/var.scss' with (
-  // 主色调 - 智谱AI风格科技蓝
+  // 主色调 - 现代蓝 #3B82F6
   $colors: (
     'primary': (
-      'base': #1890ff,
+      'base': #3B82F6,
     ),
     'success': (
-      'base': #52c41a,
+      'base': #10B981,
     ),
     'warning': (
-      'base': #fa8c16,
+      'base': #F59E0B,
     ),
     'danger': (
-      'base': #ff4d4f,
+      'base': #EF4444,
     ),
     'error': (
-      'base': #ff4d4f,
+      'base': #EF4444,
     ),
     'info': (
-      'base': #1890ff,
+      'base': #3B82F6,
     ),
   ),
 
   // 文字颜色
   $text-color: (
-    'primary': #1A1A1A,
-    'regular': #333333,
-    'secondary': #666666,
-    'placeholder': #999999,
-    'disabled': #CCCCCC,
+    'primary': #1F2937,
+    'regular': #374151,
+    'secondary': #6B7280,
+    'placeholder': #9CA3AF,
+    'disabled': #D1D5DB,
   ),
 
   // 边框颜色
   $border-color: (
     '': #E5E7EB,
-    'light': #F0F0F0,
-    'lighter': #F2F6FC,
+    'light': #F3F4F6,
+    'lighter': #F8FAFC,
     'extra-light': #FAFAFA,
     'dark': #D1D5DB,
-    'darker': #C0C4CC,
+    'darker': #9CA3AF,
   ),
 
   // 背景颜色
   $fill-color: (
-    '': #F7F8FA,
-    'light': #F5F7FA,
-    'lighter': #FAFBFC,
+    '': #F1F5F9,
+    'light': #F1F5F9,
+    'lighter': #F8FAFC,
     'extra-light': #FAFAFA,
-    'dark': #EBEDF0,
-    'darker': #E6E8EB,
+    'dark': #E2E8F0,
+    'darker': #CBD5E1,
     'blank': #FFFFFF,
   ),
 
@@ -70,8 +71,8 @@
     'large': 18px,
     'medium': 16px,
     'base': 14px,
-    'small': 13px,
-    'extra-small': 12px,
+    'small': 12px,
+    'extra-small': 11px,
   ),
 
   // 阴影
@@ -84,17 +85,20 @@
 
   // 过渡动画
   $transition-duration: (
-    '': 0.3s,
+    '': 0.2s,
     'fast': 0.15s,
   ),
 );
 
-// 覆盖特定组件样式
+// ===== 组件特定样式覆盖 =====
+
 // 按钮
-$button-font-weight: 600;
+$button-font-weight: 500;
+$button-border-radius: 8px;
 
 // 输入框
 $input-border-radius: 8px;
+$input-height: 40px;
 
 // 卡片
 $card-border-radius: 12px;
@@ -102,6 +106,7 @@ $card-padding: 20px;
 
 // 对话框
 $dialog-border-radius: 16px;
+$dialog-padding-primary: 24px;
 
 // 菜单
 $menu-item-height: 48px;
@@ -110,9 +115,24 @@ $menu-vertical-item-padding: 0 16px;
 
 // 表格
 $table-border-color: #E5E7EB;
-$table-header-bg-color: #F7F8FA;
-$table-row-hover-bg-color: #F5F7FA;
+$table-header-bg-color: #F8FAFC;
+$table-row-hover-bg-color: #F1F5F9;
 
 // 分页
 $pagination-font-size: 14px;
 $pagination-button-border-radius: 8px;
+
+// 标签页
+$tabs-height: 40px;
+
+// 消息提示
+$message-radius: 8px;
+
+// 通知
+$notification-radius: 12px;
+
+// 弹出框
+$popover-border-radius: 12px;
+
+// 下拉菜单
+$dropdown-radius: 8px;

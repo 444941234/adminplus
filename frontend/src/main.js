@@ -1,6 +1,8 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import '@adminplus/ui-vue/styles/index.scss' // 导入 UI 组件库样式
+import ElementPlus from 'element-plus'
+import 'element-plus/dist/index.css'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import router from './router'
 import App from './App.vue'
 import { setupDirectives } from './directives'
@@ -18,6 +20,12 @@ setupDirectives(app)
 
 app.use(pinia)
 app.use(router)
+app.use(ElementPlus)
+
+// 注册 Element Plus 图标
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component)
+}
 
 // 设置全局错误处理
 setupErrorHandler(app)

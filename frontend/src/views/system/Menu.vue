@@ -1,72 +1,37 @@
 <template>
   <div class="menu-page">
-    <BmCard>
+    <el-card>
       <template #header>
         <div class="card-header">
           <span>菜单管理</span>
           <div class="header-actions">
-            <BmButton
-              type="success"
-              @click="handleTemplateAction"
-            >
+            <el-button type="success" @click="handleTemplateAction">
               <span class="icon-magic">✨</span>
               快速添加模板
               <span class="icon-arrow">▼</span>
-            </BmButton>
-            <BmButton
-              type="primary"
-              @click="handleBatchImport"
-            >
+            </el-button>
+            <el-button type="primary" @click="handleBatchImport">
               <span class="icon-upload">↑</span>
               批量导入
-            </BmButton>
-            <BmButton
-              type="primary"
-              @click="handleAdd"
-            >
+            </el-button>
+            <el-button type="primary" @click="handleAdd">
               <span class="icon-plus">+</span>
               新增菜单
-            </BmButton>
+            </el-button>
           </div>
         </div>
       </template>
 
       <!-- 批量操作栏 -->
-      <div
-        v-if="selectedRows.length > 0"
-        class="batch-bar"
-      >
+      <div v-if="selectedRows.length > 0" class="batch-bar">
         <span class="batch-info">已选择 {{ selectedRows.length }} 项</span>
-        <BmButton
-          type="success"
-          size="small"
-          @click="handleBatchEnable"
-        >
-          批量启用
-        </BmButton>
-        <BmButton
-          type="warning"
-          size="small"
-          @click="handleBatchDisable"
-        >
-          批量禁用
-        </BmButton>
-        <BmButton
-          type="danger"
-          size="small"
-          @click="handleBatchDelete"
-        >
-          批量删除
-        </BmButton>
-        <BmButton
-          size="small"
-          @click="handleClearSelection"
-        >
-          取消选择
-        </BmButton>
+        <el-button type="success" size="small" @click="handleBatchEnable">批量启用</el-button>
+        <el-button type="warning" size="small" @click="handleBatchDisable">批量禁用</el-button>
+        <el-button type="danger" size="small" @click="handleBatchDelete">批量删除</el-button>
+        <el-button size="small" @click="handleClearSelection">取消选择</el-button>
       </div>
 
-      <!-- 菜单树表格 (保留 Element Plus 表格因为需要树形结构支持) -->
+      <!-- 菜单树表格 -->
       <el-table
         ref="tableRef"
         v-loading="loading"
@@ -185,36 +150,24 @@
         >
           <template #default="{ row }">
             <div class="action-buttons">
-              <BmButton
-                type="primary"
-                size="small"
-                @click="handleAddChild(row)"
-              >
-                新增子菜单
-              </BmButton>
-              <BmButton
-                type="warning"
-                size="small"
-                @click="handleEdit(row)"
-              >
-                编辑
-              </BmButton>
-              <BmButton
+              <el-button type="primary" size="small" @click="handleAddChild(row)">新增子菜单</el-button>
+              <el-button type="warning" size="small" @click="handleEdit(row)">编辑
+              </el-button>
+              <el-button
                 type="danger"
                 size="small"
                 @click="handleDelete(row)"
               >
                 删除
-              </BmButton>
+              </el-button>
             </div>
           </template>
         </el-table-column>
       </el-table>
-    </BmCard>
+    </el-card>
 
     <!-- 新增/编辑对话框 -->
-    <BmModal
-      v-model:visible="dialogVisible"
+    <el-dialog v-model="dialogVisible"
       :title="dialogTitle"
       width="700px"
       @close="handleDialogClose"
@@ -252,17 +205,17 @@
               label="菜单类型"
               prop="type"
             >
-              <BmRadioGroup v-model="form.type">
-                <BmRadio :value="MENU_TYPE.DIRECTORY">
+              <el-radio-group v-model="form.type">
+                <el-radio :value="MENU_TYPE.DIRECTORY">
                   目录
-                </BmRadio>
-                <BmRadio :value="MENU_TYPE.MENU">
+                </el-radio>
+                <el-radio :value="MENU_TYPE.MENU">
                   菜单
-                </BmRadio>
-                <BmRadio :value="MENU_TYPE.BUTTON">
+                </el-radio>
+                <el-radio :value="MENU_TYPE.BUTTON">
                   按钮
-                </BmRadio>
-              </BmRadioGroup>
+                </el-radio>
+              </el-radio-group>
               <div class="form-tip">
                 <span class="icon-info">ℹ</span>
                 <span>{{ getMenuTypeTip(form.type) }}</span>
@@ -272,7 +225,7 @@
               label="菜单名称"
               prop="name"
             >
-              <BmInput
+              <el-input
                 v-model="form.name"
                 placeholder="请输入菜单名称"
                 clearable
@@ -301,7 +254,7 @@
               label="路由路径"
               prop="path"
             >
-              <BmInput
+              <el-input
                 v-model="form.path"
                 placeholder="如 /system/user（自动填入默认值）"
                 clearable
@@ -312,7 +265,7 @@
               label="组件路径"
               prop="component"
             >
-              <BmInput
+              <el-input
                 v-model="form.component"
                 placeholder="如 system/User（自动填入默认值）"
                 clearable
@@ -324,7 +277,7 @@
               prop="icon"
             >
               <div class="icon-selector">
-                <BmInput
+                <el-input
                   v-model="form.icon"
                   placeholder="选择或输入图标名称"
                   clearable
@@ -336,11 +289,11 @@
                     </el-icon>
                   </template>
                   <template #append>
-                    <BmButton @click="showIconSelector = true">
+                    <el-button @click="showIconSelector = true">
                       选择图标
-                    </BmButton>
+                    </el-button>
                   </template>
-                </BmInput>
+                </el-input>
               </div>
             </el-form-item>
           </el-collapse-item>
@@ -355,7 +308,7 @@
               label="权限标识"
               prop="permKey"
             >
-              <BmInput
+              <el-input
                 v-model="form.permKey"
                 placeholder="如 user:add（自动生成）"
                 clearable
@@ -376,7 +329,7 @@
               label="是否可见"
               prop="visible"
             >
-              <BmSwitch
+              <el-switch
                 v-model="form.visible"
                 :active-value="VISIBLE.SHOWN"
                 :inactive-value="VISIBLE.HIDDEN"
@@ -389,7 +342,7 @@
               label="状态"
               prop="status"
             >
-              <BmSwitch
+              <el-switch
                 v-model="form.status"
                 :active-value="STATUS.ENABLED"
                 :inactive-value="STATUS.DISABLED"
@@ -402,18 +355,18 @@
         </el-collapse>
       </el-form>
       <template #footer>
-        <BmButton @click="dialogVisible = false">
+        <el-button @click="dialogVisible = false">
           取消
-        </BmButton>
-        <BmButton
+        </el-button>
+        <el-button
           type="primary"
           :loading="submitLoading"
           @click="handleSubmit"
         >
           确定
-        </BmButton>
+        </el-button>
       </template>
-    </BmModal>
+    </el-dialog>
 
     <!-- 图标选择器对话框 -->
     <el-dialog
@@ -553,9 +506,8 @@ import { ref, computed, watch, onMounted, onErrorCaptured } from 'vue'
 import {
   ElMessage, ElMessageBox, ElTable, ElTableColumn, ElIcon, ElForm, ElFormItem,
   ElCollapse, ElCollapseItem, ElTreeSelect, ElInputNumber, ElDialog, ElAlert,
-  ElInput, ElButton, ElLoading
+  ElInput, ElButton, ElLoading, ElCard, ElRadio, ElRadioGroup, ElSwitch
 } from 'element-plus'
-import { BmCard, BmButton, BmModal, BmInput, BmRadio, BmRadioGroup, BmSwitch } from '@adminplus/ui-vue'
 import { getIconComponent, Document, Folder, Menu, Grid, Search } from '@/constants/icons'
 
 // Import loading directive

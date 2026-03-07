@@ -1,131 +1,130 @@
 <template>
-  <BmLayout
-    :collapsed="collapsed"
-    @toggle="handleToggle"
-  >
-    <template #sidebar>
-      <AppSidebar
-        :menus="menus"
-        :collapsed="collapsed"
-      />
-    </template>
-
-    <template #header>
-      <AppHeader
-        :user="userInfo"
-        :collapsed="collapsed"
-        @toggle="handleToggle"
-        @command="handleCommand"
-      />
-    </template>
-
-    <router-view />
-  </BmLayout>
+  <el-container class="layout-container">
+    <el-aside :width="collapsed ? '64px' : '220px'" class="layout-aside">
+      <AppSidebar :menus="menus" :collapsed="collapsed" />
+    </el-aside>
+    <el-container class="layout-main-container">
+      <el-header class="layout-header">
+        <AppHeader
+          :user="userInfo"
+          :collapsed="collapsed"
+          @toggle="handleToggle"
+          @command="handleCommand"
+        />
+      </el-header>
+      <el-main class="layout-main">
+        <router-view />
+      </el-main>
+    </el-container>
+  </el-container>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { BmLayout, AppSidebar, AppHeader } from '@adminplus/ui-vue';
-import type { MenuItem, UserInfo } from '@adminplus/ui-vue';
-import { useUserStore } from '@/stores/user';
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import AppSidebar from './AppSidebar.vue'
+import AppHeader from './AppHeader.vue'
+import type { MenuItem, UserInfo } from './layout.types'
+import { useUserStore } from '@/stores/user'
+import { useThemeStore } from '@/stores/theme'
 
-defineOptions({
-  name: 'Layout'
-});
+defineOptions({ name: 'Layout' })
 
-const router = useRouter();
-const userStore = useUserStore();
-const collapsed = ref(false);
+const router = useRouter()
+const userStore = useUserStore()
+const themeStore = useThemeStore()
 
-// 用户信息
+const collapsed = computed(() => themeStore.sidebarCollapsed)
+
 const userInfo = computed<UserInfo>(() => ({
   nickname: userStore.user?.nickname || 'Admin',
   avatar: userStore.user?.avatar || ''
-}));
+}))
 
-// 处理侧边栏折叠
-const handleToggle = () => {
-  collapsed.value = !collapsed.value;
-};
+const handleToggle = () => themeStore.toggleSidebar()
 
-// 处理头部命令
 const handleCommand = async (command: string) => {
   switch (command) {
     case 'profile':
-      await router.push('/profile');
-      break;
+      await router.push('/profile')
+      break
     case 'settings':
-      await router.push('/system/config');
-      break;
+      await router.push('/system/config')
+      break
     case 'logout':
-      userStore.logout();
-      await router.push('/login');
-      break;
+      userStore.logout()
+      await router.push('/login')
+      break
   }
-};
+}
 
-// 从路由配置中获取菜单数据
 const menus = computed<MenuItem[]>(() => {
-  const allRoutes = router.getRoutes();
-  const layoutRoute = allRoutes.find((r) => r.name === 'Layout');
+  const allRoutes = router.getRoutes()
+  const layoutRoute = allRoutes.find((r) => r.name === 'Layout')
+  if (!layoutRoute?.children) return []
+  return convertRoutesToMenus(filterUniqueRoutes(layoutRoute.children))
+})
 
-  if (!layoutRoute?.children) {
-    return [];
-  }
-
-  // 去重并过滤，只保留有 component 的路由
-  const uniqueRoutes = filterUniqueRoutes(layoutRoute.children);
-  return convertRoutesToMenus(uniqueRoutes);
-});
-
-// 过滤重复路由和无效路由（没有 component 的不显示为菜单项）
 const filterUniqueRoutes = (routes: any[]) => {
-  const seen = new Set();
+  const seen = new Set()
   return routes.filter((r) => {
-    // 过滤掉隐藏的路由
-    if (r.meta?.hidden) {
-      return false;
-    }
-    // 过滤掉没有 component 的路由（目录类型除外）
-    // 目录 type=0 不需要 component，但需要有子路由
-    const isDirectory = r.meta?.type === 0;
-    if (!isDirectory && !r.components?.default && !r.component) {
-      return false;
-    }
-    // 去重：根据 path 判断
-    if (seen.has(r.path)) {
-      return false;
-    }
-    seen.add(r.path);
-    return true;
-  });
-};
+    if (r.meta?.hidden) return false
+    const isDirectory = r.meta?.type === 0
+    if (!isDirectory && !r.components?.default && !r.component) return false
+    if (seen.has(r.path)) return false
+    seen.add(r.path)
+    return true
+  })
+}
 
-// 将路由配置转换为菜单格式
 const convertRoutesToMenus = (routes: any[], parentPath = ''): MenuItem[] => {
   return routes.map((r) => {
-    // 构建完整路径
-    let fullPath = r.path;
-    if (parentPath && !fullPath.startsWith('/')) {
-      fullPath = `${parentPath}/${fullPath}`;
-    }
-    // 如果路径不是以 / 开头，添加前导 /
-    if (!fullPath.startsWith('/')) {
-      fullPath = `/${fullPath}`;
-    }
-
+    let fullPath = r.path
+    if (parentPath && !fullPath.startsWith('/')) fullPath = `${parentPath}/${fullPath}`
+    if (!fullPath.startsWith('/')) fullPath = `/${fullPath}`
     return {
       id: r.meta?.id || r.name,
       name: r.meta?.title || r.name,
       path: fullPath,
       icon: r.meta?.icon,
-      children: r.children ? convertRoutesToMenus(r.children, fullPath) : [],
-    };
-  });
-};
+      children: r.children ? convertRoutesToMenus(r.children, fullPath) : []
+    }
+  })
+}
 </script>
 
-<style scoped>
-/* 布局样式由 AdminLayout 组件内部处理 */
+<style scoped lang="scss">
+.layout-container {
+  height: 100vh;
+  background-color: var(--bg-color);
+}
+
+.layout-aside {
+  background-color: var(--sidebar-bg);
+  transition: width 0.3s ease;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.layout-main-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.layout-header {
+  height: 56px;
+  padding: 0;
+  background-color: var(--header-bg);
+  z-index: 10;
+}
+
+.layout-main {
+  background-color: var(--bg-color);
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
 </style>

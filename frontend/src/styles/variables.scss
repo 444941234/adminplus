@@ -1,70 +1,76 @@
 // ============================================
-// AdminPlus 全局样式变量 - 智谱AI风格
+// AdminPlus 全局样式变量 - 现代设计风格
+// 基于 UI 设计规范
 // ============================================
 
 // 引入 Sass color 模块
 @use 'sass:color';
 
-// ===== 主色调 - 智谱AI风格 =====
-$primary-color: #1890ff;           // 科技蓝 - 主色
-$primary-light: #40a9ff;          // 科技蓝 - 浅色
-$primary-lighter: #69c0ff;        // 科技蓝 - 更浅
-$primary-dark: #096dd9;           // 科技蓝 - 深色
-$primary-darker: #0050b3;         // 科技蓝 - 更深
+// ===== 主色调 - 现代蓝 #3B82F6 =====
+$primary-color: #3B82F6;           // 主色 - 现代蓝
+$primary-light: #60A5FA;           // 浅色
+$primary-lighter: #93C5FD;         // 更浅
+$primary-dark: #2563EB;            // 深色
+$primary-darker: #1D4ED8;          // 更深
 
-// ===== 辅助色 - 靛蓝渐变 =====
-$secondary-color: #6366F1;        // 靛蓝 - 主色
-$secondary-light: #818CF8;        // 靛蓝 - 浅色
-$secondary-start: #1890ff;        // 渐变 - 起始色
-$secondary-end: #6366F1;          // 渐变 - 结束色
+// ===== 辅助色 =====
+$secondary-color: #6366F1;         // 靛蓝
+$secondary-light: #818CF8;         // 靛蓝浅色
 
 // ===== 渐变色 =====
-$gradient-primary: linear-gradient(135deg, #1890ff 0%, #6366F1 100%);
+$gradient-primary: linear-gradient(135deg, #3B82F6 0%, #6366F1 100%);
 $gradient-secondary: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
-$gradient-blue: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
-$gradient-purple: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
-$gradient-success: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);
-$gradient-warning: linear-gradient(135deg, #fa8c16 0%, #ffa940 100%);
-$gradient-danger: linear-gradient(135deg, #ff4d4f 0%, #ff7875 100%);
-$gradient-info: linear-gradient(135deg, #1890ff 0%, #40a9ff 100%);
+$gradient-blue: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+$gradient-success: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+$gradient-warning: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+$gradient-danger: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
 
-// ===== 背景色 =====
-$bg-color: #F7F8FA;               // 页面背景 - 浅灰
-$bg-white: #FFFFFF;               // 纯白背景
-$bg-light: #FAFBFC;               // 浅色背景
-$bg-hover: #F5F7FA;               // 悬停背景
-$bg-active: #E8F0FE;              // 激活背景
+// ===== 背景色 - 浅色主题 =====
+$bg-color: #F8FAFC;                // 页面背景
+$bg-white: #FFFFFF;                // 纯白背景
+$bg-light: #F1F5F9;                // 浅色背景
+$bg-hover: #F1F5F9;                // 悬停背景
+$bg-active: #E2E8F0;               // 激活背景
+
+// ===== 背景色 - 深色主题 =====
+$dark-bg-color: #0F172A;           // 深色页面背景
+$dark-bg-card: #1E293B;            // 深色卡片背景
+$dark-bg-hover: #334155;           // 深色悬停背景
 
 // ===== 文字色 =====
-$text-primary: #1A1A1A;           // 主文字 - 深灰
-$text-regular: #333333;           // 常规文字
-$text-secondary: #666666;         // 次要文字 - 中灰
-$text-placeholder: #999999;       // 占位文字
-$text-disabled: #CCCCCC;          // 禁用文字
-$text-white: #FFFFFF;             // 白色文字
+$text-primary: #1F2937;            // 主文字
+$text-regular: #374151;            // 常规文字
+$text-secondary: #6B7280;          // 次要文字
+$text-placeholder: #9CA3AF;        // 占位文字
+$text-disabled: #D1D5DB;           // 禁用文字
+$text-white: #FFFFFF;              // 白色文字
+
+// ===== 深色主题文字色 =====
+$dark-text-primary: #F9FAFB;       // 深色主题主文字
+$dark-text-secondary: #9CA3AF;     // 深色主题次要文字
 
 // ===== 边框色 =====
-$border-color: #E5E7EB;           // 边框 - 浅灰
-$border-light: #F0F0F0;           // 浅边框
-$border-dark: #D1D5DB;            // 深边框
-$border-focus: #1890ff;           // 聚焦边框
+$border-color: #E5E7EB;            // 边框
+$border-light: #F3F4F6;            // 浅边框
+$border-dark: #D1D5DB;             // 深边框
+$border-focus: #3B82F6;            // 聚焦边框
 
 // ===== 功能色 =====
-$success-color: #52c41a;          // 成功 - 绿色
-$success-light: #73d13d;          // 成功 - 浅色
-$success-lighter: #95de64;        // 成功 - 更浅
+$success-color: #10B981;           // 成功 - 绿色
+$success-light: #34D399;           // 成功 - 浅色
+$success-lighter: #6EE7B7;         // 成功 - 更浅
 
-$warning-color: #fa8c16;          // 警告 - 橙色
-$warning-light: #ffa940;          // 警告 - 浅色
-$warning-lighter: #ffc069;        // 警告 - 更浅
+$warning-color: #F59E0B;           // 警告 - 橙色
+$warning-light: #FBBF24;           // 警告 - 浅色
+$warning-lighter: #FCD34D;         // 警告 - 更浅
 
-$danger-color: #ff4d4f;           // 危险 - 红色
-$danger-light: #ff7875;           // 危险 - 浅色
-$danger-lighter: #ffa39e;         // 危险 - 更浅
+$danger-color: #EF4444;            // 危险 - 红色
+$danger-light: #F87171;            // 危险 - 浅色
+$danger-lighter: #FCA5A5;          // 危险 - 更浅
 
-$info-color: #1890ff;             // 信息 - 蓝色
-$info-light: #40a9ff;             // 信息 - 浅色
-$info-lighter: #69c0ff;           // 信息 - 更浅
+$info-color: #3B82F6;              // 信息 - 蓝色
+$info-light: #60A5FA;              // 信息 - 浅色
+$info-lighter: #93C5FD;            // 信息 - 更浅
 
 // ===== 阴影 =====
 $shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -93,8 +99,8 @@ $spacing-2xl: 32px;
 $spacing-3xl: 40px;
 
 // ===== 字体大小 =====
-$font-size-xs: 12px;
-$font-size-sm: 13px;
+$font-size-xs: 11px;
+$font-size-sm: 12px;
 $font-size-base: 14px;
 $font-size-md: 16px;
 $font-size-lg: 18px;
@@ -115,7 +121,7 @@ $line-height-base: 1.5;
 $line-height-loose: 1.75;
 
 // ===== 过渡动画 =====
-$transition-fast: 0.1s ease;
+$transition-fast: 0.15s ease;
 $transition-base: 0.2s ease;
 $transition-slow: 0.3s ease;
 
@@ -129,37 +135,51 @@ $z-index-popover: 1060;
 $z-index-tooltip: 1070;
 
 // ===== 统计卡片配色 =====
-$card-gradient-1: linear-gradient(135deg, #1890ff 0%, #6366F1 100%);  // 用户 - 蓝紫渐变
-$card-gradient-2: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);  // 角色 - 靛蓝渐变
-$card-gradient-3: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);  // 菜单 - 蓝色渐变
-$card-gradient-4: linear-gradient(135deg, #52c41a 0%, #73d13d 100%);  // 日志 - 绿色渐变
+$card-gradient-1: linear-gradient(135deg, #3B82F6 0%, #6366F1 100%);  // 用户
+$card-gradient-2: linear-gradient(135deg, #10B981 0%, #34D399 100%);  // 角色 - 绿色
+$card-gradient-3: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);  // 菜单 - 橙色
+$card-gradient-4: linear-gradient(135deg, #EF4444 0%, #F87171 100%);  // 日志 - 红色
 
 // ===== 图表配色 =====
 $chart-colors: (
-  #1890ff,  // 主色
+  #3B82F6,  // 主色
+  #10B981,  // 绿色
+  #F59E0B,  // 橙色
+  #EF4444,  // 红色
   #6366F1,  // 靛蓝
-  #52c41a,  // 绿色
-  #fa8c16,  // 橙色
-  #ff4d4f,  // 红色
-  #40a9ff,  // 浅蓝
-  #818CF8,  // 浅靛蓝
-  #73d13d,  // 浅绿
-  #ffa940,  // 浅橙
-  #ff7875   // 浅红
+  #60A5FA,  // 浅蓝
+  #34D399,  // 浅绿
+  #FBBF24,  // 浅橙
+  #F87171,  // 浅红
+  #818CF8   // 浅靛蓝
 );
 
-// ===== 导航栏配色 =====
-$navbar-bg: #1890ff;              // 导航栏背景 - 科技蓝
-$navbar-text: #FFFFFF;            // 导航栏文字 - 白色
+// ===== 导航栏配置 =====
 $navbar-height: 56px;
+$navbar-bg: #FFFFFF;
+$navbar-border: $border-color;
 
-// ===== 侧边栏配色 =====
-$sidebar-bg: #FFFFFF;             // 侧边栏背景 - 纯白
-$sidebar-text: #333333;           // 侧边栏文字
-$sidebar-active-bg: #e6f7ff;      // 侧边栏激活背景
-$sidebar-active-text: #1890ff;    // 侧边栏激活文字
-$sidebar-width: 200px;
+// ===== 侧边栏配置 - 浅色主题 =====
+$sidebar-width: 220px;
 $sidebar-collapsed-width: 64px;
+$sidebar-bg: #FFFFFF;
+$sidebar-text: $text-regular;
+$sidebar-active-bg: #EFF6FF;
+$sidebar-active-text: $primary-color;
+$sidebar-hover-bg: #F1F5F9;
+$sidebar-border: $border-color;
+
+// ===== 侧边栏配置 - 深色主题 =====
+$dark-sidebar-bg: #1E293B;
+$dark-sidebar-text: #CBD5E1;
+$dark-sidebar-active-bg: rgba($primary-color, 0.2);
+$dark-sidebar-active-text: $primary-light;
+$dark-sidebar-hover-bg: #334155;
+
+// ===== 头部配置 =====
+$header-height: 56px;
+$header-bg: #FFFFFF;
+$header-border: $border-color;
 
 // ===== Element Plus 主题变量覆盖 =====
 $el-color-primary: $primary-color;
@@ -185,17 +205,17 @@ $el-text-color-placeholder: $text-placeholder;
 
 $el-border-color: $border-color;
 $el-border-color-light: $border-light;
-$el-border-color-lighter: #F2F6FC;
+$el-border-color-lighter: #F3F4F6;
 $el-border-color-extra-light: #FAFAFA;
 $el-border-color-dark: $border-dark;
-$el-border-color-darker: #C0C4CC;
+$el-border-color-darker: #9CA3AF;
 
 $el-fill-color: $bg-light;
-$el-fill-color-light: #F5F7FA;
-$el-fill-color-lighter: #FAFBFC;
+$el-fill-color-light: #F1F5F9;
+$el-fill-color-lighter: #F8FAFC;
 $el-fill-color-extra-light: #FAFAFA;
-$el-fill-color-dark: #Ebedf0;
-$el-fill-color-darker: #E6E8EB;
+$el-fill-color-dark: #E2E8F0;
+$el-fill-color-darker: #CBD5E1;
 $el-fill-color-blank: $bg-white;
 
 $el-bg-color: $bg-color;
@@ -217,5 +237,5 @@ $el-font-size-small: $font-size-sm;
 $el-font-size-large: $font-size-md;
 $el-font-size-extra-large: $font-size-lg;
 
-$el-transition-duration: 0.3s;
+$el-transition-duration: 0.2s;
 $el-transition-duration-fast: 0.15s;
