@@ -550,9 +550,16 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onErrorCaptured } from 'vue'
-import { ElMessage, ElMessageBox } from '@/utils/elementCompat'
+import {
+  ElMessage, ElMessageBox, ElTable, ElTableColumn, ElIcon, ElForm, ElFormItem,
+  ElCollapse, ElCollapseItem, ElTreeSelect, ElInputNumber, ElDialog, ElAlert,
+  ElInput, ElButton, ElLoading
+} from 'element-plus'
 import { BmCard, BmButton, BmModal, BmInput, BmRadio, BmRadioGroup, BmSwitch } from '@adminplus/ui-vue'
-import { getIconComponent } from '@/constants/icons'
+import { getIconComponent, Document, Folder, Menu, Grid, Search } from '@/constants/icons'
+
+// Import loading directive
+const vLoading = ElLoading.directive
 import { getMenuTree, createMenu, updateMenu, deleteMenu, batchUpdateMenuStatus, batchDeleteMenu } from '@/api/menu'
 import { useForm } from '@/composables/useForm'
 import { useConfirm } from '@/composables/useConfirm'
@@ -777,7 +784,7 @@ const getMenuTypeIcon = (type) => {
   if (type === null || type === undefined) {
     return Document
   }
-  const icons = { 0: Folder, 1: MenuIcon, 2: Grid }
+  const icons = { 0: Folder, 1: Menu, 2: Grid }
   return icons[type] || Document
 }
 

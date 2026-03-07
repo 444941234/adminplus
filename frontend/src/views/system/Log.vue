@@ -270,9 +270,16 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from '@/utils/elementCompat'
+import {
+  ElMessage, ElMessageBox, ElIcon, ElButton, ElTabPane, ElTabs, ElInput, ElFormItem,
+  ElOption, ElSelect, ElDatePicker, ElForm, ElTableColumn, ElTag, ElTable, ElPagination,
+  ElCard, ElDescriptionsItem, ElDescriptions, ElDialog, ElLoading
+} from 'element-plus'
 import { Search, Refresh, Delete } from '@/utils/iconCompat'
 import { getLogList, getLogById, deleteLog, deleteLogsBatch } from '@/api/log'
+
+// Import loading directive
+const vLoading = ElLoading.directive
 
 // 当前激活的日志类型
 const activeLogType = ref('')

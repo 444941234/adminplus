@@ -2,6 +2,7 @@
  * Element Plus Icons Compatibility Layer
  * Provides text/emoji based icons to replace Element Plus icons
  */
+import { defineComponent, h } from 'vue';
 
 // Simple icon mapping using emoji/text alternatives
 const iconMap = {
@@ -76,23 +77,42 @@ const iconMap = {
   'HomeFilled': '🏠',
   'Expand': '⇲',
   'Fold': 'ⱸ',
+
+  // Additional icons
+  'View': '👁️',
+  'Hide': '🙈',
+  'DataLine': '📈',
+  'Management': '👥',
+  'ChatLineSquare': '💬',
+  'Timer': '⏱️',
+  'RefreshRight': '🔄',
+  'RefreshLeft': '🔄',
+  'Share': '↗️',
+  'More': '⋯',
+  'MoreFilled': '⋮',
+  'EditPen': '✏️',
+  'DeleteFilled': '🗑️',
+  'Operation': '⚙️',
+  'Position': '📍',
+  'Tickets': '🎫',
+  'Wallet': '👛',
+  'ShoppingCart': '🛒',
+  'Goods': '📦',
+  'SoldOut': '售罄',
+  'Present': '🎁',
+  'Box': '📦',
+  'Discount': '💸',
+  'Odometer': '🚗',
 };
 
-// Create a simple Vue component for each icon
-export const createIconComponent = (iconText) => {
-  return {
+// Create a Vue component using render function for each icon
+const createIconComponent = (iconText) => {
+  return defineComponent({
     name: 'IconCompat',
-    template: `<span class="icon-compat">{{ '${iconText}' }}</span>`,
-    style: `
-      .icon-compat {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-style: normal;
-        line-height: 1;
-      }
-    `
-  };
+    setup() {
+      return () => h('span', { class: 'icon-compat' }, iconText);
+    }
+  });
 };
 
 // Export all icon components

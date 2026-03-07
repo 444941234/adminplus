@@ -142,8 +142,14 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from '@/utils/elementCompat'
+import {
+  ElMessage, ElMessageBox, ElIcon, ElButton, ElTableColumn, ElTag, ElTable,
+  ElCard, ElInput, ElFormItem, ElSwitch, ElForm, ElDialog, ElLoading
+} from 'element-plus'
 import { Plus } from '@/utils/iconCompat'
+
+// Import loading directive
+const vLoading = ElLoading.directive
 
 const loading = ref(false)
 const tableData = ref([])

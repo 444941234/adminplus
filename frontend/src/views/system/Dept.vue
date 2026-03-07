@@ -186,9 +186,12 @@
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue';
-import { ElMessage, ElMessageBox } from '@/utils/elementCompat';
+import { ElMessage, ElMessageBox, ElTree, ElForm, ElFormItem, ElInputNumber, ElLoading } from 'element-plus';
 import { BmCard, BmButton, BmModal, BmInput, BmSwitch } from '@adminplus/ui-vue';
 import { createDept, deleteDept, getDeptTree, updateDept } from '@/api/dept';
+
+// Import loading directive
+const vLoading = ElLoading.directive;
 
 const loading = ref(false);
 const treeData = ref([]);

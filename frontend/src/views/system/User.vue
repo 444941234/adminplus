@@ -235,7 +235,6 @@
       :show-confirm-button="true"
       cancel-text="取消"
       confirm-text="确定"
-      :confirm-button-loading="roleSubmitLoading"
       @confirm="handleRoleSubmit"
       @cancel="roleDialogVisible = false"
     >
@@ -256,7 +255,7 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue';
-import { ElMessage } from '@/utils/elementCompat';
+import { ElMessage, ElRow, ElCol, ElTree, ElForm, ElFormItem, ElTreeSelect } from 'element-plus';
 // TreeInstance type - using any for compatibility
 type TreeInstance = any;
 import {

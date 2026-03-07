@@ -1,6 +1,10 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { ElMessage } from '@/utils/elementCompat'
+import {
+  ElMessage, ElIcon, ElButton, ElInput, ElForm, ElTag, ElEmpty, ElCard, ElCol,
+  ElFormItem, ElTableColumn, ElTable, ElRow, ElRadio, ElRadioGroup, ElDialog,
+  ElTreeSelect, ElInputNumber, ElLoading
+} from 'element-plus'
 import { Plus, Refresh, Search } from '@/utils/iconCompat'
 import {
   getDictList,
@@ -18,6 +22,9 @@ import {
 } from '@/api/dict'
 import { debounce } from '@/utils/debounce'
 import { useConfirm } from '@/composables/useConfirm'
+
+// Import loading directive
+const vLoading = ElLoading.directive
 
 // ============ 字典管理 ============
 const dictList = ref([])
