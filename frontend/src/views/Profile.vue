@@ -91,12 +91,6 @@ onMounted(() => {
 
 <template>
   <div class="profile-page">
-    <!-- Page Header -->
-    <div class="profile-page__header">
-      <h1 class="profile-page__title">个人中心</h1>
-      <p class="profile-page__subtitle">管理您的个人资料、安全设置和偏好</p>
-    </div>
-
     <!-- Hero Section -->
     <div v-if="profileLoading" class="profile-page__loading">
       <p>加载个人资料中...</p>
@@ -164,25 +158,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 32px;
-}
-
-/* Page Header */
-.profile-page__header {
-  text-align: center;
-}
-
-.profile-page__title {
-  font-size: 32px;
-  font-weight: 700;
-  color: rgb(15 23 42);
-  margin: 0 0 8px 0;
-  letter-spacing: -0.02em;
-}
-
-.profile-page__subtitle {
-  font-size: 16px;
-  color: rgb(100 116 139);
-  margin: 0;
 }
 
 /* Loading State */
@@ -265,18 +240,6 @@ onMounted(() => {
   .profile-page {
     padding: 16px;
     gap: 24px;
-  }
-
-  .profile-page__header {
-    text-align: center;
-  }
-
-  .profile-page__title {
-    font-size: 24px;
-  }
-
-  .profile-page__subtitle {
-    font-size: 14px;
   }
 
   .profile-page__grid {
