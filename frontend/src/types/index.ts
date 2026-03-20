@@ -208,6 +208,31 @@ export interface Profile {
   roles: string[]
 }
 
+// Activity statistics for profile dashboard
+export interface ActivityStats {
+  daysActive: number
+  totalActions: number
+  lastLogin: string
+  lastLoginIp: string
+  recentActivity: ActivityItem[]
+}
+
+// Single activity item
+export interface ActivityItem {
+  id: string
+  action: string
+  timestamp: string
+  type: 'update' | 'create' | 'delete' | 'login'
+}
+
+// User preferences and settings
+export interface UserSettings {
+  notifications: boolean
+  darkMode: boolean
+  emailUpdates: boolean
+  language: string
+}
+
 // 日志统计
 export interface LogStatistics {
   totalCount: number
