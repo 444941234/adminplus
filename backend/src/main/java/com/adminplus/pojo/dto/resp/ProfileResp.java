@@ -1,6 +1,7 @@
 package com.adminplus.pojo.dto.resp;
 
 import java.time.Instant;
+import java.util.List;
 
 /**
  * 个人资料视图对象
@@ -16,6 +17,8 @@ public record ProfileResp(
         String phone,
         String avatar,
         Integer status,
+        String deptName,
+        List<String> roles,
         Instant createTime,
         Instant updateTime
 ) {
