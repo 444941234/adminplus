@@ -69,24 +69,17 @@ const resolveViewComponent = (component?: string) => {
 
 const addDynamicRoutes = (menus: Parameters<typeof buildDynamicChildRoutes>[0]) => {
   const childRoutes = buildDynamicChildRoutes(menus, resolveViewComponent)
-  console.log('[addDynamicRoutes] Building routes from menus:', menus)
-  console.log('[addDynamicRoutes] Built child routes:', childRoutes)
 
   for (const childRoute of childRoutes) {
     const routeName = String(childRoute.name)
-    console.log('[addDynamicRoutes] Processing route:', routeName, 'path:', childRoute.path)
     if (router.hasRoute(routeName)) {
-      console.log('[addDynamicRoutes] Route already exists, skipping:', routeName)
       dynamicRouteNames.add(routeName)
       continue
     }
 
     router.addRoute('LayoutRoot', childRoute)
-    console.log('[addDynamicRoutes] Added route:', routeName, 'to LayoutRoot')
     dynamicRouteNames.add(routeName)
   }
-
-  console.log('[addDynamicRoutes] Current routes:', router.getRoutes().map(r => ({ name: r.name, path: r.path })))
 }
 
 export const resetDynamicRoutes = () => {
@@ -102,29 +95,21 @@ export const resetDynamicRoutes = () => {
 export const ensureDynamicRoutes = async () => {
   const userStore = useUserStore()
   // Restore token from localStorage if needed (syncs store with localStorage)
-  console.log('[ensureDynamicRoutes] Starting, token:', userStore.token)
   const hasToken = userStore.restoreToken()
-  console.log('[ensureDynamicRoutes] After restore, token:', userStore.token, 'hasToken:', hasToken)
 
   if (!hasToken && !userStore.token) {
-    console.log('[ensureDynamicRoutes] No token, resetting routes')
     resetDynamicRoutes()
     return
   }
 
   if (!dynamicRoutesLoaded) {
     try {
-      console.log('[ensureDynamicRoutes] Loading user info...')
-      // fetchUserInfo will check token.value internally
       await userStore.fetchUserInfo()
-      console.log('[ensureDynamicRoutes] User info loaded, menus:', userStore.menus)
       addDynamicRoutes(userStore.menus)
-      console.log('[ensureDynamicRoutes] Dynamic routes added')
       dynamicRoutesLoaded = true
     } catch (error) {
       console.error('Failed to load dynamic routes:', error)
       // Don't set dynamicRoutesLoaded to true on error, so we can retry
-      // But also don't block navigation - let the user through to static routes
     }
   }
 }
@@ -138,8 +123,6 @@ router.beforeEach(async (to) => {
     isPublicRoute: publicPaths.has(to.path),
     hasMatchedRoutes: to.matched.length > 0
   })
-
-  console.log('[router.beforeEach] path:', to.path, 'matched:', to.matched.length, 'action:', guardAction, 'dynamicRoutesLoaded:', dynamicRoutesLoaded)
 
   if (guardAction === 'redirect-login') {
     resetDynamicRoutes()
@@ -157,12 +140,10 @@ router.beforeEach(async (to) => {
 
     // If routes were just loaded, retry navigation to match the newly added routes
     if (!wasLoaded && dynamicRoutesLoaded) {
-      console.log('[router.beforeEach] Routes just loaded, retrying navigation to:', to.fullPath)
       return { path: to.fullPath, replace: true }
     }
 
     if (guardAction === 'retry-navigation') {
-      console.log('[router.beforeEach] Retrying navigation to:', to.fullPath)
       return { path: to.fullPath, replace: true }
     }
   }
