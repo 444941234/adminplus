@@ -13,7 +13,11 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { toast } from 'vue-sonner'
 import { changePassword } from '@/api'
+
+// Constants
+const MIN_PASSWORD_LENGTH = 6
 
 // Password change dialog state
 const isPasswordDialogOpen = ref(false)
@@ -21,7 +25,6 @@ const currentPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
 const isChangingPassword = ref(false)
-const passwordError = ref('')
 
 // Validation errors
 const validationErrors = ref<{
@@ -29,6 +32,28 @@ const validationErrors = ref<{
   newPassword?: string
   confirmPassword?: string
 }>({})
+
+// Validate password format
+const validatePassword = (password: string): boolean => {
+  // Check minimum length
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return false
+  }
+
+  // Check for at least one letter
+  const hasLetter = /[a-zA-Z]/.test(password)
+  if (!hasLetter) {
+    return false
+  }
+
+  // Check for at least one number
+  const hasNumber = /[0-9]/.test(password)
+  if (!hasNumber) {
+    return false
+  }
+
+  return true
+}
 
 // Validate password form
 const validateForm = (): boolean => {
@@ -41,8 +66,8 @@ const validateForm = (): boolean => {
 
   if (!newPassword.value.trim()) {
     errors.newPassword = 'New password is required'
-  } else if (newPassword.value.length < 6) {
-    errors.newPassword = 'Password must be at least 6 characters'
+  } else if (!validatePassword(newPassword.value)) {
+    errors.newPassword = `Password must be at least ${MIN_PASSWORD_LENGTH} characters with letters and numbers`
   }
 
   if (!confirmPassword.value.trim()) {
@@ -57,9 +82,6 @@ const validateForm = (): boolean => {
 
 // Handle password change
 const handlePasswordChange = async () => {
-  // Clear previous errors
-  passwordError.value = ''
-
   // Validate form
   if (!validateForm()) {
     return
@@ -69,11 +91,15 @@ const handlePasswordChange = async () => {
     isChangingPassword.value = true
     await changePassword(currentPassword.value, newPassword.value)
 
+    // Show success message
+    toast.success('密码修改成功')
+
     // Close dialog and reset form on success
     isPasswordDialogOpen.value = false
     resetPasswordForm()
   } catch (error: any) {
-    passwordError.value = error.response?.data?.message || 'Failed to change password. Please try again.'
+    console.error('Failed to change password:', error)
+    toast.error(error.response?.data?.message || '密码修改失败，请重试')
   } finally {
     isChangingPassword.value = false
   }
@@ -84,7 +110,6 @@ const resetPasswordForm = () => {
   currentPassword.value = ''
   newPassword.value = ''
   confirmPassword.value = ''
-  passwordError.value = ''
   validationErrors.value = {}
 }
 
@@ -121,11 +146,6 @@ const handleDialogOpenChange = (open: boolean) => {
             </DialogHeader>
 
             <div class="password-form space-y-4 py-4">
-              <!-- Error message -->
-              <div v-if="passwordError" class="password-form__error">
-                {{ passwordError }}
-              </div>
-
               <!-- Current Password -->
               <div class="password-form__field space-y-2">
                 <Label for="current-password">Current Password</Label>
@@ -231,16 +251,6 @@ const handleDialogOpenChange = (open: boolean) => {
 .password-form {
   display: flex;
   flex-direction: column;
-}
-
-.password-form__error {
-  padding: 12px;
-  background-color: rgb(254 242 242);
-  border: 1px solid rgb(254 226 226);
-  border-radius: 6px;
-  color: rgb(185 28 28);
-  font-size: 14px;
-  line-height: 1.5;
 }
 
 .password-form__field {

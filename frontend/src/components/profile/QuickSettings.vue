@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { Card } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import {
   Select,
@@ -13,21 +12,16 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'vue-sonner'
 import { getUserSettings, updateUserSettings } from '@/api'
 import type { UserSettings } from '@/types'
+import { LANGUAGE_OPTIONS } from '@/constants/languages'
 
 const loading = ref(false)
-const updating = ref(false)
+const updating = ref<Record<string, boolean>>({})
 const settings = ref<UserSettings>({
   notifications: true,
   darkMode: false,
   emailUpdates: true,
   language: 'zh-CN'
 })
-
-const languageOptions = [
-  { label: '简体中文', value: 'zh-CN' },
-  { label: 'English', value: 'en-US' },
-  { label: '日本語', value: 'ja-JP' }
-]
 
 const fetchSettings = async () => {
   loading.value = true
@@ -42,11 +36,15 @@ const fetchSettings = async () => {
   }
 }
 
-const updateSetting = async (key: keyof UserSettings, value: boolean | string) => {
-  updating.value = true
+const updateSetting = async <K extends keyof UserSettings>(
+  key: K,
+  value: UserSettings[K]
+) => {
+  const settingKey = String(key)
+  updating.value[settingKey] = true
   try {
     await updateUserSettings({ [key]: value })
-    settings.value[key] = value as never
+    settings.value[key] = value
     toast.success('设置更新成功')
   } catch (error) {
     console.error('Failed to update setting:', error)
@@ -54,7 +52,7 @@ const updateSetting = async (key: keyof UserSettings, value: boolean | string) =
     // Revert on error
     await fetchSettings()
   } finally {
-    updating.value = false
+    updating.value[settingKey] = false
   }
 }
 
@@ -70,8 +68,10 @@ const handleEmailUpdatesChange = (checked: boolean) => {
   updateSetting('emailUpdates', checked)
 }
 
-const handleLanguageChange = (value: string) => {
-  updateSetting('language', value)
+const handleLanguageChange = (value: unknown) => {
+  if (typeof value === 'string') {
+    updateSetting('language', value)
+  }
 }
 
 const handleViewAllSettings = () => {
@@ -110,7 +110,7 @@ onMounted(fetchSettings)
         </div>
         <Switch
           :checked="settings.notifications"
-          :disabled="updating"
+          :disabled="updating['notifications']"
           @update:checked="handleNotificationChange"
         />
       </div>
@@ -130,7 +130,7 @@ onMounted(fetchSettings)
         </div>
         <Switch
           :checked="settings.darkMode"
-          :disabled="updating"
+          :disabled="updating['darkMode']"
           @update:checked="handleDarkModeChange"
         />
       </div>
@@ -151,7 +151,7 @@ onMounted(fetchSettings)
         </div>
         <Switch
           :checked="settings.emailUpdates"
-          :disabled="updating"
+          :disabled="updating['emailUpdates']"
           @update:checked="handleEmailUpdatesChange"
         />
       </div>
@@ -174,14 +174,14 @@ onMounted(fetchSettings)
         <Select
           :model-value="settings.language"
           @update:model-value="handleLanguageChange"
-          :disabled="updating"
+          :disabled="updating['language']"
         >
           <SelectTrigger class="w-40">
             <SelectValue placeholder="选择语言" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem
-              v-for="option in languageOptions"
+              v-for="option in LANGUAGE_OPTIONS"
               :key="option.value"
               :value="option.value"
             >
