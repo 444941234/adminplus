@@ -132,6 +132,8 @@ router.beforeEach(async (to) => {
     hasMatchedRoutes: to.matched.length > 0
   })
 
+  console.log('[router.beforeEach] path:', to.path, 'matched:', to.matched.length, 'action:', guardAction, 'dynamicRoutesLoaded:', dynamicRoutesLoaded)
+
   if (guardAction === 'redirect-login') {
     resetDynamicRoutes()
     return '/login'
@@ -145,6 +147,7 @@ router.beforeEach(async (to) => {
   if (guardAction === 'retry-navigation' || guardAction === 'ensure-routes') {
     await ensureDynamicRoutes()
     if (guardAction === 'retry-navigation') {
+      console.log('[router.beforeEach] Retrying navigation to:', to.fullPath)
       return { path: to.fullPath, replace: true }
     }
   }
