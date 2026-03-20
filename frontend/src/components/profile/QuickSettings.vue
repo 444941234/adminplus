@@ -292,7 +292,8 @@ onMounted(fetchSettings)
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
+  min-width: 120px;
+  flex: 1;
 }
 
 .setting-item__label {
