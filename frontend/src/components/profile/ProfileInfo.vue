@@ -36,13 +36,13 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
   <div class="profile-info">
     <div class="profile-info__header">
       <div>
-        <h3 class="profile-info__title">Profile Information</h3>
-        <p class="profile-info__subtitle">Click the edit icon to update your information</p>
+        <h3 class="profile-info__title">个人资料</h3>
+        <p class="profile-info__subtitle">点击编辑图标即可更新您的信息</p>
       </div>
     </div>
 
     <div v-if="loading" class="profile-info__loading">
-      Loading profile information...
+      加载个人资料中...
     </div>
 
     <div v-else class="profile-info__content">
@@ -50,8 +50,8 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
       <div class="profile-info__field">
         <InlineEditField
           :model-value="profile.nickname || ''"
-          label="Display Name"
-          placeholder="Enter your display name"
+          label="显示名称"
+          placeholder="请输入您的显示名称"
           :loading="loading"
           @save="handleSaveNickname"
         />
@@ -61,9 +61,9 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
       <div class="profile-info__field">
         <InlineEditField
           :model-value="profile.email || ''"
-          label="Email"
+          label="邮箱"
           type="email"
-          placeholder="Enter your email address"
+          placeholder="请输入您的邮箱地址"
           :loading="loading"
           @save="handleSaveEmail"
         />
@@ -73,9 +73,9 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
       <div class="profile-info__field">
         <InlineEditField
           :model-value="profile.phone || ''"
-          label="Phone"
+          label="手机号"
           type="tel"
-          placeholder="Enter your phone number"
+          placeholder="请输入您的手机号码"
           :loading="loading"
           @save="handleSavePhone"
         />
@@ -85,8 +85,8 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
       <div class="profile-info__field">
         <InlineEditField
           :model-value="profile.deptName || ''"
-          label="Department"
-          placeholder="No department assigned"
+          label="部门"
+          placeholder="未分配部门"
           readonly
         />
       </div>
@@ -94,9 +94,9 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
       <!-- Roles (Display only) -->
       <div class="profile-info__field profile-info__field--roles">
         <div class="profile-info__roles">
-          <label class="profile-info__roles-label">Roles</label>
+          <label class="profile-info__roles-label">角色</label>
           <div v-if="roleList.length === 0" class="profile-info__roles-empty">
-            <Badge variant="outline">No roles assigned</Badge>
+            <Badge variant="outline">未分配角色</Badge>
           </div>
           <div v-else class="profile-info__roles-list">
             <Badge v-for="role in roleList" :key="role" variant="secondary" class="role-badge">

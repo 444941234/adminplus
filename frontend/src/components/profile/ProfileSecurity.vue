@@ -61,19 +61,19 @@ const validateForm = (): boolean => {
 
   // Check all fields are filled
   if (!currentPassword.value.trim()) {
-    errors.currentPassword = 'Current password is required'
+    errors.currentPassword = '请输入当前密码'
   }
 
   if (!newPassword.value.trim()) {
-    errors.newPassword = 'New password is required'
+    errors.newPassword = '请输入新密码'
   } else if (!validatePassword(newPassword.value)) {
-    errors.newPassword = `Password must be at least ${MIN_PASSWORD_LENGTH} characters with letters and numbers`
+    errors.newPassword = `密码至少需要 ${MIN_PASSWORD_LENGTH} 个字符，包含字母和数字`
   }
 
   if (!confirmPassword.value.trim()) {
-    errors.confirmPassword = 'Please confirm your password'
+    errors.confirmPassword = '请确认新密码'
   } else if (confirmPassword.value !== newPassword.value) {
-    errors.confirmPassword = 'Passwords do not match'
+    errors.confirmPassword = '两次输入的密码不一致'
   }
 
   validationErrors.value = errors
@@ -127,33 +127,33 @@ const handleDialogOpenChange = (open: boolean) => {
     <!-- Password Section -->
     <Card>
       <CardHeader>
-        <CardTitle>Password</CardTitle>
+        <CardTitle>密码安全</CardTitle>
         <CardDescription>
-          Change your password to keep your account secure
+          定期修改密码以保护账户安全
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Dialog :open="isPasswordDialogOpen" @update:open="handleDialogOpenChange">
           <DialogTrigger as-child>
-            <Button variant="outline">Change Password</Button>
+            <Button variant="outline">修改密码</Button>
           </DialogTrigger>
           <DialogContent class="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Change Password</DialogTitle>
+              <DialogTitle>修改密码</DialogTitle>
               <DialogDescription>
-                Enter your current password and a new password to update your credentials
+                输入当前密码和新密码以更新您的凭据
               </DialogDescription>
             </DialogHeader>
 
             <div class="password-form space-y-4 py-4">
               <!-- Current Password -->
               <div class="password-form__field space-y-2">
-                <Label for="current-password">Current Password</Label>
+                <Label for="current-password">当前密码</Label>
                 <Input
                   id="current-password"
                   v-model="currentPassword"
                   type="password"
-                  placeholder="Enter current password"
+                  placeholder="请输入当前密码"
                   :class="{ 'password-form__input--error': validationErrors.currentPassword }"
                   @keyup.enter="handlePasswordChange"
                 />
@@ -164,12 +164,12 @@ const handleDialogOpenChange = (open: boolean) => {
 
               <!-- New Password -->
               <div class="password-form__field space-y-2">
-                <Label for="new-password">New Password</Label>
+                <Label for="new-password">新密码</Label>
                 <Input
                   id="new-password"
                   v-model="newPassword"
                   type="password"
-                  placeholder="Enter new password (min 6 characters)"
+                  placeholder="请输入新密码（至少 6 个字符）"
                   :class="{ 'password-form__input--error': validationErrors.newPassword }"
                   @keyup.enter="handlePasswordChange"
                 />
@@ -180,12 +180,12 @@ const handleDialogOpenChange = (open: boolean) => {
 
               <!-- Confirm Password -->
               <div class="password-form__field space-y-2">
-                <Label for="confirm-password">Confirm New Password</Label>
+                <Label for="confirm-password">确认新密码</Label>
                 <Input
                   id="confirm-password"
                   v-model="confirmPassword"
                   type="password"
-                  placeholder="Confirm new password"
+                  placeholder="请再次输入新密码"
                   :class="{ 'password-form__input--error': validationErrors.confirmPassword }"
                   @keyup.enter="handlePasswordChange"
                 />
@@ -201,14 +201,14 @@ const handleDialogOpenChange = (open: boolean) => {
                 variant="outline"
                 @click="handleDialogOpenChange(false)"
               >
-                Cancel
+                取消
               </Button>
               <Button
                 type="button"
                 :disabled="isChangingPassword"
                 @click="handlePasswordChange"
               >
-                {{ isChangingPassword ? 'Changing...' : 'Change Password' }}
+                {{ isChangingPassword ? '修改中...' : '确认修改' }}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -219,21 +219,21 @@ const handleDialogOpenChange = (open: boolean) => {
     <!-- Two-Factor Authentication Section -->
     <Card>
       <CardHeader>
-        <CardTitle>Two-Factor Authentication</CardTitle>
+        <CardTitle>双因素认证</CardTitle>
         <CardDescription>
-          Add an extra layer of security to your account
+          为您的账户添加额外的安全保护层
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div class="security-card__2fa">
           <div class="security-card__2fa-info">
-            <p class="security-card__2fa-status">Not enabled</p>
+            <p class="security-card__2fa-status">未启用</p>
             <p class="security-card__2fa-description">
-              Protect your account with 2FA via SMS or authenticator app
+              通过短信或认证器应用使用 2FA 保护您的账户
             </p>
           </div>
           <Button variant="outline" disabled>
-            Coming Soon
+            即将推出
           </Button>
         </div>
       </CardContent>

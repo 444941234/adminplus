@@ -100,8 +100,8 @@ const roles = computed(() => {
       </div>
 
       <div class="profile-hero__actions">
-        <Button @click="emit('edit')">Edit Profile</Button>
-        <Button variant="ghost" @click="emit('changeAvatar')">Change Avatar</Button>
+        <Button @click="emit('edit')">编辑资料</Button>
+        <Button variant="ghost" @click="emit('changeAvatar')">更换头像</Button>
       </div>
     </div>
   </div>

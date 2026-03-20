@@ -68,7 +68,7 @@ const displayActivities = computed(() => {
         </div>
         <div class="stat-card__content">
           <p class="stat-card__value">{{ activity.daysActive }}</p>
-          <p class="stat-card__label">Days Active</p>
+          <p class="stat-card__label">活跃天数</p>
         </div>
       </div>
 
@@ -80,7 +80,7 @@ const displayActivities = computed(() => {
         </div>
         <div class="stat-card__content">
           <p class="stat-card__value">{{ activity.totalActions }}</p>
-          <p class="stat-card__label">Total Actions</p>
+          <p class="stat-card__label">总操作数</p>
         </div>
       </div>
     </div>
@@ -88,16 +88,16 @@ const displayActivities = computed(() => {
     <!-- Recent Activity Timeline -->
     <div class="activity-dashboard__timeline">
       <div class="activity-dashboard__header">
-        <h3 class="activity-dashboard__title">Recent Activity</h3>
-        <Badge variant="outline">Last 5 activities</Badge>
+        <h3 class="activity-dashboard__title">最近活动</h3>
+        <Badge variant="outline">最近 5 条活动</Badge>
       </div>
 
       <div v-if="loading" class="activity-dashboard__loading">
-        Loading activity data...
+        加载活动数据中...
       </div>
 
       <div v-else-if="displayActivities.length === 0" class="activity-dashboard__empty">
-        <p>No recent activity</p>
+        <p>暂无最近活动</p>
       </div>
 
       <div v-else class="activity-list">
@@ -132,20 +132,20 @@ const displayActivities = computed(() => {
     <!-- Last Login Info -->
     <div class="activity-dashboard__login">
       <div class="activity-dashboard__header">
-        <h3 class="activity-dashboard__title">Last Login</h3>
+        <h3 class="activity-dashboard__title">上次登录</h3>
       </div>
 
       <div v-if="loading" class="activity-dashboard__loading">
-        Loading login information...
+        加载登录信息中...
       </div>
 
       <div v-else class="login-info">
         <div class="login-info__item">
-          <span class="login-info__label">Time</span>
+          <span class="login-info__label">登录时间</span>
           <span class="login-info__value">{{ formatTime(activity.lastLogin) }}</span>
         </div>
         <div class="login-info__item">
-          <span class="login-info__label">IP Address</span>
+          <span class="login-info__label">IP 地址</span>
           <span class="login-info__value">{{ activity.lastLoginIp }}</span>
         </div>
       </div>
