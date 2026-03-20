@@ -5,6 +5,7 @@ import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.req.PasswordChangeReq;
 import com.adminplus.pojo.dto.req.ProfileUpdateReq;
 import com.adminplus.pojo.dto.req.SettingsUpdateReq;
+import com.adminplus.pojo.dto.resp.ActivityStatsResp;
 import com.adminplus.pojo.dto.resp.AvatarUploadResp;
 import com.adminplus.pojo.dto.resp.ProfileResp;
 import com.adminplus.pojo.dto.resp.SettingsResp;
@@ -88,5 +89,14 @@ public class ProfileController {
     public ApiResponse<SettingsResp> updateSettings(@Valid @RequestBody SettingsUpdateReq req) {
         SettingsResp settings = profileService.updateSettings(req);
         return ApiResponse.ok(settings);
+    }
+
+    @GetMapping("/activity")
+    @Operation(summary = "获取用户活动统计")
+    @OperationLog(module = "个人中心", operationType = 1, description = "查看活动统计")
+    @PreAuthorize("isAuthenticated()")
+    public ApiResponse<ActivityStatsResp> getActivityStats() {
+        ActivityStatsResp stats = profileService.getActivityStats();
+        return ApiResponse.ok(stats);
     }
 }

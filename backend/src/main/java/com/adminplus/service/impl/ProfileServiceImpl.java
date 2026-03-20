@@ -4,6 +4,8 @@ import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.req.PasswordChangeReq;
 import com.adminplus.pojo.dto.req.ProfileUpdateReq;
 import com.adminplus.pojo.dto.req.SettingsUpdateReq;
+import com.adminplus.pojo.dto.resp.ActivityItemResp;
+import com.adminplus.pojo.dto.resp.ActivityStatsResp;
 import com.adminplus.pojo.dto.resp.ProfileResp;
 import com.adminplus.pojo.dto.resp.SettingsResp;
 import com.adminplus.pojo.entity.UserEntity;
@@ -24,6 +26,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * 个人中心服务实现
@@ -275,5 +282,74 @@ public class ProfileServiceImpl implements ProfileService {
             return "***";
         }
         return username.charAt(0) + "***" + username.charAt(username.length() - 1);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ActivityStatsResp getActivityStats() {
+        String userId = SecurityUtils.getCurrentUserId();
+        UserEntity user = profileRepository.findById(userId)
+                .orElseThrow(() -> new BizException("用户不存在"));
+
+        // 生成模拟数据（实际实现应从审计日志表查询）
+        Instant now = Instant.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault());
+
+        // 计算最近登录时间（使用用户最后更新时间作为参考）
+        String lastLogin = user.getUpdateTime() != null
+                ? formatter.format(user.getUpdateTime())
+                : formatter.format(now);
+
+        // 模拟最近登录IP
+        String lastLoginIp = "192.168.1.100";
+
+        // 模拟活跃天数
+        int daysActive = 45;
+
+        // 模拟总操作次数
+        int totalActions = 128;
+
+        // 模拟最近活动记录
+        List<ActivityItemResp> recentActivity = List.of(
+                new ActivityItemResp(
+                        "1",
+                        "更新个人信息",
+                        formatter.format(now.minusSeconds(3600)),
+                        "update"
+                ),
+                new ActivityItemResp(
+                        "2",
+                        "创建新用户",
+                        formatter.format(now.minusSeconds(86400)),
+                        "create"
+                ),
+                new ActivityItemResp(
+                        "3",
+                        "系统登录",
+                        formatter.format(now.minusSeconds(172800)),
+                        "login"
+                ),
+                new ActivityItemResp(
+                        "4",
+                        "删除过期数据",
+                        formatter.format(now.minusSeconds(259200)),
+                        "delete"
+                ),
+                new ActivityItemResp(
+                        "5",
+                        "修改系统设置",
+                        formatter.format(now.minusSeconds(345600)),
+                        "update"
+                )
+        );
+
+        return new ActivityStatsResp(
+                daysActive,
+                totalActions,
+                lastLogin,
+                lastLoginIp,
+                recentActivity
+        );
     }
 }

@@ -3,6 +3,7 @@ package com.adminplus.service;
 import com.adminplus.pojo.dto.req.PasswordChangeReq;
 import com.adminplus.pojo.dto.req.ProfileUpdateReq;
 import com.adminplus.pojo.dto.req.SettingsUpdateReq;
+import com.adminplus.pojo.dto.resp.ActivityStatsResp;
 import com.adminplus.pojo.dto.resp.ProfileResp;
 import com.adminplus.pojo.dto.resp.SettingsResp;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,4 +45,9 @@ public interface ProfileService {
      * 更新用户设置
      */
     SettingsResp updateSettings(SettingsUpdateReq req);
+
+    /**
+     * 获取用户活动统计
+     */
+    ActivityStatsResp getActivityStats();
 }
