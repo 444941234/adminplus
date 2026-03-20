@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
 import ProfileHero from '@/components/profile/ProfileHero.vue'
 import ProfileInfo from '@/components/profile/ProfileInfo.vue'
 import ProfileSecurity from '@/components/profile/ProfileSecurity.vue'
 import ActivityDashboard from '@/components/profile/ActivityDashboard.vue'
 import QuickSettings from '@/components/profile/QuickSettings.vue'
-import CompletionBadge from '@/components/profile/CompletionBadge.vue'
 import { getProfile, updateProfile, getActivityStats } from '@/api'
 import type { Profile, ActivityStats } from '@/types'
 
@@ -16,9 +15,6 @@ const activityStats = ref<ActivityStats | null>(null)
 const profileLoading = ref(false)
 const activityLoading = ref(false)
 const updating = ref(false)
-
-// Computed properties
-const hasAvatar = computed(() => !!profile.value?.avatar)
 
 // Data fetching
 const fetchProfile = async () => {
@@ -135,16 +131,6 @@ onMounted(() => {
       <!-- Right Column: Quick Settings (1fr) -->
       <div class="profile-page__settings">
         <QuickSettings />
-
-        <!-- Completion Badge -->
-        <div class="profile-page__completion">
-          <CompletionBadge
-            :nickname="profile.nickname"
-            :email="profile.email"
-            :phone="profile.phone"
-            :has-avatar="hasAvatar"
-          />
-        </div>
       </div>
     </div>
   </div>
