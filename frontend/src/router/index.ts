@@ -94,15 +94,24 @@ export const resetDynamicRoutes = () => {
 
 export const ensureDynamicRoutes = async () => {
   const userStore = useUserStore()
+  // Restore token from localStorage if needed
+  userStore.restoreToken()
+
   if (!userStore.token) {
     resetDynamicRoutes()
     return
   }
 
   if (!dynamicRoutesLoaded) {
-    await userStore.fetchUserInfo()
-    addDynamicRoutes(userStore.menus)
-    dynamicRoutesLoaded = true
+    try {
+      await userStore.fetchUserInfo()
+      addDynamicRoutes(userStore.menus)
+      dynamicRoutesLoaded = true
+    } catch (error) {
+      console.error('Failed to load dynamic routes:', error)
+      // Don't set dynamicRoutesLoaded to true on error, so we can retry
+      // But also don't block navigation - let the user through to static routes
+    }
   }
 }
 

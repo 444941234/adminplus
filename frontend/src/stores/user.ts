@@ -91,6 +91,19 @@ export const useUserStore = defineStore('user', () => {
     return userInfo.value?.roles?.includes(roleCode) || false
   }
 
+  // 从 localStorage 恢复 token（用于刷新后同步状态）
+  const restoreToken = () => {
+    const savedToken = localStorage.getItem('token')
+    const savedRefreshToken = localStorage.getItem('refreshToken')
+    if (savedToken && !token.value) {
+      token.value = savedToken
+    }
+    if (savedRefreshToken && !refreshToken.value) {
+      refreshToken.value = savedRefreshToken
+    }
+    return !!token.value
+  }
+
   return {
     token,
     refreshToken,
@@ -107,6 +120,7 @@ export const useUserStore = defineStore('user', () => {
     fetchUserInfo,
     fetchCaptcha,
     hasPermission,
-    hasRole
+    hasRole,
+    restoreToken
   }
 })
