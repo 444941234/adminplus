@@ -1,6 +1,6 @@
 package com.adminplus.pojo.dto.req;
 
-import java.util.Map;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * 更新用户设置请求 DTO
@@ -9,6 +9,10 @@ import java.util.Map;
  * @since 2026-02-07
  */
 public record SettingsUpdateReq(
-        Map<String, Object> settings
+        Boolean notifications,
+        Boolean darkMode,
+        Boolean emailUpdates,
+        @NotBlank(message = "语言不能为空")
+        String language
 ) {
 }

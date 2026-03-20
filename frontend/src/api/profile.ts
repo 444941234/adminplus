@@ -1,5 +1,5 @@
 import { get, put, post, upload } from './request'
-import type { Profile } from '@/types'
+import type { Profile, UserSettings } from '@/types'
 
 // 获取个人资料
 export function getProfile() {
@@ -21,20 +21,12 @@ export function uploadAvatar(file: File) {
   return upload<{ avatarUrl: string }>('/profile/avatar', file)
 }
 
-// 用户设置
-export interface Settings {
-  theme: 'light' | 'dark' | 'auto'
-  language: string
-  notification: boolean
-  emailNotification: boolean
-}
-
-// 获取设置
+// 获取用户设置
 export function getSettings() {
-  return get<Settings>('/profile/settings')
+  return get<UserSettings>('/profile/settings')
 }
 
-// 更新设置
-export function updateSettings(data: Partial<Settings>) {
-  return put<Settings>('/profile/settings', data)
+// 更新用户设置
+export function updateSettings(data: Partial<UserSettings>) {
+  return put<UserSettings>('/profile/settings', data)
 }

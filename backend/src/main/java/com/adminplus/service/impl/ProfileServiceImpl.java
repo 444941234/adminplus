@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -170,13 +171,18 @@ public class ProfileServiceImpl implements ProfileService {
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
-        // 如果 settings 为 null，返回空 Map 而不是 null
+        // 获取用户设置，如果为 null 则使用默认值
         Map<String, Object> settings = user.getSettings();
         if (settings == null) {
-            settings = Map.of();
+            return new SettingsResp(true, false, true, "zh-CN");
         }
 
-        return new SettingsResp(settings);
+        return new SettingsResp(
+                getBooleanSetting(settings, "notifications", true),
+                getBooleanSetting(settings, "darkMode", false),
+                getBooleanSetting(settings, "emailUpdates", true),
+                getStringSetting(settings, "language", "zh-CN")
+        );
     }
 
     @Override
@@ -186,18 +192,52 @@ public class ProfileServiceImpl implements ProfileService {
         UserEntity user = profileRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
-        // 合并设置
+        // 获取当前设置
         Map<String, Object> currentSettings = user.getSettings();
         if (currentSettings == null) {
-            currentSettings = req.settings();
-        } else {
-            currentSettings.putAll(req.settings());
+            currentSettings = new java.util.HashMap<>();
+        }
+
+        // 更新设置
+        if (req.notifications() != null) {
+            currentSettings.put("notifications", req.notifications());
+        }
+        if (req.darkMode() != null) {
+            currentSettings.put("darkMode", req.darkMode());
+        }
+        if (req.emailUpdates() != null) {
+            currentSettings.put("emailUpdates", req.emailUpdates());
+        }
+        if (req.language() != null) {
+            currentSettings.put("language", req.language());
         }
 
         user.setSettings(currentSettings);
         user = profileRepository.save(user);
 
-        return new SettingsResp(user.getSettings());
+        return getSettings();
+    }
+
+    /**
+     * 从设置 Map 中获取布尔值
+     */
+    private boolean getBooleanSetting(Map<String, Object> settings, String key, boolean defaultValue) {
+        Object value = settings.get(key);
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        return defaultValue;
+    }
+
+    /**
+     * 从设置 Map 中获取字符串值
+     */
+    private String getStringSetting(Map<String, Object> settings, String key, String defaultValue) {
+        Object value = settings.get(key);
+        if (value instanceof String) {
+            return (String) value;
+        }
+        return defaultValue;
     }
 
     /**
