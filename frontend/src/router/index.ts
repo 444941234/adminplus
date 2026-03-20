@@ -152,7 +152,15 @@ router.beforeEach(async (to) => {
   }
 
   if (guardAction === 'retry-navigation' || guardAction === 'ensure-routes') {
+    const wasLoaded = dynamicRoutesLoaded
     await ensureDynamicRoutes()
+
+    // If routes were just loaded, retry navigation to match the newly added routes
+    if (!wasLoaded && dynamicRoutesLoaded) {
+      console.log('[router.beforeEach] Routes just loaded, retrying navigation to:', to.fullPath)
+      return { path: to.fullPath, replace: true }
+    }
+
     if (guardAction === 'retry-navigation') {
       console.log('[router.beforeEach] Retrying navigation to:', to.fullPath)
       return { path: to.fullPath, replace: true }
