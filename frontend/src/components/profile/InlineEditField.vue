@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Check, X, Loader2, Pencil } from 'lucide-vue-next'
+import { useInlineEdit } from '@/composables/useInlineEdit'
 
 interface Props {
   modelValue: string
@@ -31,23 +32,29 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
-const isEditing = ref(false)
-const inputValue = ref(props.modelValue)
 const inputRef = ref<HTMLInputElement | null>(null)
 
-// Update local value when modelValue changes externally
-watch(() => props.modelValue, (newValue) => {
-  inputValue.value = newValue
-})
+// Use the composable with onSave callback
+const { isEditing, value, isSaving, startEditing, cancelEdit, save } = useInlineEdit(
+  props.modelValue,
+  {
+    onSave: async (newValue: string) => {
+      emit('save', newValue.trim())
+    },
+    onError: (err) => {
+      console.error('Inline edit error:', err)
+    }
+  }
+)
 
 const displayValue = computed(() => {
   return props.modelValue || props.placeholder || 'Not set'
 })
 
-const startEditing = () => {
+// Wrapper for startEditing to handle refs and emit
+const handleStartEditing = () => {
   if (props.readonly || props.disabled || props.loading) return
-  inputValue.value = props.modelValue
-  isEditing.value = true
+  startEditing()
   emit('startEdit')
 
   // Focus input on next tick
@@ -56,29 +63,20 @@ const startEditing = () => {
   })
 }
 
-const cancelEdit = () => {
-  inputValue.value = props.modelValue
-  isEditing.value = false
+// Wrapper for cancelEdit to emit event
+const handleCancelEdit = () => {
+  cancelEdit()
   emit('cancel')
-}
-
-const saveEdit = () => {
-  if (inputValue.value.trim() === props.modelValue) {
-    isEditing.value = false
-    return
-  }
-
-  emit('save', inputValue.value.trim())
 }
 
 // Handle Enter key to save, Escape to cancel
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Enter') {
     e.preventDefault()
-    saveEdit()
+    save()
   } else if (e.key === 'Escape') {
     e.preventDefault()
-    cancelEdit()
+    handleCancelEdit()
   }
 }
 </script>
@@ -99,7 +97,7 @@ const handleKeydown = (e: KeyboardEvent) => {
         size="icon"
         class="inline-edit-field__edit-btn"
         :disabled="loading"
-        @click="startEditing"
+        @click="handleStartEditing"
       >
         <Pencil class="h-4 w-4" />
       </Button>
@@ -111,7 +109,7 @@ const handleKeydown = (e: KeyboardEvent) => {
         <label v-if="label" class="inline-edit-field__label">{{ label }}</label>
         <Input
           ref="inputRef"
-          v-model="inputValue"
+          v-model="value"
           :type="type"
           :placeholder="placeholder"
           class="inline-edit-field__input"
@@ -123,8 +121,8 @@ const handleKeydown = (e: KeyboardEvent) => {
           variant="ghost"
           size="icon"
           class="inline-edit-field__action-btn"
-          :disabled="loading"
-          @click="cancelEdit"
+          :disabled="loading || isSaving"
+          @click="handleCancelEdit"
         >
           <X class="h-4 w-4" />
         </Button>
@@ -132,10 +130,10 @@ const handleKeydown = (e: KeyboardEvent) => {
           variant="ghost"
           size="icon"
           class="inline-edit-field__action-btn is-save"
-          :disabled="loading || !inputValue.trim()"
-          @click="saveEdit"
+          :disabled="loading || isSaving || !value.trim()"
+          @click="save"
         >
-          <Loader2 v-if="loading" class="h-4 w-4 animate-spin" />
+          <Loader2 v-if="loading || isSaving" class="h-4 w-4 animate-spin" />
           <Check v-else class="h-4 w-4" />
         </Button>
       </div>
