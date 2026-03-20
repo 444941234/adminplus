@@ -69,17 +69,24 @@ const resolveViewComponent = (component?: string) => {
 
 const addDynamicRoutes = (menus: Parameters<typeof buildDynamicChildRoutes>[0]) => {
   const childRoutes = buildDynamicChildRoutes(menus, resolveViewComponent)
+  console.log('[addDynamicRoutes] Building routes from menus:', menus)
+  console.log('[addDynamicRoutes] Built child routes:', childRoutes)
 
   for (const childRoute of childRoutes) {
     const routeName = String(childRoute.name)
+    console.log('[addDynamicRoutes] Processing route:', routeName, 'path:', childRoute.path)
     if (router.hasRoute(routeName)) {
+      console.log('[addDynamicRoutes] Route already exists, skipping:', routeName)
       dynamicRouteNames.add(routeName)
       continue
     }
 
     router.addRoute('LayoutRoot', childRoute)
+    console.log('[addDynamicRoutes] Added route:', routeName, 'to LayoutRoot')
     dynamicRouteNames.add(routeName)
   }
+
+  console.log('[addDynamicRoutes] Current routes:', router.getRoutes().map(r => ({ name: r.name, path: r.path })))
 }
 
 export const resetDynamicRoutes = () => {
