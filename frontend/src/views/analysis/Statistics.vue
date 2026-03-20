@@ -1,391 +1,230 @@
-<template>
-  <div class="statistics-page">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>数据统计</span>
-          <el-button type="primary" :icon="Refresh" circle @click="loadData" :loading="loading" />
-        </div>
-      </template>
-
-      <!-- 统计卡片 -->
-      <div class="stats-cards">
-        <el-card
-          v-for="stat in statsData"
-          :key="stat.title"
-          shadow="hover"
-          class="stat-card"
-        >
-          <div class="stat-content">
-            <div
-              class="stat-icon"
-              :style="{ background: stat.color }"
-            >
-              <el-icon :size="24">
-                <component :is="getIconComponent(stat.icon)" />
-              </el-icon>
-            </div>
-            <div class="stat-info">
-              <div class="stat-value">
-                {{ stat.value }}
-              </div>
-              <div class="stat-title">
-                {{ stat.title }}
-              </div>
-            </div>
-          </div>
-        </el-card>
-      </div>
-
-      <!-- 图表区域 -->
-      <div class="charts-section">
-        <el-row :gutter="20">
-          <el-col :span="12">
-            <el-card header="用户增长趋势">
-              <div
-                ref="userChartRef"
-                class="chart-container"
-              />
-            </el-card>
-          </el-col>
-          <el-col :span="12">
-            <el-card header="访问量统计">
-              <div
-                ref="visitChartRef"
-                class="chart-container"
-              />
-            </el-card>
-          </el-col>
-        </el-row>
-      </div>
-    </el-card>
-  </div>
-</template>
-
-<script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { ElMessage } from '@/utils/elementCompat'
-import { Refresh } from '@/utils/iconCompat'
-import { getIconComponent } from '@/constants/icons'
-import * as echarts from 'echarts'
-import { getStatistics, getVisitTrend } from '@/api/dashboard'
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui'
+import { getOnlineUsers, getStatistics, getSystemInfo } from '@/api'
+import type { ChartData, OnlineUser, StatisticsData, SystemInfo } from '@/types'
+import { toast } from 'vue-sonner'
+import { Activity, Eye, TrendingUp, UserPlus } from 'lucide-vue-next'
 
 const loading = ref(false)
+const statistics = ref<StatisticsData | null>(null)
+const onlineUsers = ref<OnlineUser[]>([])
+const systemInfo = ref<SystemInfo | null>(null)
 
-const statsData = ref([
+const summaryCards = computed(() => [
   {
-    title: '总用户数',
-    value: '0',
-    icon: 'User',
-    color: '#409EFF'
+    label: '用户总数',
+    value: statistics.value?.totalUsers ?? 0,
+    icon: Activity,
+    accent: 'bg-blue-500'
   },
   {
-    title: '今日访问',
-    value: '0',
-    icon: 'View',
-    color: '#67C23A'
+    label: '今日访问',
+    value: statistics.value?.todayVisits ?? 0,
+    icon: Eye,
+    accent: 'bg-emerald-500'
   },
   {
-    title: '活跃用户',
-    value: '0',
-    icon: 'TrendCharts',
-    color: '#E6A23C'
+    label: '活跃用户',
+    value: statistics.value?.activeUsers ?? 0,
+    icon: TrendingUp,
+    accent: 'bg-orange-500'
   },
   {
-    title: '今日新增',
-    value: '0',
-    icon: 'Plus',
-    color: '#F56C6C'
+    label: '今日新增',
+    value: statistics.value?.todayNewUsers ?? 0,
+    icon: UserPlus,
+    accent: 'bg-violet-500'
   }
 ])
 
-const userChartRef = ref()
-const visitChartRef = ref()
-let userChart = null
-let visitChart = null
+const toNumbers = (values: Array<number | string> = []) => values.map((value) => Number(value) || 0)
 
-// 加载统计数据
-const loadData = async () => {
+const getMaxValue = (chart?: ChartData | null) => {
+  if (!chart) return 1
+  const values = toNumbers(chart.values)
+  return Math.max(...values, 1)
+}
+
+const formatDateTime = (value?: string | null) => {
+  if (!value) return '-'
+  return new Date(value).toLocaleString('zh-CN', { hour12: false })
+}
+
+const fetchData = async () => {
   loading.value = true
   try {
-    const [statsResp, visitResp] = await Promise.all([
+    const [statisticsRes, onlineUsersRes, systemInfoRes] = await Promise.all([
       getStatistics(),
-      getVisitTrend()
+      getOnlineUsers(),
+      getSystemInfo()
     ])
-
-    console.log('统计数据响应:', statsResp)
-    console.log('访问量数据响应:', visitResp)
-
-    // 响应拦截器已返回 data 部分，直接使用
-    if (statsResp) {
-      // 使用模块中的 ref 变量，而非 API 返回的普通对象
-      statsData.value = [
-        {
-          title: '总用户数',
-          value: formatNumber(statsResp.totalUsers || 0),
-          icon: 'User',
-          color: '#409EFF'
-        },
-        {
-          title: '今日访问',
-          value: formatNumber(statsResp.todayVisits || 0),
-          icon: 'View',
-          color: '#67C23A'
-        },
-        {
-          title: '活跃用户',
-          value: formatNumber(statsResp.activeUsers || 0),
-          icon: 'TrendCharts',
-          color: '#E6A23C'
-        },
-        {
-          title: '今日新增',
-          value: formatNumber(statsResp.todayNewUsers || 0),
-          icon: 'Plus',
-          color: '#F56C6C'
-        }
-      ]
-
-      // 更新用户增长图表
-      if (statsResp.userGrowthData) {
-        updateUserChart(statsResp.userGrowthData)
-      }
-    }
-
-    if (visitResp) {
-      // 更新访问量图表
-      updateVisitChart(visitResp)
-    }
+    statistics.value = statisticsRes.data
+    onlineUsers.value = onlineUsersRes.data
+    systemInfo.value = systemInfoRes.data
   } catch (error) {
-    console.error('加载统计数据失败:', error)
-    ElMessage.error('加载统计数据失败')
+    const message = error instanceof Error ? error.message : '获取统计信息失败'
+    toast.error(message)
   } finally {
     loading.value = false
   }
 }
 
-// 格式化数字
-const formatNumber = (num) => {
-  if (num >= 10000) {
-    return (num / 10000).toFixed(1) + 'w'
-  }
-  return num.toLocaleString()
-}
-
-// 初始化用户增长图表
-const initUserChart = (data) => {
-  if (!userChartRef.value) return
-
-  userChart = echarts.init(userChartRef.value)
-  const option = {
-    tooltip: {
-      trigger: 'axis'
-    },
-    legend: {
-      data: ['新增用户']
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      containLabel: true
-    },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: data?.labels || []
-    },
-    yAxis: {
-      type: 'value'
-    },
-    series: [
-      {
-        name: '新增用户',
-        type: 'line',
-        data: data?.values || [],
-        smooth: true,
-        lineStyle: {
-          color: '#5470C6'
-        },
-        areaStyle: {
-          color: 'rgba(84, 112, 198, 0.1)'
-        }
-      }
-    ]
-  }
-
-  userChart.setOption(option)
-}
-
-// 更新用户增长图表
-const updateUserChart = (data) => {
-  if (userChart) {
-    userChart.setOption({
-      xAxis: {
-        data: data.labels || []
-      },
-      series: [
-        {
-          data: data.values || []
-        }
-      ]
-    })
-  } else {
-    initUserChart(data)
-  }
-}
-
-// 初始化访问量图表
-const initVisitChart = (data) => {
-  if (!visitChartRef.value) return
-
-  visitChart = echarts.init(visitChartRef.value)
-  const option = {
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow'
-      }
-    },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '3%',
-      containLabel: true
-    },
-    xAxis: {
-      type: 'category',
-      data: data?.labels || []
-    },
-    yAxis: {
-      type: 'value'
-    },
-    series: [
-      {
-        name: '访问量',
-        type: 'bar',
-        data: data?.values || [],
-        itemStyle: {
-          color: '#91CC75'
-        }
-      }
-    ]
-  }
-
-  visitChart.setOption(option)
-}
-
-// 更新访问量图表
-const updateVisitChart = (data) => {
-  if (visitChart) {
-    visitChart.setOption({
-      xAxis: {
-        data: data.labels || []
-      },
-      series: [
-        {
-          data: data.values || []
-        }
-      ]
-    })
-  } else {
-    initVisitChart(data)
-  }
-}
-
-// 响应式调整图表大小
-const resizeCharts = () => {
-  userChart?.resize()
-  visitChart?.resize()
-}
-
-onMounted(async () => {
-  // 等待数据加载后初始化图表
-  await loadData()
-
-  // 如果图表还未初始化，则初始化
-  if (!userChart && userChartRef.value) {
-    initUserChart({ labels: [], values: [] })
-  }
-  if (!visitChart && visitChartRef.value) {
-    initVisitChart({ labels: [], values: [] })
-  }
-
-  window.addEventListener('resize', resizeCharts)
-})
-
-onUnmounted(() => {
-  userChart?.dispose()
-  visitChart?.dispose()
-  window.removeEventListener('resize', resizeCharts)
-})
+onMounted(fetchData)
 </script>
 
-<style scoped>
-.statistics-page {
-}
+<template>
+  <div class="space-y-6">
+    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <Card v-for="card in summaryCards" :key="card.label">
+        <CardContent class="flex items-center justify-between p-6">
+          <div>
+            <p class="text-sm text-muted-foreground">{{ card.label }}</p>
+            <p class="mt-2 text-3xl font-semibold">{{ loading ? '...' : card.value }}</p>
+          </div>
+          <div :class="[card.accent, 'flex h-12 w-12 items-center justify-center rounded-xl text-white']">
+            <component :is="card.icon" class="h-6 w-6" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 500;
-}
+    <div class="grid gap-6 xl:grid-cols-2">
+      <Card>
+        <CardHeader>
+          <CardTitle>用户增长趋势</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div v-if="!statistics?.userGrowthData?.labels?.length" class="py-10 text-center text-sm text-muted-foreground">
+            暂无趋势数据
+          </div>
+          <div v-else class="space-y-4">
+            <div
+              v-for="(label, index) in statistics.userGrowthData.labels"
+              :key="`${label}-${index}`"
+              class="space-y-2"
+            >
+              <div class="flex items-center justify-between text-sm">
+                <span>{{ label }}</span>
+                <span class="font-medium">{{ toNumbers(statistics.userGrowthData.values)[index] ?? 0 }}</span>
+              </div>
+              <div class="h-2 rounded-full bg-muted">
+                <div
+                  class="h-2 rounded-full bg-primary transition-all"
+                  :style="{
+                    width: `${(toNumbers(statistics.userGrowthData.values)[index] ?? 0) / getMaxValue(statistics.userGrowthData) * 100}%`
+                  }"
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-.stats-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
+      <Card>
+        <CardHeader>
+          <CardTitle>访问量趋势</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div v-if="!statistics?.visitTrendData?.labels?.length" class="py-10 text-center text-sm text-muted-foreground">
+            暂无访问数据
+          </div>
+          <div v-else class="space-y-4">
+            <div
+              v-for="(label, index) in statistics.visitTrendData.labels"
+              :key="`${label}-${index}`"
+              class="space-y-2"
+            >
+              <div class="flex items-center justify-between text-sm">
+                <span>{{ label }}</span>
+                <span class="font-medium">{{ toNumbers(statistics.visitTrendData.values)[index] ?? 0 }}</span>
+              </div>
+              <div class="h-2 rounded-full bg-muted">
+                <div
+                  class="h-2 rounded-full bg-emerald-500 transition-all"
+                  :style="{
+                    width: `${(toNumbers(statistics.visitTrendData.values)[index] ?? 0) / getMaxValue(statistics.visitTrendData) * 100}%`
+                  }"
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
 
-.stat-card {
-  cursor: pointer;
-  transition: transform 0.3s;
-}
+    <div class="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <Card>
+        <CardHeader>
+          <CardTitle>在线用户</CardTitle>
+        </CardHeader>
+        <CardContent class="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>用户名</TableHead>
+                <TableHead>IP</TableHead>
+                <TableHead>浏览器</TableHead>
+                <TableHead>操作系统</TableHead>
+                <TableHead>登录时间</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-if="loading">
+                <TableCell colspan="5" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
+              </TableRow>
+              <TableRow v-else-if="onlineUsers.length === 0">
+                <TableCell colspan="5" class="h-24 text-center text-muted-foreground">暂无在线用户</TableCell>
+              </TableRow>
+              <TableRow v-for="user in onlineUsers" :key="user.userId">
+                <TableCell class="font-medium">{{ user.username }}</TableCell>
+                <TableCell>{{ user.ip || '-' }}</TableCell>
+                <TableCell>{{ user.browser || '-' }}</TableCell>
+                <TableCell>{{ user.os || '-' }}</TableCell>
+                <TableCell>{{ formatDateTime(user.loginTime) }}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-.stat-card:hover {
-  transform: translateY(-5px);
-}
-
-.stat-content {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 60px;
-  height: 60px;
-  border-radius: 10px;
-  color: white;
-}
-
-.stat-info {
-  flex: 1;
-}
-
-.stat-value {
-  font-size: 24px;
-  font-weight: bold;
-  color: #303133;
-  margin-bottom: 5px;
-}
-
-.stat-title {
-  font-size: 14px;
-  color: #909399;
-}
-
-.charts-section {
-  margin-top: 30px;
-}
-
-.chart-container {
-  height: 300px;
-  width: 100%;
-}
-</style>
+      <Card>
+        <CardHeader>
+          <CardTitle>系统信息</CardTitle>
+        </CardHeader>
+        <CardContent class="space-y-4">
+          <div class="grid grid-cols-[96px_1fr] gap-y-3 text-sm">
+            <template v-if="systemInfo">
+              <span class="text-muted-foreground">系统</span>
+              <span>{{ systemInfo.osName }} {{ systemInfo.osVersion }}</span>
+              <span class="text-muted-foreground">Java</span>
+              <span>{{ systemInfo.javaVersion }}</span>
+              <span class="text-muted-foreground">JVM 内存</span>
+              <span>{{ systemInfo.jvmMemory }}</span>
+              <span class="text-muted-foreground">CPU 使用率</span>
+              <span>{{ systemInfo.cpuUsage }}%</span>
+              <span class="text-muted-foreground">内存使用率</span>
+              <span>{{ systemInfo.memoryUsage }}%</span>
+              <span class="text-muted-foreground">磁盘使用率</span>
+              <span>{{ systemInfo.diskUsage }}%</span>
+            </template>
+            <template v-else>
+              <span class="col-span-2 py-8 text-center text-muted-foreground">暂无系统信息</span>
+            </template>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+</template>

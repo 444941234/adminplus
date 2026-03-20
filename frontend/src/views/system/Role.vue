@@ -1,430 +1,506 @@
-<template>
-  <div class="role-page">
-    <BmCard class="role-table-card">
-      <template #header>
-        <div class="card-header">
-          <span class="card-title">角色管理</span>
-          <BmButton type="primary" @click="handleAdd">
-            <span class="icon-plus">+</span>
-            新增角色
-          </BmButton>
-        </div>
-      </template>
-
-      <!-- 数据表格 -->
-      <BmTable
-        :data="tableData"
-        :columns="tableColumns"
-        :loading="loading"
-        border
-      >
-        <template #dataScope="{ row }">
-          <span class="data-scope-tag" :class="`scope-${row.dataScope}`">
-            {{ getDataScopeText(row.dataScope) }}
-          </span>
-        </template>
-        <template #status="{ row }">
-          <span class="status-tag" :class="row.status === 1 ? 'status-enabled' : 'status-disabled'">
-            {{ row.status === 1 ? '正常' : '禁用' }}
-          </span>
-        </template>
-        <template #actions="{ row }">
-          <div class="action-buttons">
-            <BmButton type="primary" size="small" @click="handleEdit(row)">
-              编辑
-            </BmButton>
-            <BmButton type="warning" size="small" @click="handleAssignMenu(row)">
-              分配权限
-            </BmButton>
-            <BmButton type="danger" size="small" @click="handleDelete(row)">
-              删除
-            </BmButton>
-          </div>
-        </template>
-      </BmTable>
-    </BmCard>
-
-    <!-- 新增/编辑对话框 -->
-    <BmModal
-      v-model:visible="dialogVisible"
-      :title="dialogTitle"
-      width="500px"
-      @close="handleDialogClose"
-    >
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="100px"
-      >
-        <el-form-item label="角色编码" prop="code">
-          <BmInput
-            v-model="form.code"
-            placeholder="请输入角色编码（如：ROLE_ADMIN）"
-            :disabled="isEdit"
-          />
-        </el-form-item>
-        <el-form-item label="角色名称" prop="name">
-          <BmInput
-            v-model="form.name"
-            placeholder="请输入角色名称"
-          />
-        </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <BmInput
-            v-model="form.description"
-            type="textarea"
-            placeholder="请输入描述"
-          />
-        </el-form-item>
-        <el-form-item label="数据权限" prop="dataScope">
-          <BmSelect
-            v-model="form.dataScope"
-            placeholder="请选择数据权限"
-          >
-            <option label="全部数据" :value="1" />
-            <option label="本部门" :value="2" />
-            <option label="本部门及以下" :value="3" />
-            <option label="仅本人" :value="4" />
-          </BmSelect>
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <BmRadioGroup v-model="form.status">
-            <BmRadio :value="1">正常</BmRadio>
-            <BmRadio :value="0">禁用</BmRadio>
-          </BmRadioGroup>
-        </el-form-item>
-        <el-form-item label="排序" prop="sortOrder">
-          <el-input-number
-            v-model="form.sortOrder"
-            :min="0"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <BmButton @click="dialogVisible = false">取消</BmButton>
-        <BmButton
-          type="primary"
-          :loading="submitLoading"
-          @click="handleSubmit"
-        >
-          确定
-        </BmButton>
-      </template>
-    </BmModal>
-
-    <!-- 分配权限对话框 -->
-    <BmModal
-      v-model:visible="menuDialogVisible"
-      title="分配菜单权限"
-      width="500px"
-      @close="handleMenuDialogClose"
-    >
-      <el-tree
-        ref="menuTreeRef"
-        :data="menuTreeData"
-        :props="{ label: 'name', children: 'children' }"
-        node-key="id"
-        show-checkbox
-        default-expand-all
-      />
-      <template #footer>
-        <BmButton @click="menuDialogVisible = false">取消</BmButton>
-        <BmButton
-          type="primary"
-          :loading="menuSubmitLoading"
-          @click="handleMenuSubmit"
-        >
-          确定
-        </BmButton>
-      </template>
-    </BmModal>
-  </div>
-</template>
-
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
-import { ElMessage, ElForm, ElFormItem, ElInputNumber, ElTree } from 'element-plus';
-import { BmCard, BmButton, BmTable, BmModal, BmInput, BmSelect, BmRadio, BmRadioGroup } from '@adminplus/ui-vue';
-import { getRoleList, createRole, updateRole, deleteRole, assignMenus, getRoleMenuIds } from '@/api/role';
-import { getMenuTree } from '@/api/menu';
-import { useConfirm } from '@/composables/useConfirm';
+import { computed, onMounted, reactive, ref } from 'vue'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Checkbox,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  ScrollArea,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui'
+import { Edit, KeyRound, Plus, Search, Trash2 } from 'lucide-vue-next'
+import { assignMenus, createRole, deleteRole, getMenuTree, getRoleById, getRoleList, getRoleMenus, updateRole } from '@/api'
+import { getRolePagePermissionState } from '@/lib/page-permissions'
+import { isValidRoleCode } from '@/lib/validators'
+import type { Menu, Role } from '@/types'
+import { useUserStore } from '@/stores/user'
+import { toast } from 'vue-sonner'
 
-defineOptions({
-  name: 'Role'
-});
+interface RoleFormState {
+  name: string
+  code: string
+  description: string
+  dataScope: string
+  status: string
+  sortOrder: number
+}
 
-const loading = ref(false);
-const submitLoading = ref(false);
-const menuSubmitLoading = ref(false);
-const dialogVisible = ref(false);
-const menuDialogVisible = ref(false);
-const dialogTitle = ref('新增角色');
-const isEdit = ref(false);
-const tableData = ref([]);
-const menuTreeData = ref([]);
-const currentRoleId = ref(null);
+interface MenuOption {
+  id: string
+  label: string
+  level: number
+  disabled: boolean
+}
 
-const formRef = ref();
-const menuTreeRef = ref();
-const form = reactive({
-  id: null,
-  code: '',
+const loading = ref(false)
+const roles = ref<Role[]>([])
+const menus = ref<Menu[]>([])
+const searchQuery = ref('')
+const userStore = useUserStore()
+
+const dialogOpen = ref(false)
+const dialogLoading = ref(false)
+const isEdit = ref(false)
+const editId = ref('')
+
+const deleteDialogOpen = ref(false)
+const deleteRoleId = ref('')
+
+const assignDialogOpen = ref(false)
+const assignLoading = ref(false)
+const assignRole = ref<Role | null>(null)
+const selectedMenuIds = ref<string[]>([])
+
+const form = reactive<RoleFormState>({
   name: '',
+  code: '',
   description: '',
-  dataScope: 1,
-  status: 1,
+  dataScope: '1',
+  status: '1',
   sortOrder: 0
-});
+})
 
-const rules = {
-  code: [{ required: true, message: '请输入角色编码', trigger: 'blur' }],
-  name: [{ required: true, message: '请输入角色名称', trigger: 'blur' }]
-};
+const permissionState = computed(() => getRolePagePermissionState(userStore.hasPermission))
+const canAddRole = computed(() => permissionState.value.canAddRole)
+const canEditRole = computed(() => permissionState.value.canEditRole)
+const canDeleteRole = computed(() => permissionState.value.canDeleteRole)
+const canAssignRole = computed(() => permissionState.value.canAssignRole)
 
-// 表格列定义
-const tableColumns = [
-  { prop: 'id', label: 'ID', width: '80px', align: 'center' as const },
-  { prop: 'code', label: '角色编码', width: '150px' },
-  { prop: 'name', label: '角色名称', width: '150px' },
-  { prop: 'description', label: '描述' },
-  { prop: 'dataScope', label: '数据权限', width: '120px', align: 'center' as const },
-  { prop: 'status', label: '状态', width: '100px', align: 'center' as const },
-  { prop: 'sortOrder', label: '排序', width: '80px', align: 'center' as const },
-  { prop: 'actions', label: '操作', width: '280px', align: 'center' as const }
-];
+const getRoleName = (role: Role) => role.roleName ?? role.name ?? ''
+const getRoleCode = (role: Role) => role.roleCode ?? role.code ?? ''
+const getRoleSort = (role: Role) => role.sort ?? role.sortOrder ?? 0
+const getRoleDataScope = (role: Role) => role.dataScope ?? 1
 
-// 确认操作
-const confirmDelete = useConfirm({
-  message: '确定要删除该角色吗？',
-  type: 'warning'
-});
+const resetForm = () => {
+  Object.assign(form, {
+    name: '',
+    code: '',
+    description: '',
+    dataScope: '1',
+    status: '1',
+    sortOrder: 0
+  })
+}
 
-const getDataScopeText = (scope: number) => {
-  const texts: Record<number, string> = { 1: '全部数据', 2: '本部门', 3: '本部门及以下', 4: '仅本人' };
-  return texts[scope] || '未知';
-};
+const filteredRoles = computed(() => {
+  const keyword = searchQuery.value.trim().toLowerCase()
+  if (!keyword) return roles.value
 
-const getData = async () => {
-  loading.value = true;
+  return roles.value.filter((role) =>
+    [getRoleName(role), getRoleCode(role), role.description ?? ''].some((value) =>
+      value.toLowerCase().includes(keyword)
+    )
+  )
+})
+
+const menuOptions = computed<MenuOption[]>(() => {
+  const options: MenuOption[] = []
+  const walk = (menuList: Menu[], level = 0) => {
+    menuList.forEach((menu) => {
+      const type = menu.menuType ?? menu.type ?? 1
+      options.push({
+        id: menu.id,
+        label: menu.menuName ?? menu.name ?? '',
+        level,
+        disabled: false
+      })
+      if (menu.children?.length) {
+        walk(menu.children, level + 1)
+      }
+      if (type === 1 && !menu.children?.length) {
+        options[options.length - 1].disabled = false
+      }
+    })
+  }
+  walk(menus.value)
+  return options
+})
+
+const fetchRoles = async () => {
+  loading.value = true
   try {
-    const data = await getRoleList();
-    tableData.value = data.records;
-  } catch {
-    ElMessage.error('获取角色列表失败');
+    const res = await getRoleList()
+    roles.value = res.data.records || []
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取角色列表失败'
+    toast.error(message)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
-const getMenuData = async () => {
+const fetchMenus = async () => {
   try {
-    menuTreeData.value = await getMenuTree();
-  } catch {
-    ElMessage.error('获取菜单树失败');
+    const res = await getMenuTree()
+    menus.value = res.data
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取菜单列表失败'
+    toast.error(message)
   }
-};
+}
+
+const handleSearch = () => {}
 
 const handleAdd = () => {
-  isEdit.value = false;
-  dialogTitle.value = '新增角色';
-  dialogVisible.value = true;
-};
+  resetForm()
+  isEdit.value = false
+  editId.value = ''
+  dialogOpen.value = true
+}
 
-const handleEdit = (row: any) => {
-  isEdit.value = true;
-  dialogTitle.value = '编辑角色';
-  Object.assign(form, row);
-  dialogVisible.value = true;
-};
-
-const handleDialogClose = () => {
-  formRef.value?.resetFields();
-  Object.assign(form, {
-    id: null,
-    code: '',
-    name: '',
-    description: '',
-    dataScope: 1,
-    status: 1,
-    sortOrder: 0
-  });
-};
+const handleEdit = async (id: string) => {
+  isEdit.value = true
+  editId.value = id
+  dialogLoading.value = true
+  dialogOpen.value = true
+  try {
+    const res = await getRoleById(id)
+    const role = res.data
+    Object.assign(form, {
+      name: getRoleName(role),
+      code: getRoleCode(role),
+      description: role.description || '',
+      dataScope: String(getRoleDataScope(role)),
+      status: String(role.status ?? 1),
+      sortOrder: getRoleSort(role)
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取角色详情失败'
+    toast.error(message)
+    dialogOpen.value = false
+  } finally {
+    dialogLoading.value = false
+  }
+}
 
 const handleSubmit = async () => {
-  await formRef.value.validate();
+  if (!form.name.trim()) {
+    toast.warning('请输入角色名称')
+    return
+  }
+  if (!isEdit.value && !form.code.trim()) {
+    toast.warning('请输入角色编码')
+    return
+  }
+  if (!isEdit.value && !isValidRoleCode(form.code.trim())) {
+    toast.warning('角色编码需以字母开头，只能包含字母、数字、下划线、冒号或短横线')
+    return
+  }
 
-  submitLoading.value = true;
+  dialogLoading.value = true
   try {
     if (isEdit.value) {
-      await updateRole(form.id, form);
-      ElMessage.success('更新成功');
+      await updateRole(editId.value, {
+        name: form.name.trim(),
+        description: form.description.trim() || undefined,
+        dataScope: Number(form.dataScope),
+        status: Number(form.status),
+        sortOrder: Number(form.sortOrder) || 0
+      })
+      toast.success('角色更新成功')
     } else {
-      await createRole(form);
-      ElMessage.success('创建成功');
+      await createRole({
+        code: form.code.trim(),
+        name: form.name.trim(),
+        description: form.description.trim() || undefined,
+        dataScope: Number(form.dataScope),
+        status: Number(form.status),
+        sortOrder: Number(form.sortOrder) || 0
+      })
+      toast.success('角色创建成功')
     }
-    dialogVisible.value = false;
-    getData();
-  } catch {
-    // 错误已在验证或 API 中处理
+    dialogOpen.value = false
+    await fetchRoles()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '保存角色失败'
+    toast.error(message)
   } finally {
-    submitLoading.value = false;
+    dialogLoading.value = false
   }
-};
+}
 
-const handleAssignMenu = async (row: any) => {
-  currentRoleId.value = row.id;
-  menuDialogVisible.value = true;
+const handleDeleteConfirm = (id: string) => {
+  deleteRoleId.value = id
+  deleteDialogOpen.value = true
+}
 
-  // 加载菜单树
-  await getMenuData();
-
-  // 加载角色已有的菜单
+const handleDelete = async () => {
   try {
-    const menuIds = await getRoleMenuIds(row.id);
-    menuTreeRef.value?.setCheckedKeys(menuIds);
-  } catch {
-    ElMessage.error('获取角色菜单失败');
-  }
-};
-
-const handleMenuDialogClose = () => {
-  menuTreeRef.value?.setCheckedKeys([]);
-};
-
-const handleMenuSubmit = async () => {
-  const checkedKeys = menuTreeRef.value?.getCheckedKeys() || [];
-  const halfCheckedKeys = menuTreeRef.value?.getHalfCheckedKeys() || [];
-  const allCheckedKeys = [...checkedKeys, ...halfCheckedKeys];
-
-  menuSubmitLoading.value = true;
-  try {
-    await assignMenus(currentRoleId.value, allCheckedKeys);
-    ElMessage.success('分配权限成功');
-    menuDialogVisible.value = false;
-  } catch {
-    ElMessage.error('分配权限失败');
+    await deleteRole(deleteRoleId.value)
+    toast.success('角色删除成功')
+    await fetchRoles()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '删除角色失败'
+    toast.error(message)
   } finally {
-    menuSubmitLoading.value = false;
+    deleteDialogOpen.value = false
   }
-};
+}
 
-const handleDelete = async (row: any) => {
+const toggleMenuSelection = (menuId: string, checked: boolean) => {
+  const next = new Set(selectedMenuIds.value)
+  if (checked) {
+    next.add(menuId)
+  } else {
+    next.delete(menuId)
+  }
+  selectedMenuIds.value = Array.from(next)
+}
+
+const handleOpenAssign = async (role: Role) => {
+  assignRole.value = role
+  assignDialogOpen.value = true
+  assignLoading.value = true
   try {
-    await confirmDelete();
-    await deleteRole(row.id);
-    ElMessage.success('删除成功');
-    getData();
-  } catch {
-    // 取消操作
+    const [menuTreeRes, selectedRes] = await Promise.all([getMenuTree(), getRoleMenus(role.id)])
+    menus.value = menuTreeRes.data
+    selectedMenuIds.value = selectedRes.data
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取角色菜单权限失败'
+    toast.error(message)
+    assignDialogOpen.value = false
+  } finally {
+    assignLoading.value = false
   }
-};
+}
 
-onMounted(() => {
-  getData();
-});
+const handleAssignSubmit = async () => {
+  if (!assignRole.value) return
+  assignLoading.value = true
+  try {
+    await assignMenus(assignRole.value.id, selectedMenuIds.value)
+    toast.success('菜单权限分配成功')
+    assignDialogOpen.value = false
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '分配菜单权限失败'
+    toast.error(message)
+  } finally {
+    assignLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([fetchRoles(), fetchMenus()])
+})
 </script>
 
-<style scoped lang="scss">
-.role-page {
-  padding: 0;
-}
+<template>
+  <div class="space-y-4">
+    <Card>
+      <CardContent class="p-4">
+        <div class="flex items-center gap-4">
+          <Input
+            v-model="searchQuery"
+            placeholder="搜索角色名称、编码或描述"
+            class="w-80"
+            @keyup.enter="handleSearch"
+          />
+          <Button @click="handleSearch">
+            <Search class="mr-2 h-4 w-4" />
+            搜索
+          </Button>
+          <Button variant="outline" @click="searchQuery = ''">重置</Button>
+          <div class="flex-1" />
+          <Button v-if="canAddRole" @click="handleAdd">
+            <Plus class="mr-2 h-4 w-4" />
+            新增角色
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
 
-.role-table-card {
-  @include card-style;
+    <Card>
+      <CardContent class="p-0">
+        <table class="w-full">
+          <thead class="border-b bg-muted/50">
+            <tr>
+              <th class="p-4 text-left font-medium">角色名称</th>
+              <th class="p-4 text-left font-medium">角色编码</th>
+              <th class="p-4 text-left font-medium">描述</th>
+              <th class="p-4 text-left font-medium">数据范围</th>
+              <th class="p-4 text-left font-medium">状态</th>
+              <th class="p-4 text-left font-medium">排序</th>
+              <th class="p-4 text-left font-medium">操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr v-if="loading">
+              <td colspan="7" class="p-8 text-center text-muted-foreground">加载中...</td>
+            </tr>
+            <tr v-else-if="filteredRoles.length === 0">
+              <td colspan="7" class="p-8 text-center text-muted-foreground">暂无数据</td>
+            </tr>
+            <tr v-for="role in filteredRoles" :key="role.id" class="hover:bg-muted/30">
+              <td class="p-4 font-medium">{{ getRoleName(role) }}</td>
+              <td class="p-4">
+                <code class="rounded bg-muted px-2 py-0.5 text-sm">{{ getRoleCode(role) }}</code>
+              </td>
+              <td class="p-4 text-muted-foreground">{{ role.description || '-' }}</td>
+              <td class="p-4 text-muted-foreground">
+                {{ getRoleDataScope(role) === 1 ? '全部数据' : `范围 ${getRoleDataScope(role)}` }}
+              </td>
+              <td class="p-4">
+                <Badge :variant="role.status === 1 ? 'default' : 'destructive'">
+                  {{ role.status === 1 ? '正常' : '禁用' }}
+                </Badge>
+              </td>
+              <td class="p-4 text-muted-foreground">{{ getRoleSort(role) }}</td>
+              <td class="p-4">
+                <div class="flex gap-2">
+                  <Button v-if="canAssignRole" size="sm" variant="ghost" @click="handleOpenAssign(role)">
+                    <KeyRound class="h-4 w-4" />
+                  </Button>
+                  <Button v-if="canEditRole" size="sm" variant="ghost" @click="handleEdit(role.id)">
+                    <Edit class="h-4 w-4" />
+                  </Button>
+                  <Button
+                    v-if="canDeleteRole"
+                    size="sm"
+                    variant="ghost"
+                    class="text-destructive"
+                    @click="handleDeleteConfirm(role.id)"
+                  >
+                    <Trash2 class="h-4 w-4" />
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
 
-  :deep(.bm-card__header) {
-    border-bottom: 1px solid var(--border-color);
-    padding: var(--space-md) var(--space-lg);
-  }
+    <Dialog v-if="canAddRole || canEditRole" v-model:open="dialogOpen">
+      <DialogContent class="sm:max-w-[520px]">
+        <DialogHeader>
+          <DialogTitle>{{ isEdit ? '编辑角色' : '新增角色' }}</DialogTitle>
+        </DialogHeader>
+        <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
+        <div v-else class="space-y-4 py-2">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>角色名称</Label>
+              <Input v-model="form.name" placeholder="请输入角色名称" />
+            </div>
+            <div class="space-y-2">
+              <Label>角色编码</Label>
+              <Input
+                v-model="form.code"
+                :disabled="isEdit"
+                placeholder="例如：ROLE_MANAGER"
+              />
+            </div>
+          </div>
+          <div class="space-y-2">
+            <Label>描述</Label>
+            <Input v-model="form.description" placeholder="请输入角色描述" />
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="space-y-2">
+              <Label>数据范围</Label>
+              <Select v-model="form.dataScope">
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择数据范围" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">全部数据</SelectItem>
+                  <SelectItem value="2">本部门及以下</SelectItem>
+                  <SelectItem value="3">本部门</SelectItem>
+                  <SelectItem value="4">仅本人</SelectItem>
+                  <SelectItem value="5">自定义</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div class="space-y-2">
+              <Label>状态</Label>
+              <Select v-model="form.status">
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">正常</SelectItem>
+                  <SelectItem value="0">禁用</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div class="space-y-2">
+              <Label>排序</Label>
+              <Input
+                :model-value="String(form.sortOrder)"
+                type="number"
+                placeholder="排序值"
+                @update:model-value="form.sortOrder = Number($event) || 0"
+              />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="dialogOpen = false">取消</Button>
+          <Button :disabled="dialogLoading" @click="handleSubmit">{{ isEdit ? '保存' : '创建' }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
-  :deep(.bm-card__body) {
-    padding: var(--space-lg);
-  }
+    <Dialog v-if="canAssignRole" v-model:open="assignDialogOpen">
+      <DialogContent class="sm:max-w-[680px]">
+        <DialogHeader>
+          <DialogTitle>分配菜单权限{{ assignRole ? ` - ${getRoleName(assignRole)}` : '' }}</DialogTitle>
+        </DialogHeader>
+        <div v-if="assignLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
+        <ScrollArea v-else class="max-h-[420px] rounded-md border">
+          <div class="space-y-1 p-4">
+            <label
+              v-for="item in menuOptions"
+              :key="item.id"
+              class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 transition-colors hover:bg-muted/50"
+              :style="{ paddingLeft: `${item.level * 20 + 12}px` }"
+            >
+              <Checkbox
+                :checked="selectedMenuIds.includes(item.id)"
+                @update:checked="toggleMenuSelection(item.id, Boolean($event))"
+              />
+              <span class="text-sm">{{ item.label }}</span>
+            </label>
+          </div>
+        </ScrollArea>
+        <DialogFooter>
+          <Button variant="outline" @click="assignDialogOpen = false">取消</Button>
+          <Button :disabled="assignLoading" @click="handleAssignSubmit">保存授权</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
-
-  .card-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
-  }
-
-  .icon-plus {
-    font-size: 14px;
-    font-weight: bold;
-  }
-}
-
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-.data-scope-tag {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-
-  &.scope-1 {
-    background-color: #ecf5ff;
-    color: #409eff;
-  }
-
-  &.scope-2 {
-    background-color: #fdf6ec;
-    color: #e6a23c;
-  }
-
-  &.scope-3 {
-    background-color: #f0f9ff;
-    color: #67c23a;
-  }
-
-  &.scope-4 {
-    background-color: #fef0f0;
-    color: #f56c6c;
-  }
-}
-
-.status-tag {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-
-  &.status-enabled {
-    background-color: #f0f9ff;
-    color: #67c23a;
-  }
-
-  &.status-disabled {
-    background-color: #fef0f0;
-    color: #f56c6c;
-  }
-}
-
-@media (max-width: 767px) {
-  :deep(.bm-card__header) {
-    .card-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: var(--space-sm);
-    }
-  }
-
-  .action-buttons {
-    flex-direction: column;
-    gap: 4px;
-  }
-}
-</style>
+    <AlertDialog v-if="canDeleteRole" v-model:open="deleteDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>确认删除角色</AlertDialogTitle>
+          <AlertDialogDescription>删除后不可恢复，如果角色已绑定用户，后端可能会拒绝删除。</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogAction @click="handleDelete">确认删除</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </div>
+</template>

@@ -1,564 +1,486 @@
-<template>
-  <div class="dept-page">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>部门管理</span>
-          <div class="header-actions">
-            <el-button type="primary" @click="handleAdd">
-              <span class="icon-plus">+</span>
-              新增部门
-            </el-button>
-          </div>
-        </div>
-      </template>
+<script setup lang="ts">
+import { computed, onMounted, reactive, ref } from 'vue'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui'
+import { Edit, Plus, Search, Trash2 } from 'lucide-vue-next'
+import { createDept, deleteDept, getDeptById, getDeptTree, updateDept } from '@/api'
+import { isValidChinaPhone, isValidEmail } from '@/lib/validators'
+import type { Dept } from '@/types'
+import { useUserStore } from '@/stores/user'
+import { toast } from 'vue-sonner'
 
-      <!-- 部门树 -->
-      <el-tree
-        ref="treeRef"
-        v-loading="loading"
-        :data="treeData"
-        :props="treeProps"
-        node-key="id"
-        :indent="40"
-        :expand-on-click-node="false"
-        :default-expand-all="true"
-        highlight-current
-        class="dept-tree"
-        @node-click="handleNodeClick"
-      >
-        <template #default="{ node, data }">
-          <div class="tree-node" :class="`level-${node.level}`">
-            <div class="level-indicator">
-              <span class="level-number">L{{ node.level }}</span>
-            </div>
-            <div class="node-info">
-              <div class="node-name-row">
-                <span class="node-name">{{ node.label }}</span>
-                <span
-                  class="status-tag"
-                  :class="data.status === 1 ? 'status-enabled' : 'status-disabled'"
-                >
-                  {{ data.status === 1 ? '启用' : '禁用' }}
-                </span>
-              </div>
-              <div class="node-details">
-                <div class="detail-row">
-                  <span class="detail-label">编码</span>
-                  <span class="detail-value">{{ data.code || '-' }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">负责人</span>
-                  <span class="detail-value">{{ data.leader || '-' }}</span>
-                </div>
-                <div class="detail-row">
-                  <span class="detail-label">电话</span>
-                  <span class="detail-value">{{ data.phone || '-' }}</span>
-                </div>
-              </div>
-            </div>
-            <div class="node-actions">
-              <el-button type="primary" size="small" @click="handleAddChild(data)">添加子部门</el-button>
-              <el-button type="warning" size="small" @click="handleEdit(data)">编辑</el-button>
-              <el-button type="danger" size="small" @click="handleDelete(data)">删除</el-button>
-            </div>
-          </div>
-        </template>
-      </el-tree>
-    </el-card>
+interface DeptRow extends Dept {
+  displayName: string
+  displayCode: string
+  displaySort: number
+  level: number
+  hasChildren: boolean
+  isExpanded: boolean
+}
 
-    <!-- 部门编辑对话框 -->
-    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="80px"
-      >
-        <el-form-item label="部门名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入部门名称" />
-        </el-form-item>
-        <el-form-item label="部门编码" prop="code">
-          <el-input v-model="form.code" placeholder="请输入部门编码" />
-        </el-form-item>
-        <el-form-item label="负责人" prop="leader">
-          <el-input v-model="form.leader" placeholder="请输入负责人" />
-        </el-form-item>
-        <el-form-item label="联系电话" prop="phone">
-          <el-input v-model="form.phone" placeholder="请输入联系电话" />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-switch v-model="form.status" :active-value="1" :inactive-value="0" />
-        </el-form-item>
-        <el-form-item label="排序" prop="sortOrder">
-          <el-input-number v-model="form.sortOrder" :min="0" :max="999" />
-        </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入备注信息" />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">确定</el-button>
-      </template>
-    </el-dialog>
-  </div>
-</template>
+const loading = ref(false)
+const treeData = ref<Dept[]>([])
+const searchQuery = ref('')
+const expandedKeys = ref<Set<string>>(new Set())
+const userStore = useUserStore()
 
-<script setup>
-import { onMounted, reactive, ref } from 'vue';
-import { ElMessage, ElMessageBox, ElTree, ElForm, ElFormItem, ElInputNumber, ElLoading, ElCard, ElButton, ElDialog, ElInput, ElSwitch } from 'element-plus';
-import { createDept, deleteDept, getDeptTree, updateDept } from '@/api/dept';
+const dialogOpen = ref(false)
+const dialogLoading = ref(false)
+const isEdit = ref(false)
+const editId = ref('')
 
-// Import loading directive
-const vLoading = ElLoading.directive;
+const deleteDialogOpen = ref(false)
+const deleteDeptId = ref('')
 
-const loading = ref(false);
-const treeData = ref([]);
-const treeRef = ref();
-const dialogVisible = ref(false);
-const dialogTitle = ref('');
-const submitLoading = ref(false);
-const isEdit = ref(false);
-
-const formRef = ref();
 const form = reactive({
-  id: null,
-  parentId: null,
+  parentId: '0',
   name: '',
   code: '',
   leader: '',
   phone: '',
-  status: 1,
+  email: '',
   sortOrder: 0,
-  remark: '',
-});
+  status: '1'
+})
 
-const treeProps = {
-  label: 'name',
-  children: 'children',
-};
+const canAddDept = computed(() => userStore.hasPermission('dept:add'))
+const canEditDept = computed(() => userStore.hasPermission('dept:edit'))
+const canDeleteDept = computed(() => userStore.hasPermission('dept:delete'))
 
-// 手机号格式校验（只在有值时校验）
-const validatePhone = (rule, value, callback) => {
-  if (value && !/^1[3-9]\d{9}$/.test(value)) {
-    callback(new Error('手机号格式不正确'));
-  } else {
-    callback();
-  }
-};
+const getDeptName = (dept: Dept) => dept.deptName ?? dept.name ?? ''
+const getDeptCode = (dept: Dept) => dept.deptCode ?? dept.code ?? ''
+const getDeptSort = (dept: Dept) => dept.sort ?? dept.sortOrder ?? 0
 
-const rules = {
-  name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }],
-  code: [{ required: true, message: '请输入部门编码', trigger: 'blur' }],
-  phone: [{ validator: validatePhone, trigger: 'blur' }],
-};
-
-// 获取部门树数据
-const getData = async () => {
-  loading.value = true;
-  try {
-    const data = await getDeptTree();
-
-    // 后端现在直接返回树形结构
-    if (Array.isArray(data)) {
-      treeData.value = data;
-    } else if (data && Array.isArray(data.data)) {
-      treeData.value = data.data;
-    } else {
-      console.warn('部门树数据格式异常:', data);
-      treeData.value = [];
-    }
-  } catch (error) {
-    console.error('获取部门数据失败:', error);
-    ElMessage.error('获取部门数据失败');
-    treeData.value = [];
-  } finally {
-    loading.value = false;
-  }
-};
-
-// 新增部门
-const handleAdd = () => {
-  isEdit.value = false;
-  dialogTitle.value = '新增部门';
-  resetForm();
-  dialogVisible.value = true;
-};
-
-// 新增子部门
-const handleAddChild = (data) => {
-  isEdit.value = false;
-  dialogTitle.value = '新增子部门';
-  resetForm();
-  form.parentId = data.id;
-  dialogVisible.value = true;
-};
-
-// 编辑部门
-const handleEdit = (data) => {
-  isEdit.value = true;
-  dialogTitle.value = '编辑部门';
-  Object.assign(form, {
-    id: data.id,
-    parentId: data.parentId,
-    name: data.name,
-    code: data.code,
-    leader: data.leader,
-    phone: data.phone,
-    status: data.status,
-    sortOrder: data.sortOrder,
-    remark: data.remark,
-  });
-  dialogVisible.value = true;
-};
-
-// 删除部门
-const handleDelete = async (data) => {
-  try {
-    await ElMessageBox.confirm(`确定要删除部门"${data.name}"吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    });
-    await deleteDept(data.id);
-    ElMessage.success('删除成功');
-    getData();
-  } catch {
-    // 用户取消操作
-  }
-};
-
-// 节点点击
-const handleNodeClick = (data) => {
-  console.log('选中部门:', data);
-};
-
-// 重置表单
 const resetForm = () => {
   Object.assign(form, {
-    id: null,
-    parentId: null,
+    parentId: '0',
     name: '',
     code: '',
     leader: '',
     phone: '',
-    status: 1,
+    email: '',
     sortOrder: 0,
-    remark: '',
-  });
-  formRef.value?.resetFields();  // 清除验证状态（Element Plus 需要）
-};
+    status: '1'
+  })
+}
 
-// 提交表单
-const handleSubmit = async () => {
-  await formRef.value.validate();
-
-  submitLoading.value = true;
-  try {
-    if (isEdit.value) {
-      await updateDept(form.id, form);
-    } else {
-      await createDept(form);
-    }
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功');
-    dialogVisible.value = false;
-    getData();
-  } catch {
-    ElMessage.error('操作失败');
-  } finally {
-    submitLoading.value = false;
+const ensureExpandedForTree = (deptList: Dept[]) => {
+  const next = new Set(expandedKeys.value)
+  const visit = (items: Dept[]) => {
+    items.forEach((item) => {
+      if ((item.children?.length ?? 0) > 0) {
+        next.add(item.id)
+        visit(item.children ?? [])
+      }
+    })
   }
-};
+  visit(deptList)
+  expandedKeys.value = next
+}
 
-onMounted(() => {
-  getData();
-});
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const res = await getDeptTree()
+    treeData.value = res.data
+    ensureExpandedForTree(res.data)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取部门列表失败'
+    toast.error(message)
+  } finally {
+    loading.value = false
+  }
+}
+
+const toggleExpand = (id: string) => {
+  const next = new Set(expandedKeys.value)
+  if (next.has(id)) {
+    next.delete(id)
+  } else {
+    next.add(id)
+  }
+  expandedKeys.value = next
+}
+
+const renderDepts = (deptList: Dept[], level = 0): DeptRow[] => {
+  const rows: DeptRow[] = []
+  for (const dept of deptList) {
+    const children = dept.children ?? []
+    const hasChildren = children.length > 0
+    const isExpanded = expandedKeys.value.has(dept.id)
+    const displayName = getDeptName(dept)
+    const displayCode = getDeptCode(dept)
+
+    if (searchQuery.value.trim()) {
+      const keyword = searchQuery.value.trim().toLowerCase()
+      const matchedSelf = [displayName, displayCode, dept.leader, dept.phone, dept.email]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(keyword))
+      const childRows = renderDepts(children, level + 1)
+      if (matchedSelf) {
+        rows.push({
+          ...dept,
+          displayName,
+          displayCode,
+          displaySort: getDeptSort(dept),
+          level,
+          hasChildren,
+          isExpanded: true
+        })
+        rows.push(...childRows)
+      } else if (childRows.length > 0) {
+        rows.push({
+          ...dept,
+          displayName,
+          displayCode,
+          displaySort: getDeptSort(dept),
+          level,
+          hasChildren,
+          isExpanded: true
+        })
+        rows.push(...childRows)
+      }
+      continue
+    }
+
+    rows.push({
+      ...dept,
+      displayName,
+      displayCode,
+      displaySort: getDeptSort(dept),
+      level,
+      hasChildren,
+      isExpanded
+    })
+    if (hasChildren && isExpanded) {
+      rows.push(...renderDepts(children, level + 1))
+    }
+  }
+  return rows
+}
+
+const tableRows = computed(() => renderDepts(treeData.value))
+
+const flattenDeptOptions = (deptList: Dept[], level = 0): Array<{ id: string; label: string }> => {
+  return deptList.flatMap((dept) => {
+    const current = {
+      id: dept.id,
+      label: `${'　'.repeat(level)}${getDeptName(dept)}`
+    }
+    return [current, ...flattenDeptOptions(dept.children ?? [], level + 1)]
+  })
+}
+
+const descendantIds = (deptList: Dept[], targetId: string): Set<string> => {
+  const result = new Set<string>()
+  const findNode = (items: Dept[]): Dept | null => {
+    for (const item of items) {
+      if (item.id === targetId) return item
+      const found = findNode(item.children ?? [])
+      if (found) return found
+    }
+    return null
+  }
+  const collect = (node: Dept | null) => {
+    if (!node) return
+    result.add(node.id)
+    ;(node.children ?? []).forEach((child) => collect(child))
+  }
+  collect(findNode(deptList))
+  return result
+}
+
+const parentOptions = computed(() => {
+  const blockedIds = isEdit.value && editId.value ? descendantIds(treeData.value, editId.value) : new Set<string>()
+  return flattenDeptOptions(treeData.value).filter((item) => !blockedIds.has(item.id))
+})
+
+const handleAdd = () => {
+  resetForm()
+  isEdit.value = false
+  editId.value = ''
+  dialogOpen.value = true
+}
+
+const handleEdit = async (id: string) => {
+  isEdit.value = true
+  editId.value = id
+  dialogLoading.value = true
+  dialogOpen.value = true
+  try {
+    const res = await getDeptById(id)
+    const dept = res.data
+    Object.assign(form, {
+      parentId: dept.parentId || '0',
+      name: getDeptName(dept),
+      code: getDeptCode(dept),
+      leader: dept.leader || '',
+      phone: dept.phone || '',
+      email: dept.email || '',
+      sortOrder: getDeptSort(dept),
+      status: String(dept.status ?? 1)
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取部门详情失败'
+    toast.error(message)
+    dialogOpen.value = false
+  } finally {
+    dialogLoading.value = false
+  }
+}
+
+const handleSubmit = async () => {
+  if (!form.name.trim()) {
+    toast.warning('请输入部门名称')
+    return
+  }
+  if (form.email.trim() && !isValidEmail(form.email.trim())) {
+    toast.warning('邮箱格式不正确')
+    return
+  }
+  if (form.phone.trim() && !isValidChinaPhone(form.phone.trim())) {
+    toast.warning('手机号格式不正确')
+    return
+  }
+
+  dialogLoading.value = true
+  try {
+    const payload = {
+      parentId: form.parentId === '0' ? undefined : form.parentId,
+      name: form.name.trim(),
+      code: form.code.trim() || undefined,
+      leader: form.leader.trim() || undefined,
+      phone: form.phone.trim() || undefined,
+      email: form.email.trim() || undefined,
+      sortOrder: Number(form.sortOrder) || 0,
+      status: Number(form.status)
+    }
+
+    if (isEdit.value) {
+      await updateDept(editId.value, payload)
+      toast.success('部门更新成功')
+    } else {
+      await createDept(payload)
+      toast.success('部门创建成功')
+    }
+    dialogOpen.value = false
+    fetchData()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '保存部门失败'
+    toast.error(message)
+  } finally {
+    dialogLoading.value = false
+  }
+}
+
+const handleDeleteConfirm = (id: string) => {
+  deleteDeptId.value = id
+  deleteDialogOpen.value = true
+}
+
+const handleDelete = async () => {
+  try {
+    await deleteDept(deleteDeptId.value)
+    toast.success('部门删除成功')
+    fetchData()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '删除部门失败'
+    toast.error(message)
+  } finally {
+    deleteDialogOpen.value = false
+  }
+}
+
+onMounted(fetchData)
 </script>
 
-<style scoped>
-.dept-page {
-}
+<template>
+  <div class="space-y-4">
+    <Card>
+      <CardContent class="p-4">
+        <div class="flex gap-4 items-center">
+          <Input v-model="searchQuery" placeholder="搜索部门名称/编码/负责人" class="w-72" />
+          <Button variant="outline">
+            <Search class="w-4 h-4 mr-2" />
+            筛选
+          </Button>
+          <div class="flex-1" />
+          <Button v-if="canAddDept" @click="handleAdd">
+            <Plus class="w-4 h-4 mr-2" />
+            新增部门
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
 
-/* 树形连接线样式 */
-.dept-tree {
-  background-color: #fafbfc;
-  border-radius: 8px;
-  padding: 16px;
-}
+    <Card>
+      <CardContent class="p-0">
+        <div v-if="loading" class="p-8 text-center text-muted-foreground">加载中...</div>
+        <table v-else class="w-full">
+          <thead class="bg-muted/50 border-b">
+            <tr>
+              <th class="text-left p-4 font-medium">部门名称</th>
+              <th class="text-left p-4 font-medium">部门编码</th>
+              <th class="text-left p-4 font-medium">负责人</th>
+              <th class="text-left p-4 font-medium">电话</th>
+              <th class="text-left p-4 font-medium">排序</th>
+              <th class="text-left p-4 font-medium">状态</th>
+              <th class="text-left p-4 font-medium">操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr v-if="tableRows.length === 0">
+              <td colspan="7" class="p-8 text-center text-muted-foreground">暂无数据</td>
+            </tr>
+            <tr v-for="dept in tableRows" :key="dept.id" class="hover:bg-muted/30">
+              <td class="p-4">
+                <div class="flex items-center gap-2" :style="{ paddingLeft: `${dept.level * 24}px` }">
+                  <button
+                    v-if="dept.hasChildren && !searchQuery.trim()"
+                    class="w-4 h-4 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                    @click="toggleExpand(dept.id)"
+                  >
+                    {{ dept.isExpanded ? '−' : '+' }}
+                  </button>
+                  <span v-else class="w-4" />
+                  <span class="font-medium">{{ dept.displayName }}</span>
+                </div>
+              </td>
+              <td class="p-4"><code class="bg-muted px-2 py-0.5 rounded text-sm">{{ dept.displayCode || '-' }}</code></td>
+              <td class="p-4">{{ dept.leader || '-' }}</td>
+              <td class="p-4">{{ dept.phone || '-' }}</td>
+              <td class="p-4">{{ dept.displaySort }}</td>
+              <td class="p-4">
+                <span :class="['px-2 py-1 rounded-full text-xs', dept.status === 1 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                  {{ dept.status === 1 ? '正常' : '禁用' }}
+                </span>
+              </td>
+              <td class="p-4">
+                <div class="flex gap-2">
+                  <Button v-if="canEditDept" size="sm" variant="ghost" @click="handleEdit(dept.id)">
+                    <Edit class="w-4 h-4" />
+                  </Button>
+                  <Button v-if="canDeleteDept" size="sm" variant="ghost" class="text-destructive" @click="handleDeleteConfirm(dept.id)">
+                    <Trash2 class="w-4 h-4" />
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
 
-:deep(.el-tree-node) {
-  position: relative;
-}
+    <Dialog v-if="canAddDept || canEditDept" v-model:open="dialogOpen">
+      <DialogContent class="sm:max-w-[560px]">
+        <DialogHeader>
+          <DialogTitle>{{ isEdit ? '编辑部门' : '新增部门' }}</DialogTitle>
+        </DialogHeader>
+        <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
+        <div v-else class="space-y-4 py-2">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>上级部门</Label>
+              <Select v-model="form.parentId">
+                <SelectTrigger>
+                  <SelectValue placeholder="选择上级部门" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">顶级部门</SelectItem>
+                  <SelectItem v-for="dept in parentOptions" :key="dept.id" :value="dept.id">
+                    {{ dept.label }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div class="space-y-2">
+              <Label>状态</Label>
+              <Select v-model="form.status">
+                <SelectTrigger>
+                  <SelectValue placeholder="选择状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">正常</SelectItem>
+                  <SelectItem value="0">禁用</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-:deep(.el-tree-node__expand-icon) {
-  font-size: 14px;
-  color: #909399;
-}
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>部门名称</Label>
+              <Input v-model="form.name" placeholder="请输入部门名称" />
+            </div>
+            <div class="space-y-2">
+              <Label>部门编码</Label>
+              <Input v-model="form.code" placeholder="请输入部门编码" />
+            </div>
+          </div>
 
-:deep(.el-tree-node__expand-icon.is-leaf) {
-  color: transparent;
-}
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>负责人</Label>
+              <Input v-model="form.leader" placeholder="请输入负责人" />
+            </div>
+            <div class="space-y-2">
+              <Label>电话</Label>
+              <Input v-model="form.phone" placeholder="请输入电话" />
+            </div>
+          </div>
 
-:deep(.el-tree-node__children) {
-  position: relative;
-}
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>邮箱</Label>
+              <Input v-model="form.email" placeholder="请输入邮箱" />
+            </div>
+            <div class="space-y-2">
+              <Label>排序</Label>
+              <Input v-model="form.sortOrder" type="number" placeholder="排序值" />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="dialogOpen = false">取消</Button>
+          <Button :disabled="dialogLoading" @click="handleSubmit">{{ isEdit ? '保存' : '创建' }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
-/* 树形连接线 - 水平线 */
-:deep(.el-tree-node__children .el-tree-node) {
-  position: relative;
-}
-
-:deep(.el-tree-node__children .el-tree-node::before) {
-  content: '';
-  position: absolute;
-  left: -18px;
-  top: 0;
-  height: 100%;
-  width: 1px;
-  background-color: #e4e7ed;
-}
-
-:deep(.el-tree-node__children .el-tree-node:last-child::before) {
-  height: 24px;
-}
-
-/* 树形连接线 - 垂直线连接到父节点 */
-:deep(.el-tree-node__children .el-tree-node::after) {
-  content: '';
-  position: absolute;
-  left: -18px;
-  top: 24px;
-  width: 18px;
-  height: 1px;
-  background-color: #e4e7ed;
-}
-
-.tree-node {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: 100%;
-  padding: 12px 16px;
-  gap: 16px;
-  border-radius: 6px;
-  transition: all 0.2s;
-  background-color: #ffffff;
-  border-left: 3px solid transparent;
-}
-
-.tree-node:hover {
-  background-color: #ecf5ff;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
-}
-
-/* 层级指示器 */
-.level-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.level-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  height: 24px;
-  padding: 0 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #409eff;
-  background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
-  border-radius: 12px;
-  border: 1px solid #b3d8ff;
-}
-
-/* 不同层级的视觉效果 */
-.tree-node.level-1 {
-  border-left-color: #67c23a;
-}
-
-.tree-node.level-1 .level-number {
-  color: #67c23a;
-  background: linear-gradient(135deg, #f0f9ff 0%, #d4f4dd 100%);
-  border-color: #b3e19d;
-}
-
-.tree-node.level-2 {
-  border-left-color: #409eff;
-}
-
-.tree-node.level-2 .level-number {
-  color: #409eff;
-  background: linear-gradient(135deg, #ecf5ff 0%, #d9ecff 100%);
-  border-color: #b3d8ff;
-}
-
-.tree-node.level-3 {
-  border-left-color: #e6a23c;
-}
-
-.tree-node.level-3 .level-number {
-  color: #e6a23c;
-  background: linear-gradient(135deg, #fef9f0 0%, #fdf0d4 100%);
-  border-color: #f5dab1;
-}
-
-.tree-node.level-4 {
-  border-left-color: #f56c6c;
-}
-
-.tree-node.level-4 .level-number {
-  color: #f56c6c;
-  background: linear-gradient(135deg, #fef0f0 0%, #fde2e2 100%);
-  border-color: #fab6b6;
-}
-
-.tree-node.level-5,
-.tree-node.level-6,
-.tree-node.level-7,
-.tree-node.level-8 {
-  border-left-color: #909399;
-}
-
-.tree-node.level-5 .level-number,
-.tree-node.level-6 .level-number,
-.tree-node.level-7 .level-number,
-.tree-node.level-8 .level-number {
-  color: #909399;
-  background: linear-gradient(135deg, #f4f4f5 0%, #e9e9eb 100%);
-  border-color: #d3d4d6;
-}
-
-.node-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.node-name-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.node-name {
-  font-size: 15px;
-  font-weight: 500;
-  color: #303133;
-}
-
-/* 根节点字体稍大 */
-.tree-node.level-1 .node-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.status-tag {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  flex-shrink: 0;
-
-  &.status-enabled {
-    background-color: #f0f9ff;
-    color: #67c23a;
-  }
-
-  &.status-disabled {
-    background-color: #f4f4f5;
-    color: #909399;
-  }
-}
-
-.icon-plus {
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.node-details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px 28px;
-}
-
-.detail-row {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-
-.detail-label {
-  font-size: 13px;
-  color: #909399;
-  white-space: nowrap;
-}
-
-.detail-value {
-  font-size: 14px;
-  color: #606266;
-  word-break: break-all;
-}
-
-.node-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-  align-items: flex-start;
-}
-
-/* 树形组件内容区域的样式优化 */
-:deep(.el-tree-node__content) {
-  height: auto !important;
-  padding: 6px 0 !important;
-  margin-bottom: 4px;
-}
-
-:deep(.el-tree-node__content:hover) {
-  background-color: transparent !important;
-}
-
-/* 当前选中节点高亮 */
-:deep(.el-tree-node.is-current > .el-tree-node__content) {
-  background-color: transparent !important;
-}
-
-:deep(.el-tree-node.is-current > .el-tree-node__content .tree-node) {
-  background-color: #ecf5ff !important;
-  border-left-color: #409eff;
-  box-shadow: 0 2px 12px rgba(64, 158, 255, 0.2);
-}
-
-/* 响应式：小屏幕时优化布局 */
-@media (max-width: 768px) {
-  .dept-tree {
-    padding: 12px;
-  }
-
-  .tree-node {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px 12px;
-  }
-
-  .node-actions {
-    width: 100%;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .node-details {
-    gap: 12px 16px;
-  }
-
-  .level-indicator {
-    align-self: flex-start;
-  }
-}
-</style>
+    <AlertDialog v-if="canDeleteDept" v-model:open="deleteDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>确认删除部门</AlertDialogTitle>
+          <AlertDialogDescription>删除后不可恢复，若存在下级部门或关联数据，后端会拒绝本次删除。</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogAction @click="handleDelete">确认删除</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  </div>
+</template>

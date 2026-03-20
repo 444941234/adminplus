@@ -1,925 +1,698 @@
-<script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+<script setup lang="ts">
+import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  ElMessage, ElIcon, ElButton, ElInput, ElForm, ElTag, ElEmpty, ElCard, ElCol,
-  ElFormItem, ElTableColumn, ElTable, ElRow, ElRadio, ElRadioGroup, ElDialog,
-  ElTreeSelect, ElInputNumber, ElLoading
-} from 'element-plus'
-import { Plus, Refresh, Search } from '@/utils/iconCompat'
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Textarea
+} from '@/components/ui'
+import { ChevronLeft, ChevronRight, Edit, ListTree, Plus, Search, Trash2 } from 'lucide-vue-next'
 import {
-  getDictList,
   createDict,
-  updateDict,
-  deleteDict,
-  updateDictStatus
-} from '@/api/dict'
-import {
-  getDictItemTree,
   createDictItem,
-  updateDictItem,
+  deleteDict,
   deleteDictItem,
-  updateDictItemStatus
-} from '@/api/dict'
-import { debounce } from '@/utils/debounce'
-import { useConfirm } from '@/composables/useConfirm'
+  getDictById,
+  getDictItemById,
+  getDictItemList,
+  getDictList,
+  updateDict,
+  updateDictItem,
+  updateDictItemStatus,
+  updateDictStatus
+} from '@/api'
+import type { Dict, DictItem, PageResult } from '@/types'
+import { useUserStore } from '@/stores/user'
+import { toast } from 'vue-sonner'
 
-// Import loading directive
-const vLoading = ElLoading.directive
+const loading = ref(false)
+const searchQuery = ref('')
+const tableData = ref<PageResult<Dict>>({ records: [], total: 0, page: 1, size: 10 })
+const userStore = useUserStore()
 
-// ============ 字典管理 ============
-const dictList = ref([])
-const dictLoading = ref(false)
-const selectedDictId = ref(null)
-const selectedDict = ref(null)
+const dialogOpen = ref(false)
+const dialogLoading = ref(false)
+const isEdit = ref(false)
+const editId = ref('')
 
-// 字典查询参数
-const dictQueryParams = reactive({
-  page: 1,
-  size: 100, // 左侧列表一次加载更多
-  keyword: ''
-})
+const deleteDialogOpen = ref(false)
+const deleteDictId = ref('')
 
-const dictTotal = ref(0)
+const itemDialogOpen = ref(false)
+const itemLoading = ref(false)
+const activeDict = ref<Dict | null>(null)
+const itemTableData = ref<{ records: DictItem[]; total: number }>({ records: [], total: 0 })
 
-// 字典表单
-const dictDialogVisible = ref(false)
-const dictDialogTitle = ref('')
-const dictFormData = reactive({
-  id: null,
+const itemFormDialogOpen = ref(false)
+const itemFormLoading = ref(false)
+const isEditItem = ref(false)
+const editItemId = ref('')
+
+const deleteItemDialogOpen = ref(false)
+const deleteItemId = ref('')
+
+const form = reactive({
   dictType: '',
   dictName: '',
-  status: 1,
-  remark: ''
+  remark: '',
+  status: '1'
 })
 
-const dictFormRef = ref(null)
-const dictRules = {
-  dictType: [{ required: true, message: '请输入字典类型', trigger: 'blur' }],
-  dictName: [{ required: true, message: '请输入字典名称', trigger: 'blur' }]
-}
-
-// 确认操作
-const confirmDictDelete = useConfirm({
-  message: '确定要删除该字典吗？删除后字典项也会被删除！',
-  type: 'warning'
-})
-
-const confirmDictStatus = useConfirm({
-  message: '确定要执行此操作吗？',
-  type: 'warning'
-})
-
-// 获取字典列表
-const getDictListData = async () => {
-  dictLoading.value = true
-  try {
-    const data = await getDictList(dictQueryParams)
-    dictList.value = data.records || []
-    dictTotal.value = data.total || 0
-
-    // 如果没有选中的字典，默认选中第一个
-    if (!selectedDictId.value && dictList.value.length > 0) {
-      selectDict(dictList.value[0])
-    }
-  } catch {
-    ElMessage.error('获取字典列表失败')
-  } finally {
-    dictLoading.value = false
-  }
-}
-
-// 搜索（使用防抖）
-const searchDebounced = debounce(() => {
-  dictQueryParams.page = 1
-  getDictListData()
-}, 300)
-
-const handleDictSearch = () => {
-  searchDebounced()
-}
-
-// 选择字典
-const selectDict = (dict) => {
-  selectedDictId.value = dict.id
-  selectedDict.value = dict
-  // 加载字典项
-  getDictItemData()
-}
-
-// 新增字典
-const handleDictAdd = () => {
-  dictDialogTitle.value = '新增字典'
-  Object.assign(dictFormData, {
-    id: null,
-    dictType: '',
-    dictName: '',
-    status: 1,
-    remark: ''
-  })
-  dictDialogVisible.value = true
-}
-
-// 编辑字典
-const handleDictEdit = (row) => {
-  dictDialogTitle.value = '编辑字典'
-  Object.assign(dictFormData, {
-    id: row.id,
-    dictType: row.dictType,
-    dictName: row.dictName,
-    status: row.status,
-    remark: row.remark
-  })
-  dictDialogVisible.value = true
-}
-
-// 提交字典
-const handleDictSubmit = async () => {
-  try {
-    await dictFormRef.value.validate()
-    if (dictFormData.id) {
-      await updateDict(dictFormData.id, {
-        dictName: dictFormData.dictName,
-        status: dictFormData.status,
-        remark: dictFormData.remark
-      })
-      ElMessage.success('更新成功')
-    } else {
-      await createDict(dictFormData)
-      ElMessage.success('创建成功')
-    }
-    dictDialogVisible.value = false
-    getDictListData()
-  } catch (error) {
-    if (error !== false) {
-      ElMessage.error('操作失败')
-    }
-  }
-}
-
-// 删除字典
-const handleDictDelete = async (row) => {
-  try {
-    await confirmDictDelete()
-    await deleteDict(row.id)
-    ElMessage.success('删除成功')
-    if (selectedDictId.value === row.id) {
-      selectedDictId.value = null
-      selectedDict.value = null
-      dictItemList.value = []
-    }
-    getDictListData()
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('删除失败')
-    }
-  }
-}
-
-const handleDictStatus = async (row) => {
-  const newStatus = row.status === 1 ? 0 : 1
-  const action = newStatus === 1 ? '启用' : '禁用'
-
-  try {
-    await confirmDictStatus(`确定要${action}该字典吗？`)
-    await updateDictStatus(row.id, newStatus)
-    ElMessage.success(`${action}成功`)
-    getDictListData()
-  } catch {
-    // 取消操作
-  }
-}
-
-// ============ 字典项管理 ============
-const dictItemList = ref([])
-const itemLoading = ref(false)
-const itemDialogVisible = ref(false)
-const itemDialogTitle = ref('新增字典项')
-const isItemEdit = ref(false)
-const submitLoading = ref(false)
-
-const itemQueryForm = reactive({
-  keyword: ''
-})
-
-const itemFormRef = ref()
 const itemForm = reactive({
-  id: null,
-  parentId: null,
+  parentId: '0',
   label: '',
   value: '',
   sortOrder: 0,
-  status: 1
+  status: '1',
+  remark: ''
 })
 
-const itemRules = {
-  label: [{ required: true, message: '请输入字典标签', trigger: 'blur' }],
-  value: [{ required: true, message: '请输入字典值', trigger: 'blur' }]
+const canAddDict = computed(() => userStore.hasPermission('dict:add'))
+const canEditDict = computed(() => userStore.hasPermission('dict:edit'))
+const canDeleteDict = computed(() => userStore.hasPermission('dict:delete'))
+const canListDictItems = computed(() => userStore.hasPermission('dictitem:list'))
+const canAddDictItem = computed(() => userStore.hasPermission('dictitem:add'))
+const canEditDictItem = computed(() => userStore.hasPermission('dictitem:edit'))
+const canDeleteDictItem = computed(() => userStore.hasPermission('dictitem:delete'))
+
+const totalPages = computed(() => Math.ceil(tableData.value.total / tableData.value.size) || 1)
+
+const visiblePages = computed(() => {
+  const current = tableData.value.page
+  const total = totalPages.value
+  const pages: Array<number | string> = []
+  if (total <= 7) {
+    for (let i = 1; i <= total; i += 1) pages.push(i)
+    return pages
+  }
+  pages.push(1)
+  if (current > 3) pages.push('...')
+  const start = Math.max(2, current - 1)
+  const end = Math.min(total - 1, current + 1)
+  for (let i = start; i <= end; i += 1) {
+    pages.push(i)
+  }
+  if (current < total - 2) pages.push('...')
+  pages.push(total)
+  return pages
+})
+
+const getDictRemark = (dict: Dict) => dict.remark ?? dict.description ?? ''
+const getItemLabel = (item: DictItem) => item.label ?? item.itemLabel ?? ''
+const getItemValue = (item: DictItem) => item.value ?? item.itemValue ?? ''
+const getItemSort = (item: DictItem) => item.sortOrder ?? item.sort ?? 0
+
+const resetForm = () => {
+  Object.assign(form, {
+    dictType: '',
+    dictName: '',
+    remark: '',
+    status: '1'
+  })
 }
 
-// 确认操作
-const confirmItemDelete = useConfirm({
-  message: '确定要删除该字典项吗？',
-  type: 'warning'
-})
-
-const confirmItemStatus = useConfirm({
-  message: '确定要执行此操作吗？',
-  type: 'warning'
-})
-
-// 用于选择的父节点树
-const parentTreeData = computed(() => {
-  return buildParentTreeData(dictItemList.value, isItemEdit.value ? itemForm.id : null)
-})
-
-const buildParentTreeData = (items, excludeId) => {
-  return items
-    .filter(item => item.id !== excludeId)
-    .map(item => ({
-      id: item.id,
-      label: item.label,
-      children: item.children ? buildParentTreeData(item.children, excludeId) : undefined
-    }))
+const resetItemForm = () => {
+  Object.assign(itemForm, {
+    parentId: '0',
+    label: '',
+    value: '',
+    sortOrder: 0,
+    status: '1',
+    remark: ''
+  })
 }
 
-// 获取字典项树
-const getDictItemData = async () => {
-  if (!selectedDictId.value) {
-    dictItemList.value = []
+const fetchData = async () => {
+  loading.value = true
+  try {
+    const res = await getDictList({
+      page: tableData.value.page,
+      size: tableData.value.size,
+      keyword: searchQuery.value.trim() || undefined
+    })
+    tableData.value = res.data
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取字典列表失败'
+    toast.error(message)
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleSearch = () => {
+  tableData.value.page = 1
+  fetchData()
+}
+
+const goToPage = (page: number) => {
+  if (page >= 1 && page <= totalPages.value && page !== tableData.value.page) {
+    tableData.value.page = page
+    fetchData()
+  }
+}
+
+const handleAdd = () => {
+  resetForm()
+  isEdit.value = false
+  editId.value = ''
+  dialogOpen.value = true
+}
+
+const handleEdit = async (id: string) => {
+  isEdit.value = true
+  editId.value = id
+  dialogLoading.value = true
+  dialogOpen.value = true
+  try {
+    const res = await getDictById(id)
+    const dict = res.data
+    Object.assign(form, {
+      dictType: dict.dictType,
+      dictName: dict.dictName,
+      remark: getDictRemark(dict),
+      status: String(dict.status ?? 1)
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取字典详情失败'
+    toast.error(message)
+    dialogOpen.value = false
+  } finally {
+    dialogLoading.value = false
+  }
+}
+
+const handleSubmit = async () => {
+  if (!form.dictType.trim()) {
+    toast.warning('请输入字典类型')
+    return
+  }
+  if (!form.dictName.trim()) {
+    toast.warning('请输入字典名称')
     return
   }
 
+  dialogLoading.value = true
+  try {
+    if (isEdit.value) {
+      await updateDict(editId.value, {
+        dictName: form.dictName.trim(),
+        status: Number(form.status),
+        remark: form.remark.trim() || undefined
+      })
+      if (Number(form.status) !== (tableData.value.records.find((item) => item.id === editId.value)?.status ?? Number(form.status))) {
+        await updateDictStatus(editId.value, Number(form.status))
+      }
+      toast.success('字典更新成功')
+    } else {
+      await createDict({
+        dictType: form.dictType.trim(),
+        dictName: form.dictName.trim(),
+        remark: form.remark.trim() || undefined
+      })
+      toast.success('字典创建成功')
+    }
+    dialogOpen.value = false
+    fetchData()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '保存字典失败'
+    toast.error(message)
+  } finally {
+    dialogLoading.value = false
+  }
+}
+
+const handleStatusToggle = async (dict: Dict) => {
+  try {
+    await updateDictStatus(dict.id, dict.status === 1 ? 0 : 1)
+    toast.success('状态更新成功')
+    fetchData()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '状态更新失败'
+    toast.error(message)
+  }
+}
+
+const handleDeleteConfirm = (id: string) => {
+  deleteDictId.value = id
+  deleteDialogOpen.value = true
+}
+
+const handleDelete = async () => {
+  try {
+    await deleteDict(deleteDictId.value)
+    toast.success('字典删除成功')
+    fetchData()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '删除字典失败'
+    toast.error(message)
+  } finally {
+    deleteDialogOpen.value = false
+  }
+}
+
+const fetchDictItems = async (dictId: string) => {
   itemLoading.value = true
   try {
-    dictItemList.value = await getDictItemTree(selectedDictId.value)
-  } catch {
-    ElMessage.error('获取字典项树失败')
+    const res = await getDictItemList(dictId)
+    itemTableData.value = res.data
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取字典项失败'
+    toast.error(message)
   } finally {
     itemLoading.value = false
   }
 }
 
-const handleItemSearch = () => {
-  // 树形结构暂不支持搜索过滤
-  ElMessage.info('树形结构暂不支持搜索，请使用列表视图')
+const openItemDialog = async (dict: Dict) => {
+  activeDict.value = dict
+  itemDialogOpen.value = true
+  await fetchDictItems(dict.id)
 }
 
-const handleItemReset = () => {
-  itemQueryForm.keyword = ''
-  getDictItemData()
+const itemParentOptions = computed(() => {
+  return itemTableData.value.records
+    .filter((item) => !isEditItem.value || item.id !== editItemId.value)
+    .map((item) => ({
+      id: item.id,
+      label: getItemLabel(item)
+    }))
+})
+
+const openAddItemDialog = () => {
+  resetItemForm()
+  isEditItem.value = false
+  editItemId.value = ''
+  itemFormDialogOpen.value = true
 }
 
-const handleItemAdd = () => {
-  if (!selectedDictId.value) {
-    ElMessage.warning('请先选择字典')
+const handleEditItem = async (id: string) => {
+  if (!activeDict.value) return
+  isEditItem.value = true
+  editItemId.value = id
+  itemFormLoading.value = true
+  itemFormDialogOpen.value = true
+  try {
+    const res = await getDictItemById(activeDict.value.id, id)
+    const item = res.data
+    Object.assign(itemForm, {
+      parentId: item.parentId || '0',
+      label: getItemLabel(item),
+      value: getItemValue(item),
+      sortOrder: getItemSort(item),
+      status: String(item.status ?? 1),
+      remark: item.remark || ''
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取字典项详情失败'
+    toast.error(message)
+    itemFormDialogOpen.value = false
+  } finally {
+    itemFormLoading.value = false
+  }
+}
+
+const handleSubmitItem = async () => {
+  if (!activeDict.value) return
+  if (!itemForm.label.trim()) {
+    toast.warning('请输入字典项标签')
     return
   }
-  isItemEdit.value = false
-  itemDialogTitle.value = '新增字典项'
-  resetItemForm()
-  itemDialogVisible.value = true
-}
+  if (!itemForm.value.trim()) {
+    toast.warning('请输入字典项值')
+    return
+  }
 
-const handleItemAddChild = (row) => {
-  isItemEdit.value = false
-  itemDialogTitle.value = '新增子字典项'
-  resetItemForm()
-  itemForm.parentId = row.id
-  itemDialogVisible.value = true
-}
-
-const handleItemEdit = (row) => {
-  isItemEdit.value = true
-  itemDialogTitle.value = '编辑字典项'
-  Object.assign(itemForm, row)
-  itemDialogVisible.value = true
-}
-
-const handleItemDialogClose = () => {
-  itemFormRef.value?.resetFields()
-  resetItemForm()
-}
-
-const resetItemForm = () => {
-  Object.assign(itemForm, {
-    id: null,
-    parentId: null,
-    label: '',
-    value: '',
-    sortOrder: 0,
-    status: 1
-  })
-}
-
-const handleItemSubmit = async () => {
-  await itemFormRef.value.validate()
-
-  submitLoading.value = true
+  itemFormLoading.value = true
   try {
-    const submitData = { ...itemForm }
-    if (!isItemEdit.value) {
-      submitData.dictId = selectedDictId.value
+    const payload = {
+      parentId: itemForm.parentId === '0' ? undefined : itemForm.parentId,
+      label: itemForm.label.trim(),
+      value: itemForm.value.trim(),
+      sortOrder: Number(itemForm.sortOrder) || 0,
+      status: Number(itemForm.status),
+      remark: itemForm.remark.trim() || undefined
     }
-    delete submitData.id
-    delete submitData.children
-
-    if (isItemEdit.value) {
-      await updateDictItem(selectedDictId.value, itemForm.id, submitData)
-      ElMessage.success('更新成功')
+    if (isEditItem.value) {
+      await updateDictItem(activeDict.value.id, editItemId.value, payload)
+      toast.success('字典项更新成功')
     } else {
-      await createDictItem(submitData)
-      ElMessage.success('创建成功')
+      await createDictItem(activeDict.value.id, payload)
+      toast.success('字典项创建成功')
     }
-    itemDialogVisible.value = false
-    getDictItemData()
-  } catch {
-    ElMessage.error('操作失败')
+    itemFormDialogOpen.value = false
+    fetchDictItems(activeDict.value.id)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '保存字典项失败'
+    toast.error(message)
   } finally {
-    submitLoading.value = false
+    itemFormLoading.value = false
   }
 }
 
-const handleItemStatus = async (row) => {
-  const newStatus = row.status === 1 ? 0 : 1
-  const action = newStatus === 1 ? '启用' : '禁用'
+const handleDeleteItemConfirm = (id: string) => {
+  deleteItemId.value = id
+  deleteItemDialogOpen.value = true
+}
 
+const handleDeleteItem = async () => {
+  if (!activeDict.value) return
   try {
-    await confirmItemStatus(`确定要${action}该字典项吗？`)
-    await updateDictItemStatus(selectedDictId.value, row.id, newStatus)
-    ElMessage.success(`${action}成功`)
-    getDictItemData()
-  } catch {
-    // 取消操作
+    await deleteDictItem(activeDict.value.id, deleteItemId.value)
+    toast.success('字典项删除成功')
+    fetchDictItems(activeDict.value.id)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '删除字典项失败'
+    toast.error(message)
+  } finally {
+    deleteItemDialogOpen.value = false
   }
 }
 
-const handleItemDelete = async (row) => {
+const handleToggleItemStatus = async (item: DictItem) => {
+  if (!activeDict.value) return
   try {
-    await confirmItemDelete()
-    await deleteDictItem(selectedDictId.value, row.id)
-    ElMessage.success('删除成功')
-    getDictItemData()
-  } catch {
-    // 取消操作
+    await updateDictItemStatus(activeDict.value.id, item.id, item.status === 1 ? 0 : 1)
+    toast.success('字典项状态更新成功')
+    fetchDictItems(activeDict.value.id)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '字典项状态更新失败'
+    toast.error(message)
   }
 }
 
-// 页面加载
-onMounted(() => {
-  getDictListData()
-})
+onMounted(fetchData)
 </script>
 
 <template>
-  <div class="dict-container">
-    <el-row :gutter="20">
-      <!-- 左侧：字典列表 (30%) -->
-      <el-col
-        :xs="24"
-        :sm="24"
-        :md="8"
-        :lg="6"
-        :xl="6"
-      >
-        <el-card class="dict-list-card">
-          <template #header>
-            <div class="card-header">
-              <span>字典列表</span>
-              <el-button
-                type="primary"
-                size="small"
-                @click="handleDictAdd"
-              >
-                <el-icon><Plus /></el-icon>
-                新增
-              </el-button>
-            </div>
-          </template>
+  <div class="space-y-4">
+    <Card>
+      <CardContent class="p-4">
+        <div class="flex gap-4 items-center">
+          <Input v-model="searchQuery" placeholder="搜索字典名称/类型" class="w-72" @keyup.enter="handleSearch" />
+          <Button @click="handleSearch">
+            <Search class="w-4 h-4 mr-2" />
+            搜索
+          </Button>
+          <Button variant="outline" @click="searchQuery = ''; handleSearch()">重置</Button>
+          <div class="flex-1" />
+          <Button v-if="canAddDict" @click="handleAdd">
+            <Plus class="w-4 h-4 mr-2" />
+            新增字典
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
 
-          <!-- 搜索栏 -->
-          <el-form
-            :inline="false"
-            :model="dictQueryParams"
-            class="search-form"
-          >
-            <el-input
-              v-model="dictQueryParams.keyword"
-              placeholder="搜索字典类型/名称"
-              clearable
-              @input="handleDictSearch"
-            >
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
-          </el-form>
-
-          <!-- 字典列表 -->
-          <div class="dict-list-wrapper">
-            <div
-              v-for="dict in dictList"
-              :key="dict.id"
-              :class="['dict-item', { active: selectedDictId === dict.id }]"
-              @click="selectDict(dict)"
-            >
-              <div class="dict-item-header">
-                <span class="dict-type">{{ dict.dictType }}</span>
-                <el-tag
-                  :type="dict.status === 1 ? 'success' : 'danger'"
-                  size="small"
+    <Card>
+      <CardContent class="p-0">
+        <table class="w-full">
+          <thead class="bg-muted/50 border-b">
+            <tr>
+              <th class="text-left p-4 font-medium">ID</th>
+              <th class="text-left p-4 font-medium">字典名称</th>
+              <th class="text-left p-4 font-medium">字典类型</th>
+              <th class="text-left p-4 font-medium">备注</th>
+              <th class="text-left p-4 font-medium">状态</th>
+              <th class="text-left p-4 font-medium">创建时间</th>
+              <th class="text-left p-4 font-medium">操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y">
+            <tr v-if="loading">
+              <td colspan="7" class="p-8 text-center text-muted-foreground">加载中...</td>
+            </tr>
+            <tr v-else-if="tableData.records.length === 0">
+              <td colspan="7" class="p-8 text-center text-muted-foreground">暂无数据</td>
+            </tr>
+            <tr v-for="dict in tableData.records" :key="dict.id" class="hover:bg-muted/30">
+              <td class="p-4 text-muted-foreground">{{ dict.id }}</td>
+              <td class="p-4 font-medium">{{ dict.dictName }}</td>
+              <td class="p-4"><code class="bg-muted px-2 py-0.5 rounded text-sm">{{ dict.dictType }}</code></td>
+              <td class="p-4 text-muted-foreground">{{ getDictRemark(dict) || '-' }}</td>
+              <td class="p-4">
+                <Badge
+                  :variant="dict.status === 1 ? 'default' : 'destructive'"
+                  :class="canEditDict ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''"
+                  @click="canEditDict && handleStatusToggle(dict)"
                 >
                   {{ dict.status === 1 ? '正常' : '禁用' }}
-                </el-tag>
-              </div>
-              <div class="dict-item-name">
-                {{ dict.dictName }}
-              </div>
-              <div class="dict-item-actions">
-                <el-button
-                  type="primary"
-                  size="small"
-                  text
-                  @click.stop="handleDictEdit(dict)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  type="warning"
-                  size="small"
-                  text
-                  @click.stop="handleDictStatus(dict)"
-                >
-                  {{ dict.status === 1 ? '禁用' : '启用' }}
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="small"
-                  text
-                  @click.stop="handleDictDelete(dict)"
-                >
-                  删除
-                </el-button>
-              </div>
-            </div>
+                </Badge>
+              </td>
+              <td class="p-4 text-muted-foreground">{{ dict.createTime }}</td>
+              <td class="p-4">
+                <div class="flex gap-2">
+                  <Button v-if="canListDictItems" size="sm" variant="ghost" @click="openItemDialog(dict)">
+                    <ListTree class="w-4 h-4" />
+                  </Button>
+                  <Button v-if="canEditDict" size="sm" variant="ghost" @click="handleEdit(dict.id)">
+                    <Edit class="w-4 h-4" />
+                  </Button>
+                  <Button v-if="canDeleteDict" size="sm" variant="ghost" class="text-destructive" @click="handleDeleteConfirm(dict.id)">
+                    <Trash2 class="w-4 h-4" />
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
 
-            <el-empty
-              v-if="!dictLoading && dictList.length === 0"
-              description="暂无字典"
-            />
-          </div>
-        </el-card>
-      </el-col>
-
-      <!-- 右侧：字典项管理 (70%) -->
-      <el-col
-        :xs="24"
-        :sm="24"
-        :md="16"
-        :lg="18"
-        :xl="18"
-      >
-        <el-card class="dict-item-card">
-          <template #header>
-            <div class="card-header">
-              <div class="header-left">
-                <span
-                  v-if="selectedDict"
-                  class="header-title"
-                >
-                  字典项管理 - {{ selectedDict.dictName }}
-                  <el-tag
-                    size="small"
-                    style="margin-left: 8px"
-                  >
-                    {{ selectedDict.dictType }}
-                  </el-tag>
-                </span>
-                <span
-                  v-else
-                  class="header-title"
-                >字典项管理</span>
-              </div>
-              <el-button
-                type="primary"
-                :disabled="!selectedDictId"
-                @click="handleItemAdd"
+        <div class="flex items-center justify-between px-4 py-4 border-t">
+          <p class="text-sm text-muted-foreground">
+            共 <span class="font-medium">{{ tableData.total }}</span> 条记录，
+            第 <span class="font-medium">{{ tableData.page }}</span> / <span class="font-medium">{{ totalPages }}</span> 页
+          </p>
+          <div class="flex items-center gap-1">
+            <Button variant="outline" size="icon" :disabled="tableData.page === 1" @click="goToPage(tableData.page - 1)">
+              <ChevronLeft class="w-4 h-4" />
+            </Button>
+            <template v-for="(page, index) in visiblePages" :key="index">
+              <span v-if="page === '...'" class="px-2 text-muted-foreground">...</span>
+              <Button
+                v-else
+                :variant="page === tableData.page ? 'default' : 'outline'"
+                size="icon"
+                @click="goToPage(page as number)"
               >
-                <el-icon><Plus /></el-icon>
-                新增字典项
-              </el-button>
-            </div>
-          </template>
-
-          <div
-            v-if="!selectedDictId"
-            class="empty-state"
-          >
-            <el-empty description="请从左侧选择一个字典" />
-          </div>
-
-          <div v-else>
-            <!-- 搜索表单 -->
-            <el-form
-              :inline="true"
-              :model="itemQueryForm"
-              class="search-form"
+                {{ page }}
+              </Button>
+            </template>
+            <Button
+              variant="outline"
+              size="icon"
+              :disabled="tableData.page >= totalPages"
+              @click="goToPage(tableData.page + 1)"
             >
-              <el-form-item label="标签">
-                <el-input
-                  v-model="itemQueryForm.keyword"
-                  placeholder="请输入标签"
-                  clearable
-                />
-              </el-form-item>
-              <el-form-item>
-                <el-button
-                  type="primary"
-                  @click="handleItemSearch"
-                >
-                  <el-icon><Search /></el-icon>
-                  搜索
-                </el-button>
-                <el-button @click="handleItemReset">
-                  <el-icon><Refresh /></el-icon>
-                  重置
-                </el-button>
-              </el-form-item>
-            </el-form>
-
-            <!-- 数据表格 - 树形结构 -->
-            <el-table
-              v-loading="itemLoading"
-              :data="dictItemList"
-              border
-              row-key="id"
-              :tree-props="{ children: 'children' }"
-              default-expand-all
-            >
-              <el-table-column
-                prop="id"
-                label="ID"
-                width="80"
-              />
-              <el-table-column
-                prop="label"
-                label="字典标签"
-                width="200"
-              />
-              <el-table-column
-                prop="value"
-                label="字典值"
-                width="150"
-              />
-              <el-table-column
-                prop="sortOrder"
-                label="排序"
-                width="80"
-              />
-              <el-table-column
-                label="状态"
-                width="100"
-              >
-                <template #default="{ row }">
-                  <el-tag :type="row.status === 1 ? 'success' : 'danger'">
-                    {{ row.status === 1 ? '正常' : '禁用' }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column
-                label="操作"
-                width="280"
-                fixed="right"
-              >
-                <template #default="{ row }">
-                  <el-button
-                    type="primary"
-                    size="small"
-                    @click="handleItemAddChild(row)"
-                  >
-                    新增子项
-                  </el-button>
-                  <el-button
-                    type="warning"
-                    size="small"
-                    @click="handleItemEdit(row)"
-                  >
-                    编辑
-                  </el-button>
-                  <el-button
-                    type="info"
-                    size="small"
-                    @click="handleItemStatus(row)"
-                  >
-                    {{ row.status === 1 ? '禁用' : '启用' }}
-                  </el-button>
-                  <el-button
-                    type="danger"
-                    size="small"
-                    @click="handleItemDelete(row)"
-                  >
-                    删除
-                  </el-button>
-                </template>
-              </el-table-column>
-            </el-table>
+              <ChevronRight class="w-4 h-4" />
+            </Button>
           </div>
-        </el-card>
-      </el-col>
-    </el-row>
+        </div>
+      </CardContent>
+    </Card>
 
-    <!-- 字典新增/编辑对话框 -->
-    <el-dialog
-      v-model="dictDialogVisible"
-      :title="dictDialogTitle"
-      width="500px"
-    >
-      <el-form
-        ref="dictFormRef"
-        :model="dictFormData"
-        :rules="dictRules"
-        label-width="100px"
-      >
-        <el-form-item
-          label="字典类型"
-          prop="dictType"
-        >
-          <el-input
-            v-model="dictFormData.dictType"
-            placeholder="请输入字典类型"
-            :disabled="!!dictFormData.id"
-          />
-        </el-form-item>
-        <el-form-item
-          label="字典名称"
-          prop="dictName"
-        >
-          <el-input
-            v-model="dictFormData.dictName"
-            placeholder="请输入字典名称"
-          />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="dictFormData.status">
-            <el-radio :label="1">
-              正常
-            </el-radio>
-            <el-radio :label="0">
-              禁用
-            </el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input
-            v-model="dictFormData.remark"
-            type="textarea"
-            placeholder="请输入备注"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dictDialogVisible = false">
-          取消
-        </el-button>
-        <el-button
-          type="primary"
-          @click="handleDictSubmit"
-        >
-          确定
-        </el-button>
-      </template>
-    </el-dialog>
+    <Dialog v-if="canAddDict || canEditDict" v-model:open="dialogOpen">
+      <DialogContent class="sm:max-w-[520px]">
+        <DialogHeader>
+          <DialogTitle>{{ isEdit ? '编辑字典' : '新增字典' }}</DialogTitle>
+        </DialogHeader>
+        <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
+        <div v-else class="space-y-4 py-2">
+          <div class="space-y-2">
+            <Label>字典类型</Label>
+            <Input v-model="form.dictType" :disabled="isEdit" placeholder="例如：user_status" />
+          </div>
+          <div class="space-y-2">
+            <Label>字典名称</Label>
+            <Input v-model="form.dictName" placeholder="请输入字典名称" />
+          </div>
+          <div class="space-y-2">
+            <Label>备注</Label>
+            <Textarea v-model="form.remark" placeholder="请输入备注" />
+          </div>
+          <div v-if="isEdit" class="space-y-2">
+            <Label>状态</Label>
+            <div class="flex gap-2">
+              <Button :variant="form.status === '1' ? 'default' : 'outline'" @click="form.status = '1'">正常</Button>
+              <Button :variant="form.status === '0' ? 'destructive' : 'outline'" @click="form.status = '0'">禁用</Button>
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="dialogOpen = false">取消</Button>
+          <Button :disabled="dialogLoading" @click="handleSubmit">{{ isEdit ? '保存' : '创建' }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
-    <!-- 字典项新增/编辑对话框 -->
-    <el-dialog
-      v-model="itemDialogVisible"
-      :title="itemDialogTitle"
-      width="500px"
-      @close="handleItemDialogClose"
-    >
-      <el-form
-        ref="itemFormRef"
-        :model="itemForm"
-        :rules="itemRules"
-        label-width="100px"
-      >
-        <el-form-item
-          label="父节点"
-          prop="parentId"
-        >
-          <el-tree-select
-            v-model="itemForm.parentId"
-            :data="parentTreeData"
-            :props="{ label: 'label', value: 'id' }"
-            placeholder="请选择父节点（不选则为顶级节点）"
-            clearable
-            check-strictly
-            :render-after-expand="false"
-          />
-        </el-form-item>
-        <el-form-item
-          label="字典标签"
-          prop="label"
-        >
-          <el-input
-            v-model="itemForm.label"
-            placeholder="请输入字典标签"
-          />
-        </el-form-item>
-        <el-form-item
-          label="字典值"
-          prop="value"
-        >
-          <el-input
-            v-model="itemForm.value"
-            placeholder="请输入字典值"
-          />
-        </el-form-item>
-        <el-form-item
-          label="排序"
-          prop="sortOrder"
-        >
-          <el-input-number
-            v-model="itemForm.sortOrder"
-            :min="0"
-          />
-        </el-form-item>
-        <el-form-item
-          label="状态"
-          prop="status"
-        >
-          <el-radio-group v-model="itemForm.status">
-            <el-radio :value="1">
-              正常
-            </el-radio>
-            <el-radio :value="0">
-              禁用
-            </el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="itemDialogVisible = false">
-          取消
-        </el-button>
-        <el-button
-          type="primary"
-          :loading="submitLoading"
-          @click="handleItemSubmit"
-        >
-          确定
-        </el-button>
-      </template>
-    </el-dialog>
+    <AlertDialog v-if="canDeleteDict" v-model:open="deleteDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>确认删除字典</AlertDialogTitle>
+          <AlertDialogDescription>删除字典后将无法恢复，如果存在关联字典项，后端可能会拒绝删除。</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogAction @click="handleDelete">确认删除</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <Dialog v-if="canListDictItems" v-model:open="itemDialogOpen">
+      <DialogContent class="sm:max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>字典项管理{{ activeDict ? ` - ${activeDict.dictName}` : '' }}</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4">
+          <div class="flex justify-end">
+            <Button v-if="canAddDictItem" @click="openAddItemDialog">
+              <Plus class="w-4 h-4 mr-2" />
+              新增字典项
+            </Button>
+          </div>
+
+          <table class="w-full">
+            <thead class="bg-muted/50 border-b">
+              <tr>
+                <th class="text-left p-4 font-medium">标签</th>
+                <th class="text-left p-4 font-medium">值</th>
+                <th class="text-left p-4 font-medium">排序</th>
+                <th class="text-left p-4 font-medium">备注</th>
+                <th class="text-left p-4 font-medium">状态</th>
+                <th class="text-left p-4 font-medium">操作</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y">
+              <tr v-if="itemLoading">
+                <td colspan="6" class="p-8 text-center text-muted-foreground">加载中...</td>
+              </tr>
+              <tr v-else-if="itemTableData.records.length === 0">
+                <td colspan="6" class="p-8 text-center text-muted-foreground">暂无字典项</td>
+              </tr>
+              <tr v-for="item in itemTableData.records" :key="item.id" class="hover:bg-muted/30">
+                <td class="p-4 font-medium">{{ getItemLabel(item) }}</td>
+                <td class="p-4"><code class="bg-muted px-2 py-0.5 rounded text-sm">{{ getItemValue(item) }}</code></td>
+                <td class="p-4">{{ getItemSort(item) }}</td>
+                <td class="p-4 text-muted-foreground">{{ item.remark || '-' }}</td>
+                <td class="p-4">
+                  <Badge
+                    :variant="item.status === 1 ? 'default' : 'destructive'"
+                    :class="canEditDictItem ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''"
+                    @click="canEditDictItem && handleToggleItemStatus(item)"
+                  >
+                    {{ item.status === 1 ? '正常' : '禁用' }}
+                  </Badge>
+                </td>
+                <td class="p-4">
+                  <div class="flex gap-2">
+                    <Button v-if="canEditDictItem" size="sm" variant="ghost" @click="handleEditItem(item.id)">
+                      <Edit class="w-4 h-4" />
+                    </Button>
+                    <Button v-if="canDeleteDictItem" size="sm" variant="ghost" class="text-destructive" @click="handleDeleteItemConfirm(item.id)">
+                      <Trash2 class="w-4 h-4" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    <Dialog v-if="canAddDictItem || canEditDictItem" v-model:open="itemFormDialogOpen">
+      <DialogContent class="sm:max-w-[520px]">
+        <DialogHeader>
+          <DialogTitle>{{ isEditItem ? '编辑字典项' : '新增字典项' }}</DialogTitle>
+        </DialogHeader>
+        <div v-if="itemFormLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
+        <div v-else class="space-y-4 py-2">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>父级字典项</Label>
+              <Select v-model="itemForm.parentId">
+                <SelectTrigger>
+                  <SelectValue placeholder="选择父级字典项" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">顶级字典项</SelectItem>
+                  <SelectItem v-for="item in itemParentOptions" :key="item.id" :value="item.id">
+                    {{ item.label }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div class="space-y-2">
+              <Label>状态</Label>
+              <Select v-model="itemForm.status">
+                <SelectTrigger>
+                  <SelectValue placeholder="选择状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">正常</SelectItem>
+                  <SelectItem value="0">禁用</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>标签</Label>
+              <Input v-model="itemForm.label" placeholder="请输入字典项标签" />
+            </div>
+            <div class="space-y-2">
+              <Label>值</Label>
+              <Input v-model="itemForm.value" placeholder="请输入字典项值" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>排序</Label>
+              <Input v-model="itemForm.sortOrder" type="number" placeholder="排序值" />
+            </div>
+            <div class="space-y-2">
+              <Label>备注</Label>
+              <Input v-model="itemForm.remark" placeholder="请输入备注" />
+            </div>
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="itemFormDialogOpen = false">取消</Button>
+          <Button :disabled="itemFormLoading" @click="handleSubmitItem">{{ isEditItem ? '保存' : '创建' }}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <AlertDialog v-if="canDeleteDictItem" v-model:open="deleteItemDialogOpen">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>确认删除字典项</AlertDialogTitle>
+          <AlertDialogDescription>删除后不可恢复，如果存在子项，后端可能会拒绝删除。</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>取消</AlertDialogCancel>
+          <AlertDialogAction @click="handleDeleteItem">确认删除</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>
 </template>
-
-<style scoped>
-.dict-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-}
-
-.header-title {
-  font-size: 16px;
-  font-weight: 500;
-}
-
-/* 左侧字典列表卡片 */
-.dict-list-card {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-.dict-list-card :deep(.el-card__header) {
-  flex-shrink: 0;
-}
-
-.dict-list-card :deep(.el-card__body) {
-  flex: 1;
-  min-height: 0;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-}
-
-.search-form {
-  margin-bottom: 12px;
-  flex-shrink: 0;
-}
-
-.dict-list-wrapper {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.dict-list-wrapper :deep(.el-table) {
-  height: 100%;
-}
-
-/* 字典列表项 */
-.dict-item {
-  padding: 12px;
-  margin-bottom: 8px;
-  border: 1px solid #e4e7ed;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  background: #fff;
-}
-
-.dict-item:hover {
-  border-color: #409eff;
-  box-shadow: 0 2px 8px rgba(64, 158, 255, 0.15);
-}
-
-.dict-item.active {
-  border-color: #409eff;
-  background: #ecf5ff;
-}
-
-.dict-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.dict-type {
-  font-weight: 600;
-  color: #303133;
-  font-size: 14px;
-}
-
-.dict-item-name {
-  color: #606266;
-  font-size: 13px;
-  margin-bottom: 8px;
-}
-
-.dict-item-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-/* 右侧字典项卡片 */
-.dict-item-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.dict-item-card :deep(.el-card__body) {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.empty-state {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 滚动条样式 */
-.dict-list-wrapper::-webkit-scrollbar {
-  width: 6px;
-}
-
-.dict-list-wrapper::-webkit-scrollbar-thumb {
-  background: #dcdfe6;
-  border-radius: 3px;
-}
-
-.dict-list-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #c0c4cc;
-}
-
-/* 响应式布局 */
-@media (max-width: 768px) {
-  .dict-container {
-    height: auto;
-  }
-
-  .dict-list-card,
-  .dict-item-card {
-    height: auto;
-    min-height: 500px;
-  }
-
-  .dict-list-wrapper {
-    max-height: 400px;
-  }
-}
-</style>

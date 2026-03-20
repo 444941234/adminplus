@@ -1,261 +1,169 @@
-<template>
-  <div class="config-page">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>参数配置</span>
-          <div class="header-actions">
-            <el-button
-              type="primary"
-              @click="handleAdd"
-            >
-              <el-icon><Plus /></el-icon>
-              新增配置
-            </el-button>
-          </div>
-        </div>
-      </template>
-
-      <el-table
-        v-loading="loading"
-        :data="tableData"
-        border
-      >
-        <el-table-column
-          prop="key"
-          label="配置键"
-          width="200"
-        />
-        <el-table-column
-          prop="value"
-          label="配置值"
-        />
-        <el-table-column
-          prop="description"
-          label="描述"
-        />
-        <el-table-column
-          prop="status"
-          label="状态"
-          width="100"
-        >
-          <template #default="{ row }">
-            <el-tag
-              :type="row.status === 1 ? 'success' : 'danger'"
-            >
-              {{ row.status === 1 ? '启用' : '禁用' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          width="200"
-          fixed="right"
-        >
-          <template #default="{ row }">
-            <el-button
-              type="primary"
-              size="small"
-              @click="handleEdit(row)"
-            >
-              编辑
-            </el-button>
-            <el-button
-              type="danger"
-              size="small"
-              @click="handleDelete"
-            >
-              删除
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
-
-    <!-- 配置编辑对话框 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="dialogTitle"
-      width="600px"
-    >
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="100px"
-      >
-        <el-form-item
-          label="配置键"
-          prop="key"
-        >
-          <el-input
-            v-model="form.key"
-            placeholder="请输入配置键"
-          />
-        </el-form-item>
-        <el-form-item
-          label="配置值"
-          prop="value"
-        >
-          <el-input
-            v-model="form.value"
-            placeholder="请输入配置值"
-          />
-        </el-form-item>
-        <el-form-item
-          label="描述"
-          prop="description"
-        >
-          <el-input
-            v-model="form.description"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入配置描述"
-          />
-        </el-form-item>
-        <el-form-item
-          label="状态"
-          prop="status"
-        >
-          <el-switch
-            v-model="form.status"
-            :active-value="1"
-            :inactive-value="0"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="dialogVisible = false">
-          取消
-        </el-button>
-        <el-button
-          type="primary"
-          :loading="submitLoading"
-          @click="handleSubmit"
-        >
-          确定
-        </el-button>
-      </template>
-    </el-dialog>
-  </div>
-</template>
-
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import {
-  ElMessage, ElMessageBox, ElIcon, ElButton, ElTableColumn, ElTag, ElTable,
-  ElCard, ElInput, ElFormItem, ElSwitch, ElForm, ElDialog, ElLoading
-} from 'element-plus'
-import { Plus } from '@/utils/iconCompat'
-
-// Import loading directive
-const vLoading = ElLoading.directive
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/components/ui'
+import { RefreshCw, Server, Users } from 'lucide-vue-next'
+import { getOnlineUsers, getSystemInfo } from '@/api'
+import type { OnlineUser, SystemInfo } from '@/types'
+import { toast } from 'vue-sonner'
 
 const loading = ref(false)
-const tableData = ref([])
-const dialogVisible = ref(false)
-const dialogTitle = ref('')
-const submitLoading = ref(false)
-const isEdit = ref(false)
+const systemInfo = ref<SystemInfo | null>(null)
+const onlineUsers = ref<OnlineUser[]>([])
 
-const formRef = ref()
-const form = reactive({
-  key: '',
-  value: '',
-  description: '',
-  status: 1
+const memoryUsagePercent = computed(() => {
+  if (!systemInfo.value?.totalMemory || !systemInfo.value?.usedMemory) return 0
+  return Math.min(100, Math.round((systemInfo.value.usedMemory / systemInfo.value.totalMemory) * 100))
 })
 
-const rules = {
-  key: [{ required: true, message: '请输入配置键', trigger: 'blur' }],
-  value: [{ required: true, message: '请输入配置值', trigger: 'blur' }]
+const formatUptime = (uptime?: number) => {
+  if (!uptime) return '-'
+  const days = Math.floor(uptime / 86400)
+  const hours = Math.floor((uptime % 86400) / 3600)
+  const minutes = Math.floor((uptime % 3600) / 60)
+  if (days > 0) return `${days}天 ${hours}小时 ${minutes}分钟`
+  if (hours > 0) return `${hours}小时 ${minutes}分钟`
+  return `${minutes}分钟`
 }
 
-// 获取数据
-const getData = async () => {
+const fetchData = async () => {
   loading.value = true
   try {
-    // 模拟数据
-    tableData.value = [
-      {
-        id: 1,
-        key: 'system.name',
-        value: 'AdminPlus',
-        description: '系统名称',
-        status: 1
-      },
-      {
-        id: 2,
-        key: 'system.version',
-        value: '1.0.0',
-        description: '系统版本',
-        status: 1
-      }
-    ]
-  } catch {
-    ElMessage.error('获取配置列表失败')
+    const [systemRes, usersRes] = await Promise.all([getSystemInfo(), getOnlineUsers()])
+    systemInfo.value = systemRes.data
+    onlineUsers.value = usersRes.data
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取系统监控数据失败'
+    toast.error(message)
   } finally {
     loading.value = false
   }
 }
 
-// 新增配置
-const handleAdd = () => {
-  isEdit.value = false
-  dialogTitle.value = '新增配置'
-  form.key = ''
-  form.value = ''
-  form.description = ''
-  form.status = 1
-  dialogVisible.value = true
-}
-
-// 编辑配置
-const handleEdit = (row) => {
-  isEdit.value = true
-  dialogTitle.value = '编辑配置'
-  Object.assign(form, row)
-  dialogVisible.value = true
-}
-
-// 删除配置
-const handleDelete = async () => {
-  try {
-    await ElMessageBox.confirm(
-      '确定要删除该配置吗？',
-      '提示',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    )
-    ElMessage.success('删除成功')
-    getData()
-  } catch {
-    // 用户取消操作
-  }
-}
-
-// 提交表单
-const handleSubmit = async () => {
-  await formRef.value.validate()
-
-  submitLoading.value = true
-  try {
-    // 模拟保存操作
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    ElMessage.success(isEdit.value ? '更新成功' : '创建成功')
-    dialogVisible.value = false
-    getData()
-  } catch {
-    ElMessage.error('操作失败')
-  } finally {
-    submitLoading.value = false
-  }
-}
-
-onMounted(() => {
-  getData()
-})
+onMounted(fetchData)
 </script>
+
+<template>
+  <div class="space-y-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-xl font-semibold">系统监控</h2>
+        <p class="text-sm text-muted-foreground">查看系统运行信息与在线用户概况</p>
+      </div>
+      <Button variant="outline" :disabled="loading" @click="fetchData">
+        <RefreshCw class="mr-2 h-4 w-4" />
+        刷新
+      </Button>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-4">
+      <Card>
+        <CardContent class="p-4">
+          <p class="text-sm text-muted-foreground">系统名称</p>
+          <p class="mt-2 text-lg font-semibold">{{ loading ? '-' : systemInfo?.systemName || 'AdminPlus' }}</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent class="p-4">
+          <p class="text-sm text-muted-foreground">运行时长</p>
+          <p class="mt-2 text-lg font-semibold">{{ loading ? '-' : formatUptime(systemInfo?.uptime) }}</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent class="p-4">
+          <p class="text-sm text-muted-foreground">内存占用</p>
+          <p class="mt-2 text-lg font-semibold">{{ loading ? '-' : `${memoryUsagePercent}%` }}</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardContent class="p-4">
+          <p class="text-sm text-muted-foreground">在线用户</p>
+          <p class="mt-2 text-lg font-semibold">{{ loading ? '-' : onlineUsers.length }}</p>
+        </CardContent>
+      </Card>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+      <Card>
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2">
+            <Server class="h-5 w-5" />
+            系统信息
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div v-if="loading" class="py-8 text-center text-muted-foreground">加载中...</div>
+          <div v-else class="grid gap-4 md:grid-cols-2">
+            <div class="rounded-lg border p-4">
+              <p class="text-sm text-muted-foreground">系统版本</p>
+              <p class="mt-1 font-medium">{{ systemInfo?.systemVersion || '-' }}</p>
+            </div>
+            <div class="rounded-lg border p-4">
+              <p class="text-sm text-muted-foreground">操作系统</p>
+              <p class="mt-1 font-medium">{{ systemInfo?.osName || '-' }}</p>
+            </div>
+            <div class="rounded-lg border p-4">
+              <p class="text-sm text-muted-foreground">JDK 版本</p>
+              <p class="mt-1 font-medium">{{ systemInfo?.jdkVersion || '-' }}</p>
+            </div>
+            <div class="rounded-lg border p-4">
+              <p class="text-sm text-muted-foreground">数据库</p>
+              <p class="mt-1 font-medium">{{ systemInfo?.databaseType || '-' }} {{ systemInfo?.databaseVersion || '' }}</p>
+            </div>
+            <div class="rounded-lg border p-4">
+              <p class="text-sm text-muted-foreground">总内存</p>
+              <p class="mt-1 font-medium">{{ systemInfo?.totalMemory ?? '-' }} MB</p>
+            </div>
+            <div class="rounded-lg border p-4">
+              <p class="text-sm text-muted-foreground">已用 / 空闲内存</p>
+              <p class="mt-1 font-medium">
+                {{ systemInfo?.usedMemory ?? '-' }} / {{ systemInfo?.freeMemory ?? '-' }} MB
+              </p>
+            </div>
+            <div class="rounded-lg border p-4 md:col-span-2">
+              <div class="flex items-center justify-between text-sm">
+                <span class="text-muted-foreground">内存占用率</span>
+                <span class="font-medium">{{ memoryUsagePercent }}%</span>
+              </div>
+              <div class="mt-3 h-2 rounded-full bg-muted">
+                <div class="h-2 rounded-full bg-primary transition-all" :style="{ width: `${memoryUsagePercent}%` }" />
+              </div>
+            </div>
+            <div class="rounded-lg border p-4 md:col-span-2">
+              <p class="text-sm text-muted-foreground">数据库连接数</p>
+              <p class="mt-1 font-medium">{{ systemInfo?.databaseConnections ?? '-' }}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle class="flex items-center gap-2">
+            <Users class="h-5 w-5" />
+            在线用户
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div v-if="loading" class="py-8 text-center text-muted-foreground">加载中...</div>
+          <div v-else-if="onlineUsers.length === 0" class="py-8 text-center text-muted-foreground">暂无在线用户</div>
+          <div v-else class="space-y-3">
+            <div v-for="user in onlineUsers" :key="`${user.userId}-${user.loginTime}`" class="rounded-lg border p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p class="font-medium">{{ user.username }}</p>
+                  <p class="text-sm text-muted-foreground">{{ user.ip }}</p>
+                </div>
+                <Badge variant="secondary">在线</Badge>
+              </div>
+              <div class="mt-3 grid gap-2 text-sm text-muted-foreground">
+                <p>登录时间：{{ user.loginTime }}</p>
+                <p>浏览器：{{ user.browser || '-' }}</p>
+                <p>操作系统：{{ user.os || '-' }}</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+</template>

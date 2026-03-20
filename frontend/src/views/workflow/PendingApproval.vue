@@ -1,203 +1,161 @@
-<template>
-  <div class="pending-approval-page">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <div class="header-left">
-            <h3>
-              待我审批
-              <el-badge v-if="pendingCount > 0" :value="pendingCount" class="badge" />
-            </h3>
-          </div>
-          <div class="header-actions">
-            <el-button @click="handleRefresh" :loading="loading">
-              <el-icon><Refresh /></el-icon>
-              刷新
-            </el-button>
-          </div>
-        </div>
-      </template>
-
-      <!-- 表格 -->
-      <div v-loading="loading" class="table-container">
-        <el-empty v-if="tableData.length === 0 && !loading" description="暂无待审批流程" />
-
-        <el-table v-else :data="tableData" stripe border>
-          <el-table-column prop="title" label="流程标题" min-width="200" />
-          <el-table-column prop="definitionName" label="流程类型" width="150" />
-          <el-table-column prop="userName" label="发起人" width="120" />
-          <el-table-column prop="currentNodeName" label="当前节点" width="120" />
-          <el-table-column prop="submitTime" label="提交时间" width="180">
-            <template #default="{ row }">
-              {{ formatDate(row.submitTime) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="200" fixed="right">
-            <template #default="{ row }">
-              <el-button link type="success" @click="handleApprove(row)">同意</el-button>
-              <el-button link type="danger" @click="handleReject(row)">拒绝</el-button>
-              <el-button link type="primary" @click="handleView(row)">查看</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </el-card>
-
-    <!-- 审批对话框 -->
-    <el-dialog
-      v-model="showApprovalDialog"
-      :title="approvalTitle"
-      width="600px"
-      :close-on-click-modal="false"
-    >
-      <el-form :model="approvalForm" :rules="approvalRules" ref="approvalFormRef" label-width="100px">
-        <el-form-item label="审批意见" prop="comment">
-          <el-input
-            v-model="approvalForm.comment"
-            type="textarea"
-            :rows="4"
-            :placeholder="approvalPlaceholder"
-            maxlength="500"
-            show-word-limit
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="showApprovalDialog = false">取消</el-button>
-        <el-button :type="approvalType === 'approve' ? 'success' : 'danger'" @click="handleConfirmApproval" :loading="approving">
-          {{ approvalType === 'approve' ? '同意' : '拒绝' }}
-        </el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 详情对话框 -->
-    <WorkflowDetail
-      v-model:visible="showDetailDialog"
-      :instance-id="currentInstanceId"
-      @refresh="handleRefresh"
-    />
-  </div>
-</template>
-
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from '@/utils/elementCompat'
-import { Refresh } from '@/utils/iconCompat'
-import { getPendingApprovals, countPendingApprovals, approveWorkflow, rejectWorkflow } from '@/api/workflow'
-import WorkflowDetail from './WorkflowDetail.vue'
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import {
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+  Textarea
+} from '@/components/ui'
+import { approveWorkflow, getPendingWorkflows, rejectWorkflow } from '@/api'
+import type { WorkflowInstance } from '@/types'
+import { toast } from 'vue-sonner'
+import { useUserStore } from '@/stores/user'
+import { getWorkflowPermissionState } from '@/lib/page-permissions'
 
 const loading = ref(false)
-const approving = ref(false)
-const tableData = ref([])
-const pendingCount = ref(0)
+const dialogLoading = ref(false)
+const actionDialogOpen = ref(false)
+const actionType = ref<'approve' | 'reject'>('approve')
+const comment = ref('')
+const currentWorkflow = ref<WorkflowInstance | null>(null)
+const workflows = ref<WorkflowInstance[]>([])
+const userStore = useUserStore()
 
-const showApprovalDialog = ref(false)
-const showDetailDialog = ref(false)
-const currentInstanceId = ref('')
-const approvalType = ref('approve')
+const permissionState = computed(() => getWorkflowPermissionState(userStore.hasPermission))
+const canApproveWorkflow = computed(() => permissionState.value.canApprovePendingActions)
 
-const approvalForm = reactive({
-  comment: ''
-})
-
-const approvalRules = {
-  comment: [{ required: true, message: '请输入审批意见', trigger: 'blur' }]
+const formatDateTime = (value?: string | null) => {
+  if (!value) return '-'
+  return new Date(value).toLocaleString('zh-CN', { hour12: false })
 }
 
-const approvalFormRef = ref(null)
-
-const approvalTitle = ref('')
-const approvalPlaceholder = ref('')
-
-// 加载数据
-const loadData = async () => {
+const fetchData = async () => {
   loading.value = true
   try {
-    const res = await getPendingApprovals()
-    tableData.value = res.data || []
+    const res = await getPendingWorkflows()
+    workflows.value = res.data
   } catch (error) {
-    ElMessage.error('加载数据失败')
+    const message = error instanceof Error ? error.message : '获取待审批流程失败'
+    toast.error(message)
   } finally {
     loading.value = false
   }
 }
 
-// 加载待审批数量
-const loadCount = async () => {
-  try {
-    const res = await countPendingApprovals()
-    pendingCount.value = res.data || 0
-  } catch (error) {
-    console.error('加载待审批数量失败', error)
+const openActionDialog = (workflow: WorkflowInstance, type: 'approve' | 'reject') => {
+  currentWorkflow.value = workflow
+  actionType.value = type
+  comment.value = ''
+  actionDialogOpen.value = true
+}
+
+const submitAction = async () => {
+  if (!currentWorkflow.value) return
+  if (!comment.value.trim()) {
+    toast.warning('请输入审批意见')
+    return
   }
-}
 
-// 刷新
-const handleRefresh = () => {
-  loadData()
-  loadCount()
-}
-
-// 查看详情
-const handleView = (row) => {
-  currentInstanceId.value = row.id
-  showDetailDialog.value = true
-}
-
-// 同意
-const handleApprove = (row) => {
-  currentInstanceId.value = row.id
-  approvalType.value = 'approve'
-  approvalTitle.value = '同意审批'
-  approvalPlaceholder.value = '请输入同意理由（可选）'
-  approvalForm.comment = '同意'
-  showApprovalDialog.value = true
-}
-
-// 拒绝
-const handleReject = (row) => {
-  currentInstanceId.value = row.id
-  approvalType.value = 'reject'
-  approvalTitle.value = '拒绝审批'
-  approvalPlaceholder.value = '请输入拒绝原因（必填）'
-  approvalForm.comment = ''
-  showApprovalDialog.value = true
-}
-
-// 确认审批
-const handleConfirmApproval = async () => {
-  await approvalFormRef.value.validate()
-  approving.value = true
+  dialogLoading.value = true
   try {
-    if (approvalType.value === 'approve') {
-      await approveWorkflow(currentInstanceId.value, {
-        comment: approvalForm.comment
-      })
-      ElMessage.success('已同意')
+    const payload = { comment: comment.value.trim() }
+    if (actionType.value === 'approve') {
+      await approveWorkflow(currentWorkflow.value.id, payload)
+      toast.success('审批已通过')
     } else {
-      await rejectWorkflow(currentInstanceId.value, {
-        comment: approvalForm.comment
-      })
-      ElMessage.success('已拒绝')
+      await rejectWorkflow(currentWorkflow.value.id, payload)
+      toast.success('流程已驳回')
     }
-    showApprovalDialog.value = false
-    approvalForm.comment = ''
-    handleRefresh()
+    actionDialogOpen.value = false
+    fetchData()
   } catch (error) {
-    ElMessage.error('操作失败')
+    const message = error instanceof Error ? error.message : '审批失败'
+    toast.error(message)
   } finally {
-    approving.value = false
+    dialogLoading.value = false
   }
 }
 
-// 格式化日期
-const formatDate = (date) => {
-  if (!date) return '-'
-  return new Date(date).toLocaleString('zh-CN')
-}
-
-onMounted(() => {
-  loadData()
-  loadCount()
-})
+onMounted(fetchData)
 </script>
+
+<template>
+  <div class="space-y-4">
+    <Card>
+      <CardHeader>
+        <CardTitle>待我审批</CardTitle>
+      </CardHeader>
+      <CardContent class="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>标题</TableHead>
+              <TableHead>发起人</TableHead>
+              <TableHead>流程定义</TableHead>
+              <TableHead>当前节点</TableHead>
+              <TableHead>提交时间</TableHead>
+              <TableHead class="text-right">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-if="loading">
+              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
+            </TableRow>
+            <TableRow v-else-if="workflows.length === 0">
+              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">当前没有待审批流程</TableCell>
+            </TableRow>
+            <TableRow v-for="workflow in workflows" :key="workflow.id">
+              <TableCell class="font-medium">{{ workflow.title }}</TableCell>
+              <TableCell>{{ workflow.userName }}</TableCell>
+              <TableCell>{{ workflow.definitionName }}</TableCell>
+              <TableCell>{{ workflow.currentNodeName || '-' }}</TableCell>
+              <TableCell>{{ formatDateTime(workflow.submitTime || workflow.createTime) }}</TableCell>
+              <TableCell class="text-right">
+                <div class="flex justify-end gap-2">
+                  <RouterLink :to="`/workflow/detail/${workflow.id}`">
+                    <Button size="sm" variant="outline">详情</Button>
+                  </RouterLink>
+                  <Button v-if="canApproveWorkflow" size="sm" @click="openActionDialog(workflow, 'approve')">通过</Button>
+                  <Button v-if="canApproveWorkflow" size="sm" variant="destructive" @click="openActionDialog(workflow, 'reject')">驳回</Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+
+    <Dialog v-if="canApproveWorkflow" v-model:open="actionDialogOpen">
+      <DialogContent class="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{{ actionType === 'approve' ? '通过审批' : '驳回流程' }}</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-2">
+          <div class="text-sm text-muted-foreground">
+            {{ currentWorkflow?.title || '-' }}
+          </div>
+          <Textarea v-model="comment" placeholder="请输入审批意见" />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="actionDialogOpen = false">取消</Button>
+          <Button :variant="actionType === 'approve' ? 'default' : 'destructive'" :disabled="dialogLoading" @click="submitAction">
+            确认
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  </div>
+</template>

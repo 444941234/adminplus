@@ -1,294 +1,182 @@
-<template>
-  <div class="workflow-page">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <div class="header-left">
-            <h3>我的工作流</h3>
-          </div>
-          <div class="header-actions">
-            <el-button type="primary" @click="showStartDialog = true">
-              <el-icon><Plus /></el-icon>
-              发起流程
-            </el-button>
-          </div>
-        </div>
-      </template>
-
-      <!-- 搜索表单 -->
-      <div class="search-form">
-        <el-form :inline="true">
-          <el-form-item label="状态">
-            <el-select v-model="queryParams.status" placeholder="全部" clearable @change="handleQuery">
-              <el-option label="全部" value="" />
-              <el-option label="草稿" value="draft" />
-              <el-option label="进行中" value="running" />
-              <el-option label="已通过" value="approved" />
-              <el-option label="已拒绝" value="rejected" />
-              <el-option label="已取消" value="cancelled" />
-            </el-select>
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="handleQuery">查询</el-button>
-            <el-button @click="handleReset">重置</el-button>
-          </el-form-item>
-        </el-form>
-      </div>
-
-      <!-- 表格 -->
-      <el-table
-        v-loading="loading"
-        :data="tableData"
-        stripe
-        border
-      >
-        <el-table-column prop="title" label="流程标题" min-width="200" />
-        <el-table-column prop="definitionName" label="流程类型" width="150" />
-        <el-table-column label="状态" width="100">
-          <template #default="{ row }">
-            <el-tag v-if="row.status === 'draft'" type="info">草稿</el-tag>
-            <el-tag v-else-if="row.status === 'running'" type="warning">进行中</el-tag>
-            <el-tag v-else-if="row.status === 'approved'" type="success">已通过</el-tag>
-            <el-tag v-else-if="row.status === 'rejected'" type="danger">已拒绝</el-tag>
-            <el-tag v-else-if="row.status === 'cancelled'" type="info">已取消</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="currentNodeName" label="当前节点" width="120">
-          <template #default="{ row }">
-            {{ row.currentNodeName || '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="submitTime" label="提交时间" width="180">
-          <template #default="{ row }">
-            {{ formatDate(row.submitTime) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="220" fixed="right">
-          <template #default="{ row }">
-            <el-button link type="primary" @click="handleView(row)">查看</el-button>
-            <el-button v-if="row.status === 'draft'" link type="primary" @click="handleSubmit(row)">提交</el-button>
-            <el-button v-if="row.status === 'draft' || row.status === 'rejected'" link type="warning" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-if="row.status === 'draft' || row.status === 'running'" link type="danger" @click="handleCancel(row)">取消</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination
-          v-model:current-page="queryParams.page"
-          v-model:page-size="queryParams.size"
-          :total="total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleQuery"
-          @current-change="handleQuery"
-        />
-      </div>
-    </el-card>
-
-    <!-- 发起流程对话框 -->
-    <el-dialog
-      v-model="showStartDialog"
-      title="发起流程"
-      width="600px"
-      :close-on-click-modal="false"
-    >
-      <el-form :model="startForm" :rules="startRules" ref="startFormRef" label-width="100px">
-        <el-form-item label="流程类型" prop="definitionId">
-          <el-select v-model="startForm.definitionId" placeholder="请选择流程类型" @change="handleDefinitionChange">
-            <el-option
-              v-for="def in definitions"
-              :key="def.id"
-              :label="def.definitionName"
-              :value="def.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="流程标题" prop="title">
-          <el-input v-model="startForm.title" placeholder="请输入流程标题" maxlength="200" show-word-limit />
-        </el-form-item>
-        <el-form-item label="备注" prop="remark">
-          <el-input
-            v-model="startForm.remark"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入备注信息"
-            maxlength="500"
-            show-word-limit
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="showStartDialog = false">取消</el-button>
-        <el-button type="primary" @click="handleStart" :loading="submitting">提交</el-button>
-      </template>
-    </el-dialog>
-
-    <!-- 详情对话框 -->
-    <WorkflowDetail
-      v-model:visible="showDetailDialog"
-      :instance-id="currentInstanceId"
-      @refresh="handleQuery"
-    />
-  </div>
-</template>
-
-<script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { ElMessage, ElMessageBox } from '@/utils/elementCompat'
-import { Plus } from '@/utils/iconCompat'
-import { getMyWorkflows, startWorkflow, submitWorkflow, cancelWorkflow } from '@/api/workflow'
-import { listEnabledWorkflowDefinitions } from '@/api/workflow'
-import WorkflowDetail from './WorkflowDetail.vue'
+<script setup lang="ts">
+import { computed, onMounted, ref } from 'vue'
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui'
+import { cancelWorkflow, getMyWorkflows, withdrawWorkflow } from '@/api'
+import type { WorkflowInstance } from '@/types'
+import { toast } from 'vue-sonner'
+import { RefreshCw } from 'lucide-vue-next'
+import { useUserStore } from '@/stores/user'
 
 const loading = ref(false)
-const submitting = ref(false)
-const tableData = ref([])
-const total = ref(0)
-const definitions = ref([])
+const statusFilter = ref('ALL')
+const workflows = ref<WorkflowInstance[]>([])
+const userStore = useUserStore()
 
-const queryParams = reactive({
-  status: '',
-  page: 1,
-  size: 10
-})
+const terminalStatuses = new Set(['APPROVED', 'REJECTED', 'CANCELLED', 'FINISHED', 'COMPLETED'])
+const canManageMyWorkflow = computed(() => userStore.hasPermission('workflow:create'))
 
-const showStartDialog = ref(false)
-const showDetailDialog = ref(false)
-const currentInstanceId = ref('')
-
-const startForm = reactive({
-  definitionId: '',
-  title: '',
-  remark: ''
-})
-
-const startRules = {
-  definitionId: [{ required: true, message: '请选择流程类型', trigger: 'change' }],
-  title: [{ required: true, message: '请输入流程标题', trigger: 'blur' }]
+const formatDateTime = (value?: string | null) => {
+  if (!value) return '-'
+  return new Date(value).toLocaleString('zh-CN', { hour12: false })
 }
 
-const startFormRef = ref(null)
+const getStatusLabel = (status?: string) => {
+  const map: Record<string, string> = {
+    DRAFT: '草稿',
+    PENDING: '审批中',
+    PROCESSING: '进行中',
+    APPROVED: '已通过',
+    REJECTED: '已驳回',
+    CANCELLED: '已取消',
+    WITHDRAWN: '已撤回',
+    FINISHED: '已完成',
+    COMPLETED: '已完成'
+  }
+  return map[status || ''] || status || '-'
+}
 
-// 加载数据
-const loadData = async () => {
+const fetchData = async () => {
   loading.value = true
   try {
-    const status = queryParams.status || undefined
-    const res = await getMyWorkflows(status)
-    tableData.value = res.data || []
-    total.value = tableData.value.length
+    const res = await getMyWorkflows(statusFilter.value === 'ALL' ? undefined : statusFilter.value)
+    workflows.value = res.data
   } catch (error) {
-    ElMessage.error('加载数据失败')
+    const message = error instanceof Error ? error.message : '获取我的流程失败'
+    toast.error(message)
   } finally {
     loading.value = false
   }
 }
 
-// 加载流程定义
-const loadDefinitions = async () => {
+const handleWithdraw = async (workflow: WorkflowInstance) => {
   try {
-    const res = await listEnabledWorkflowDefinitions()
-    definitions.value = res.data || []
+    await withdrawWorkflow(workflow.id)
+    toast.success('流程已撤回')
+    fetchData()
   } catch (error) {
-    ElMessage.error('加载流程类型失败')
+    const message = error instanceof Error ? error.message : '撤回失败'
+    toast.error(message)
   }
 }
 
-// 查询
-const handleQuery = () => {
-  queryParams.page = 1
-  loadData()
-}
-
-// 重置
-const handleReset = () => {
-  queryParams.status = ''
-  queryParams.page = 1
-  loadData()
-}
-
-// 查看详情
-const handleView = (row) => {
-  currentInstanceId.value = row.id
-  showDetailDialog.value = true
-}
-
-// 提交流程
-const handleSubmit = async (row) => {
+const handleCancel = async (workflow: WorkflowInstance) => {
   try {
-    await ElMessageBox.confirm('确认提交此流程？', '提示', { type: 'warning' })
-    await submitWorkflow(row.id)
-    ElMessage.success('提交成功')
-    loadData()
+    await cancelWorkflow(workflow.id)
+    toast.success('流程已取消')
+    fetchData()
   } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('提交失败')
-    }
+    const message = error instanceof Error ? error.message : '取消失败'
+    toast.error(message)
   }
 }
 
-// 编辑草稿
-const handleEdit = (row) => {
-  ElMessage.info('编辑功能待实现')
-}
+const canOperate = (workflow: WorkflowInstance) => !terminalStatuses.has(workflow.status)
 
-// 取消流程
-const handleCancel = async (row) => {
-  try {
-    await ElMessageBox.confirm('确认取消此流程？取消后无法恢复。', '提示', { type: 'warning' })
-    await cancelWorkflow(row.id)
-    ElMessage.success('取消成功')
-    loadData()
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('取消失败')
-    }
-  }
-}
-
-// 流程定义变化
-const handleDefinitionChange = (definitionId) => {
-  const def = definitions.value.find(d => d.id === definitionId)
-  if (def && !startForm.title) {
-    startForm.title = def.definitionName
-  }
-}
-
-// 发起流程
-const handleStart = async () => {
-  await startFormRef.value.validate()
-  submitting.value = true
-  try {
-    await startWorkflow({
-      definitionId: startForm.definitionId,
-      title: startForm.title,
-      remark: startForm.remark
-    })
-    ElMessage.success('发起成功')
-    showStartDialog.value = false
-    Object.assign(startForm, {
-      definitionId: '',
-      title: '',
-      remark: ''
-    })
-    loadData()
-  } catch (error) {
-    ElMessage.error('发起失败')
-  } finally {
-    submitting.value = false
-  }
-}
-
-// 格式化日期
-const formatDate = (date) => {
-  if (!date) return '-'
-  return new Date(date).toLocaleString('zh-CN')
-}
-
-onMounted(() => {
-  loadData()
-  loadDefinitions()
-})
+onMounted(fetchData)
 </script>
+
+<template>
+  <div class="space-y-4">
+    <Card>
+      <CardHeader class="flex flex-row items-center justify-between space-y-0">
+        <CardTitle>我的流程</CardTitle>
+        <div class="flex items-center gap-3">
+          <Select v-model="statusFilter" @update:model-value="fetchData">
+            <SelectTrigger class="w-[180px]">
+              <SelectValue placeholder="全部状态" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">全部状态</SelectItem>
+              <SelectItem value="DRAFT">草稿</SelectItem>
+              <SelectItem value="PENDING">审批中</SelectItem>
+              <SelectItem value="APPROVED">已通过</SelectItem>
+              <SelectItem value="REJECTED">已驳回</SelectItem>
+              <SelectItem value="CANCELLED">已取消</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" @click="fetchData">
+            <RefreshCw class="mr-2 h-4 w-4" />
+            刷新
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent class="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>标题</TableHead>
+              <TableHead>流程定义</TableHead>
+              <TableHead>当前节点</TableHead>
+              <TableHead>状态</TableHead>
+              <TableHead>提交时间</TableHead>
+              <TableHead class="text-right">操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-if="loading">
+              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
+            </TableRow>
+            <TableRow v-else-if="workflows.length === 0">
+              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">暂无流程记录</TableCell>
+            </TableRow>
+            <TableRow v-for="workflow in workflows" :key="workflow.id">
+              <TableCell class="font-medium">
+                <div>{{ workflow.title }}</div>
+                <div class="text-xs text-muted-foreground">{{ workflow.remark || '无备注' }}</div>
+              </TableCell>
+              <TableCell>{{ workflow.definitionName }}</TableCell>
+              <TableCell>{{ workflow.currentNodeName || '-' }}</TableCell>
+              <TableCell>
+                <Badge variant="secondary">{{ getStatusLabel(workflow.status) }}</Badge>
+              </TableCell>
+              <TableCell>{{ formatDateTime(workflow.submitTime || workflow.createTime) }}</TableCell>
+              <TableCell class="text-right">
+                <div class="flex justify-end gap-2">
+                  <RouterLink :to="`/workflow/detail/${workflow.id}`">
+                    <Button size="sm" variant="outline">详情</Button>
+                  </RouterLink>
+                  <Button
+                    v-if="canManageMyWorkflow"
+                    size="sm"
+                    variant="outline"
+                    :disabled="!canOperate(workflow)"
+                    @click="handleWithdraw(workflow)"
+                  >
+                    撤回
+                  </Button>
+                  <Button
+                    v-if="canManageMyWorkflow"
+                    size="sm"
+                    variant="ghost"
+                    :disabled="!canOperate(workflow)"
+                    @click="handleCancel(workflow)"
+                  >
+                    取消
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  </div>
+</template>
