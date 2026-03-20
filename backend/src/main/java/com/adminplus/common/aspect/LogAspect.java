@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -274,6 +275,12 @@ public class LogAspect {
                 if (requestParam != null) {
                     String paramName = requestParam.value().isEmpty() ? param.getName() : requestParam.value();
                     paramsMap.put(paramName, args[i]);
+                } else if (args[i] instanceof MultipartFile fileValue) {
+                    paramsMap.put(param.getName(), Map.of(
+                            "originalFilename", fileValue.getOriginalFilename(),
+                            "size", fileValue.getSize(),
+                            "contentType", fileValue.getContentType()
+                    ));
                 } else if (args[i] != null && !param.getType().getName().startsWith("java.lang")) {
                     // 对于非基本类型，尝试序列化
                     paramsMap.put(param.getName(), args[i]);
