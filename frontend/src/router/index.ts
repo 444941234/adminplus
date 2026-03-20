@@ -94,18 +94,25 @@ export const resetDynamicRoutes = () => {
 
 export const ensureDynamicRoutes = async () => {
   const userStore = useUserStore()
-  // Restore token from localStorage if needed
-  userStore.restoreToken()
+  // Restore token from localStorage if needed (syncs store with localStorage)
+  console.log('[ensureDynamicRoutes] Starting, token:', userStore.token)
+  const hasToken = userStore.restoreToken()
+  console.log('[ensureDynamicRoutes] After restore, token:', userStore.token, 'hasToken:', hasToken)
 
-  if (!userStore.token) {
+  if (!hasToken && !userStore.token) {
+    console.log('[ensureDynamicRoutes] No token, resetting routes')
     resetDynamicRoutes()
     return
   }
 
   if (!dynamicRoutesLoaded) {
     try {
+      console.log('[ensureDynamicRoutes] Loading user info...')
+      // fetchUserInfo will check token.value internally
       await userStore.fetchUserInfo()
+      console.log('[ensureDynamicRoutes] User info loaded, menus:', userStore.menus)
       addDynamicRoutes(userStore.menus)
+      console.log('[ensureDynamicRoutes] Dynamic routes added')
       dynamicRoutesLoaded = true
     } catch (error) {
       console.error('Failed to load dynamic routes:', error)

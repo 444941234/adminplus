@@ -58,7 +58,16 @@ export const useUserStore = defineStore('user', () => {
 
   // 获取用户信息
   const fetchUserInfo = async () => {
-    if (!token.value) return
+    // Ensure token is synced from localStorage before making API calls
+    if (!token.value) {
+      const savedToken = localStorage.getItem('token')
+      if (savedToken) {
+        token.value = savedToken
+      } else {
+        return // No token available, cannot fetch user info
+      }
+    }
+
     try {
       const [userRes, permRes, menuRes] = await Promise.all([
         getCurrentUser(),
