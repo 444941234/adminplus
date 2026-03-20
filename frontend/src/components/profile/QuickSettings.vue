@@ -176,7 +176,7 @@ onMounted(fetchSettings)
           @update:model-value="handleLanguageChange"
           :disabled="updating['language']"
         >
-          <SelectTrigger class="w-40">
+          <SelectTrigger class="language-select-trigger">
             <SelectValue placeholder="选择语言" />
           </SelectTrigger>
           <SelectContent>
@@ -313,6 +313,13 @@ onMounted(fetchSettings)
   margin-top: 8px;
   padding-top: 16px;
   border-top: 1px solid rgb(226 232 240);
+}
+
+/* Language Select Trigger */
+.language-select-trigger {
+  min-width: 160px !important;
+  width: auto !important;
+  max-width: 200px !important;
 }
 
 /* Mobile Responsive */
