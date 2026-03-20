@@ -316,11 +316,10 @@ onMounted(fetchSettings)
   border-top: 1px solid rgb(226 232 240);
 }
 
-/* Language Select Trigger */
+/* Language Select Trigger - match Switch width */
 .language-select-trigger {
-  min-width: 160px !important;
-  width: auto !important;
-  max-width: 200px !important;
+  min-width: 140px !important;
+  width: 140px !important;
 }
 
 /* Mobile Responsive */
