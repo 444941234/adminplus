@@ -60,7 +60,12 @@ const initials = computed(() => {
 /**
  * Returns filtered list of user roles
  */
-const roles = computed(() => props.profile.roles?.filter(Boolean) ?? [])
+const roles = computed(() => {
+  if (!props.profile.roles || props.profile.roles.length === 0) {
+    return []
+  }
+  return props.profile.roles.filter(r => r && r.trim().length > 0)
+})
 </script>
 
 <template>
@@ -89,8 +94,8 @@ const roles = computed(() => props.profile.roles?.filter(Boolean) ?? [])
         </p>
 
         <div class="profile-hero__contact">
-          <Badge v-if="profile.email" variant="outline">{{ profile.email }}</Badge>
-          <Badge v-if="profile.phone" variant="outline">{{ profile.phone }}</Badge>
+          <span v-if="profile.email" class="profile-hero__contact-badge">{{ profile.email }}</span>
+          <span v-if="profile.phone" class="profile-hero__contact-badge">{{ profile.phone }}</span>
         </div>
       </div>
 
@@ -216,10 +221,11 @@ const roles = computed(() => props.profile.roles?.filter(Boolean) ?? [])
   flex-wrap: wrap;
 }
 
-.profile-hero__contact :deep(.badge) {
-  background: rgba(255, 255, 255, 0.2) !important;
-  color: white !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
+.profile-hero__contact-badge {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
   font-size: 12px;
   padding: 4px 12px;
   border-radius: 6px;
