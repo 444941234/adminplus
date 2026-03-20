@@ -1,11 +1,31 @@
 <script setup lang="ts">
+/**
+ * ActivityDashboard Component
+ *
+ * Displays user activity statistics and recent activity timeline.
+ * Shows login count, operation count, last login info, and recent activities.
+ *
+ * @author AdminPlus
+ * @since 2026-03-20
+ *
+ * @example
+ * <ActivityDashboard
+ *   :activity="activityStats"
+ *   :loading="false"
+ * />
+ */
 import { computed } from 'vue'
 import { Badge } from '@/components/ui'
 import { formatTime, getActivityColor } from '@/utils/activityUtils'
 import type { ActivityStats } from '@/types'
 
+/**
+ * Component props
+ */
 interface Props {
+  /** Activity statistics data including login count, operations, and recent activity */
   activity: ActivityStats
+  /** Shows loading skeleton when true */
   loading?: boolean
 }
 
@@ -13,7 +33,11 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false
 })
 
-// Get activity icon based on type
+/**
+ * Returns an emoji icon for the given activity type
+ * @param type - The activity type (create, update, delete, login)
+ * @returns Emoji icon string
+ */
 const getActivityIcon = (type: string): string => {
   const icons: Record<string, string> = {
     create: '✨',
@@ -24,6 +48,9 @@ const getActivityIcon = (type: string): string => {
   return icons[type] || '📌'
 }
 
+/**
+ * Computed property that returns the 5 most recent activities
+ */
 const displayActivities = computed(() => {
   return props.activity.recentActivity.slice(0, 5)
 })

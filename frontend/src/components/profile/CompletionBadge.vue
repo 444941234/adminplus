@@ -1,13 +1,38 @@
 <script setup lang="ts">
+/**
+ * CompletionBadge Component
+ *
+ * Displays a visual indicator showing how complete the user's profile is.
+ * Calculates completion percentage based on nickname, email, phone, and avatar.
+ * Shows motivational messages based on completion level.
+ *
+ * @author AdminPlus
+ * @since 2026-03-20
+ *
+ * @example
+ * <CompletionBadge
+ *   nickname="John Doe"
+ *   email="john@example.com"
+ *   phone="+1234567890"
+ *   :has-avatar="true"
+ * />
+ */
 import { computed } from 'vue'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { Trophy } from 'lucide-vue-next'
 
+/**
+ * Component props
+ */
 interface Props {
+  /** User's nickname (25% weight) */
   nickname?: string
+  /** User's email address (25% weight) */
   email?: string
+  /** User's phone number (25% weight) */
   phone?: string
+  /** Whether user has uploaded an avatar (25% weight) */
   hasAvatar?: boolean
 }
 
@@ -18,6 +43,10 @@ const props = withDefaults(defineProps<Props>(), {
   hasAvatar: false
 })
 
+/**
+ * Calculates the profile completion percentage
+ * Each field (nickname, email, phone, avatar) contributes 25%
+ */
 const completionPercentage = computed(() => {
   const fields = [
     props.nickname,
@@ -30,6 +59,9 @@ const completionPercentage = computed(() => {
   return Number.isNaN(percent) ? 0 : percent
 })
 
+/**
+ * Returns a motivational message based on completion percentage
+ */
 const completionMessage = computed(() => {
   const percentage = completionPercentage.value
   if (percentage === 100) {
@@ -45,10 +77,16 @@ const completionMessage = computed(() => {
   }
 })
 
+/**
+ * Returns the badge title based on completion status
+ */
 const badgeTitle = computed(() => {
   return completionPercentage.value === 100 ? 'Profile Complete!' : 'Profile Progress'
 })
 
+/**
+ * Returns the color class for the trophy icon based on completion level
+ */
 const badgeColor = computed(() => {
   const percentage = completionPercentage.value
   if (percentage === 100) return 'text-green-600'

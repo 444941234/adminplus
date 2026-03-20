@@ -1,24 +1,59 @@
 <script setup lang="ts">
+/**
+ * InlineEditField Component
+ *
+ * A reusable inline editing component that switches between display and edit modes.
+ * Features auto-save, keyboard shortcuts (Enter/Escape), and loading states.
+ *
+ * @author AdminPlus
+ * @since 2026-03-20
+ *
+ * @example
+ * <InlineEditField
+ *   v-model="profile.email"
+ *   label="Email"
+ *   type="email"
+ *   :loading="updating"
+ *   @save="handleUpdateField('email', $event)"
+ * />
+ */
 import { computed, nextTick, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Check, X, Loader2, Pencil } from 'lucide-vue-next'
 import { useInlineEdit } from '@/composables/useInlineEdit'
 
+/**
+ * Component props
+ */
 interface Props {
+  /** Current field value (v-model) */
   modelValue: string
+  /** Field label displayed above the value */
   label?: string
+  /** Placeholder text when value is empty */
   placeholder?: string
+  /** Disables editing when true */
   readonly?: boolean
+  /** Disables all interactions when true */
   disabled?: boolean
+  /** Shows loading state during save operation */
   loading?: boolean
+  /** HTML input type */
   type?: 'text' | 'email' | 'tel' | 'url'
 }
 
+/**
+ * Component events
+ */
 interface Emits {
+  /** Updates v-model value */
   (e: 'update:modelValue', value: string): void
+  /** Triggered when user saves changes */
   (e: 'save', value: string): void
+  /** Triggered when user cancels editing */
   (e: 'cancel'): void
+  /** Triggered when user enters edit mode */
   (e: 'startEdit'): void
 }
 
@@ -34,7 +69,9 @@ const emit = defineEmits<Emits>()
 
 const inputRef = ref<HTMLInputElement | null>(null)
 
-// Use the composable with onSave callback
+/**
+ * Use the composable with onSave callback
+ */
 const { isEditing, value, isSaving, startEditing, cancelEdit, save } = useInlineEdit(
   props.modelValue,
   {
@@ -47,11 +84,16 @@ const { isEditing, value, isSaving, startEditing, cancelEdit, save } = useInline
   }
 )
 
+/**
+ * Returns the display value or placeholder
+ */
 const displayValue = computed(() => {
   return props.modelValue || props.placeholder || 'Not set'
 })
 
-// Wrapper for startEditing to handle refs and emit
+/**
+ * Handles entering edit mode
+ */
 const handleStartEditing = () => {
   if (props.readonly || props.disabled || props.loading) return
   startEditing()
@@ -63,13 +105,19 @@ const handleStartEditing = () => {
   })
 }
 
-// Wrapper for cancelEdit to emit event
+/**
+ * Handles canceling edit
+ */
 const handleCancelEdit = () => {
   cancelEdit()
   emit('cancel')
 }
 
-// Handle Enter key to save, Escape to cancel
+/**
+ * Handles keyboard shortcuts
+ * - Enter: Save
+ * - Escape: Cancel
+ */
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Enter') {
     e.preventDefault()

@@ -116,7 +116,12 @@ npm run dev
 
 - 登录与验证码
 - 仪表盘统计
-- 个人资料
+- **个人资料（全新设计 v2.0）**
+  - 内联编辑与自动保存
+  - 活动统计仪表盘
+  - 快速设置开关
+  - 资料完成度徽章
+  - 响应式布局（桌面/平板/移动端）
 - 分析统计与报表
 - 工作流定义、我的流程、待审批、流程详情
 - 用户管理
@@ -149,5 +154,8 @@ npm run dev
 
 ## 更多文档
 
+- [Profile 页面重构文档](/D:/IdeaProjects/adminplus/docs/profile-redesign.md) - 个人中心 v2.0 功能详解
 - [frontend/README.md](/D:/IdeaProjects/adminplus/frontend/README.md)
 - [backend/README.md](/D:/IdeaProjects/adminplus/backend/README.md)
+- [@docs/功能说明.md](/D:/IdeaProjects/adminplus/@docs/功能说明.md) - 中文功能说明
+- [@docs/开发规范.md](/D:/IdeaProjects/adminplus/@docs/开发规范.md) - 开发规范指南

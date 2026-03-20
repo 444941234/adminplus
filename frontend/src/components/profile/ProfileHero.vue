@@ -1,17 +1,45 @@
 <script setup lang="ts">
+/**
+ * ProfileHero Component
+ *
+ * Hero section displaying user profile information with a gradient background.
+ * Shows avatar, name, username, roles, and contact information.
+ * Provides edit and avatar change actions.
+ *
+ * @author AdminPlus
+ * @since 2026-03-20
+ *
+ * @example
+ * <ProfileHero
+ *   :profile="userProfile"
+ *   :is-online="true"
+ *   @edit="handleEdit"
+ *   @change-avatar="handleChangeAvatar"
+ * />
+ */
 import { computed } from 'vue'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Profile } from '@/types'
 
+/**
+ * Component props
+ */
 interface Props {
+  /** User profile data */
   profile: Profile
+  /** Shows online status indicator when true */
   isOnline?: boolean
 }
 
+/**
+ * Component events
+ */
 interface Emits {
+  /** Emitted when edit button is clicked */
   (e: 'edit'): void
+  /** Emitted when change avatar button is clicked */
   (e: 'changeAvatar'): void
 }
 
@@ -21,11 +49,17 @@ const props = withDefaults(defineProps<Props>(), {
 
 const emit = defineEmits<Emits>()
 
+/**
+ * Computes user initials from nickname or username
+ */
 const initials = computed(() => {
   const name = props.profile.nickname || props.profile.username || '?'
   return name.charAt(0).toUpperCase()
 })
 
+/**
+ * Returns filtered list of user roles
+ */
 const roles = computed(() => props.profile.roles?.filter(Boolean) ?? [])
 </script>
 
