@@ -111,9 +111,7 @@ onMounted(() => {
         />
 
         <!-- Security Section -->
-        <div class="profile-page__security">
-          <ProfileSecurity />
-        </div>
+        <ProfileSecurity />
       </div>
 
       <!-- Middle Column: Activity Dashboard (1fr) -->
@@ -206,8 +204,8 @@ onMounted(() => {
   }
 }
 
-/* Tablet (768px - 1023px) - 2-column layout */
-@media (max-width: 1023px) and (min-width: 768px) {
+/* Tablet (641px - 1023px) - 2-column layout */
+@media (max-width: 1023px) and (min-width: 641px) {
   .profile-page__grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -221,8 +219,8 @@ onMounted(() => {
   }
 }
 
-/* Mobile (<768px) - Single column layout */
-@media (max-width: 767px) {
+/* Mobile (<640px) - Single column layout */
+@media (max-width: 640px) {
   .profile-page {
     padding: 16px;
     gap: 24px;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -125,14 +125,14 @@ const handleDialogOpenChange = (open: boolean) => {
 <template>
   <div class="profile-security">
     <!-- Password Section -->
-    <Card>
-      <CardHeader>
-        <CardTitle>密码安全</CardTitle>
-        <CardDescription>
+    <Card class="profile-security__card">
+      <div class="profile-security__header">
+        <h3 class="profile-security__title">密码安全</h3>
+        <p class="profile-security__description">
           定期修改密码以保护账户安全
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
+      </div>
+      <div class="profile-security__content">
         <Dialog :open="isPasswordDialogOpen" @update:open="handleDialogOpenChange">
           <DialogTrigger as-child>
             <Button variant="outline">修改密码</Button>
@@ -213,18 +213,18 @@ const handleDialogOpenChange = (open: boolean) => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </CardContent>
+      </div>
     </Card>
 
     <!-- Two-Factor Authentication Section -->
-    <Card>
-      <CardHeader>
-        <CardTitle>双因素认证</CardTitle>
-        <CardDescription>
+    <Card class="profile-security__card">
+      <div class="profile-security__header">
+        <h3 class="profile-security__title">双因素认证</h3>
+        <p class="profile-security__description">
           为您的账户添加额外的安全保护层
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
+        </p>
+      </div>
+      <div class="profile-security__content">
         <div class="security-card__2fa">
           <div class="security-card__2fa-info">
             <p class="security-card__2fa-status">未启用</p>
@@ -236,7 +236,7 @@ const handleDialogOpenChange = (open: boolean) => {
             即将推出
           </Button>
         </div>
-      </CardContent>
+      </div>
     </Card>
   </div>
 </template>
@@ -246,6 +246,40 @@ const handleDialogOpenChange = (open: boolean) => {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+/* Consistent card styling to match other components */
+.profile-security__card :deep(.rounded-lg) {
+  border-radius: 16px !important;
+}
+
+.profile-security__card :deep(.shadow-sm) {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Consistent header styling */
+.profile-security__header {
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.profile-security__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: rgb(15 23 42);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.profile-security__description {
+  font-size: 13px;
+  color: rgb(100 116 139);
+  margin: 4px 0 0 0;
+  line-height: 1.5;
+}
+
+.profile-security__content {
+  padding: 24px;
 }
 
 .password-form {
@@ -297,10 +331,18 @@ const handleDialogOpenChange = (open: boolean) => {
   line-height: 1.5;
 }
 
-/* Mobile responsive */
+/* Mobile Responsive */
 @media (max-width: 640px) {
   .profile-security {
     gap: 20px;
+  }
+
+  .profile-security__header {
+    padding: 16px 16px 12px 16px;
+  }
+
+  .profile-security__content {
+    padding: 16px;
   }
 
   .security-card__2fa {
