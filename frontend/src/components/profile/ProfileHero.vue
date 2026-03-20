@@ -108,7 +108,7 @@ const roles = computed(() => props.profile.roles?.filter(Boolean) ?? [])
   overflow: hidden;
   border-radius: 16px;
   padding: 32px;
-  background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   color: white;
 }
 
@@ -156,12 +156,12 @@ const roles = computed(() => props.profile.roles?.filter(Boolean) ?? [])
 .profile-hero__avatar-img {
   width: 96px;
   height: 96px;
-  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+  background: white;
   border-radius: 16px;
   font-size: 36px;
   font-weight: 700;
   color: #2563eb;
-  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .profile-hero__status {
@@ -195,12 +195,13 @@ const roles = computed(() => props.profile.roles?.filter(Boolean) ?? [])
 }
 
 .profile-hero__username {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
   color: white;
   font-size: 11px;
   padding: 4px 10px;
   border-radius: 20px;
   font-weight: 500;
+  backdrop-filter: blur(4px);
 }
 
 .profile-hero__subtitle {
@@ -216,13 +217,14 @@ const roles = computed(() => props.profile.roles?.filter(Boolean) ?? [])
 }
 
 .profile-hero__contact :deep(.badge) {
-  background: rgba(255, 255, 255, 0.25);
-  color: white;
-  border: none;
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
   font-size: 12px;
   padding: 4px 12px;
   border-radius: 6px;
   font-weight: 500;
+  backdrop-filter: blur(4px);
 }
 
 .profile-hero__actions {
