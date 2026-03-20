@@ -122,6 +122,7 @@ const getDictRemark = (dict: Dict) => dict.remark ?? dict.description ?? ''
 const getItemLabel = (item: DictItem) => item.label ?? item.itemLabel ?? ''
 const getItemValue = (item: DictItem) => item.value ?? item.itemValue ?? ''
 const getItemSort = (item: DictItem) => item.sortOrder ?? item.sort ?? 0
+const getItemParentId = (item: DictItem) => item.parentId ?? '0'
 
 const resetForm = () => {
   Object.assign(form, {
@@ -299,8 +300,23 @@ const itemParentOptions = computed(() => {
     }))
 })
 
+const itemLabelMap = computed(() => {
+  return itemTableData.value.records.reduce<Record<string, string>>((acc, item) => {
+    acc[item.id] = getItemLabel(item)
+    return acc
+  }, {})
+})
+
 const openAddItemDialog = () => {
   resetItemForm()
+  isEditItem.value = false
+  editItemId.value = ''
+  itemFormDialogOpen.value = true
+}
+
+const openAddChildItemDialog = (parentItem: DictItem) => {
+  resetItemForm()
+  itemForm.parentId = parentItem.id
   isEditItem.value = false
   editItemId.value = ''
   itemFormDialogOpen.value = true
@@ -575,6 +591,7 @@ onMounted(fetchData)
               <tr>
                 <th class="text-left p-4 font-medium">标签</th>
                 <th class="text-left p-4 font-medium">值</th>
+                <th class="text-left p-4 font-medium">父级</th>
                 <th class="text-left p-4 font-medium">排序</th>
                 <th class="text-left p-4 font-medium">备注</th>
                 <th class="text-left p-4 font-medium">状态</th>
@@ -583,14 +600,17 @@ onMounted(fetchData)
             </thead>
             <tbody class="divide-y">
               <tr v-if="itemLoading">
-                <td colspan="6" class="p-8 text-center text-muted-foreground">加载中...</td>
+                <td colspan="7" class="p-8 text-center text-muted-foreground">加载中...</td>
               </tr>
               <tr v-else-if="itemTableData.records.length === 0">
-                <td colspan="6" class="p-8 text-center text-muted-foreground">暂无字典项</td>
+                <td colspan="7" class="p-8 text-center text-muted-foreground">暂无字典项</td>
               </tr>
               <tr v-for="item in itemTableData.records" :key="item.id" class="hover:bg-muted/30">
                 <td class="p-4 font-medium">{{ getItemLabel(item) }}</td>
                 <td class="p-4"><code class="bg-muted px-2 py-0.5 rounded text-sm">{{ getItemValue(item) }}</code></td>
+                <td class="p-4 text-muted-foreground">
+                  {{ getItemParentId(item) === '0' ? '顶级字典项' : itemLabelMap[getItemParentId(item)] || '-' }}
+                </td>
                 <td class="p-4">{{ getItemSort(item) }}</td>
                 <td class="p-4 text-muted-foreground">{{ item.remark || '-' }}</td>
                 <td class="p-4">
@@ -604,6 +624,9 @@ onMounted(fetchData)
                 </td>
                 <td class="p-4">
                   <div class="flex gap-2">
+                    <Button v-if="canAddDictItem" size="sm" variant="ghost" @click="openAddChildItemDialog(item)">
+                      <Plus class="w-4 h-4" />
+                    </Button>
                     <Button v-if="canEditDictItem" size="sm" variant="ghost" @click="handleEditItem(item.id)">
                       <Edit class="w-4 h-4" />
                     </Button>

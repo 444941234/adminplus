@@ -170,6 +170,7 @@ public class DataInitializationRunner implements CommandLineRunner {
             log.info("菜单数据已存在，开始补齐缺失菜单");
             ensureWorkflowMenus();
             ensureFileMenus();
+            ensureDictMenus();
             return;
         }
 
@@ -214,6 +215,10 @@ public class DataInitializationRunner implements CommandLineRunner {
         menuData.add(new Object[]{"M241", "M24", 2, "新增字典", null, null, "dict:add", null, 1, 0, 1});
         menuData.add(new Object[]{"M242", "M24", 2, "编辑字典", null, null, "dict:edit", null, 2, 0, 1});
         menuData.add(new Object[]{"M243", "M24", 2, "删除字典", null, null, "dict:delete", null, 3, 0, 1});
+        menuData.add(new Object[]{"M244", "M24", 2, "字典项列表", null, null, "dictitem:list", null, 4, 0, 1});
+        menuData.add(new Object[]{"M245", "M24", 2, "新增字典项", null, null, "dictitem:add", null, 5, 0, 1});
+        menuData.add(new Object[]{"M246", "M24", 2, "编辑字典项", null, null, "dictitem:edit", null, 6, 0, 1});
+        menuData.add(new Object[]{"M247", "M24", 2, "删除字典项", null, null, "dictitem:delete", null, 7, 0, 1});
 
         // 部门管理按钮权限
         menuData.add(new Object[]{"M251", "M25", 2, "新增部门", null, null, "dept:add", null, 1, 0, 1});
@@ -280,6 +285,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         log.info("初始化菜单数据完成，共 {} 个菜单", menus.size());
         ensureWorkflowMenus();
         ensureFileMenus();
+        ensureDictMenus();
     }
 
     /**
@@ -394,6 +400,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         RoleEntity developerRole = roleMap.get("ROLE_DEVELOPER");
         if (developerRole != null) {
             List<String> developerMenuNames = Arrays.asList("首页", "用户管理", "角色管理", "菜单管理", "字典管理", "参数配置",
+                    "字典项列表", "新增字典项", "编辑字典项", "删除字典项",
                     "数据统计", "报表管理", "工作流管理", "流程定义", "我的流程", "发起流程",
                     "文件管理", "上传文件", "删除文件");
             for (String menuName : developerMenuNames) {
@@ -594,6 +601,71 @@ public class DataInitializationRunner implements CommandLineRunner {
         }
     }
 
+    private void ensureDictMenus() {
+        List<Object[]> dictMenuData = Arrays.asList(
+                new Object[]{"M241", "M24", 2, "新增字典", null, null, "dict:add", null, 1, 0, 1},
+                new Object[]{"M242", "M24", 2, "编辑字典", null, null, "dict:edit", null, 2, 0, 1},
+                new Object[]{"M243", "M24", 2, "删除字典", null, null, "dict:delete", null, 3, 0, 1},
+                new Object[]{"M244", "M24", 2, "字典项列表", null, null, "dictitem:list", null, 4, 0, 1},
+                new Object[]{"M245", "M24", 2, "新增字典项", null, null, "dictitem:add", null, 5, 0, 1},
+                new Object[]{"M246", "M24", 2, "编辑字典项", null, null, "dictitem:edit", null, 6, 0, 1},
+                new Object[]{"M247", "M24", 2, "删除字典项", null, null, "dictitem:delete", null, 7, 0, 1}
+        );
+
+        Map<String, MenuEntity> resolvedMenuMap = new HashMap<>();
+        menuRepository.findAll().forEach(menu -> resolvedMenuMap.put(menu.getName(), menu));
+
+        boolean changed = false;
+        for (Object[] item : dictMenuData) {
+            String tempId = (String) item[0];
+            String parentTempId = (String) item[1];
+            Integer type = (Integer) item[2];
+            String name = (String) item[3];
+            String path = (String) item[4];
+            String component = (String) item[5];
+            String permKey = (String) item[6];
+            String icon = (String) item[7];
+            Integer sortOrder = (Integer) item[8];
+            Integer visible = (Integer) item[9];
+            Integer status = (Integer) item[10];
+
+            MenuEntity menu = resolvedMenuMap.get(name);
+            if (menu == null) {
+                menu = createMenu(tempId, parentTempId, type, name, path, component, permKey, icon, sortOrder, visible, status);
+            }
+
+            MenuEntity parent = null;
+            if (parentTempId != null) {
+                parent = resolvedMenuMap.values().stream()
+                        .filter(existing -> existing.getName().equals(getMenuNameByTempId(parentTempId)))
+                        .findFirst()
+                        .orElse(null);
+            }
+
+            menu.setType(type);
+            menu.setName(name);
+            menu.setPath(path);
+            menu.setComponent(component);
+            menu.setPermKey(permKey);
+            menu.setIcon(icon);
+            menu.setSortOrder(sortOrder);
+            menu.setVisible(visible);
+            menu.setStatus(status);
+            menu.setParent(parent);
+            menu.setAncestors(parent == null ? "0," : (parent.getAncestors() != null ? parent.getAncestors() : "0,") + parent.getId() + ",");
+            menu.setUpdateUser("system");
+
+            MenuEntity saved = menuRepository.save(menu);
+            resolvedMenuMap.put(name, saved);
+            resolvedMenuMap.put(tempId, saved);
+            changed = true;
+        }
+
+        if (changed) {
+            log.info("字典项菜单与权限已补齐");
+        }
+    }
+
     private String getMenuNameByTempId(String tempId) {
         return switch (tempId) {
             case "M4" -> "工作流管理";
@@ -601,6 +673,7 @@ public class DataInitializationRunner implements CommandLineRunner {
             case "M42" -> "我的流程";
             case "M43" -> "待我审批";
             case "M28" -> "文件管理";
+            case "M24" -> "字典管理";
             default -> tempId;
         };
     }
