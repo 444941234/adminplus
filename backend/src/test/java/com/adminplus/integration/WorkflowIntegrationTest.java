@@ -4,7 +4,6 @@ import com.adminplus.base.AbstractRepositoryTest;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -19,9 +18,6 @@ import static org.assertj.core.api.Assertions.*;
 /**
  * Integration tests for Workflow Approval Module
  * <p>
- * Tests end-to-end workflow execution with real PostgreSQL database.
- * Requires Docker to run.
- * <p>
  * Test Coverage:
  * <ul>
  *   <li>Complete workflow lifecycle</li>
@@ -33,7 +29,6 @@ import static org.assertj.core.api.Assertions.*;
  * @author AdminPlus
  * @since 2026-03-25
  */
-@Disabled("Integration tests require Docker and Redis. Run with Docker available.")
 @DisplayName("Workflow Integration Tests")
 class WorkflowIntegrationTest extends AbstractRepositoryTest {
 

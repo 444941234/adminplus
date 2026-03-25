@@ -47,7 +47,7 @@ public class DictItemEntity extends TreeEntity<DictItemEntity> {
     /**
      * 字典值（实际值）
      */
-    @Column(name = "value", nullable = false, length = 100)
+    @Column(name = "\"value\"", nullable = false, length = 100)
     private String value;
 
     /**

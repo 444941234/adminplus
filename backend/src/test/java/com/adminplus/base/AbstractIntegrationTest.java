@@ -4,6 +4,7 @@ import com.adminplus.config.IntegrationTestConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,13 +28,8 @@ import java.util.List;
 /**
  * Abstract base class for integration tests.
  * <p>
- * Provides:
- * <ul>
- *   <li>Spring Boot test context with random port</li>
- *   <li>MockMvc for HTTP request testing</li>
- *   <li>JWT token generation utilities</li>
- *   <li>Security context setup for JPA auditing</li>
- * </ul>
+ * Requires PostgreSQL running on localhost:5433 (started via docker-compose.test.yml)
+ * </p>
  *
  * @author AdminPlus
  * @since 2026-03-25
@@ -42,6 +38,7 @@ import java.util.List;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Import(IntegrationTestConfig.class)
+@Disabled("Integration tests require PostgreSQL on localhost:5433. Start with: docker run -d --name adminplus-test-postgres -p 5433:5432 -e POSTGRES_DB=adminplus_test -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test postgres:16-alpine")
 public abstract class AbstractIntegrationTest {
 
     @Autowired
