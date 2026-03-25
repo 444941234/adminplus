@@ -2,7 +2,7 @@ import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import type { ApiResponse } from '@/types'
 
 const instance: AxiosInstance = axios.create({
-  baseURL: '/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL + import.meta.env.VITE_API_VERSION,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json'
