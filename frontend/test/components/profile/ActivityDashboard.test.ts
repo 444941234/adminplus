@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import ActivityDashboard from '../ActivityDashboard.vue'
+import ActivityDashboard from '@/components/profile/ActivityDashboard.vue'
 
 describe('ActivityDashboard', () => {
   const mockActivityStats = {

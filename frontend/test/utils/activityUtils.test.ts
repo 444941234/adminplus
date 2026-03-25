@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatTime, getActivityColor } from '../activityUtils'
+import { formatTime, getActivityColor } from '@/utils/activityUtils'
 
 describe('formatTime', () => {
   it('should return "Just now" for very recent timestamps', () => {

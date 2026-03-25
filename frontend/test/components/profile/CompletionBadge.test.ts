@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
-import CompletionBadge from '../CompletionBadge.vue'
+import CompletionBadge from '@/components/profile/CompletionBadge.vue'
 
 describe('CompletionBadge', () => {
   it('should render with 0% completion when all fields are empty', () => {

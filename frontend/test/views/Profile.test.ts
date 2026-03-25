@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { mount, VueWrapper } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import Profile from '../Profile.vue'
+import Profile from '@/views/Profile.vue'
 import * as api from '@/api'
 
 // Mock child components to simplify testing
