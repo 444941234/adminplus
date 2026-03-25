@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.LogQueryDTO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
@@ -20,7 +20,7 @@ public interface LogExportService {
      * @return Excel 文件响应
      * @throws IOException IO异常
      */
-    ResponseEntity<byte[]> exportToExcel(LogQueryDTO query) throws IOException;
+    ResponseEntity<byte[]> exportToExcel(LogQueryReq query) throws IOException;
 
     /**
      * 导出日志为 CSV
@@ -29,5 +29,5 @@ public interface LogExportService {
      * @return CSV 文件响应
      * @throws IOException IO异常
      */
-    ResponseEntity<byte[]> exportToCsv(LogQueryDTO query) throws IOException;
+    ResponseEntity<byte[]> exportToCsv(LogQueryReq query) throws IOException;
 }

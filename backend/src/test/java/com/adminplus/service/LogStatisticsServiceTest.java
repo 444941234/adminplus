@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.LogQueryDTO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.service.impl.LogStorageStrategySelector;
 import com.adminplus.service.impl.LogStatisticsServiceImpl;
@@ -50,7 +50,7 @@ class LogStatisticsServiceTest {
         void getStatistics_ShouldReturnStatistics() {
             // Given
             when(storageStrategy.count()).thenReturn(100L);
-            when(storageStrategy.countByCondition(any(LogQueryDTO.class))).thenReturn(10L);
+            when(storageStrategy.countByCondition(any(LogQueryReq.class))).thenReturn(10L);
 
             // When
             LogStatisticsResp result = logStatisticsService.getStatistics();
@@ -69,7 +69,7 @@ class LogStatisticsServiceTest {
         void getStatistics_WhenNoLogs_ShouldReturnZeroCounts() {
             // Given
             when(storageStrategy.count()).thenReturn(0L);
-            when(storageStrategy.countByCondition(any(LogQueryDTO.class))).thenReturn(0L);
+            when(storageStrategy.countByCondition(any(LogQueryReq.class))).thenReturn(0L);
 
             // When
             LogStatisticsResp result = logStatisticsService.getStatistics();
@@ -86,14 +86,14 @@ class LogStatisticsServiceTest {
         void getStatistics_ShouldCallStrategyMethods() {
             // Given
             when(storageStrategy.count()).thenReturn(100L);
-            when(storageStrategy.countByCondition(any(LogQueryDTO.class))).thenReturn(10L);
+            when(storageStrategy.countByCondition(any(LogQueryReq.class))).thenReturn(10L);
 
             // When
             logStatisticsService.getStatistics();
 
             // Then
             verify(storageStrategy).count();
-            verify(storageStrategy, atLeastOnce()).countByCondition(any(LogQueryDTO.class));
+            verify(storageStrategy, atLeastOnce()).countByCondition(any(LogQueryReq.class));
         }
     }
 
@@ -106,7 +106,7 @@ class LogStatisticsServiceTest {
         void getTrendData_ShouldReturnDataForDays() {
             // Given
             int days = 7;
-            when(storageStrategy.countByCondition(any(LogQueryDTO.class))).thenReturn(5L);
+            when(storageStrategy.countByCondition(any(LogQueryReq.class))).thenReturn(5L);
 
             // When
             LogStatisticsResp result = logStatisticsService.getTrendData(days);
@@ -121,7 +121,7 @@ class LogStatisticsServiceTest {
         void getTrendData_ShouldReturnDataFor30Days() {
             // Given
             int days = 30;
-            when(storageStrategy.countByCondition(any(LogQueryDTO.class))).thenReturn(3L);
+            when(storageStrategy.countByCondition(any(LogQueryReq.class))).thenReturn(3L);
 
             // When
             LogStatisticsResp result = logStatisticsService.getTrendData(days);
@@ -135,7 +135,7 @@ class LogStatisticsServiceTest {
         void getTrendData_ShouldCalculateTotalCount() {
             // Given
             int days = 3;
-            when(storageStrategy.countByCondition(any(LogQueryDTO.class))).thenReturn(10L);
+            when(storageStrategy.countByCondition(any(LogQueryReq.class))).thenReturn(10L);
 
             // When
             LogStatisticsResp result = logStatisticsService.getTrendData(days);

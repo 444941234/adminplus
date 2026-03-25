@@ -1,19 +1,16 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.req.LogQueryDTO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.service.LogStatisticsService;
 import com.adminplus.service.LogStorageStrategy;
-import com.adminplus.service.impl.LogStorageStrategySelector;
 import com.adminplus.constants.LogType;
 import com.adminplus.constants.LogStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,7 +106,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
     }
 
     private Long countByTypeInternal(LogStorageStrategy strategy, int logType) {
-        LogQueryDTO query = new LogQueryDTO();
+        LogQueryReq query = new LogQueryReq();
         query.setLogType(logType);
         query.setPage(1);
         query.setSize(1);
@@ -117,7 +114,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
     }
 
     private Long countByStatusInternal(LogStorageStrategy strategy, int status) {
-        LogQueryDTO query = new LogQueryDTO();
+        LogQueryReq query = new LogQueryReq();
         query.setStatus(status);
         query.setPage(1);
         query.setSize(1);
@@ -126,7 +123,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
 
     private Long countTodayInternal(LogStorageStrategy strategy) {
         String todayStart = getTodayStart();
-        LogQueryDTO query = new LogQueryDTO();
+        LogQueryReq query = new LogQueryReq();
         query.setStartTime(todayStart);
         query.setPage(1);
         query.setSize(1);
@@ -136,7 +133,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
     private Long countByDateInternal(LogStorageStrategy strategy, String date) {
         String startTime = date + " 00:00:00";
         String endTime = date + " 23:59:59";
-        LogQueryDTO query = new LogQueryDTO();
+        LogQueryReq query = new LogQueryReq();
         query.setStartTime(startTime);
         query.setEndTime(endTime);
         query.setPage(1);
@@ -145,7 +142,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
     }
 
     private Long countByOperationTypeInternal(LogStorageStrategy strategy, int operationType) {
-        LogQueryDTO query = new LogQueryDTO();
+        LogQueryReq query = new LogQueryReq();
         query.setOperationType(operationType);
         query.setPage(1);
         query.setSize(1);

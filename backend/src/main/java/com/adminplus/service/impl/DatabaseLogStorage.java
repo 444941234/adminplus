@@ -1,7 +1,7 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.req.LogQueryDTO;
-import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.repository.LogRepository;
@@ -58,14 +58,14 @@ public class DatabaseLogStorage implements LogStorageStrategy {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<LogPageVO> findPage(LogQueryDTO query) {
+    public PageResultResp<LogPageResp> findPage(LogQueryReq query) {
         var pageable = PageRequest.of(query.getPage() - 1, query.getSize(),
                 Sort.by(Sort.Direction.DESC, "createTime"));
 
         Specification<LogEntity> spec = buildSpecification(query);
         Page<LogEntity> pageResult = logRepository.findAll(spec, pageable);
 
-        List<LogPageVO> records = pageResult.getContent().stream()
+        List<LogPageResp> records = pageResult.getContent().stream()
                 .map(this::toLogPageVO)
                 .toList();
 
@@ -85,7 +85,7 @@ public class DatabaseLogStorage implements LogStorageStrategy {
 
     @Override
     @Transactional(readOnly = true)
-    public Long countByCondition(LogQueryDTO query) {
+    public Long countByCondition(LogQueryReq query) {
         Specification<LogEntity> spec = buildSpecification(query);
         return logRepository.count(spec);
     }
@@ -106,7 +106,7 @@ public class DatabaseLogStorage implements LogStorageStrategy {
 
     @Override
     @Transactional
-    public Integer deleteByCondition(LogQueryDTO query) {
+    public Integer deleteByCondition(LogQueryReq query) {
         Specification<LogEntity> spec = buildSpecification(query);
         List<LogEntity> logs = logRepository.findAll(spec);
         logRepository.deleteAll(logs);
@@ -157,7 +157,7 @@ public class DatabaseLogStorage implements LogStorageStrategy {
     /**
      * 构建查询条件
      */
-    private Specification<LogEntity> buildSpecification(LogQueryDTO query) {
+    private Specification<LogEntity> buildSpecification(LogQueryReq query) {
         return (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -209,8 +209,8 @@ public class DatabaseLogStorage implements LogStorageStrategy {
     /**
      * 转换为 VO
      */
-    private LogPageVO toLogPageVO(LogEntity entity) {
-        return new LogPageVO(
+    private LogPageResp toLogPageVO(LogEntity entity) {
+        return new LogPageResp(
                 entity.getId(),
                 entity.getUsername(),
                 entity.getModule(),

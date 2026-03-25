@@ -2,8 +2,8 @@ package com.adminplus.service;
 
 import com.adminplus.common.config.LogStorageProperties;
 import com.adminplus.common.exception.BizException;
-import com.adminplus.pojo.dto.req.LogQueryDTO;
-import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.LogEntity;
@@ -24,7 +24,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 /**
@@ -53,7 +52,7 @@ class LogServiceTest {
     private LogServiceImpl logService;
 
     private LogEntity testLog;
-    private LogQueryDTO query;
+    private LogQueryReq query;
 
     @BeforeEach
     void setUp() {
@@ -74,7 +73,7 @@ class LogServiceTest {
         testLog.setStatus(1);
         testLog.setCreateTime(Instant.now());
 
-        query = new LogQueryDTO();
+        query = new LogQueryReq();
         query.setPage(1);
         query.setSize(10);
     }
@@ -90,7 +89,7 @@ class LogServiceTest {
             when(storageStrategy.findById("log-001")).thenReturn(testLog);
 
             // When
-            LogPageVO result = logService.findById("log-001");
+            LogPageResp result = logService.findById("log-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -118,17 +117,17 @@ class LogServiceTest {
         @DisplayName("should return page result")
         void findPage_ShouldReturnPageResult() {
             // Given
-            PageResultResp<LogPageVO> pageResult = new PageResultResp<>(
+            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(), 0L, 1, 10
             );
-            when(storageStrategy.findPage(any(LogQueryDTO.class))).thenReturn(pageResult);
+            when(storageStrategy.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
 
             // When
-            PageResultResp<LogPageVO> result = logService.findPage(query);
+            PageResultResp<LogPageResp> result = logService.findPage(query);
 
             // Then
             assertThat(result).isNotNull();
-            verify(storageStrategy).findPage(any(LogQueryDTO.class));
+            verify(storageStrategy).findPage(any(LogQueryReq.class));
         }
     }
 
@@ -177,14 +176,14 @@ class LogServiceTest {
         @DisplayName("should delete logs by condition")
         void deleteByCondition_ShouldDeleteLogs() {
             // Given
-            when(storageStrategy.deleteByCondition(any(LogQueryDTO.class))).thenReturn(5);
+            when(storageStrategy.deleteByCondition(any(LogQueryReq.class))).thenReturn(5);
 
             // When
             Integer result = logService.deleteByCondition(query);
 
             // Then
             assertThat(result).isEqualTo(5);
-            verify(storageStrategy).deleteByCondition(any(LogQueryDTO.class));
+            verify(storageStrategy).deleteByCondition(any(LogQueryReq.class));
         }
     }
 

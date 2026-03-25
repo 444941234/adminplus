@@ -1,7 +1,7 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.LogQueryDTO;
-import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.impl.LogExportServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,12 +38,12 @@ class LogExportServiceTest {
     @InjectMocks
     private LogExportServiceImpl logExportService;
 
-    private LogPageVO testLog;
-    private LogQueryDTO query;
+    private LogPageResp testLog;
+    private LogQueryReq query;
 
     @BeforeEach
     void setUp() {
-        testLog = new LogPageVO(
+        testLog = new LogPageResp(
                 "log-001",
                 "testuser",
                 "用户管理",
@@ -60,7 +60,7 @@ class LogExportServiceTest {
                 Instant.now()
         );
 
-        query = new LogQueryDTO();
+        query = new LogQueryReq();
         query.setPage(1);
         query.setSize(10);
     }
@@ -73,10 +73,10 @@ class LogExportServiceTest {
         @DisplayName("should export logs to Excel")
         void exportToExcel_ShouldReturnExcelFile() throws IOException {
             // Given
-            PageResultResp<LogPageVO> pageResult = new PageResultResp<>(
+            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(testLog), 1L, 1, 10
             );
-            when(logService.findPage(any(LogQueryDTO.class))).thenReturn(pageResult);
+            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
 
             // When
             ResponseEntity<byte[]> result = logExportService.exportToExcel(query);
@@ -93,10 +93,10 @@ class LogExportServiceTest {
         @DisplayName("should export empty Excel when no logs")
         void exportToExcel_WhenNoLogs_ShouldReturnEmptyExcel() throws IOException {
             // Given
-            PageResultResp<LogPageVO> pageResult = new PageResultResp<>(
+            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(), 0L, 1, 10
             );
-            when(logService.findPage(any(LogQueryDTO.class))).thenReturn(pageResult);
+            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
 
             // When
             ResponseEntity<byte[]> result = logExportService.exportToExcel(query);
@@ -110,10 +110,10 @@ class LogExportServiceTest {
         @DisplayName("should limit export to 10000 records")
         void exportToExcel_ShouldLimitRecords() throws IOException {
             // Given
-            PageResultResp<LogPageVO> pageResult = new PageResultResp<>(
+            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(testLog), 1L, 1, 10
             );
-            when(logService.findPage(any(LogQueryDTO.class))).thenReturn(pageResult);
+            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
 
             // When
             logExportService.exportToExcel(query);
@@ -131,10 +131,10 @@ class LogExportServiceTest {
         @DisplayName("should export logs to CSV")
         void exportToCsv_ShouldReturnCsvFile() throws IOException {
             // Given
-            PageResultResp<LogPageVO> pageResult = new PageResultResp<>(
+            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(testLog), 1L, 1, 10
             );
-            when(logService.findPage(any(LogQueryDTO.class))).thenReturn(pageResult);
+            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
 
             // When
             ResponseEntity<byte[]> result = logExportService.exportToCsv(query);
@@ -150,10 +150,10 @@ class LogExportServiceTest {
         @DisplayName("should export empty CSV when no logs")
         void exportToCsv_WhenNoLogs_ShouldReturnEmptyCsv() throws IOException {
             // Given
-            PageResultResp<LogPageVO> pageResult = new PageResultResp<>(
+            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(), 0L, 1, 10
             );
-            when(logService.findPage(any(LogQueryDTO.class))).thenReturn(pageResult);
+            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
 
             // When
             ResponseEntity<byte[]> result = logExportService.exportToCsv(query);
@@ -167,13 +167,13 @@ class LogExportServiceTest {
         @DisplayName("should handle log with null values")
         void exportToCsv_WithNullValues_ShouldHandleGracefully() throws IOException {
             // Given
-            LogPageVO logWithNulls = new LogPageVO(
+            LogPageResp logWithNulls = new LogPageResp(
                     "log-002", null, null, null, null, null, null, null, null, null, null, null, null, null
             );
-            PageResultResp<LogPageVO> pageResult = new PageResultResp<>(
+            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(logWithNulls), 1L, 1, 10
             );
-            when(logService.findPage(any(LogQueryDTO.class))).thenReturn(pageResult);
+            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
 
             // When
             ResponseEntity<byte[]> result = logExportService.exportToCsv(query);

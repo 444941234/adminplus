@@ -2,8 +2,8 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.req.LogQueryDTO;
-import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.LogExportService;
@@ -39,7 +39,7 @@ public class LogController {
     @GetMapping
     @Operation(summary = "分页查询日志列表")
     @PreAuthorize("hasAuthority('log:query')")
-    public ApiResponse<PageResultResp<LogPageVO>> getLogList(
+    public ApiResponse<PageResultResp<LogPageResp>> getLogList(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) Integer logType,
@@ -50,7 +50,7 @@ public class LogController {
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime
     ) {
-        var query = new LogQueryDTO();
+        var query = new LogQueryReq();
         query.setPage(page);
         query.setSize(size);
         query.setLogType(logType);
@@ -61,15 +61,15 @@ public class LogController {
         query.setStartTime(startTime);
         query.setEndTime(endTime);
 
-        PageResultResp<LogPageVO> result = logService.findPage(query);
+        PageResultResp<LogPageResp> result = logService.findPage(query);
         return ApiResponse.ok(result);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询日志详情")
     @PreAuthorize("hasAuthority('log:query')")
-    public ApiResponse<LogPageVO> getLogById(@PathVariable String id) {
-        LogPageVO log = logService.findById(id);
+    public ApiResponse<LogPageResp> getLogById(@PathVariable String id) {
+        LogPageResp log = logService.findById(id);
         return ApiResponse.ok(log);
     }
 
@@ -95,7 +95,7 @@ public class LogController {
     @Operation(summary = "根据条件删除日志")
     @OperationLog(module = "日志管理", operationType = 4, description = "根据条件删除日志")
     @PreAuthorize("hasAuthority('log:delete')")
-    public ApiResponse<Integer> deleteLogsByCondition(@Valid @RequestBody LogQueryDTO query) {
+    public ApiResponse<Integer> deleteLogsByCondition(@Valid @RequestBody LogQueryReq query) {
         Integer count = logService.deleteByCondition(query);
         return ApiResponse.ok(count);
     }
@@ -130,7 +130,7 @@ public class LogController {
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime
     ) throws IOException {
-        var query = new LogQueryDTO();
+        var query = new LogQueryReq();
         query.setPage(1);
         query.setSize(10000);
         query.setLogType(logType);
@@ -157,7 +157,7 @@ public class LogController {
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime
     ) throws IOException {
-        var query = new LogQueryDTO();
+        var query = new LogQueryReq();
         query.setPage(1);
         query.setSize(10000);
         query.setLogType(logType);

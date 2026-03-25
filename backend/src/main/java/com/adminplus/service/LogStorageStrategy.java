@@ -1,7 +1,7 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.LogQueryDTO;
-import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.LogEntity;
 
@@ -46,7 +46,7 @@ public interface LogStorageStrategy {
      * @param query 查询条件
      * @return 分页结果
      */
-    PageResultResp<LogPageVO> findPage(LogQueryDTO query);
+    PageResultResp<LogPageResp> findPage(LogQueryReq query);
 
     /**
      * 统计日志总数
@@ -61,7 +61,7 @@ public interface LogStorageStrategy {
      * @param query 查询条件
      * @return 日志数
      */
-    Long countByCondition(LogQueryDTO query);
+    Long countByCondition(LogQueryReq query);
 
     /**
      * 删除日志
@@ -84,7 +84,7 @@ public interface LogStorageStrategy {
      * @param query 查询条件
      * @return 删除的记录数
      */
-    Integer deleteByCondition(LogQueryDTO query);
+    Integer deleteByCondition(LogQueryReq query);
 
     /**
      * 清理过期日志

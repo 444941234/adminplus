@@ -4,7 +4,6 @@ import com.adminplus.constants.LogStatus;
 import com.adminplus.constants.LogType;
 import com.adminplus.constants.OperationType;
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Data;
 
 import java.time.Instant;
 
@@ -15,7 +14,7 @@ import java.time.Instant;
  * @since 2026-02-07
  */
 @Schema(description = "日志分页响应")
-public record LogPageVO(
+public record LogPageResp(
         @Schema(description = "日志ID")
         String id,
 

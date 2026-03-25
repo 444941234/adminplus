@@ -1,10 +1,9 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.LogQueryDTO;
-import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
-import com.adminplus.pojo.entity.LogEntity;
 
 import java.util.List;
 
@@ -84,7 +83,7 @@ public interface LogService {
      * @param query 查询条件
      * @return 分页结果
      */
-    PageResultResp<LogPageVO> findPage(LogQueryDTO query);
+    PageResultResp<LogPageResp> findPage(LogQueryReq query);
 
     /**
      * 根据ID查询日志详情
@@ -92,7 +91,7 @@ public interface LogService {
      * @param id 日志ID
      * @return 日志详情
      */
-    LogPageVO findById(String id);
+    LogPageResp findById(String id);
 
     /**
      * 删除单条日志
@@ -114,7 +113,7 @@ public interface LogService {
      * @param query 查询条件
      * @return 删除的记录数
      */
-    Integer deleteByCondition(LogQueryDTO query);
+    Integer deleteByCondition(LogQueryReq query);
 
     /**
      * 清理过期日志

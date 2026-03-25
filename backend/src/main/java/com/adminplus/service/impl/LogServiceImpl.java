@@ -4,8 +4,8 @@ import com.adminplus.common.config.LogStorageProperties;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.LogStatus;
 import com.adminplus.constants.LogType;
-import com.adminplus.pojo.dto.req.LogQueryDTO;
-import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.LogEntity;
@@ -19,11 +19,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 日志服务实现
@@ -177,13 +173,13 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<LogPageVO> findPage(LogQueryDTO query) {
+    public PageResultResp<LogPageResp> findPage(LogQueryReq query) {
         return getStorageStrategy().findPage(query);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public LogPageVO findById(String id) {
+    public LogPageResp findById(String id) {
         LogEntity logEntity = getStorageStrategy().findById(id);
         if (logEntity == null) {
             throw new BizException("日志不存在");
@@ -205,7 +201,7 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Transactional
-    public Integer deleteByCondition(LogQueryDTO query) {
+    public Integer deleteByCondition(LogQueryReq query) {
         return getStorageStrategy().deleteByCondition(query);
     }
 
@@ -239,8 +235,8 @@ public class LogServiceImpl implements LogService {
     /**
      * 转换为 VO
      */
-    private LogPageVO toLogPageVO(LogEntity entity) {
-        return new LogPageVO(
+    private LogPageResp toLogPageVO(LogEntity entity) {
+        return new LogPageResp(
                 entity.getId(),
                 entity.getUsername(),
                 entity.getModule(),

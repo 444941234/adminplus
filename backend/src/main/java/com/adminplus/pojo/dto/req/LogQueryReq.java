@@ -11,7 +11,7 @@ import lombok.Data;
  */
 @Data
 @Schema(description = "日志查询条件")
-public class LogQueryDTO {
+public class LogQueryReq {
 
     /**
      * 用户名（模糊查询）

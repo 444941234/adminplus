@@ -1,7 +1,7 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.req.LogQueryDTO;
-import com.adminplus.pojo.dto.resp.LogPageVO;
+import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.LogExportService;
@@ -48,13 +48,13 @@ class LogControllerTest {
     @InjectMocks
     private LogController logController;
 
-    private LogPageVO testLog;
+    private LogPageResp testLog;
     private LogStatisticsResp testStatistics;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(logController).build();
-        testLog = new LogPageVO(
+        testLog = new LogPageResp(
                 "log-001", "testuser", "用户管理", 1, 1,
                 "查询用户列表", "UserService.list", "{}",
                 "192.168.1.1", "本地", 100L, 1, null, Instant.now()
@@ -73,8 +73,8 @@ class LogControllerTest {
         @DisplayName("should return log list")
         void getLogList_ShouldReturnLogList() throws Exception {
             // Given
-            PageResultResp<LogPageVO> pageResult = new PageResultResp<>(List.of(testLog), 1L, 1, 10);
-            when(logService.findPage(any(LogQueryDTO.class))).thenReturn(pageResult);
+            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(List.of(testLog), 1L, 1, 10);
+            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/logs")
@@ -84,7 +84,7 @@ class LogControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.records[0].username").value("testuser"));
 
-            verify(logService).findPage(any(LogQueryDTO.class));
+            verify(logService).findPage(any(LogQueryReq.class));
         }
     }
 
