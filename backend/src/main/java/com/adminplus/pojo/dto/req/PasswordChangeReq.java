@@ -1,6 +1,5 @@
 package com.adminplus.pojo.dto.req;
 
-import com.adminplus.utils.PasswordUtils;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -21,11 +20,5 @@ public record PasswordChangeReq(
         @NotBlank(message = "确认密码不能为空")
         String confirmPassword
 ) {
-    public PasswordChangeReq {
-        // 自定义验证：新密码强度
-        if (newPassword != null && !PasswordUtils.isStrongPassword(newPassword)) {
-            int errorCode = PasswordUtils.getPasswordStrengthHint(newPassword);
-            throw new IllegalArgumentException(PasswordUtils.getErrorMessage(errorCode));
-        }
-    }
+    // 密码强度验证移到 Service 层，统一抛出 BizException
 }

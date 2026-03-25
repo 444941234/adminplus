@@ -1,6 +1,5 @@
 package com.adminplus.pojo.dto.req;
 
-import com.adminplus.utils.PasswordUtils;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -37,11 +36,5 @@ public record UserCreateReq(
         @Size(max = 50, message = "部门ID长度不能超过50")
         String deptId
 ) {
-    public UserCreateReq {
-        // 自定义验证：密码强度
-        if (password != null && !PasswordUtils.isStrongPassword(password)) {
-            int errorCode = PasswordUtils.getPasswordStrengthHint(password);
-            throw new IllegalArgumentException(PasswordUtils.getErrorMessage(errorCode));
-        }
-    }
+    // 密码强度验证移到 Service 层，统一抛出 BizException
 }

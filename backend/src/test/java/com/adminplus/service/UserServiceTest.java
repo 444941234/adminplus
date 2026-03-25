@@ -197,13 +197,16 @@ class UserServiceTest {
         @Test
         @DisplayName("should throw exception when password is too weak")
         void createUser_WithWeakPassword_ShouldThrowException() {
-            // Given - 注意：密码验证在 DTO 构造器里，不在 Service 里
-            // When & Then
-            assertThatThrownBy(() -> new UserCreateReq(
-                    "newuser", "123", "New User", "new@test.com",
+            // Given - 密码强度验证已移到 Service 层
+            UserCreateReq req = new UserCreateReq(
+                    "newuser", "weak", "New User", "new@test.com",
                     "13800000001", null, null
-            ))
-                    .isInstanceOf(IllegalArgumentException.class)
+            );
+            when(userRepository.existsByUsername("newuser")).thenReturn(false);
+
+            // When & Then
+            assertThatThrownBy(() -> userService.createUser(req))
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("密码");
         }
 
