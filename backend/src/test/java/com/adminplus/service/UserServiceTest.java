@@ -193,44 +193,45 @@ class UserServiceTest {
                     .isInstanceOf(BizException.class)
                     .hasMessageContaining("部门不存在");
         }
-    }
-
-    @Nested
-    @DisplayName("updateUser Tests")
-    class UpdateUserTests {
 
         @Test
-        @DisplayName("should update user successfully")
-        void updateUser_ShouldUpdateUser() {
-            // Given
-            UserUpdateReq req = new UserUpdateReq(
-                    "Updated Nick", "updated@test.com", "13900000000", null, 1, null
-            );
-            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
-            when(userRepository.save(any())).thenReturn(testUser);
-            when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
-
-            // When
-            UserResp result = userService.updateUser("user-001", req);
-
-            // Then
-            assertThat(result).isNotNull();
-            verify(userRepository).save(any(UserEntity.class));
+        @DisplayName("should throw exception when password is too weak")
+        void createUser_WithWeakPassword_ShouldThrowException() {
+            // Given - 注意：密码验证在 DTO 构造器里，不在 Service 里
+            // When & Then
+            assertThatThrownBy(() -> new UserCreateReq(
+                    "newuser", "123", "New User", "new@test.com",
+                    "13800000001", null, null
+            ))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("密码");
         }
 
         @Test
-        @DisplayName("should throw exception when user not found")
-        void updateUser_WhenNotFound_ShouldThrowException() {
+        @DisplayName("should create user successfully with valid data")
+        void createUser_WithValidData_ShouldSucceed() {
             // Given
-            UserUpdateReq req = new UserUpdateReq(
-                    "Updated", null, null, null, null, null
+            UserCreateReq req = new UserCreateReq(
+                    "newuser", "StrongP@ss123", "New User", "new@test.com",
+                    "13800000001", null, null
             );
-            when(userRepository.findById("non-existent")).thenReturn(Optional.empty());
+            when(userRepository.existsByUsername("newuser")).thenReturn(false);
+            when(passwordEncoder.encode(any())).thenReturn("encoded-password");
+            when(userRepository.save(any(UserEntity.class))).thenAnswer(inv -> {
+                UserEntity user = inv.getArgument(0);
+                user.setId("new-user-id");
+                return user;
+            });
+            doNothing().when(logService).log(any(), anyInt(), any());
 
-            // When & Then
-            assertThatThrownBy(() -> userService.updateUser("non-existent", req))
-                    .isInstanceOf(BizException.class)
-                    .hasMessageContaining("用户不存在");
+            // When
+            UserResp result = userService.createUser(req);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.username()).isEqualTo("newuser");
+            verify(userRepository).save(any(UserEntity.class));
+            verify(logService).log(any(), anyInt(), any());
         }
     }
 
@@ -343,6 +344,123 @@ class UserServiceTest {
             assertThatThrownBy(() -> userService.assignRoles("user-001", List.of("non-existent-role")))
                     .isInstanceOf(BizException.class)
                     .hasMessageContaining("角色不存在");
+        }
+
+        @Test
+        @DisplayName("should clear all roles when empty list provided")
+        void assignRoles_WithEmptyList_ShouldClearRoles() {
+            // Given
+            when(userRepository.existsById("user-001")).thenReturn(true);
+            doNothing().when(userRoleRepository).deleteByUserId("user-001");
+            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+
+            // When
+            userService.assignRoles("user-001", List.of());
+
+            // Then
+            verify(userRoleRepository).deleteByUserId("user-001");
+            verify(userRoleRepository, never()).saveAll(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("resetPassword Tests")
+    class ResetPasswordTests {
+
+        @Test
+        @DisplayName("should reset password successfully")
+        void resetPassword_ShouldSucceed() {
+            // Given
+            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+            when(passwordEncoder.encode(any())).thenReturn("encoded-password");
+            when(userRepository.save(any())).thenReturn(testUser);
+            doNothing().when(logService).log(any(), anyInt(), any());
+
+            // When
+            userService.resetPassword("user-001", "NewStrongP@ss123");
+
+            // Then
+            verify(userRepository).save(any(UserEntity.class));
+            verify(logService).log(any(), anyInt(), any());
+        }
+
+        @Test
+        @DisplayName("should throw exception when user not found")
+        void resetPassword_WhenUserNotFound_ShouldThrowException() {
+            // Given
+            when(userRepository.findById("non-existent")).thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> userService.resetPassword("non-existent", "NewStrongP@ss123"))
+                    .isInstanceOf(BizException.class)
+                    .hasMessageContaining("用户不存在");
+        }
+
+        @Test
+        @DisplayName("should throw exception when new password is weak")
+        void resetPassword_WithWeakPassword_ShouldThrowException() {
+            // Given
+            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+
+            // When & Then
+            assertThatThrownBy(() -> userService.resetPassword("user-001", "123"))
+                    .isInstanceOf(BizException.class)
+                    .hasMessageContaining("密码");
+        }
+    }
+
+    @Nested
+    @DisplayName("updateUser Tests")
+    class UpdateUserTests {
+
+        @Test
+        @DisplayName("should update user successfully")
+        void updateUser_ShouldUpdateUser() {
+            // Given
+            UserUpdateReq req = new UserUpdateReq(
+                    "Updated Nick", "updated@test.com", "13900000000", null, 1, null
+            );
+            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+            when(userRepository.save(any())).thenReturn(testUser);
+            when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
+
+            // When
+            UserResp result = userService.updateUser("user-001", req);
+
+            // Then
+            assertThat(result).isNotNull();
+            verify(userRepository).save(any(UserEntity.class));
+        }
+
+        @Test
+        @DisplayName("should throw exception when user not found")
+        void updateUser_WhenNotFound_ShouldThrowException() {
+            // Given
+            UserUpdateReq req = new UserUpdateReq(
+                    "Updated", null, null, null, null, null
+            );
+            when(userRepository.findById("non-existent")).thenReturn(Optional.empty());
+
+            // When & Then
+            assertThatThrownBy(() -> userService.updateUser("non-existent", req))
+                    .isInstanceOf(BizException.class)
+                    .hasMessageContaining("用户不存在");
+        }
+
+        @Test
+        @DisplayName("should throw exception when department not found")
+        void updateUser_WithInvalidDept_ShouldThrowException() {
+            // Given
+            UserUpdateReq req = new UserUpdateReq(
+                    null, null, null, null, null, "invalid-dept"
+            );
+            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+            when(deptRepository.existsById("invalid-dept")).thenReturn(false);
+
+            // When & Then
+            assertThatThrownBy(() -> userService.updateUser("user-001", req))
+                    .isInstanceOf(BizException.class)
+                    .hasMessageContaining("部门不存在");
         }
     }
 
