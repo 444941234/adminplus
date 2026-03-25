@@ -3,8 +3,8 @@ spring:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     driver-class-name: org.h2.Driver
     username: sa
-    password: 
-  
+    password:
+
   jpa:
     hibernate:
       ddl-auto: create-drop
@@ -12,12 +12,17 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
-        
+
+  # Disable Redis for unit tests
   data:
     redis:
-      host: localhost
-      port: 6379
-      
+      repositories:
+        enabled: false
+
+  # Disable cache for tests
+  cache:
+    type: none
+
   security:
     oauth2:
       resourceserver:
@@ -27,12 +32,12 @@ spring:
   cors:
     allowed-origins: http://localhost:5173
 
-# 测试环境 JWT 配置
+# Test environment JWT configuration
 jwt:
   secret: test-jwt-secret-key-for-unit-testing-only
   dev-secret: test-dev-secret
 
-# 测试环境禁用病毒扫描
+# Disable virus scan for tests
 virus:
   scan:
     enabled: false

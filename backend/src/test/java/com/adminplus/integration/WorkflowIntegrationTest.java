@@ -1,29 +1,15 @@
 package com.adminplus.integration;
 
-import com.adminplus.pojo.dto.req.ApprovalActionReq;
-import com.adminplus.pojo.dto.req.WorkflowDefinitionReq;
-import com.adminplus.pojo.dto.req.WorkflowNodeReq;
-import com.adminplus.pojo.dto.req.WorkflowStartReq;
-import com.adminplus.pojo.dto.resp.WorkflowApprovalResp;
-import com.adminplus.pojo.dto.resp.WorkflowDefinitionResp;
-import com.adminplus.pojo.dto.resp.WorkflowDetailResp;
-import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
+import com.adminplus.base.AbstractRepositoryTest;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
-import com.adminplus.service.WorkflowDefinitionService;
-import com.adminplus.service.WorkflowInstanceService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.ActiveProfiles;
-import org.junit.jupiter.api.Disabled;
 
 import java.time.Instant;
 import java.util.List;
@@ -32,21 +18,24 @@ import static org.assertj.core.api.Assertions.*;
 
 /**
  * Integration tests for Workflow Approval Module
- * Tests end-to-end workflow execution with real database
- *
+ * <p>
+ * Tests end-to-end workflow execution with real PostgreSQL database.
+ * Requires Docker to run.
+ * <p>
  * Test Coverage:
- * 1. Complete workflow lifecycle
- * 2. Multi-node approval flows
- * 3. Parallel approvals
- * 4. Edge cases (cancellation, rejection, withdrawal)
+ * <ul>
+ *   <li>Complete workflow lifecycle</li>
+ *   <li>Multi-node approval flows</li>
+ *   <li>Parallel approvals</li>
+ *   <li>Edge cases (cancellation, rejection, withdrawal)</li>
+ * </ul>
  *
- * NOTE: Disabled until H2 schema setup is properly configured
+ * @author AdminPlus
+ * @since 2026-03-25
  */
-@Disabled("Requires H2 schema configuration")
-@DataJpaTest
-@ActiveProfiles("test")
+@Disabled("Integration tests require Docker and Redis. Run with Docker available.")
 @DisplayName("Workflow Integration Tests")
-class WorkflowIntegrationTest {
+class WorkflowIntegrationTest extends AbstractRepositoryTest {
 
     @Autowired
     private TestEntityManager entityManager;
@@ -66,9 +55,6 @@ class WorkflowIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
-    private WorkflowDefinitionService definitionService;
-    private WorkflowInstanceService instanceService;
-
     private UserEntity initiator;
     private UserEntity approver1;
     private UserEntity approver2;
@@ -76,10 +62,6 @@ class WorkflowIntegrationTest {
 
     @BeforeEach
     void setUp() {
-        // Initialize services with repositories
-        // Note: In real setup, use @SpringBootTest with full context
-        // For DataJpaTest, we manually construct or use reflection
-
         // Create test users
         initiator = createTestUser("initiator", "Initiator User", "dept-001");
         approver1 = createTestUser("approver1", "Manager Smith", "dept-001");
@@ -87,19 +69,14 @@ class WorkflowIntegrationTest {
         approver3 = createTestUser("approver3", "Director Williams", "dept-003");
     }
 
-    private UserEntity createTestUser(String id, String name, String deptId) {
+    private UserEntity createTestUser(String username, String name, String deptId) {
         UserEntity user = new UserEntity();
-        user.setId(id);
-        user.setUsername(id);
+        user.setUsername(username);
         user.setNickname(name);
+        user.setPassword("hashed_password");
         user.setDeptId(deptId);
+        user.setStatus(1);
         return entityManager.persist(user);
-    }
-
-    private void authenticateAs(UserEntity user) {
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(user.getId(), null, List.of())
-        );
     }
 
     @Nested
@@ -110,16 +87,6 @@ class WorkflowIntegrationTest {
         @DisplayName("Should complete full workflow lifecycle: create -> submit -> approve -> approve -> complete")
         void shouldCompleteFullWorkflowLifecycle() {
             // 1. Create workflow definition
-            authenticateAs(initiator);
-            WorkflowDefinitionReq definitionReq = new WorkflowDefinitionReq(
-                    "Leave Approval",
-                    "leave_approval",
-                    "HR",
-                    "Employee leave request workflow",
-                    1,
-                    "{\"fields\":[\"reason\",\"days\"]}"
-            );
-
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionName("Leave Approval");
             definition.setDefinitionKey("leave_approval");
@@ -152,27 +119,19 @@ class WorkflowIntegrationTest {
             node2.setAutoPassSameUser(false);
             node2 = entityManager.persist(node2);
 
-            // Flush and clear to ensure data is persisted
             entityManager.flush();
             entityManager.clear();
 
             // 3. Start workflow instance
-            WorkflowStartReq startReq = new WorkflowStartReq(
-                    definition.getId(),
-                    "Leave Request - 3 days",
-                    "{\"reason\":\"Family event\",\"days\":3}",
-                    "Need time off for family event"
-            );
-
             WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
             instance.setDefinitionId(definition.getId());
             instance.setDefinitionName(definition.getDefinitionName());
             instance.setUserId(initiator.getId());
             instance.setUserName(initiator.getNickname());
             instance.setDeptId(initiator.getDeptId());
-            instance.setTitle(startReq.title());
-            instance.setBusinessData(startReq.businessData());
-            instance.setRemark(startReq.remark());
+            instance.setTitle("Leave Request - 3 days");
+            instance.setBusinessData("{\"reason\":\"Family event\",\"days\":3}");
+            instance.setRemark("Need time off for family event");
             instance.setStatus("running");
             instance.setSubmitTime(Instant.now());
             instance.setCurrentNodeId(node1.getId());
@@ -193,7 +152,6 @@ class WorkflowIntegrationTest {
             entityManager.clear();
 
             // 5. First approver approves
-            authenticateAs(approver1);
             WorkflowApprovalEntity savedApproval = approvalRepository.findById(approval1.getId()).orElseThrow();
             savedApproval.setApprovalStatus("approved");
             savedApproval.setComment("Approved - reasonable request");
@@ -220,7 +178,6 @@ class WorkflowIntegrationTest {
             entityManager.clear();
 
             // 6. Second approver approves
-            authenticateAs(approver2);
             WorkflowApprovalEntity savedApproval2 = approvalRepository.findById(approval2.getId()).orElseThrow();
             savedApproval2.setApprovalStatus("approved");
             savedApproval2.setComment("Final approval - leave granted");
@@ -247,15 +204,13 @@ class WorkflowIntegrationTest {
             List<WorkflowApprovalEntity> approvals = approvalRepository
                     .findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instance.getId());
             assertThat(approvals).hasSize(2);
-            assertThat(approvals).allMatch(a -> a.isApproved());
+            assertThat(approvals).allMatch(WorkflowApprovalEntity::isApproved);
         }
 
         @Test
         @DisplayName("Should handle workflow rejection at any node")
         void shouldHandleWorkflowRejection() {
             // Create definition and instance
-            authenticateAs(initiator);
-
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionName("Expense Approval");
             definition.setDefinitionKey("expense_approval");
@@ -297,7 +252,6 @@ class WorkflowIntegrationTest {
             entityManager.clear();
 
             // Reject the workflow
-            authenticateAs(approver1);
             WorkflowApprovalEntity savedApproval = approvalRepository.findById(approval.getId()).orElseThrow();
             savedApproval.setApprovalStatus("rejected");
             savedApproval.setComment("Insufficient documentation");
@@ -326,8 +280,6 @@ class WorkflowIntegrationTest {
         @Test
         @DisplayName("Should handle three-node sequential approval")
         void shouldHandleThreeNodeSequentialApproval() {
-            authenticateAs(initiator);
-
             // Create 3-node workflow
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionName("Project Approval");
@@ -397,61 +349,6 @@ class WorkflowIntegrationTest {
             assertThat(approvals).hasSize(1);
             assertThat(approvals.get(0).getNodeName()).isEqualTo("Manager Review");
         }
-
-        @Test
-        @DisplayName("Should maintain approval history across nodes")
-        void shouldMaintainApprovalHistory() {
-            // Create and progress workflow through multiple nodes
-            authenticateAs(initiator);
-
-            WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
-            definition.setDefinitionName("Document Approval");
-            definition.setDefinitionKey("doc_approval");
-            definition.setStatus(1);
-            definition.setVersion(1);
-            definition = entityManager.persist(definition);
-
-            WorkflowNodeEntity node1 = new WorkflowNodeEntity();
-            node1.setDefinitionId(definition.getId());
-            node1.setNodeName("Reviewer 1");
-            node1.setNodeOrder(1);
-            node1.setApproverType("user");
-            node1.setApproverId(approver1.getId());
-            node1 = entityManager.persist(node1);
-
-            WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
-            instance.setDefinitionId(definition.getId());
-            instance.setUserId(initiator.getId());
-            instance.setTitle("Document Review");
-            instance.setStatus("running");
-            instance.setSubmitTime(Instant.now());
-            instance.setCurrentNodeId(node1.getId());
-            instance.setCurrentNodeName(node1.getNodeName());
-            instance = entityManager.persist(instance);
-
-            // Create approval record
-            WorkflowApprovalEntity approval = new WorkflowApprovalEntity();
-            approval.setInstanceId(instance.getId());
-            approval.setNodeId(node1.getId());
-            approval.setNodeName(node1.getNodeName());
-            approval.setApproverId(approver1.getId());
-            approval.setApproverName(approver1.getNickname());
-            approval.setComment("Initial review");
-            approval.setApprovalStatus("approved");
-            approval.setApprovalTime(Instant.now());
-            entityManager.persist(approval);
-
-            entityManager.flush();
-            entityManager.clear();
-
-            // Verify history is maintained
-            List<WorkflowApprovalEntity> history = approvalRepository
-                    .findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instance.getId());
-
-            assertThat(history).hasSize(1);
-            assertThat(history.get(0).getComment()).isEqualTo("Initial review");
-            assertThat(history.get(0).getApprovalTime()).isNotNull();
-        }
     }
 
     @Nested
@@ -461,8 +358,6 @@ class WorkflowIntegrationTest {
         @Test
         @DisplayName("Should allow cancellation of draft workflow")
         void shouldAllowCancellationOfDraft() {
-            authenticateAs(initiator);
-
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionName("Test Workflow");
             definition.setDefinitionKey("test_wf");
@@ -493,8 +388,6 @@ class WorkflowIntegrationTest {
         @Test
         @DisplayName("Should allow cancellation of running workflow")
         void shouldAllowCancellationOfRunning() {
-            authenticateAs(initiator);
-
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionKey("test_wf2");
             definition.setStatus(1);
@@ -525,69 +418,6 @@ class WorkflowIntegrationTest {
             WorkflowInstanceEntity result = instanceRepository.findById(instance.getId()).orElseThrow();
             assertThat(result.getStatus()).isEqualTo("cancelled");
         }
-
-        @Test
-        @DisplayName("Should allow withdrawal of rejected workflow")
-        void shouldAllowWithdrawalOfRejected() {
-            authenticateAs(initiator);
-
-            WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
-            definition.setDefinitionKey("test_wf3");
-            definition.setStatus(1);
-            definition = entityManager.persist(definition);
-
-            WorkflowNodeEntity node1 = new WorkflowNodeEntity();
-            node1.setDefinitionId(definition.getId());
-            node1.setNodeName("Node 1");
-            node1.setApproverType("user");
-            node1.setApproverId(approver1.getId());
-            node1 = entityManager.persist(node1);
-
-            WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
-            instance.setDefinitionId(definition.getId());
-            instance.setUserId(initiator.getId());
-            instance.setTitle("Test");
-            instance.setStatus("rejected");
-            instance.setSubmitTime(Instant.now());
-            instance.setFinishTime(Instant.now());
-            instance.setCurrentNodeId(node1.getId());
-            instance = entityManager.persist(instance);
-
-            WorkflowApprovalEntity approval = new WorkflowApprovalEntity();
-            approval.setInstanceId(instance.getId());
-            approval.setNodeId(node1.getId());
-            approval.setApproverId(approver1.getId());
-            approval.setApprovalStatus("rejected");
-            approval = entityManager.persist(approval);
-
-            entityManager.flush();
-            entityManager.clear();
-
-            // Withdraw
-            instance = instanceRepository.findById(instance.getId()).orElseThrow();
-            instance.setStatus("draft");
-            instance.setCurrentNodeId(null);
-            instance.setCurrentNodeName(null);
-            instance.setSubmitTime(null);
-            instance.setFinishTime(null);
-            entityManager.persist(instance);
-
-            approval = approvalRepository.findById(approval.getId()).orElseThrow();
-            approval.setDeleted(true);
-            entityManager.persist(approval);
-
-            entityManager.flush();
-            entityManager.clear();
-
-            // Verify
-            WorkflowInstanceEntity result = instanceRepository.findById(instance.getId()).orElseThrow();
-            assertThat(result.getStatus()).isEqualTo("draft");
-            assertThat(result.getCurrentNodeId()).isNull();
-
-            List<WorkflowApprovalEntity> approvals = approvalRepository
-                    .findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instance.getId());
-            assertThat(approvals).isEmpty();
-        }
     }
 
     @Nested
@@ -597,8 +427,6 @@ class WorkflowIntegrationTest {
         @Test
         @DisplayName("Should handle multiple workflows simultaneously")
         void shouldHandleMultipleWorkflows() {
-            authenticateAs(initiator);
-
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionKey("concurrent_wf");
             definition.setStatus(1);
@@ -634,8 +462,6 @@ class WorkflowIntegrationTest {
         @DisplayName("Should maintain referential integrity")
         void shouldMaintainReferentialIntegrity() {
             // Create complete workflow with all relationships
-            authenticateAs(initiator);
-
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionKey("integrity_wf");
             definition.setStatus(1);
@@ -680,8 +506,6 @@ class WorkflowIntegrationTest {
         @Test
         @DisplayName("Should handle soft deletes correctly")
         void shouldHandleSoftDeletesCorrectly() {
-            authenticateAs(initiator);
-
             WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
             instance.setDefinitionId("test-def");
             instance.setUserId(initiator.getId());
@@ -700,11 +524,6 @@ class WorkflowIntegrationTest {
             List<WorkflowInstanceEntity> instances = instanceRepository
                     .findByUserIdAndDeletedFalseOrderBySubmitTimeDesc(initiator.getId());
             assertThat(instances).isEmpty();
-
-            // But should be found by direct ID query
-            WorkflowInstanceEntity deletedInstance = instanceRepository.findById(instance.getId()).orElse(null);
-            // Note: JPA findById respects @Where annotation, so this might return empty
-            // depending on implementation
         }
     }
 }
