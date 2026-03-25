@@ -309,12 +309,10 @@ class UserServiceTest {
         void assignRoles_ShouldAssignRoles() {
             // Given
             List<String> roleIds = List.of("role-001");
-            when(userRepository.existsById("user-001")).thenReturn(true);
-            when(roleRepository.existsById("role-001")).thenReturn(true);
+            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+            when(roleRepository.findAllById(roleIds)).thenReturn(List.of(testRole));
             doNothing().when(userRoleRepository).deleteByUserId("user-001");
             when(userRoleRepository.saveAll(any())).thenReturn(List.of());
-            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
-            when(roleRepository.findAllById(any())).thenReturn(List.of(testRole));
 
             // When
             userService.assignRoles("user-001", roleIds);
@@ -328,7 +326,7 @@ class UserServiceTest {
         @DisplayName("should throw exception when user not found")
         void assignRoles_WhenUserNotFound_ShouldThrowException() {
             // Given
-            when(userRepository.existsById("non-existent")).thenReturn(false);
+            when(userRepository.findById("non-existent")).thenReturn(Optional.empty());
 
             // When & Then
             assertThatThrownBy(() -> userService.assignRoles("non-existent", List.of()))
@@ -340,8 +338,8 @@ class UserServiceTest {
         @DisplayName("should throw exception when role not found")
         void assignRoles_WhenRoleNotFound_ShouldThrowException() {
             // Given
-            when(userRepository.existsById("user-001")).thenReturn(true);
-            when(roleRepository.existsById("non-existent-role")).thenReturn(false);
+            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+            when(roleRepository.findAllById(List.of("non-existent-role"))).thenReturn(List.of());
 
             // When & Then
             assertThatThrownBy(() -> userService.assignRoles("user-001", List.of("non-existent-role")))
@@ -353,9 +351,8 @@ class UserServiceTest {
         @DisplayName("should clear all roles when empty list provided")
         void assignRoles_WithEmptyList_ShouldClearRoles() {
             // Given
-            when(userRepository.existsById("user-001")).thenReturn(true);
-            doNothing().when(userRoleRepository).deleteByUserId("user-001");
             when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+            doNothing().when(userRoleRepository).deleteByUserId("user-001");
 
             // When
             userService.assignRoles("user-001", List.of());
@@ -478,7 +475,7 @@ class UserServiceTest {
             UserRoleEntity userRole = new UserRoleEntity();
             userRole.setUserId("user-001");
             userRole.setRoleId("role-001");
-            when(userRepository.existsById("user-001")).thenReturn(true);
+            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
             when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(userRole));
 
             // When
@@ -492,7 +489,7 @@ class UserServiceTest {
         @DisplayName("should throw exception when user not found")
         void getUserRoleIds_WhenUserNotFound_ShouldThrowException() {
             // Given
-            when(userRepository.existsById("non-existent")).thenReturn(false);
+            when(userRepository.findById("non-existent")).thenReturn(Optional.empty());
 
             // When & Then
             assertThatThrownBy(() -> userService.getUserRoleIds("non-existent"))

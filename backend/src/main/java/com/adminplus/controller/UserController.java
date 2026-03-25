@@ -2,6 +2,8 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.req.PasswordResetReq;
+import com.adminplus.pojo.dto.req.RoleAssignReq;
 import com.adminplus.pojo.dto.req.UserCreateReq;
 import com.adminplus.pojo.dto.req.UserUpdateReq;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -100,9 +102,9 @@ public class UserController {
     @PreAuthorize("hasAuthority('user:edit')")
     public ApiResponse<Void> resetPassword(
             @PathVariable String id,
-            @RequestParam String password
+            @Valid @RequestBody PasswordResetReq req
     ) {
-        userService.resetPassword(id, password);
+        userService.resetPassword(id, req.password());
         return ApiResponse.ok();
     }
 
@@ -112,9 +114,9 @@ public class UserController {
     @PreAuthorize("hasAuthority('user:assign')")
     public ApiResponse<Void> assignRoles(
             @PathVariable String id,
-            @RequestBody List<String> roleIds
+            @Valid @RequestBody RoleAssignReq req
     ) {
-        userService.assignRoles(id, roleIds);
+        userService.assignRoles(id, req.roleIds());
         return ApiResponse.ok();
     }
 

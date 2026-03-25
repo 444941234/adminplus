@@ -255,10 +255,9 @@ class RoleServiceTest {
         void assignMenus_ShouldAssignMenus() {
             // Given
             List<String> menuIds = List.of("menu-001", "menu-002");
-            when(roleRepository.existsById("role-001")).thenReturn(true);
+            when(roleRepository.findById("role-001")).thenReturn(Optional.of(testRole));
             doNothing().when(roleMenuRepository).deleteByRoleId("role-001");
             when(roleMenuRepository.saveAll(any())).thenReturn(List.of());
-            when(roleRepository.findById("role-001")).thenReturn(Optional.of(testRole));
 
             // When
             roleService.assignMenus("role-001", menuIds);
@@ -272,7 +271,7 @@ class RoleServiceTest {
         @DisplayName("should throw exception when role not found")
         void assignMenus_WhenRoleNotFound_ShouldThrowException() {
             // Given
-            when(roleRepository.existsById("non-existent")).thenReturn(false);
+            when(roleRepository.findById("non-existent")).thenReturn(Optional.empty());
 
             // When & Then
             assertThatThrownBy(() -> roleService.assignMenus("non-existent", List.of()))

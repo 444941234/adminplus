@@ -66,7 +66,7 @@ public class DictItemEntity extends TreeEntity<DictItemEntity> {
      * 获取子节点列表（重写父类方法以支持 JPA 映射）
      */
     @Override
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parent", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
     @OrderBy("sortOrder ASC, createTime ASC")
     public List<DictItemEntity> getChildren() {
         return super.getChildren();

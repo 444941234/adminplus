@@ -389,15 +389,21 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void assignRoles(String userId, List<String> roleIds) {
-        // 检查用户是否存在
-        if (!userRepository.existsById(userId)) {
-            throw new BizException("用户不存在");
-        }
+        // 检查用户是否存在并获取用户信息（一次查询）
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new BizException("用户不存在"));
 
-        // 验证所有角色是否存在
-        for (String roleId : roleIds) {
-            if (!roleRepository.existsById(roleId)) {
-                throw new BizException("角色不存在，ID: " + roleId);
+        // 批量验证所有角色是否存在
+        if (roleIds != null && !roleIds.isEmpty()) {
+            List<RoleEntity> foundRoles = roleRepository.findAllById(roleIds);
+            if (foundRoles.size() != roleIds.size()) {
+                // 找出缺失的角色ID
+                List<String> foundIds = foundRoles.stream().map(RoleEntity::getId).toList();
+                String missingId = roleIds.stream()
+                        .filter(id -> !foundIds.contains(id))
+                        .findFirst()
+                        .orElse(null);
+                throw new BizException("角色不存在，ID: " + missingId);
             }
         }
 
@@ -415,14 +421,10 @@ public class UserServiceImpl implements UserService {
             userRoleRepository.saveAll(userRoles);
         }
 
-        // 记录审计日志 - 使用批量查询避免 N+1
-        var user = userRepository.findById(userId).orElse(null);
-        if (user != null) {
-            Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
-                    .collect(Collectors.toMap(RoleEntity::getId, r -> r));
-            String roleNames = roleIds.stream()
-                    .map(roleMap::get)
-                    .filter(Objects::nonNull)
+        // 记录审计日志 - 复用已查询的用户和角色信息
+        if (roleIds != null && !roleIds.isEmpty()) {
+            List<RoleEntity> allRoles = roleRepository.findAllById(roleIds);
+            String roleNames = allRoles.stream()
                     .map(RoleEntity::getName)
                     .collect(Collectors.joining(", "));
             logService.log("用户管理", OperationType.UPDATE, "分配角色: " + user.getUsername() + " -> " + roleNames);
@@ -432,9 +434,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<String> getUserRoleIds(String userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new BizException("用户不存在");
-        }
+        // 检查用户是否存在
+        userRepository.findById(userId)
+                .orElseThrow(() -> new BizException("用户不存在"));
         return userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
                 .toList();

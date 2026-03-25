@@ -3,6 +3,8 @@ package com.adminplus.controller;
 import com.adminplus.pojo.dto.resp.UserResp;
 import com.adminplus.pojo.dto.req.UserCreateReq;
 import com.adminplus.pojo.dto.req.UserUpdateReq;
+import com.adminplus.pojo.dto.req.PasswordResetReq;
+import com.adminplus.pojo.dto.req.RoleAssignReq;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -193,9 +195,13 @@ class UserControllerTest {
         @Test
         @DisplayName("should reset password")
         void resetPassword_ShouldResetPassword() throws Exception {
+            // Given
+            PasswordResetReq req = new PasswordResetReq("newpassword");
+
             // When & Then
             mockMvc.perform(put("/v1/sys/users/user-001/password")
-                            .param("password", "newpassword"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -210,10 +216,13 @@ class UserControllerTest {
         @Test
         @DisplayName("should assign roles to user")
         void assignRoles_ShouldAssignRoles() throws Exception {
+            // Given
+            RoleAssignReq req = new RoleAssignReq(List.of("role-001", "role-002"));
+
             // When & Then
             mockMvc.perform(put("/v1/sys/users/user-001/roles")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content("[\"role-001\", \"role-002\"]"))
+                            .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 

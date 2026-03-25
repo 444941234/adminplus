@@ -186,10 +186,9 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     public void assignMenus(String roleId, List<String> menuIds) {
-        // 检查角色是否存在
-        if (!roleRepository.existsById(roleId)) {
-            throw new BizException("角色不存在");
-        }
+        // 检查角色是否存在并获取角色信息（一次查询）
+        var role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new BizException("角色不存在"));
 
         // 删除原有的角色-菜单关联
         roleMenuRepository.deleteByRoleId(roleId);
@@ -206,10 +205,7 @@ public class RoleServiceImpl implements RoleService {
         }
 
         // 记录审计日志
-        var role = roleRepository.findById(roleId).orElse(null);
-        if (role != null) {
-            logService.log("角色管理", OperationType.UPDATE, "分配菜单权限: " + role.getName() + " -> " + menuIds.size() + " 个菜单");
-        }
+        logService.log("角色管理", OperationType.UPDATE, "分配菜单权限: " + role.getName() + " -> " + menuIds.size() + " 个菜单");
     }
 
     @Override

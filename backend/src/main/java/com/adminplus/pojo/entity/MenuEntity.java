@@ -83,7 +83,7 @@ public class MenuEntity extends TreeEntity<MenuEntity> {
      * 获取子菜单列表（重写父类方法以支持 JPA 映射）
      */
     @Override
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parent", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
     @OrderBy("sortOrder ASC, createTime ASC")
     public List<MenuEntity> getChildren() {
         return super.getChildren();

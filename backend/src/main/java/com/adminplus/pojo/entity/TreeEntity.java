@@ -57,15 +57,16 @@ public abstract class TreeEntity<E extends TreeEntity<E>> extends BaseEntity {
      * 子节点列表
      * <p>
      * 规范1: mappedBy 指向子类的 parent 属性
-     * 规范2: CascadeType.ALL (父节点删，子节点全删)
-     * 规范3: orphanRemoval = true (从 List 移除即删库)
+     * 规范2: CascadeType.PERSIST, MERGE (仅级联保存和更新，避免与软删除冲突)
+     * 规范3: orphanRemoval = false (软删除模式下不启用孤立删除)
      * 规范4: 使用 @OrderBy 指定默认排序
      * </p>
      * <p>
      * 注意：子类需要重写此属性并指定正确的泛型类型
+     * 删除操作应在 Service 层通过业务逻辑控制，而非依赖 JPA 级联
      * </p>
      */
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "parent", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
     @OrderBy("sortOrder ASC, createTime ASC")
     protected List<E> children = new ArrayList<>();
 
