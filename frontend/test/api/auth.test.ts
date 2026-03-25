@@ -9,12 +9,12 @@ import {
 } from '@/api/auth'
 
 // Mock the request module
-vi.mock('@/api/request', () => ({
+vi.mock('@/utils/request', () => ({
   get: vi.fn(),
   post: vi.fn()
 }))
 
-import { get, post } from '@/api/request'
+import { get, post } from '@/utils/request'
 
 describe('Auth API', () => {
   beforeEach(() => {

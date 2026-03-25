@@ -8,13 +8,13 @@ import {
 } from '@/api/file'
 
 // Mock the request module
-vi.mock('@/api/request', () => ({
+vi.mock('@/utils/request', () => ({
   get: vi.fn(),
   del: vi.fn(),
   upload: vi.fn()
 }))
 
-import { get, del, upload } from '@/api/request'
+import { get, del, upload } from '@/utils/request'
 
 describe('File API', () => {
   beforeEach(() => {

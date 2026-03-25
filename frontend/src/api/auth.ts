@@ -1,4 +1,4 @@
-import { get, post } from './request'
+import { get, post } from '@/utils/request'
 import type { LoginResp, User } from '@/types'
 
 // 登录

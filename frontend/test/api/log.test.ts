@@ -12,13 +12,13 @@ import {
 } from '@/api/log'
 
 // Mock the request module
-vi.mock('@/api/request', () => ({
+vi.mock('@/utils/request', () => ({
   get: vi.fn(),
   post: vi.fn(),
   del: vi.fn()
 }))
 
-import { get, post, del } from '@/api/request'
+import { get, post, del } from '@/utils/request'
 
 describe('Log API', () => {
   beforeEach(() => {

@@ -1,4 +1,4 @@
-import { del, get, upload } from './request'
+import { del, get, upload } from '@/utils/request'
 import type { FileRecord } from '@/types'
 
 export function uploadManagedFile(file: File, directory = 'files') {

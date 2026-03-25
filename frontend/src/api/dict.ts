@@ -1,4 +1,4 @@
-import { get, post, put, del } from './request'
+import { get, post, put, del } from '@/utils/request'
 import type { Dict, DictItem, PageResult } from '@/types'
 
 // 获取字典列表

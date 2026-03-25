@@ -17,14 +17,14 @@ import {
 } from '@/api/dict'
 
 // Mock the request module
-vi.mock('@/api/request', () => ({
+vi.mock('@/utils/request', () => ({
   get: vi.fn(),
   post: vi.fn(),
   put: vi.fn(),
   del: vi.fn()
 }))
 
-import { get, post, put, del } from '@/api/request'
+import { get, post, put, del } from '@/utils/request'
 
 describe('Dict API', () => {
   beforeEach(() => {

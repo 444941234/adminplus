@@ -1,4 +1,4 @@
-import { get } from './request'
+import { get } from '@/utils/request'
 import type {
   DashboardStats,
   ChartData,

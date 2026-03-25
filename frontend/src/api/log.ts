@@ -1,4 +1,4 @@
-import { get, post, del } from './request'
+import { get, post, del } from '@/utils/request'
 import type { Log, PageResult } from '@/types'
 
 // 获取日志列表

@@ -1,4 +1,4 @@
-import { get, post, put, del } from './request'
+import { get, post, put, del } from '@/utils/request'
 import type { Dept } from '@/types'
 
 // 获取部门树

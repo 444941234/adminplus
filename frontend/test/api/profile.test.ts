@@ -2,12 +2,12 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getActivityStats, getUserSettings, updateUserSettings } from '@/api/profile'
 
 // Mock the request module
-vi.mock('@/api/request', () => ({
+vi.mock('@/utils/request', () => ({
   get: vi.fn(),
   put: vi.fn()
 }))
 
-import { get, put } from '@/api/request'
+import { get, put } from '@/utils/request'
 
 describe('Profile API - Activity & Settings', () => {
   beforeEach(() => {

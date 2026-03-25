@@ -12,11 +12,11 @@ import {
 } from '@/api/dashboard'
 
 // Mock the request module
-vi.mock('@/api/request', () => ({
+vi.mock('@/utils/request', () => ({
   get: vi.fn()
 }))
 
-import { get } from '@/api/request'
+import { get } from '@/utils/request'
 
 describe('Dashboard API', () => {
   beforeEach(() => {

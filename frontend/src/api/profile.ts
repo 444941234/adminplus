@@ -1,4 +1,4 @@
-import { get, put, post, upload } from './request'
+import { get, put, post, upload } from '@/utils/request'
 import type { Profile, ActivityStats, UserSettings } from '@/types'
 
 // 获取个人资料
