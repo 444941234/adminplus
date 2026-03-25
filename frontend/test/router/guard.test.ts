@@ -6,7 +6,7 @@ describe('decideGuardAction', () => {
     expect(
       decideGuardAction({
         hasToken: false,
-        requiresAuth: true,
+        isPublicRoute: false,
         isLoginPage: false,
         hasMatchedRoutes: true
       })
@@ -39,7 +39,7 @@ describe('decideGuardAction', () => {
     expect(
       decideGuardAction({
         hasToken: false,
-        requiresAuth: false,
+        isPublicRoute: true,
         isLoginPage: false,
         hasMatchedRoutes: true
       })

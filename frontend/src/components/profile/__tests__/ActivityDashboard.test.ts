@@ -48,9 +48,9 @@ describe('ActivityDashboard', () => {
     })
 
     expect(wrapper.text()).toContain('45')
-    expect(wrapper.text()).toContain('Days Active')
+    expect(wrapper.text()).toContain('活跃天数')
     expect(wrapper.text()).toContain('1234')
-    expect(wrapper.text()).toContain('Total Actions')
+    expect(wrapper.text()).toContain('总操作数')
   })
 
   it('should render recent activity timeline', () => {
@@ -58,7 +58,7 @@ describe('ActivityDashboard', () => {
       props: { activity: mockActivityStats }
     })
 
-    expect(wrapper.text()).toContain('Recent Activity')
+    expect(wrapper.text()).toContain('最近活动')
     expect(wrapper.text()).toContain('Updated profile information')
     expect(wrapper.text()).toContain('Created new user')
     expect(wrapper.text()).toContain('Deleted old records')
@@ -69,7 +69,7 @@ describe('ActivityDashboard', () => {
       props: { activity: mockActivityStats }
     })
 
-    expect(wrapper.text()).toContain('Last Login')
+    expect(wrapper.text()).toContain('上次登录')
     expect(wrapper.text()).toContain('192.168.1.100')
   })
 
@@ -78,8 +78,8 @@ describe('ActivityDashboard', () => {
       props: { activity: mockActivityStats, loading: true }
     })
 
-    expect(wrapper.text()).toContain('Loading activity data...')
-    expect(wrapper.text()).toContain('Loading login information...')
+    expect(wrapper.text()).toContain('加载活动数据中...')
+    expect(wrapper.text()).toContain('加载登录信息中...')
   })
 
   it('should show empty state when no recent activity', () => {
@@ -92,7 +92,7 @@ describe('ActivityDashboard', () => {
       props: { activity: emptyActivityStats }
     })
 
-    expect(wrapper.text()).toContain('No recent activity')
+    expect(wrapper.text()).toContain('暂无最近活动')
   })
 
   it('should display only last 5 activities', () => {

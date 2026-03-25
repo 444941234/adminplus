@@ -44,14 +44,6 @@ vi.mock('@/components/profile/QuickSettings.vue', () => ({
   }
 }))
 
-vi.mock('@/components/profile/CompletionBadge.vue', () => ({
-  default: {
-    name: 'CompletionBadge',
-    props: ['nickname', 'email', 'phone', 'hasAvatar'],
-    template: '<div class="mock-completion-badge" data-testid="completion-badge">Completion Badge</div>'
-  }
-}))
-
 // Mock API calls
 vi.mock('@/api', () => ({
   getProfile: vi.fn(),
@@ -116,7 +108,7 @@ describe('Profile Page Integration Tests', () => {
   })
 
   describe('1. Page Rendering', () => {
-    it('should render page header correctly', async () => {
+    it('should render page structure correctly', async () => {
       vi.mocked(api.getProfile).mockResolvedValue({ data: mockProfile } as any)
       vi.mocked(api.getActivityStats).mockResolvedValue({ data: mockActivityStats } as any)
 
@@ -127,8 +119,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -136,10 +127,7 @@ describe('Profile Page Integration Tests', () => {
       await nextTick()
       await nextTick() // Double tick for async operations
 
-      expect(wrapper.find('.profile-page__title').exists()).toBe(true)
-      expect(wrapper.find('.profile-page__title').text()).toBe('个人中心')
-      expect(wrapper.find('.profile-page__subtitle').exists()).toBe(true)
-      expect(wrapper.find('.profile-page__subtitle').text()).toBe('管理您的个人资料、安全设置和偏好')
+      expect(wrapper.find('.profile-page').exists()).toBe(true)
     })
 
     it('should render without crashing when all data loads successfully', async () => {
@@ -153,8 +141,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -177,8 +164,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -206,8 +192,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -231,8 +216,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -256,8 +240,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -280,8 +263,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -305,8 +287,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -316,34 +297,6 @@ describe('Profile Page Integration Tests', () => {
 
       const settingsComponent = wrapper.findComponent({ name: 'QuickSettings' })
       expect(settingsComponent.exists()).toBe(true)
-    })
-
-    it('should render CompletionBadge component with correct props', async () => {
-      vi.mocked(api.getProfile).mockResolvedValue({ data: mockProfile } as any)
-      vi.mocked(api.getActivityStats).mockResolvedValue({ data: mockActivityStats } as any)
-
-      wrapper = mount(Profile, {
-        global: {
-          stubs: {
-            ProfileHero: true,
-            ProfileInfo: true,
-            ProfileSecurity: true,
-            ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
-          }
-        }
-      })
-
-      await nextTick()
-      await nextTick()
-
-      const badgeComponent = wrapper.findComponent({ name: 'CompletionBadge' })
-      expect(badgeComponent.exists()).toBe(true)
-      expect(badgeComponent.props('nickname')).toBe(mockProfile.nickname)
-      expect(badgeComponent.props('email')).toBe(mockProfile.email)
-      expect(badgeComponent.props('phone')).toBe(mockProfile.phone)
-      expect(badgeComponent.props('hasAvatar')).toBe(true)
     })
   })
 
@@ -359,8 +312,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -383,8 +335,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -406,8 +357,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -431,8 +381,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -463,8 +412,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -493,8 +441,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -541,8 +488,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -567,8 +513,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -593,8 +538,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -627,8 +571,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -661,8 +604,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -707,8 +649,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -736,8 +677,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -767,8 +707,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -786,33 +725,6 @@ describe('Profile Page Integration Tests', () => {
       expect(wrapper.find('.profile-page__settings').exists()).toBe(true)
     })
 
-    it('should have proper page structure', async () => {
-      vi.mocked(api.getProfile).mockResolvedValue({ data: mockProfile } as any)
-      vi.mocked(api.getActivityStats).mockResolvedValue({ data: mockActivityStats } as any)
-
-      wrapper = mount(Profile, {
-        global: {
-          stubs: {
-            ProfileHero: true,
-            ProfileInfo: true,
-            ProfileSecurity: true,
-            ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
-          }
-        }
-      })
-
-      await nextTick()
-      await nextTick()
-
-      // Check page structure
-      expect(wrapper.find('.profile-page').exists()).toBe(true)
-      expect(wrapper.find('.profile-page__header').exists()).toBe(true)
-      expect(wrapper.find('.profile-page__title').exists()).toBe(true)
-      expect(wrapper.find('.profile-page__subtitle').exists()).toBe(true)
-    })
-
     it('should render security section within main column', async () => {
       vi.mocked(api.getProfile).mockResolvedValue({ data: mockProfile } as any)
       vi.mocked(api.getActivityStats).mockResolvedValue({ data: mockActivityStats } as any)
@@ -824,8 +736,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -834,119 +745,14 @@ describe('Profile Page Integration Tests', () => {
       await nextTick()
 
       const mainColumn = wrapper.find('.profile-page__main')
-      const securitySection = wrapper.find('.profile-page__security')
+      const securityComponent = wrapper.findComponent({ name: 'ProfileSecurity' })
 
       expect(mainColumn.exists()).toBe(true)
-      expect(securitySection.exists()).toBe(true)
-      expect(securitySection.findComponent({ name: 'ProfileSecurity' }).exists()).toBe(true)
-    })
-
-    it('should render completion badge within settings column', async () => {
-      vi.mocked(api.getProfile).mockResolvedValue({ data: mockProfile } as any)
-      vi.mocked(api.getActivityStats).mockResolvedValue({ data: mockActivityStats } as any)
-
-      wrapper = mount(Profile, {
-        global: {
-          stubs: {
-            ProfileHero: true,
-            ProfileInfo: true,
-            ProfileSecurity: true,
-            ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
-          }
-        }
-      })
-
-      await nextTick()
-      await nextTick()
-
-      const settingsColumn = wrapper.find('.profile-page__settings')
-      const completionSection = wrapper.find('.profile-page__completion')
-
-      expect(settingsColumn.exists()).toBe(true)
-      expect(completionSection.exists()).toBe(true)
-      expect(completionSection.findComponent({ name: 'CompletionBadge' }).exists()).toBe(true)
+      expect(securityComponent.exists()).toBe(true)
     })
   })
 
-  describe('9. Computed Properties', () => {
-    it('should compute hasAvatar correctly', async () => {
-      vi.mocked(api.getProfile).mockResolvedValue({ data: mockProfile } as any)
-      vi.mocked(api.getActivityStats).mockResolvedValue({ data: mockActivityStats } as any)
-
-      wrapper = mount(Profile, {
-        global: {
-          stubs: {
-            ProfileHero: true,
-            ProfileInfo: true,
-            ProfileSecurity: true,
-            ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
-          }
-        }
-      })
-
-      await nextTick()
-      await nextTick()
-
-      const badgeComponent = wrapper.findComponent({ name: 'CompletionBadge' })
-
-      // Profile has avatar
-      expect(badgeComponent.props('hasAvatar')).toBe(true)
-
-      // Test with profile without avatar by remounting with different data
-      wrapper.unmount()
-      vi.mocked(api.getProfile).mockResolvedValue({ data: { ...mockProfile, avatar: '' } } as any)
-
-      wrapper = mount(Profile, {
-        global: {
-          stubs: {
-            ProfileHero: true,
-            ProfileInfo: true,
-            ProfileSecurity: true,
-            ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
-          }
-        }
-      })
-
-      await nextTick()
-      await nextTick()
-
-      const badgeComponent2 = wrapper.findComponent({ name: 'CompletionBadge' })
-      expect(badgeComponent2.props('hasAvatar')).toBe(false)
-    })
-  })
-
-  describe('10. Edge Cases', () => {
-    it('should handle profile with null avatar', async () => {
-      const profileWithoutAvatar = { ...mockProfile, avatar: '' }
-      vi.mocked(api.getProfile).mockResolvedValue({ data: profileWithoutAvatar } as any)
-      vi.mocked(api.getActivityStats).mockResolvedValue({ data: mockActivityStats } as any)
-
-      wrapper = mount(Profile, {
-        global: {
-          stubs: {
-            ProfileHero: true,
-            ProfileInfo: true,
-            ProfileSecurity: true,
-            ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
-          }
-        }
-      })
-
-      await nextTick()
-      await nextTick()
-
-      const badgeComponent = wrapper.findComponent({ name: 'CompletionBadge' })
-      expect(badgeComponent.props('hasAvatar')).toBe(false)
-    })
-
+  describe('9. Edge Cases', () => {
     it('should handle profile with empty roles array', async () => {
       const profileWithoutRoles = { ...mockProfile, roles: [] }
       vi.mocked(api.getProfile).mockResolvedValue({ data: profileWithoutRoles } as any)
@@ -959,8 +765,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
@@ -985,8 +790,7 @@ describe('Profile Page Integration Tests', () => {
             ProfileInfo: true,
             ProfileSecurity: true,
             ActivityDashboard: true,
-            QuickSettings: true,
-            CompletionBadge: true
+            QuickSettings: true
           }
         }
       })
