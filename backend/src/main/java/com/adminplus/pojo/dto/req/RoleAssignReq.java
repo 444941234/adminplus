@@ -1,5 +1,6 @@
 package com.adminplus.pojo.dto.req;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 
@@ -11,6 +12,6 @@ import java.util.List;
  */
 public record RoleAssignReq(
         @NotEmpty(message = "角色ID列表不能为空")
-        List<@jakarta.validation.constraints.NotBlank(message = "角色ID不能为空") String> roleIds
+        List<@NotBlank(message = "角色ID不能为空") String> roleIds
 ) {
 }
