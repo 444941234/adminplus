@@ -1,9 +1,12 @@
-import { get, post } from '@/utils/request'
+import { get, post, put, del } from '@/utils/request'
 import type {
   WorkflowApproval,
   WorkflowDefinition,
+  WorkflowDefinitionReq,
   WorkflowDetail,
-  WorkflowInstance
+  WorkflowInstance,
+  WorkflowNode,
+  WorkflowNodeReq
 } from '@/types'
 
 interface ApprovalPayload {
@@ -72,4 +75,40 @@ export function cancelWorkflow(instanceId: string) {
 
 export function withdrawWorkflow(instanceId: string) {
   return post<void>(`/workflow/instances/${instanceId}/withdraw`)
+}
+
+// ========== Workflow Definition Management ==========
+
+export function createWorkflowDefinition(data: WorkflowDefinitionReq) {
+  return post<WorkflowDefinition>('/workflow/definitions', data)
+}
+
+export function updateWorkflowDefinition(id: string, data: WorkflowDefinitionReq) {
+  return put<WorkflowDefinition>(`/workflow/definitions/${id}`, data)
+}
+
+export function deleteWorkflowDefinition(id: string) {
+  return del<void>(`/workflow/definitions/${id}`)
+}
+
+export function getWorkflowDefinition(id: string) {
+  return get<WorkflowDefinition>(`/workflow/definitions/${id}`)
+}
+
+// ========== Workflow Node Management ==========
+
+export function getWorkflowNodes(definitionId: string) {
+  return get<WorkflowNode[]>(`/workflow/definitions/${definitionId}/nodes`)
+}
+
+export function createWorkflowNode(definitionId: string, data: WorkflowNodeReq) {
+  return post<WorkflowNode>(`/workflow/definitions/${definitionId}/nodes`, data)
+}
+
+export function updateWorkflowNode(nodeId: string, data: WorkflowNodeReq) {
+  return put<WorkflowNode>(`/workflow/definitions/nodes/${nodeId}`, data)
+}
+
+export function deleteWorkflowNode(nodeId: string) {
+  return del<void>(`/workflow/definitions/nodes/${nodeId}`)
 }
