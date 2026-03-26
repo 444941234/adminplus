@@ -11,9 +11,9 @@ import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
 import com.adminplus.service.WorkflowDefinitionService;
 import com.adminplus.service.WorkflowInstanceService;
+import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -479,7 +479,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     }
 
     private String getCurrentUserId() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+        return SecurityUtils.getCurrentUserId();
     }
 
     private WorkflowInstanceResp toInstanceResponse(WorkflowInstanceEntity entity, Boolean pendingApproval, Boolean canApprove) {
