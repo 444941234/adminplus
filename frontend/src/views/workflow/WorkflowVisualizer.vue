@@ -9,6 +9,7 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import '@vue-flow/controls/dist/style.css'
 import '@vue-flow/minimap/dist/style.css'
+import { getWorkflowDefinition, getWorkflowNodes } from '@/api'
 
 interface WorkflowNode {
   id: string
@@ -114,52 +115,34 @@ async function loadWorkflowDefinition() {
 
   loading.value = true
   try {
-    // TODO: Replace with actual API call
-    // const response = await getWorkflowDefinition(props.definitionId)
-    // definition.value = response.data
+    if (props.definitionId) {
+      // Load definition and nodes from API
+      const [defRes, nodesRes] = await Promise.all([
+        getWorkflowDefinition(props.definitionId),
+        getWorkflowNodes(props.definitionId)
+      ])
 
-    // Mock data for now
-    definition.value = {
-      id: 'def-1',
-      name: '请假审批流程',
-      key: 'leave_approval',
-      category: 'HR',
-      description: '员工请假申请审批流程',
-      nodes: [
-        {
-          id: 'node-1',
-          name: '部门经理审批',
-          code: 'manager_approve',
-          order: 1,
-          approverType: 'user',
-          approverId: 'user-1',
-          isCounterSign: false,
-          autoPassSameUser: true
-        },
-        {
-          id: 'node-2',
-          name: 'HR审批',
-          code: 'hr_approve',
-          order: 2,
-          approverType: 'role',
-          approverId: 'role-hr',
-          isCounterSign: false,
-          autoPassSameUser: false
-        },
-        {
-          id: 'node-3',
-          name: '总监审批',
-          code: 'director_approve',
-          order: 3,
-          approverType: 'user',
-          approverId: 'user-3',
-          isCounterSign: true,
-          autoPassSameUser: false
-        }
-      ]
+      definition.value = {
+        id: defRes.data.id,
+        name: defRes.data.definitionName,
+        key: defRes.data.definitionKey,
+        category: defRes.data.category || '',
+        description: defRes.data.description,
+        nodes: nodesRes.data.map(node => ({
+          id: node.id,
+          name: node.nodeName,
+          code: node.nodeCode,
+          order: node.nodeOrder,
+          approverType: node.approverType,
+          approverId: node.approverId,
+          isCounterSign: node.isCounterSign,
+          autoPassSameUser: node.autoPassSameUser
+        }))
+      }
     }
+    // Note: instanceId loading can be added later if needed
 
-    emit('loaded', definition.value)
+    emit('loaded', definition.value!)
 
     // Fit view to show all nodes
     setTimeout(() => {
