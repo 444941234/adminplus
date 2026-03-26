@@ -118,7 +118,7 @@ onMounted(fetchDefinitions)
   <div class="space-y-4">
     <Card>
       <CardHeader class="flex flex-row items-center justify-between space-y-0">
-        <CardTitle>流程定义</CardTitle>
+        <CardTitle>流程中心</CardTitle>
         <Button v-if="canCreateWorkflow" @click="openStartDialog()">
           <Play class="mr-2 h-4 w-4" />
           发起流程
