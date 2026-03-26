@@ -1,5 +1,6 @@
-package com.adminplus.statemachine.persist;
+package com.adminplus.repository;
 
+import com.adminplus.statemachine.persist.StateMachineEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

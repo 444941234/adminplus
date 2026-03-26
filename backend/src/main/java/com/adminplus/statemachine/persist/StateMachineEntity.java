@@ -1,9 +1,9 @@
 package com.adminplus.statemachine.persist;
 
+import com.adminplus.pojo.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Data;
-
-import java.time.Instant;
+import lombok.EqualsAndHashCode;
 
 /**
  * Spring State Machine 持久化实体
@@ -15,18 +15,18 @@ import java.time.Instant;
  * @since 2026-03-25
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "spring_state_machine_context",
        indexes = {
            @Index(name = "idx_state_machine_update", columnList = "update_time")
        })
-public class StateMachineEntity {
+public class StateMachineEntity extends BaseEntity {
 
     /**
      * 机器ID（通常使用流程实例ID）
      */
-    @Id
-    @Column(name = "machine_id", length = 100)
+    @Column(name = "machine_id", length = 100, unique = true, nullable = false)
     private String machineId;
 
     /**
@@ -40,21 +40,4 @@ public class StateMachineEntity {
      */
     @Column(name = "extended_state", columnDefinition = "jsonb")
     private String extendedState;
-
-    /**
-     * 创建时间
-     */
-    @Column(name = "create_time", nullable = false, updatable = false)
-    private Instant createTime = Instant.now();
-
-    /**
-     * 更新时间
-     */
-    @Column(name = "update_time", nullable = false)
-    private Instant updateTime = Instant.now();
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updateTime = Instant.now();
-    }
 }
