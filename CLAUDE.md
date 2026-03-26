@@ -151,3 +151,116 @@ toast.success('Operation successful');
 ## Testing
 - Backend: JUnit 5 + Mockito + MockMvc, H2 for test database
 - Frontend: Vitest + Vue Test Utils
+
+## Workflow State Machine
+
+AdminPlus uses Spring State Machine (v4.0.0) for workflow state management.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   Spring State Machine                   │
+│                                                          │
+│  States: DRAFT, RUNNING, APPROVED, REJECTED, CANCELLED  │
+│  Events: SUBMIT, APPROVE, REJECT, CANCEL, ROLLBACK      │
+│                                                          │
+│  Extended State:                                         │
+│  - currentNodeId: Current workflow node ID              │
+│  - previousNodeId: Previous node ID (for rollback)      │
+│  - rollbackHistory: List of rollback operations         │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Key Components
+
+**Backend:**
+- `WorkflowState.java` - State enum (DRAFT, RUNNING, APPROVED, REJECTED, CANCELLED)
+- `WorkflowEvent.java` - Event enum (SUBMIT, APPROVE, REJECT, CANCEL, ROLLBACK)
+- `StateMachineConfig.java` - State machine configuration with transitions, guards, and actions
+- `WorkflowStateMachineService.java` - Service interface for state operations
+- `WorkflowStateMachinePersister.java` - Database persistence for state machine context
+- `StateMachineEntity.java` - JPA entity for state machine persistence
+- `StateMachineRepository.java` - Repository for state machine entities
+
+**Frontend:**
+- `WorkflowVisualizer.vue` - Interactive workflow flow visualization component
+- Uses @vue-flow for diagram rendering
+- Displays nodes, edges, and state transitions visually
+
+### State Transitions
+
+| From State | Event | To State | Description |
+|------------|-------|----------|-------------|
+| DRAFT | SUBMIT | RUNNING | Initiator submits workflow |
+| RUNNING | APPROVE | RUNNING | Move to next approval node |
+| RUNNING | APPROVE | APPROVED | Final approval completes workflow |
+| RUNNING | REJECT | REJECTED | Approver rejects workflow |
+| RUNNING | CANCEL | CANCELLED | Initiator cancels workflow |
+| RUNNING | ROLLBACK | RUNNING | Return to previous node |
+| RUNNING | ROLLBACK | DRAFT | Return to draft state |
+
+### Usage Example
+
+```java
+// Start state machine
+StateMachine<WorkflowState, WorkflowEvent> sm =
+    stateMachineFactory.getStateMachine(instanceId);
+sm.start();
+
+// Submit workflow
+sm.sendEvent(WorkflowEvent.SUBMIT);
+
+// Approve workflow
+sm.getExtendedState().getVariables().put("approverId", approverId);
+sm.getExtendedState().getVariables().put("comment", "Approved");
+sm.sendEvent(WorkflowEvent.APPROVE);
+
+// Reject workflow
+sm.getExtendedState().getVariables().put("rejectReason", "Incomplete");
+sm.sendEvent(WorkflowEvent.REJECT);
+```
+
+### Database Schema
+
+```sql
+-- State machine persistence table
+CREATE TABLE spring_state_machine_context (
+    id VARCHAR(100) PRIMARY KEY,
+    machine_id VARCHAR(100) UNIQUE NOT NULL,
+    state VARCHAR(50) NOT NULL,
+    extended_state JSONB,
+    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted BOOLEAN DEFAULT FALSE
+);
+
+-- Workflow instance with state machine support
+ALTER TABLE workflow_instance
+ADD COLUMN state_machine_id VARCHAR(100);
+```
+
+### Testing
+
+Integration tests: `WorkflowStateMachineIntegrationTest.java`
+- State persistence and recovery
+- State transitions
+- Rollback scenarios
+- Extended state management
+
+Run integration tests (requires PostgreSQL):
+```bash
+cd backend
+mvn test -Dtest=WorkflowStateMachineIntegrationTest
+```
+
+### Documentation
+
+See `docs/workflow/statemachine-guide.md` for comprehensive workflow state machine documentation including:
+- Architecture overview
+- Configuration details
+- Usage examples
+- Guards and actions
+- Persistence mechanism
+- Testing strategies
+- Troubleshooting guide
