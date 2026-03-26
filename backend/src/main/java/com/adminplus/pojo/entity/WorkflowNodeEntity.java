@@ -89,8 +89,8 @@ public class WorkflowNodeEntity extends BaseEntity {
     private String conditionExpression;
 
     /**
-     * 下一节点列表（JSONB，存储可能的下一节点ID数组）
+     * 下一节点列表（存储可能的下一节点ID数组的JSON字符串）
      */
-    @Column(name = "next_nodes", columnDefinition = "jsonb")
+    @Column(name = "next_nodes", columnDefinition = "TEXT")
     private String nextNodes;
 }
