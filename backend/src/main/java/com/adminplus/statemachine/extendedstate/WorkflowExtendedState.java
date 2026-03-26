@@ -19,6 +19,18 @@ import java.util.List;
  */
 public class WorkflowExtendedState {
 
+    private static final String VAR_CURRENT_NODE_ID = "currentNodeId";
+    private static final String VAR_NODE_PATH = "nodePath";
+    private static final String VAR_BUSINESS_DATA = "businessData";
+    private static final String VAR_INSTANCE_ID = "instanceId";
+
+    /**
+     * Private constructor to prevent instantiation
+     */
+    private WorkflowExtendedState() {
+        // Utility class - prevent instantiation
+    }
+
     /**
      * 更新当前节点
      *
@@ -29,13 +41,17 @@ public class WorkflowExtendedState {
             StateMachine<WorkflowState, WorkflowEvent> sm,
             String nodeId) {
 
-        sm.getExtendedState().getVariables().put("currentNodeId", nodeId);
+        if (sm == null) {
+            throw new IllegalArgumentException("StateMachine cannot be null");
+        }
+
+        sm.getExtendedState().getVariables().put(VAR_CURRENT_NODE_ID, nodeId);
 
         // 更新节点路径
         List<String> path = getCurrentNodePath(sm);
         if (path == null) {
             path = new ArrayList<>();
-            sm.getExtendedState().getVariables().put("nodePath", path);
+            sm.getExtendedState().getVariables().put(VAR_NODE_PATH, path);
         }
         if (!path.contains(nodeId)) {
             path.add(nodeId);
@@ -50,7 +66,10 @@ public class WorkflowExtendedState {
      */
     public static String getCurrentNodeId(
             StateMachine<WorkflowState, WorkflowEvent> sm) {
-        return (String) sm.getExtendedState().getVariables().get("currentNodeId");
+        if (sm == null) {
+            throw new IllegalArgumentException("StateMachine cannot be null");
+        }
+        return (String) sm.getExtendedState().getVariables().get(VAR_CURRENT_NODE_ID);
     }
 
     /**
@@ -62,7 +81,10 @@ public class WorkflowExtendedState {
     @SuppressWarnings("unchecked")
     public static List<String> getCurrentNodePath(
             StateMachine<WorkflowState, WorkflowEvent> sm) {
-        return (List<String>) sm.getExtendedState().getVariables().get("nodePath");
+        if (sm == null) {
+            throw new IllegalArgumentException("StateMachine cannot be null");
+        }
+        return (List<String>) sm.getExtendedState().getVariables().get(VAR_NODE_PATH);
     }
 
     /**
@@ -73,6 +95,9 @@ public class WorkflowExtendedState {
      */
     public static String getPreviousNodeId(
             StateMachine<WorkflowState, WorkflowEvent> sm) {
+        if (sm == null) {
+            throw new IllegalArgumentException("StateMachine cannot be null");
+        }
         List<String> path = getCurrentNodePath(sm);
         if (path != null && path.size() > 1) {
             return path.get(path.size() - 2);
@@ -89,7 +114,10 @@ public class WorkflowExtendedState {
     public static void setBusinessData(
             StateMachine<WorkflowState, WorkflowEvent> sm,
             Object businessData) {
-        sm.getExtendedState().getVariables().put("businessData", businessData);
+        if (sm == null) {
+            throw new IllegalArgumentException("StateMachine cannot be null");
+        }
+        sm.getExtendedState().getVariables().put(VAR_BUSINESS_DATA, businessData);
     }
 
     /**
@@ -100,7 +128,10 @@ public class WorkflowExtendedState {
      */
     public static Object getBusinessData(
             StateMachine<WorkflowState, WorkflowEvent> sm) {
-        return sm.getExtendedState().getVariables().get("businessData");
+        if (sm == null) {
+            throw new IllegalArgumentException("StateMachine cannot be null");
+        }
+        return sm.getExtendedState().getVariables().get(VAR_BUSINESS_DATA);
     }
 
     /**
@@ -112,7 +143,10 @@ public class WorkflowExtendedState {
     public static void setInstanceId(
             StateMachine<WorkflowState, WorkflowEvent> sm,
             String instanceId) {
-        sm.getExtendedState().getVariables().put("instanceId", instanceId);
+        if (sm == null) {
+            throw new IllegalArgumentException("StateMachine cannot be null");
+        }
+        sm.getExtendedState().getVariables().put(VAR_INSTANCE_ID, instanceId);
     }
 
     /**
@@ -123,6 +157,9 @@ public class WorkflowExtendedState {
      */
     public static String getInstanceId(
             StateMachine<WorkflowState, WorkflowEvent> sm) {
-        return (String) sm.getExtendedState().getVariables().get("instanceId");
+        if (sm == null) {
+            throw new IllegalArgumentException("StateMachine cannot be null");
+        }
+        return (String) sm.getExtendedState().getVariables().get(VAR_INSTANCE_ID);
     }
 }
