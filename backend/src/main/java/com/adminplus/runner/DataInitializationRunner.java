@@ -36,6 +36,7 @@ public class DataInitializationRunner implements CommandLineRunner {
     private final DictRepository dictRepository;
     private final DictItemRepository dictItemRepository;
     private final WorkflowDefinitionRepository workflowDefinitionRepository;
+    private final WorkflowNodeRepository workflowNodeRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -913,8 +914,59 @@ public class DataInitializationRunner implements CommandLineRunner {
                 createWorkflowDefinition("合同审批流程", "contract-approval", "法务", "用于合同签订前的审批流程")
         );
 
-        workflowDefinitionRepository.saveAll(definitions);
-        log.info("初始化流程定义数据完成，共 {} 个流程模板", definitions.size());
+        definitions = workflowDefinitionRepository.saveAll(definitions);
+
+        // 为每个流程定义创建示例审批节点
+        List<WorkflowNodeEntity> allNodes = new ArrayList<>();
+        for (int i = 0; i < definitions.size(); i++) {
+            String definitionId = definitions.get(i).getId();
+            allNodes.addAll(createSampleNodes(definitionId, i));
+        }
+        workflowNodeRepository.saveAll(allNodes);
+
+        log.info("初始化流程定义数据完成，共 {} 个流程模板，{} 个审批节点", definitions.size(), allNodes.size());
+    }
+
+    /**
+     * 为流程定义创建示例审批节点
+     */
+    private List<WorkflowNodeEntity> createSampleNodes(String definitionId, int definitionIndex) {
+        List<WorkflowNodeEntity> nodes = new ArrayList<>();
+
+        // 每个流程创建2-3个审批节点
+        nodes.add(createWorkflowNode(definitionId, "部门经理审批", "dept_manager_approve", 1, "leader", false));
+        nodes.add(createWorkflowNode(definitionId, "主管审批", "director_approve", 2, "leader", false));
+
+        // 第一个流程（费用报销）多加一个财务审批节点
+        if (definitionIndex == 0) {
+            nodes.add(createWorkflowNode(definitionId, "财务审批", "finance_approve", 3, "role", true));
+        }
+
+        return nodes;
+    }
+
+    /**
+     * 创建工作流节点实体
+     */
+    private WorkflowNodeEntity createWorkflowNode(
+            String definitionId,
+            String nodeName,
+            String nodeCode,
+            int nodeOrder,
+            String approverType,
+            boolean isCounterSign
+    ) {
+        WorkflowNodeEntity node = new WorkflowNodeEntity();
+        node.setDefinitionId(definitionId);
+        node.setNodeName(nodeName);
+        node.setNodeCode(nodeCode);
+        node.setNodeOrder(nodeOrder);
+        node.setApproverType(approverType);
+        node.setIsCounterSign(isCounterSign);
+        node.setAutoPassSameUser(false);
+        node.setCreateUser("system");
+        node.setUpdateUser("system");
+        return node;
     }
 
     /**
