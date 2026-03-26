@@ -103,9 +103,9 @@ function getNodeColor(node: WorkflowNode, index: number): string {
   return '#6366f1' // Indigo for regular nodes
 }
 
-function onNodeClick(_event: any, node: Node) {
+function onNodeClick(event: any) {
   if (props.readonly) return
-  const workflowNode = node.data.node as WorkflowNode
+  const workflowNode = event.node.data.node as WorkflowNode
   emit('node-click', workflowNode)
 }
 
@@ -178,7 +178,7 @@ onConnect((params) => {
   addEdges([params])
 })
 
-onNodesChange((changes) => {
+onNodesChange(() => {
   // Handle node changes (for editing mode)
   if (props.readonly) return
 })
