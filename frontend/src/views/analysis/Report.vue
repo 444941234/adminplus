@@ -20,8 +20,8 @@ import { BarChart3, GitBranch, ListChecks } from 'lucide-vue-next'
         </RouterLink>
         <RouterLink to="/workflow/definitions" class="rounded-xl border p-5 transition-colors hover:bg-accent">
           <GitBranch class="mb-3 h-7 w-7 text-primary" />
-          <div class="font-medium">流程中心</div>
-          <div class="mt-1 text-sm text-muted-foreground">浏览启用中的工作流模板并快速发起流程。</div>
+          <div class="font-medium">流程模板</div>
+          <div class="mt-1 text-sm text-muted-foreground">查看可用的工作流模板并发起新流程。</div>
         </RouterLink>
         <RouterLink to="/workflow/pending" class="rounded-xl border p-5 transition-colors hover:bg-accent">
           <ListChecks class="mb-3 h-7 w-7 text-primary" />

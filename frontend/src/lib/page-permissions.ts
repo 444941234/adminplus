@@ -64,7 +64,7 @@ const dashboardQuickActions: DashboardQuickAction[] = [
   },
   {
     path: '/workflow/definitions',
-    label: '流程中心',
+    label: '流程模板',
     icon: 'GitBranch',
     color: 'text-sky-500',
     permissions: ['workflow:definition:list']

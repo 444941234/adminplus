@@ -66,7 +66,7 @@ const fetchDefinitions = async () => {
       status: enabledIds.has(item.id) ? 1 : item.status
     }))
   } catch (error) {
-    const message = error instanceof Error ? error.message : '获取流程定义失败'
+    const message = error instanceof Error ? error.message : '获取流程模板失败'
     toast.error(message)
   } finally {
     loading.value = false
@@ -85,7 +85,7 @@ const openStartDialog = (definition?: WorkflowDefinition) => {
 
 const handleStartWorkflow = async () => {
   if (!form.value.definitionId) {
-    toast.warning('请选择流程定义')
+    toast.warning('请选择流程类型')
     return
   }
   if (!form.value.title.trim()) {
@@ -101,7 +101,7 @@ const handleStartWorkflow = async () => {
       businessData: form.value.businessData.trim() || undefined,
       remark: form.value.remark.trim() || undefined
     })
-    toast.success('流程已发起')
+    toast.success('流程发起成功')
     startDialogOpen.value = false
   } catch (error) {
     const message = error instanceof Error ? error.message : '发起流程失败'
@@ -118,18 +118,17 @@ onMounted(fetchDefinitions)
   <div class="space-y-4">
     <Card>
       <CardHeader class="flex flex-row items-center justify-between space-y-0">
-        <CardTitle>流程中心</CardTitle>
+        <CardTitle>流程模板</CardTitle>
         <Button v-if="canCreateWorkflow" @click="openStartDialog()">
           <Play class="mr-2 h-4 w-4" />
-          发起流程
+          新建流程
         </Button>
       </CardHeader>
       <CardContent class="p-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>定义名称</TableHead>
-              <TableHead>Key</TableHead>
+              <TableHead>流程名称</TableHead>
               <TableHead>分类</TableHead>
               <TableHead>版本</TableHead>
               <TableHead>状态</TableHead>
@@ -139,17 +138,16 @@ onMounted(fetchDefinitions)
           </TableHeader>
           <TableBody>
             <TableRow v-if="loading">
-              <TableCell colspan="7" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
+              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
             </TableRow>
             <TableRow v-else-if="definitions.length === 0">
-              <TableCell colspan="7" class="h-24 text-center text-muted-foreground">暂无流程定义</TableCell>
+              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">暂无流程模板</TableCell>
             </TableRow>
             <TableRow v-for="definition in definitions" :key="definition.id">
               <TableCell class="font-medium">
                 <div>{{ definition.definitionName }}</div>
                 <div class="text-xs text-muted-foreground">{{ definition.description || '暂无描述' }}</div>
               </TableCell>
-              <TableCell>{{ definition.definitionKey }}</TableCell>
               <TableCell>{{ definition.category || '-' }}</TableCell>
               <TableCell>v{{ definition.version }}</TableCell>
               <TableCell>
@@ -166,7 +164,7 @@ onMounted(fetchDefinitions)
                   :disabled="definition.status !== 1"
                   @click="openStartDialog(definition)"
                 >
-                  发起
+                  立即发起
                 </Button>
                 <span v-else class="text-xs text-muted-foreground">无发起权限</span>
               </TableCell>
@@ -179,14 +177,14 @@ onMounted(fetchDefinitions)
     <Dialog v-model:open="startDialogOpen">
       <DialogContent class="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>发起流程</DialogTitle>
+          <DialogTitle>新建流程</DialogTitle>
         </DialogHeader>
         <div class="space-y-4">
           <div class="space-y-2">
-            <Label>流程定义</Label>
+            <Label>流程类型 <span class="text-muted-foreground text-xs">(必填)</span></Label>
             <Select v-model="form.definitionId">
               <SelectTrigger>
-                <SelectValue placeholder="请选择流程定义" />
+                <SelectValue placeholder="请选择流程类型" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem

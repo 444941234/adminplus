@@ -241,7 +241,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         menuData.add(new Object[]{"M32", "M3", 1, "报表管理", "/analysis/report", "analysis/Report", "analysis:report:view", "DataAnalysis", 2, 1, 1});
 
         // 工作流管理子菜单
-        menuData.add(new Object[]{"M41", "M4", 1, "流程中心", "/workflow/definitions", "workflow/WorkflowCenter", "workflow:definition:list", "GitBranch", 1, 1, 1});
+        menuData.add(new Object[]{"M41", "M4", 1, "流程模板", "/workflow/definitions", "workflow/WorkflowCenter", "workflow:definition:list", "GitBranch", 1, 1, 1});
         menuData.add(new Object[]{"M42", "M4", 1, "我的流程", "/workflow/my", "workflow/MyWorkflow", "workflow:instance:list", "Workflow", 2, 1, 1});
         menuData.add(new Object[]{"M43", "M4", 1, "待我审批", "/workflow/pending", "workflow/PendingApproval", "workflow:pending:list", "Clock3", 3, 1, 1});
 
@@ -386,7 +386,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         if (managerRole != null) {
             List<String> managerMenuNames = Arrays.asList("首页", "用户管理", "新增用户", "编辑用户", "删除用户", "分配角色", "重置密码",
                     "部门管理", "新增部门", "编辑部门", "删除部门", "查询部门", "部门列表",
-                    "工作流管理", "流程中心", "我的流程", "待我审批", "发起流程", "审批流程",
+                    "工作流管理", "流程模板", "我的流程", "待我审批", "发起流程", "审批流程",
                     "文件管理", "上传文件", "删除文件");
             for (String menuName : managerMenuNames) {
                 MenuEntity menu = menuMap.get(menuName);
@@ -401,7 +401,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         if (developerRole != null) {
             List<String> developerMenuNames = Arrays.asList("首页", "用户管理", "角色管理", "菜单管理", "字典管理", "参数配置",
                     "字典项列表", "新增字典项", "编辑字典项", "删除字典项",
-                    "数据统计", "报表管理", "工作流管理", "流程中心", "我的流程", "发起流程",
+                    "数据统计", "报表管理", "工作流管理", "流程模板", "我的流程", "发起流程",
                     "文件管理", "上传文件", "删除文件");
             for (String menuName : developerMenuNames) {
                 MenuEntity menu = menuMap.get(menuName);
@@ -415,7 +415,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         RoleEntity operatorRole = roleMap.get("ROLE_OPERATOR");
         if (operatorRole != null) {
             List<String> operatorMenuNames = Arrays.asList("首页", "数据统计", "报表管理",
-                    "工作流管理", "流程中心", "我的流程", "发起流程",
+                    "工作流管理", "流程模板", "我的流程", "发起流程",
                     "文件管理", "上传文件", "删除文件");
             for (String menuName : operatorMenuNames) {
                 MenuEntity menu = menuMap.get(menuName);
@@ -428,7 +428,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         // 普通用户权限
         RoleEntity userRole = roleMap.get("ROLE_USER");
         if (userRole != null) {
-            List<String> userMenuNames = Arrays.asList("首页", "工作流管理", "流程中心", "我的流程", "发起流程",
+            List<String> userMenuNames = Arrays.asList("首页", "工作流管理", "流程模板", "我的流程", "发起流程",
                     "文件管理", "上传文件", "删除文件");
             for (String menuName : userMenuNames) {
                 MenuEntity menu = menuMap.get(menuName);
@@ -477,7 +477,7 @@ public class DataInitializationRunner implements CommandLineRunner {
     private void ensureWorkflowMenus() {
         List<Object[]> workflowMenuData = Arrays.asList(
                 new Object[]{"M4", null, 0, "工作流管理", "/workflow", null, null, "Workflow", 3, 1, 1},
-                new Object[]{"M41", "M4", 1, "流程中心", "/workflow/definitions", "workflow/WorkflowCenter", "workflow:definition:list", "GitBranch", 1, 1, 1},
+                new Object[]{"M41", "M4", 1, "流程模板", "/workflow/definitions", "workflow/WorkflowCenter", "workflow:definition:list", "GitBranch", 1, 1, 1},
                 new Object[]{"M42", "M4", 1, "我的流程", "/workflow/my", "workflow/MyWorkflow", "workflow:instance:list", "Workflow", 2, 1, 1},
                 new Object[]{"M43", "M4", 1, "待我审批", "/workflow/pending", "workflow/PendingApproval", "workflow:pending:list", "Clock3", 3, 1, 1},
                 new Object[]{"M411", "M41", 2, "发起流程", null, null, "workflow:create", null, 1, 0, 1},
@@ -669,7 +669,7 @@ public class DataInitializationRunner implements CommandLineRunner {
     private String getMenuNameByTempId(String tempId) {
         return switch (tempId) {
             case "M4" -> "工作流管理";
-            case "M41" -> "流程中心";
+            case "M41" -> "流程模板";
             case "M42" -> "我的流程";
             case "M43" -> "待我审批";
             case "M28" -> "文件管理";
