@@ -482,6 +482,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         List<Object[]> workflowMenuData = Arrays.asList(
                 new Object[]{"M4", null, 0, "工作流管理", "/workflow", null, null, "Workflow", 3, 1, 1},
                 new Object[]{"M41", "M4", 1, "流程模板", "/workflow/definitions", "workflow/WorkflowCenter", "workflow:definition:list", "GitBranch", 1, 1, 1},
+                new Object[]{"M44", "M4", 1, "流程设计", "/workflow/designer", "workflow/WorkflowDesigner", "workflow:design", "Settings", 4, 1, 1},
                 new Object[]{"M42", "M4", 1, "我的流程", "/workflow/my", "workflow/MyWorkflow", "workflow:instance:list", "Workflow", 2, 1, 1},
                 new Object[]{"M43", "M4", 1, "待我审批", "/workflow/pending", "workflow/PendingApproval", "workflow:pending:list", "Clock3", 3, 1, 1},
                 new Object[]{"M411", "M41", 2, "发起流程", null, null, "workflow:create", null, 1, 0, 1},
@@ -676,6 +677,7 @@ public class DataInitializationRunner implements CommandLineRunner {
             case "M41" -> "流程模板";
             case "M42" -> "我的流程";
             case "M43" -> "待我审批";
+            case "M44" -> "流程设计";
             case "M28" -> "文件管理";
             case "M24" -> "字典管理";
             default -> tempId;

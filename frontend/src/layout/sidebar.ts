@@ -37,6 +37,7 @@ const staticMenus: SidebarMenuItemData[] = [
   { path: '/analysis/statistics', icon: 'BarChart3', label: '数据统计' },
   { path: '/analysis/report', icon: 'FileBarChart', label: '报表中心' },
   { path: '/workflow/definitions', icon: 'GitBranch', label: '流程模板' },
+  { path: '/workflow/designer', icon: 'Settings', label: '流程设计' },
   { path: '/workflow/my', icon: 'Workflow', label: '我的流程' },
   { path: '/workflow/pending', icon: 'Clock3', label: '待我审批' }
 ]
@@ -82,6 +83,7 @@ export const staticSidebarTree: SidebarNode[] = [
     icon: 'Workflow',
     children: [
       { kind: 'item', id: 'workflow-definitions', path: '/workflow/definitions', label: '流程模板', icon: 'GitBranch' },
+      { kind: 'item', id: 'workflow-designer', path: '/workflow/designer', label: '流程设计', icon: 'Settings' },
       { kind: 'item', id: 'workflow-my', path: '/workflow/my', label: '我的流程', icon: 'Workflow' },
       { kind: 'item', id: 'workflow-pending', path: '/workflow/pending', label: '待我审批', icon: 'Clock3' }
     ]
