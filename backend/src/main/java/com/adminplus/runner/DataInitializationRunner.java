@@ -35,6 +35,7 @@ public class DataInitializationRunner implements CommandLineRunner {
     private final RoleMenuRepository roleMenuRepository;
     private final DictRepository dictRepository;
     private final DictItemRepository dictItemRepository;
+    private final WorkflowDefinitionRepository workflowDefinitionRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -60,6 +61,9 @@ public class DataInitializationRunner implements CommandLineRunner {
 
             // 初始化字典数据
             initializeDicts();
+
+            // 初始化流程定义数据
+            initializeWorkflowDefinitions();
 
             log.info("数据初始化完成！");
 
@@ -885,5 +889,50 @@ public class DataInitializationRunner implements CommandLineRunner {
         }
 
         return item;
+    }
+
+    /**
+     * 初始化流程定义数据
+     * 创建示例流程模板供用户使用
+     */
+    private void initializeWorkflowDefinitions() {
+        if (workflowDefinitionRepository.count() > 0) {
+            log.info("流程定义数据已存在，跳过初始化");
+            return;
+        }
+
+        log.info("开始初始化流程定义数据...");
+
+        // 创建示例流程定义
+        List<WorkflowDefinitionEntity> definitions = Arrays.asList(
+                createWorkflowDefinition("费用报销流程", "expense-reimbursement", "财务", "用于员工费用报销申请审批"),
+                createWorkflowDefinition("请假申请流程", "leave-request", "人事", "用于员工请假申请审批"),
+                createWorkflowDefinition("采购申请流程", "purchase-request", "采购", "用于物品采购申请审批"),
+                createWorkflowDefinition("合同审批流程", "contract-approval", "法务", "用于合同签订前的审批流程")
+        );
+
+        workflowDefinitionRepository.saveAll(definitions);
+        log.info("初始化流程定义数据完成，共 {} 个流程模板", definitions.size());
+    }
+
+    /**
+     * 创建流程定义实体
+     */
+    private WorkflowDefinitionEntity createWorkflowDefinition(
+            String definitionName,
+            String definitionKey,
+            String category,
+            String description
+    ) {
+        WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
+        definition.setDefinitionName(definitionName);
+        definition.setDefinitionKey(definitionKey);
+        definition.setCategory(category);
+        definition.setDescription(description);
+        definition.setVersion(1);
+        definition.setStatus(1); // 启用状态
+        definition.setCreateUser("system");
+        definition.setUpdateUser("system");
+        return definition;
     }
 }
