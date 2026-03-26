@@ -45,4 +45,10 @@ public interface WorkflowApprovalRepository extends JpaRepository<WorkflowApprov
      * 统计实例的待审批数量
      */
     long countByInstanceIdAndApprovalStatusAndDeletedFalse(String instanceId, String approvalStatus);
+
+    /**
+     * 查询特定节点的待审批记录（用于状态机审批）
+     */
+    java.util.Optional<WorkflowApprovalEntity> findByInstanceIdAndNodeIdAndApproverIdAndApprovalStatusAndDeletedFalse(
+            String instanceId, String nodeId, String approverId, String approvalStatus);
 }

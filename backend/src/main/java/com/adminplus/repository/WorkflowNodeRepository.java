@@ -21,6 +21,11 @@ public interface WorkflowNodeRepository extends JpaRepository<WorkflowNodeEntity
     List<WorkflowNodeEntity> findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(String definitionId);
 
     /**
+     * 根据定义ID查询所有节点（按顺序）
+     */
+    List<WorkflowNodeEntity> findByDefinitionIdAndDeletedFalseOrderByNodeOrder(String definitionId);
+
+    /**
      * 根据定义ID和节点编码查询
      */
     List<WorkflowNodeEntity> findByDefinitionIdAndNodeCodeAndDeletedFalse(String definitionId, String nodeCode);
