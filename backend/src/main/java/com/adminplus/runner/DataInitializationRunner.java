@@ -247,8 +247,8 @@ public class DataInitializationRunner implements CommandLineRunner {
 
         // 工作流按钮权限
         menuData.add(new Object[]{"M411", "M41", 2, "发起流程", null, null, "workflow:create", null, 1, 0, 1});
-        menuData.add(new Object[]{"M412", "M41", 2, "更新流程中心", null, null, "workflow:update", null, 2, 0, 1});
-        menuData.add(new Object[]{"M413", "M41", 2, "删除流程中心", null, null, "workflow:delete", null, 3, 0, 1});
+        menuData.add(new Object[]{"M412", "M41", 2, "更新流程定义", null, null, "workflow:update", null, 2, 0, 1});
+        menuData.add(new Object[]{"M413", "M41", 2, "删除流程定义", null, null, "workflow:delete", null, 3, 0, 1});
         menuData.add(new Object[]{"M431", "M43", 2, "审批流程", null, null, "workflow:approve", null, 1, 0, 1});
 
         // 创建所有菜单
@@ -477,12 +477,12 @@ public class DataInitializationRunner implements CommandLineRunner {
     private void ensureWorkflowMenus() {
         List<Object[]> workflowMenuData = Arrays.asList(
                 new Object[]{"M4", null, 0, "工作流管理", "/workflow", null, null, "Workflow", 3, 1, 1},
-                new Object[]{"M41", "M4", 1, "流程中心", "/workflow/definitions", "workflow/Definitions", "workflow:definition:list", "GitBranch", 1, 1, 1},
+                new Object[]{"M41", "M4", 1, "流程中心", "/workflow/definitions", "workflow/WorkflowCenter", "workflow:definition:list", "GitBranch", 1, 1, 1},
                 new Object[]{"M42", "M4", 1, "我的流程", "/workflow/my", "workflow/MyWorkflow", "workflow:instance:list", "Workflow", 2, 1, 1},
                 new Object[]{"M43", "M4", 1, "待我审批", "/workflow/pending", "workflow/PendingApproval", "workflow:pending:list", "Clock3", 3, 1, 1},
                 new Object[]{"M411", "M41", 2, "发起流程", null, null, "workflow:create", null, 1, 0, 1},
-                new Object[]{"M412", "M41", 2, "更新流程中心", null, null, "workflow:update", null, 2, 0, 1},
-                new Object[]{"M413", "M41", 2, "删除流程中心", null, null, "workflow:delete", null, 3, 0, 1},
+                new Object[]{"M412", "M41", 2, "更新流程定义", null, null, "workflow:update", null, 2, 0, 1},
+                new Object[]{"M413", "M41", 2, "删除流程定义", null, null, "workflow:delete", null, 3, 0, 1},
                 new Object[]{"M431", "M43", 2, "审批流程", null, null, "workflow:approve", null, 1, 0, 1}
         );
 
