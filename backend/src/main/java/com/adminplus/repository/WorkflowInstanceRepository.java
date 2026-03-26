@@ -69,6 +69,7 @@ public interface WorkflowInstanceRepository extends JpaRepository<WorkflowInstan
      * @param instanceId 工作流实例ID
      * @return 工作流实例（悲观锁）
      */
+    @Query("SELECT i FROM WorkflowInstanceEntity i WHERE i.id = :instanceId")
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<WorkflowInstanceEntity> findByIdForUpdate(String instanceId);
 }
