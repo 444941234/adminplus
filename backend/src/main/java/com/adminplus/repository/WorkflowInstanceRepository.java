@@ -1,12 +1,15 @@
 package com.adminplus.repository;
 
 import com.adminplus.pojo.entity.WorkflowInstanceEntity;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * 工作流实例 Repository
@@ -59,4 +62,13 @@ public interface WorkflowInstanceRepository extends JpaRepository<WorkflowInstan
            "AND a.approvalStatus = 'pending' " +
            "AND i.deleted = false")
     long countPendingApprovalsByUser(String approverId);
+
+    /**
+     * 悲观锁查询工作流实例（用于状态机操作）
+     *
+     * @param instanceId 工作流实例ID
+     * @return 工作流实例（悲观锁）
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<WorkflowInstanceEntity> findByIdForUpdate(String instanceId);
 }

@@ -85,6 +85,24 @@ public class WorkflowApprovalEntity extends BaseEntity {
     private java.time.Instant approvalTime;
 
     /**
+     * 是否为回退操作
+     */
+    @Column(name = "is_rollback")
+    private Boolean isRollback = false;
+
+    /**
+     * 回退源节点ID
+     */
+    @Column(name = "rollback_from_node_id", length = 50)
+    private String rollbackFromNodeId;
+
+    /**
+     * 回退源节点名称
+     */
+    @Column(name = "rollback_from_node_name", length = 100)
+    private String rollbackFromNodeName;
+
+    /**
      * 是否为待审批
      */
     public boolean isPending() {

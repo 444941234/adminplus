@@ -81,4 +81,16 @@ public class WorkflowNodeEntity extends BaseEntity {
      */
     @Column(name = "description", length = 500)
     private String description;
+
+    /**
+     * 条件表达式（SpEL表达式，用于条件分支）
+     */
+    @Column(name = "condition_expression", columnDefinition = "TEXT")
+    private String conditionExpression;
+
+    /**
+     * 下一节点列表（JSONB，存储可能的下一节点ID数组）
+     */
+    @Column(name = "next_nodes", columnDefinition = "jsonb")
+    private String nextNodes;
 }

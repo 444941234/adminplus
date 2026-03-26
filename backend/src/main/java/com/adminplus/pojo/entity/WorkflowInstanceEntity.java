@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
+import org.springframework.data.annotation.Version;
 
 import java.time.Instant;
 
@@ -73,6 +74,31 @@ public class WorkflowInstanceEntity extends BaseEntity {
      */
     @Column(name = "business_data", columnDefinition = "TEXT")
     private String businessData;
+
+    /**
+     * 业务键（关联业务表，如 leave_request_id）
+     */
+    @Column(name = "business_key", length = 100)
+    private String businessKey;
+
+    /**
+     * 乐观锁版本号
+     */
+    @Version
+    @Column(name = "version")
+    private Long version;
+
+    /**
+     * 节点路径（JSONB，记录审批路径历史）
+     */
+    @Column(name = "node_path", columnDefinition = "jsonb")
+    private String nodePath;
+
+    /**
+     * 状态机上下文（JSONB，存储状态机扩展状态）
+     */
+    @Column(name = "state_machine_context", columnDefinition = "jsonb")
+    private String stateMachineContext;
 
     /**
      * 当前节点ID
