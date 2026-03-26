@@ -7,7 +7,7 @@ import com.adminplus.service.WorkflowStateMachineService;
 import com.adminplus.statemachine.enums.WorkflowEvent;
 import com.adminplus.statemachine.enums.WorkflowState;
 import com.adminplus.statemachine.persist.StateMachineEntity;
-import com.adminplus.statemachine.persist.StateMachineRepository;
+import com.adminplus.repository.StateMachineRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
