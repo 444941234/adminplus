@@ -327,6 +327,26 @@ export interface WorkflowNode {
   createTime: string
 }
 
+export interface WorkflowDefinitionReq {
+  definitionName: string
+  definitionKey: string
+  category?: string
+  description?: string
+  status: number
+  formConfig?: string
+}
+
+export interface WorkflowNodeReq {
+  nodeName: string
+  nodeCode: string
+  nodeOrder: number
+  approverType: 'user' | 'role' | 'dept' | 'leader'
+  approverId?: string
+  isCounterSign: boolean
+  autoPassSameUser: boolean
+  description?: string
+}
+
 export interface WorkflowApproval {
   id: string
   instanceId: string
