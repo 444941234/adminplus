@@ -9,20 +9,16 @@ import {
 
 const createMenu = (overrides: Partial<Menu>): Menu => ({
   id: overrides.id ?? 'M1',
-  menuName: overrides.menuName ?? '菜单',
-  name: overrides.name,
-  menuType: overrides.menuType ?? 1,
-  type: overrides.type,
   parentId: overrides.parentId ?? '0',
+  type: overrides.type ?? 1,
+  name: overrides.name ?? '菜单',
   path: overrides.path ?? '/system/user',
   component: overrides.component ?? 'system/User',
+  permKey: overrides.permKey ?? 'user:list',
   icon: overrides.icon ?? 'Users',
-  sort: overrides.sort ?? 0,
-  sortOrder: overrides.sortOrder,
+  sortOrder: overrides.sortOrder ?? 0,
   status: overrides.status ?? 1,
   visible: overrides.visible ?? 1,
-  permission: overrides.permission ?? 'user:list',
-  permKey: overrides.permKey,
   children: overrides.children
 })
 
@@ -40,13 +36,13 @@ describe('dynamic route helpers', () => {
     const menus: Menu[] = [
       createMenu({
         id: 'root',
-        menuType: 0,
+        type: 0,
         path: '/system',
         component: '',
         children: [
-          createMenu({ id: 'b', menuName: '菜单管理', path: '/system/menu', sort: 2, component: 'system/Menu' }),
-          createMenu({ id: 'a', menuName: '用户管理', path: '/system/user', sort: 1, component: 'system/User' }),
-          createMenu({ id: 'btn', menuType: 2, path: '', component: '', sort: 3, permission: 'user:add' })
+          createMenu({ id: 'b', name: '菜单管理', path: '/system/menu', sortOrder: 2, component: 'system/Menu' }),
+          createMenu({ id: 'a', name: '用户管理', path: '/system/user', sortOrder: 1, component: 'system/User' }),
+          createMenu({ id: 'btn', type: 2, path: '', component: '', sortOrder: 3, permKey: 'user:add' })
         ]
       })
     ]
@@ -57,7 +53,7 @@ describe('dynamic route helpers', () => {
   it('maps menus into layout child routes with permission metadata', () => {
     const resolveViewComponent = vi.fn((component?: string) => component ?? 'NotFound')
     const routes = buildDynamicChildRoutes(
-      [createMenu({ id: 'workflow', path: '/workflow/definitions', component: 'workflow/Definitions', permission: 'workflow:definition:list' })],
+      [createMenu({ id: 'workflow', path: '/workflow/definitions', component: 'workflow/Definitions', permKey: 'workflow:definition:list' })],
       resolveViewComponent
     )
 

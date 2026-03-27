@@ -49,21 +49,19 @@ export interface Role {
 // 菜单
 export interface Menu {
   id: string
-  menuName: string
-  name?: string
-  menuType: number
-  type?: number
   parentId: string
+  type: number        // 0=目录, 1=菜单, 2=按钮
+  name: string        // 菜单名称
   path: string
   component: string
+  permKey: string     // 权限标识
   icon: string
-  sort: number
-  sortOrder?: number
-  status: number
+  sortOrder: number   // 排序
   visible: number
-  permission: string
-  permKey?: string
+  status: number
   children?: Menu[]
+  createTime?: string
+  updateTime?: string
 }
 
 // 部门

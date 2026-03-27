@@ -117,17 +117,16 @@ const menuOptions = computed<MenuOption[]>(() => {
   const options: MenuOption[] = []
   const walk = (menuList: Menu[], level = 0) => {
     menuList.forEach((menu) => {
-      const type = menu.menuType ?? menu.type ?? 1
       options.push({
         id: menu.id,
-        label: menu.menuName ?? menu.name ?? '',
+        label: menu.name,
         level,
         disabled: false
       })
       if (menu.children?.length) {
         walk(menu.children, level + 1)
       }
-      if (type === 1 && !menu.children?.length) {
+      if (menu.type === 1 && !menu.children?.length) {
         options[options.length - 1].disabled = false
       }
     })

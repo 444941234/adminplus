@@ -30,12 +30,12 @@ describe('Menu API', () => {
       const mockMenuTree = [
         {
           id: '1',
-          menuName: '系统管理',
+          name: '系统管理',
           parentId: '0',
           path: '/system',
           children: [
-            { id: '2', menuName: '用户管理', parentId: '1', path: '/system/user', children: [] },
-            { id: '3', menuName: '角色管理', parentId: '1', path: '/system/role', children: [] }
+            { id: '2', name: '用户管理', parentId: '1', path: '/system/user', children: [] },
+            { id: '3', name: '角色管理', parentId: '1', path: '/system/role', children: [] }
           ]
         }
       ]
@@ -53,7 +53,7 @@ describe('Menu API', () => {
       const mockUserMenuTree = [
         {
           id: '1',
-          menuName: '首页',
+          name: '首页',
           parentId: '0',
           path: '/dashboard',
           children: []
@@ -72,11 +72,11 @@ describe('Menu API', () => {
     it('should fetch menu by id', async () => {
       const mockMenu = {
         id: '1',
-        menuName: '用户管理',
+        name: '用户管理',
         parentId: '0',
         path: '/system/user',
         component: 'system/User',
-        sort: 1,
+        sortOrder: 1,
         status: 1
       }
       vi.mocked(get).mockResolvedValue({ code: 200, message: 'success', data: mockMenu })
@@ -91,11 +91,11 @@ describe('Menu API', () => {
   describe('createMenu', () => {
     it('should create a new menu', async () => {
       const newMenu = {
-        menuName: '新菜单',
+        name: '新菜单',
         parentId: '0',
         path: '/new',
         component: 'New',
-        sort: 1,
+        sortOrder: 1,
         status: 1
       }
       const mockCreatedMenu = { id: '4', ...newMenu }
@@ -104,13 +104,13 @@ describe('Menu API', () => {
       const result = await createMenu(newMenu)
 
       expect(post).toHaveBeenCalledWith('/sys/menus', newMenu)
-      expect(result.data.menuName).toBe('新菜单')
+      expect(result.data.name).toBe('新菜单')
     })
   })
 
   describe('updateMenu', () => {
     it('should update menu information', async () => {
-      const updates = { menuName: '更新后的菜单', sort: 2 }
+      const updates = { name: '更新后的菜单', sortOrder: 2 }
       const mockUpdatedMenu = {
         id: '1',
         parentId: '0',
@@ -124,7 +124,7 @@ describe('Menu API', () => {
       const result = await updateMenu('1', updates)
 
       expect(put).toHaveBeenCalledWith('/sys/menus/1', updates)
-      expect(result.data.menuName).toBe('更新后的菜单')
+      expect(result.data.name).toBe('更新后的菜单')
     })
   })
 

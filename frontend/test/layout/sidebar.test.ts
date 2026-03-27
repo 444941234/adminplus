@@ -10,20 +10,16 @@ import {
 
 const createMenu = (overrides: Partial<Menu>): Menu => ({
   id: overrides.id ?? 'M1',
-  menuName: overrides.menuName ?? '菜单',
-  name: overrides.name,
-  menuType: overrides.menuType ?? 1,
-  type: overrides.type,
   parentId: overrides.parentId ?? '0',
+  type: overrides.type ?? 1,
+  name: overrides.name ?? '菜单',
   path: overrides.path ?? '/system/user',
   component: overrides.component ?? 'system/User',
+  permKey: overrides.permKey ?? 'user:list',
   icon: overrides.icon ?? 'Users',
-  sort: overrides.sort ?? 0,
-  sortOrder: overrides.sortOrder,
+  sortOrder: overrides.sortOrder ?? 0,
   status: overrides.status ?? 1,
   visible: overrides.visible ?? 1,
-  permission: overrides.permission ?? 'user:list',
-  permKey: overrides.permKey,
   children: overrides.children
 })
 
@@ -32,13 +28,13 @@ describe('sidebar helpers', () => {
     const tree = buildSidebarTree([
       createMenu({
         id: 'system',
-        menuType: 0,
+        type: 0,
         path: '/system',
         component: '',
         icon: 'Settings',
         children: [
-          createMenu({ id: 'user', menuName: '用户管理', path: '/system/user', sort: 2 }),
-          createMenu({ id: 'role', menuName: '角色管理', path: '/system/role', sort: 1, icon: 'Shield' })
+          createMenu({ id: 'user', name: '用户管理', path: '/system/user', sortOrder: 2 }),
+          createMenu({ id: 'role', name: '角色管理', path: '/system/role', sortOrder: 1, icon: 'Shield' })
         ]
       })
     ])
@@ -60,13 +56,13 @@ describe('sidebar helpers', () => {
     const items = flattenSidebarMenus([
       createMenu({
         id: 'workflow',
-        menuType: 0,
+        type: 0,
         path: '/workflow',
         component: '',
         children: [
-          createMenu({ id: 'definitions', path: '/workflow/definitions', sort: 2, icon: 'GitBranch' }),
-          createMenu({ id: 'pending', path: '/workflow/pending', sort: 1, icon: 'Clock3' }),
-          createMenu({ id: 'approve-btn', menuType: 2, path: '', component: '', permission: 'workflow:approve' })
+          createMenu({ id: 'definitions', path: '/workflow/definitions', sortOrder: 2, icon: 'GitBranch' }),
+          createMenu({ id: 'pending', path: '/workflow/pending', sortOrder: 1, icon: 'Clock3' }),
+          createMenu({ id: 'approve-btn', type: 2, path: '', component: '', permKey: 'workflow:approve' })
         ]
       })
     ])
@@ -81,7 +77,7 @@ describe('sidebar helpers', () => {
     const nodes = getSidebarTree([
       createMenu({
         id: 'analysis',
-        menuType: 0,
+        type: 0,
         path: '/analysis',
         component: '',
         children: [

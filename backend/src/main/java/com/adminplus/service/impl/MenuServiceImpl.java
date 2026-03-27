@@ -17,10 +17,13 @@ import com.adminplus.service.MenuService;
 import com.adminplus.utils.TreeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -84,6 +87,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "userMenus", allEntries = true)
     public MenuResp createMenu(MenuCreateReq req) {
         var menu = new MenuEntity();
         menu.setType(req.type());
@@ -118,6 +122,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "userMenus", allEntries = true)
     public MenuResp updateMenu(String id, MenuUpdateReq req) {
         var menu = menuRepository.findById(id)
                 .orElseThrow(() -> new BizException("菜单不存在"));
@@ -153,6 +158,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "userMenus", allEntries = true)
     public void deleteMenu(String id) {
         var menu = menuRepository.findById(id)
                 .orElseThrow(() -> new BizException("菜单不存在"));
@@ -170,6 +176,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "userMenus", allEntries = true)
     public void batchUpdateStatus(MenuBatchStatusReq req) {
         List<MenuEntity> menus = menuRepository.findAllById(req.ids());
 
@@ -189,6 +196,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "userMenus", allEntries = true)
     public void batchDelete(MenuBatchDeleteReq req) {
         List<MenuEntity> menus = menuRepository.findAllById(req.ids());
 
@@ -211,6 +219,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "userMenus", key = "#userId")
     public List<MenuResp> getUserMenuTree(String userId) {
         // 1. 查询用户的角色ID列表
         List<String> roleIds = userRoleRepository.findByUserId(userId).stream()
@@ -233,11 +242,15 @@ public class MenuServiceImpl implements MenuService {
         // 3. 查询所有菜单（包括父菜单），因为需要构建树形结构
         List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
 
+        // 使用 Map 优化查找性能
+        Map<String, MenuEntity> menuMap = allMenus.stream()
+                .collect(Collectors.toMap(MenuEntity::getId, Function.identity()));
+
         // 4. 获取用户可访问的菜单ID集合（包括父菜单）
         Set<String> accessibleMenuIds = new HashSet<>(menuIds);
         // 递归添加所有父菜单
         for (String menuId : menuIds) {
-            addParentMenus(allMenus, accessibleMenuIds, menuId);
+            addParentMenus(menuMap, accessibleMenuIds, menuId);
         }
 
         // 5. 过滤出用户可访问的菜单
@@ -254,23 +267,20 @@ public class MenuServiceImpl implements MenuService {
     }
 
     /**
-     * 递归添加父菜单到集合中
+     * 递归添加父菜单到集合中（优化版，使用 Map 查找）
      */
-    private void addParentMenus(List<MenuEntity> allMenus, Set<String> menuIds, String menuId) {
+    private void addParentMenus(Map<String, MenuEntity> menuMap, Set<String> menuIds, String menuId) {
         if (menuId == null || menuId.equals("0")) {
             return;
         }
 
-        MenuEntity menu = allMenus.stream()
-                .filter(m -> m.getId().equals(menuId))
-                .findFirst()
-                .orElse(null);
+        MenuEntity menu = menuMap.get(menuId);
 
         if (menu != null && menu.getParent() != null) {
             String parentId = menu.getParent().getId();
             if (parentId != null && !parentId.equals("0") && !menuIds.contains(parentId)) {
                 menuIds.add(parentId);
-                addParentMenus(allMenus, menuIds, parentId);
+                addParentMenus(menuMap, menuIds, parentId);
             }
         }
     }

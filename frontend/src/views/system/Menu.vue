@@ -90,11 +90,6 @@ const allSelected = computed(
   () => flattenedRows.value.length > 0 && flattenedRows.value.every((row) => selectedMenuIds.value.includes(row.id))
 )
 
-const getMenuName = (menu: Menu) => menu.menuName ?? menu.name ?? ''
-const getMenuType = (menu: Menu) => menu.menuType ?? menu.type ?? 1
-const getMenuPermKey = (menu: Menu) => menu.permission ?? menu.permKey ?? ''
-const getMenuSort = (menu: Menu) => menu.sort ?? menu.sortOrder ?? 0
-
 const resetForm = () => {
   Object.assign(form, {
     parentId: '0',
@@ -127,10 +122,10 @@ const expandAllMenus = (menuList: Menu[]) => {
 const matchesSearch = (menu: Menu, keyword: string) => {
   const normalized = keyword.toLowerCase()
   return [
-    getMenuName(menu),
+    menu.name,
     menu.path ?? '',
     menu.component ?? '',
-    getMenuPermKey(menu)
+    menu.permKey
   ].some((value) => value.toLowerCase().includes(normalized))
 }
 
@@ -180,7 +175,7 @@ const parentOptions = computed(() => {
       if (!isEdit.value || menu.id !== editId.value) {
         options.push({
           id: menu.id,
-          label: `${'　'.repeat(level)}${getMenuName(menu)}`
+          label: `${'　'.repeat(level)}${menu.name}`
         })
       }
       if (menu.children?.length) {
@@ -294,13 +289,13 @@ const handleEdit = async (id: string) => {
     const menu = res.data
     Object.assign(form, {
       parentId: menu.parentId || '0',
-      name: getMenuName(menu),
-      type: String(getMenuType(menu)),
+      name: menu.name,
+      type: String(menu.type),
       path: menu.path || '',
       component: menu.component || '',
-      permKey: getMenuPermKey(menu),
+      permKey: menu.permKey,
       icon: menu.icon || '',
-      sortOrder: getMenuSort(menu),
+      sortOrder: menu.sortOrder,
       visible: String(menu.visible ?? 1),
       status: String(menu.status ?? 1)
     })
@@ -479,7 +474,7 @@ onMounted(fetchData)
                   </button>
                   <span v-else class="w-5" />
                   <div>
-                    <p class="font-medium">{{ getMenuName(row.menu) }}</p>
+                    <p class="font-medium">{{ row.menu.name }}</p>
                     <p v-if="row.menu.icon" class="text-sm text-muted-foreground">{{ row.menu.icon }}</p>
                   </div>
                 </div>
@@ -487,21 +482,21 @@ onMounted(fetchData)
               <td class="p-4">
                 <Badge
                   :variant="
-                    getMenuType(row.menu) === 1
+                    row.menu.type === 1
                       ? 'default'
-                      : getMenuType(row.menu) === 2
+                      : row.menu.type === 2
                         ? 'secondary'
                         : 'outline'
                   "
                 >
-                  {{ typeLabelMap[getMenuType(row.menu)] }}
+                  {{ typeLabelMap[row.menu.type] }}
                 </Badge>
               </td>
               <td class="p-4">
                 <code class="rounded bg-muted px-2 py-0.5 text-sm">{{ row.menu.path || '-' }}</code>
               </td>
               <td class="p-4 text-muted-foreground">
-                {{ row.menu.component || getMenuPermKey(row.menu) || '-' }}
+                {{ row.menu.component || row.menu.permKey || '-' }}
               </td>
               <td class="p-4">
                 <Badge :variant="row.menu.visible === 1 ? 'secondary' : 'outline'">
@@ -513,14 +508,14 @@ onMounted(fetchData)
                   {{ row.menu.status === 1 ? '正常' : '禁用' }}
                 </Badge>
               </td>
-              <td class="p-4 text-muted-foreground">{{ getMenuSort(row.menu) }}</td>
+              <td class="p-4 text-muted-foreground">{{ row.menu.sortOrder }}</td>
               <td class="p-4">
                 <div class="flex gap-2">
                   <Button
-                    v-if="canAddMenu && getMenuType(row.menu) !== 3"
+                    v-if="canAddMenu && row.menu.type !== 3"
                     size="sm"
                     variant="ghost"
-                    @click="handleAdd(row.menu.id, getMenuType(row.menu) === 1 ? '2' : '3')"
+                    @click="handleAdd(row.menu.id, row.menu.type === 1 ? '2' : '3')"
                   >
                     <Plus class="h-4 w-4" />
                   </Button>
