@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
   Badge,
   Button,
@@ -7,46 +7,52 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Input,
-  Label,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-  Textarea
+  TableRow
 } from '@/components/ui'
-import { getEnabledWorkflowDefinitions, getWorkflowDefinitions, startWorkflow } from '@/api'
-import type { WorkflowDefinition } from '@/types'
+import { createWorkflowDraft, getEnabledWorkflowDefinitions, getWorkflowDefinition, getWorkflowDefinitions, startWorkflow } from '@/api'
+import WorkflowStartDialog from '@/components/workflow/WorkflowStartDialog.vue'
+import { useWorkflowForm } from '@/composables/workflow/useWorkflowForm'
+import type { WorkflowDefinition, WorkflowFormValues } from '@/types'
 import { toast } from 'vue-sonner'
 import { Play } from 'lucide-vue-next'
 import { useUserStore } from '@/stores/user'
+import { getWorkflowPermissionState } from '@/lib/page-permissions'
 
 const loading = ref(false)
 const dialogLoading = ref(false)
+const definitionLoading = ref(false)
 const definitions = ref<WorkflowDefinition[]>([])
+const selectedDefinition = ref<WorkflowDefinition | null>(null)
 const startDialogOpen = ref(false)
 const userStore = useUserStore()
+const {
+  formConfig,
+  formValues,
+  fieldErrors,
+  initForm,
+  validateForm,
+  buildSubmitPayload
+} = useWorkflowForm()
 
 const form = ref({
   definitionId: '',
   title: '',
-  businessData: '',
   remark: ''
 })
 
-const canCreateWorkflow = computed(() => userStore.hasPermission('workflow:create'))
+const permissionState = computed(() => getWorkflowPermissionState(userStore.hasPermission))
+const canCreateWorkflow = computed(() => permissionState.value.canStartWorkflow)
+const formModel = computed<WorkflowFormValues>({
+  get: () => formValues.value,
+  set: (value) => {
+    formValues.value = value
+  }
+})
 
 const formatDateTime = (value?: string | null) => {
   if (!value) return '-'
@@ -73,32 +79,66 @@ const fetchDefinitions = async () => {
   }
 }
 
-const openStartDialog = (definition?: WorkflowDefinition) => {
+const openStartDialog = async (definition?: WorkflowDefinition) => {
   form.value = {
     definitionId: definition?.id || '',
     title: definition ? `${definition.definitionName}申请` : '',
-    businessData: '',
     remark: ''
   }
+  selectedDefinition.value = definition || null
+  initForm(definition?.formConfig)
   startDialogOpen.value = true
+
+  if (definition?.id) {
+    await loadDefinitionDetail(definition.id)
+  }
 }
 
-const handleStartWorkflow = async () => {
+const loadDefinitionDetail = async (definitionId: string) => {
+  definitionLoading.value = true
+  dialogLoading.value = true
+  try {
+    const res = await getWorkflowDefinition(definitionId)
+    selectedDefinition.value = res.data
+    initForm(res.data.formConfig)
+    if (!form.value.title.trim()) {
+      form.value.title = `${res.data.definitionName}申请`
+    }
+  } catch (error) {
+    initForm()
+    const message = error instanceof Error ? error.message : '获取流程模板详情失败'
+    toast.error(message)
+  } finally {
+    definitionLoading.value = false
+    dialogLoading.value = false
+  }
+}
+
+const validateBeforeSubmit = () => {
   if (!form.value.definitionId) {
     toast.warning('请选择流程类型')
-    return
+    return false
   }
   if (!form.value.title.trim()) {
     toast.warning('请输入流程标题')
-    return
+    return false
   }
+  if (!validateForm()) {
+    toast.warning('请完善表单必填项')
+    return false
+  }
+  return true
+}
+
+const handleStartWorkflow = async () => {
+  if (!validateBeforeSubmit()) return
 
   dialogLoading.value = true
   try {
     await startWorkflow({
       definitionId: form.value.definitionId,
       title: form.value.title.trim(),
-      businessData: form.value.businessData.trim() || undefined,
+      formData: buildSubmitPayload().formData,
       remark: form.value.remark.trim() || undefined
     })
     toast.success('流程发起成功')
@@ -110,6 +150,39 @@ const handleStartWorkflow = async () => {
     dialogLoading.value = false
   }
 }
+
+const handleSaveDraft = async () => {
+  if (!permissionState.value.canDraftWorkflow) {
+    toast.warning('当前没有保存草稿权限')
+    return
+  }
+  if (!validateBeforeSubmit()) return
+
+  dialogLoading.value = true
+  try {
+    await createWorkflowDraft({
+      definitionId: form.value.definitionId,
+      title: form.value.title.trim(),
+      formData: buildSubmitPayload().formData,
+      remark: form.value.remark.trim() || undefined
+    })
+    toast.success('草稿已保存')
+    startDialogOpen.value = false
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '保存草稿失败'
+    toast.error(message)
+  } finally {
+    dialogLoading.value = false
+  }
+}
+
+watch(
+  () => form.value.definitionId,
+  async (definitionId, previousDefinitionId) => {
+    if (!startDialogOpen.value || !definitionId || definitionId === previousDefinitionId) return
+    await loadDefinitionDetail(definitionId)
+  }
+)
 
 onMounted(fetchDefinitions)
 </script>
@@ -174,47 +247,25 @@ onMounted(fetchDefinitions)
       </CardContent>
     </Card>
 
-    <Dialog v-model:open="startDialogOpen">
-      <DialogContent class="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>新建流程</DialogTitle>
-        </DialogHeader>
-        <div class="space-y-4">
-          <div class="space-y-2">
-            <Label>流程类型 <span class="text-muted-foreground text-xs">(必填)</span></Label>
-            <Select v-model="form.definitionId">
-              <SelectTrigger>
-                <SelectValue placeholder="请选择流程类型" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  v-for="definition in definitions.filter((item) => item.status === 1)"
-                  :key="definition.id"
-                  :value="definition.id"
-                >
-                  {{ definition.definitionName }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div class="space-y-2">
-            <Label>流程标题</Label>
-            <Input v-model="form.title" placeholder="例如：费用报销申请" />
-          </div>
-          <div class="space-y-2">
-            <Label>业务数据</Label>
-            <Textarea v-model="form.businessData" placeholder='可填 JSON，例如：{"amount": 1200, "reason": "差旅报销"}' />
-          </div>
-          <div class="space-y-2">
-            <Label>备注</Label>
-            <Textarea v-model="form.remark" placeholder="补充说明" />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" @click="startDialogOpen = false">取消</Button>
-          <Button :disabled="dialogLoading" @click="handleStartWorkflow">提交</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <WorkflowStartDialog
+      :open="startDialogOpen"
+      mode="create"
+      :definitions="definitions"
+      :definition-id="form.definitionId"
+      :title="form.title"
+      :remark="form.remark"
+      :form-config="selectedDefinition?.formConfig || formConfig"
+      :form-values="formModel"
+      :field-errors="fieldErrors"
+      :loading="dialogLoading"
+      :definition-loading="definitionLoading"
+      @update:open="(value) => { startDialogOpen = value }"
+      @update:definition-id="(value) => { form.definitionId = value }"
+      @update:title="(value) => { form.title = value }"
+      @update:remark="(value) => { form.remark = value }"
+      @update:form-values="(value) => { formValues = value }"
+      @save-draft="handleSaveDraft"
+      @submit="handleStartWorkflow"
+    />
   </div>
 </template>

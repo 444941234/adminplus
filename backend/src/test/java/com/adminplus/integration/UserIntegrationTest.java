@@ -12,8 +12,8 @@ import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.repository.UserRoleRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,8 +33,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author AdminPlus
  * @since 2026-03-25
  */
-@DisplayName("User Integration Tests")
-@Disabled("Integration tests require PostgreSQL on localhost:5433")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
+
 class UserIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -126,11 +127,13 @@ class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("User CRUD Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class UserCrudTests {
 
         @Test
-        @DisplayName("should create user successfully")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void createUser_WithValidData_ShouldSucceed() throws Exception {
             UserCreateReq req = new UserCreateReq(
                     "newuser",
@@ -155,7 +158,8 @@ class UserIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("should fail to create user with existing username")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void createUser_WithExistingUsername_ShouldFail() throws Exception {
             UserCreateReq req = new UserCreateReq(
                     "testuser", // Existing username
@@ -172,7 +176,8 @@ class UserIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("should get user by ID")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void getUserById_WithValidId_ShouldReturnUser() throws Exception {
             mockMvc.perform(withAuth(get("/v1/sys/users/" + testUser.getId()), adminToken))
                     .andExpect(status().isOk())
@@ -181,7 +186,8 @@ class UserIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("should update user successfully")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void updateUser_WithValidData_ShouldSucceed() throws Exception {
             UserUpdateReq req = new UserUpdateReq(
                     "Updated Nickname",
@@ -205,7 +211,8 @@ class UserIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("should delete user successfully")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void deleteUser_WithValidId_ShouldSucceed() throws Exception {
             mockMvc.perform(withAuth(delete("/v1/sys/users/" + testUser.getId()), adminToken))
                     .andExpect(status().isOk())
@@ -218,11 +225,13 @@ class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("User Status Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class UserStatusTests {
 
         @Test
-        @DisplayName("should update user status successfully")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void updateUserStatus_ShouldSucceed() throws Exception {
             mockMvc.perform(withAuth(put("/v1/sys/users/" + testUser.getId() + "/status")
                             .param("status", "0"), adminToken))
@@ -236,11 +245,13 @@ class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("Password Reset Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class PasswordResetTests {
 
         @Test
-        @DisplayName("should reset password successfully")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void resetPassword_WithValidData_ShouldSucceed() throws Exception {
             String newPassword = "NewPassword@123";
 
@@ -256,11 +267,13 @@ class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("Role Assignment Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class RoleAssignmentTests {
 
         @Test
-        @DisplayName("should assign roles to user successfully")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void assignRoles_ShouldSucceed() throws Exception {
             List<String> roleIds = List.of(adminRole.getId(), testRole.getId());
 
@@ -276,7 +289,8 @@ class UserIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("should get user role IDs")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void getUserRoleIds_ShouldReturnRoleIds() throws Exception {
             mockMvc.perform(withAuth(get("/v1/sys/users/" + testUser.getId() + "/roles"), adminToken))
                     .andExpect(status().isOk())
@@ -286,18 +300,21 @@ class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("Authorization Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class AuthorizationTests {
 
         @Test
-        @DisplayName("should fail without authentication")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void withoutAuth_ShouldFail() throws Exception {
             mockMvc.perform(get("/v1/sys/users"))
                     .andExpect(status().isUnauthorized());
         }
 
         @Test
-        @DisplayName("should fail without required permission")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void withoutPermission_ShouldFail() throws Exception {
             // Create user without user:query permission
             String userToken = generateToken(testUser.getId(), testUser.getUsername(), new String[]{"other:permission"});
@@ -308,11 +325,13 @@ class UserIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("User List Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class UserListTests {
 
         @Test
-        @DisplayName("should return paginated user list")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void getUserList_ShouldReturnPaginatedList() throws Exception {
             mockMvc.perform(withAuth(get("/v1/sys/users")
                             .param("page", "1")
@@ -324,7 +343,8 @@ class UserIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("should filter users by keyword")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void getUserList_WithKeyword_ShouldFilter() throws Exception {
             mockMvc.perform(withAuth(get("/v1/sys/users")
                             .param("keyword", "test"), adminToken))

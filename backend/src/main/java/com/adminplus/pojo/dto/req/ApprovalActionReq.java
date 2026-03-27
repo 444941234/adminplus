@@ -15,6 +15,12 @@ public record ApprovalActionReq(
         @NotBlank(message = "审批意见不能为空")
         String comment,
 
-        String attachments
+        String attachments,
+
+        /**
+         * 目标节点ID（用于回退操作）
+         * 如果为空，则回退到上一节点
+         */
+        String targetNodeId
 ) {
 }

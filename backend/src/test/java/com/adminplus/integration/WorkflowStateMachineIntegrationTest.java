@@ -9,8 +9,8 @@ import com.adminplus.statemachine.enums.WorkflowState;
 import com.adminplus.statemachine.persist.StateMachineEntity;
 import com.adminplus.repository.StateMachineRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +40,9 @@ import static org.assertj.core.api.Assertions.*;
  * @author AdminPlus
  * @since 2026-03-26
  */
-@DisplayName("Workflow State Machine Integration Tests")
-@Disabled("Integration tests require PostgreSQL on localhost:5433")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
+
 @TestPropertySource(properties = {
         "spring.statemachine.enabled=true"
 })
@@ -99,11 +100,13 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("State Persistence Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class StatePersistenceTests {
 
         @Test
-        @DisplayName("Should persist state machine context to database")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldPersistStateMachineContext() {
             // Create workflow definition and instance
             WorkflowDefinitionEntity definition = createTestDefinition("Test Workflow", "test_wf");
@@ -129,7 +132,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should recover state machine from database")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldRecoverStateMachineFromDatabase() {
             // Create workflow
             WorkflowDefinitionEntity definition = createTestDefinition("Recovery Test", "recovery_wf");
@@ -152,7 +156,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should update extended state on node transitions")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldUpdateExtendedStateOnTransitions() {
             // Create multi-node workflow
             WorkflowDefinitionEntity definition = createTestDefinition("Extended State Test", "extended_wf");
@@ -181,7 +186,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should handle multiple workflow instances independently")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldHandleMultipleInstancesIndependently() {
             // Create two workflows
             WorkflowDefinitionEntity definition = createTestDefinition("Multi Instance Test", "multi_wf");
@@ -217,11 +223,13 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("State Transition Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class StateTransitionTests {
 
         @Test
-        @DisplayName("Should transition from DRAFT to RUNNING on SUBMIT")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldTransitionDraftToRunningOnSubmit() {
             // Create workflow
             WorkflowDefinitionEntity definition = createTestDefinition("Transition Test", "transition_wf");
@@ -249,7 +257,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should transition from RUNNING to APPROVED on final APPROVE")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldTransitionRunningToApprovedOnFinalApprove() {
             // Create single-node workflow
             WorkflowDefinitionEntity definition = createTestDefinition("Approve Test", "approve_wf");
@@ -282,7 +291,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should transition from RUNNING to REJECTED on REJECT")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldTransitionRunningToRejectedOnReject() {
             // Create workflow
             WorkflowDefinitionEntity definition = createTestDefinition("Reject Test", "reject_wf");
@@ -303,7 +313,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should transition from RUNNING to CANCELLED on CANCEL")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldTransitionRunningToCancelledOnCancel() {
             // Create workflow
             WorkflowDefinitionEntity definition = createTestDefinition("Cancel Test", "cancel_wf");
@@ -324,7 +335,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should stay in RUNNING on intermediate APPROVE")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldStayInRunningOnIntermediateApprove() {
             // Create multi-node workflow
             WorkflowDefinitionEntity definition = createTestDefinition("Multi Node Test", "multinode_wf");
@@ -359,11 +371,13 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("Rollback Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class RollbackTests {
 
         @Test
-        @DisplayName("Should rollback to previous node on ROLLBACK event")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldRollbackToPreviousNode() {
             // Create multi-node workflow
             WorkflowDefinitionEntity definition = createTestDefinition("Rollback Test", "rollback_wf");
@@ -415,7 +429,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should rollback to DRAFT from first node")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldRollbackToDraftFromFirstNode() {
             // Create workflow
             WorkflowDefinitionEntity definition = createTestDefinition("Rollback Draft Test", "rollback_draft_wf");
@@ -449,7 +464,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should track rollback history in extended state")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldTrackRollbackHistory() {
             // Create workflow
             WorkflowDefinitionEntity definition = createTestDefinition("History Test", "history_wf");
@@ -501,11 +517,13 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("Service Integration Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class ServiceIntegrationTests {
 
         @Test
-        @DisplayName("Should approve workflow through service")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldApproveThroughService() {
             // This test skeleton will be implemented when service is fully integrated
             // For now, verify service bean exists
@@ -513,21 +531,24 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("Should reject workflow through service")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldRejectThroughService() {
             // This test skeleton will be implemented when service is fully integrated
             assertThat(stateMachineService).isNotNull();
         }
 
         @Test
-        @DisplayName("Should cancel workflow through service")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldCancelThroughService() {
             // This test skeleton will be implemented when service is fully integrated
             assertThat(stateMachineService).isNotNull();
         }
 
         @Test
-        @DisplayName("Should rollback workflow through service")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldRollbackThroughService() {
             // This test skeleton will be implemented when service is fully integrated
             assertThat(stateMachineService).isNotNull();

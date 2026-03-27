@@ -249,12 +249,25 @@ public class DataInitializationRunner implements CommandLineRunner {
         menuData.add(new Object[]{"M41", "M4", 1, "流程模板", "/workflow/definitions", "workflow/WorkflowCenter", "workflow:definition:list", "GitBranch", 1, 1, 1});
         menuData.add(new Object[]{"M42", "M4", 1, "我的流程", "/workflow/my", "workflow/MyWorkflow", "workflow:instance:list", "Workflow", 2, 1, 1});
         menuData.add(new Object[]{"M43", "M4", 1, "待我审批", "/workflow/pending", "workflow/PendingApproval", "workflow:pending:list", "Clock3", 3, 1, 1});
+        menuData.add(new Object[]{"M44", "M4", 1, "流程设计", "/workflow/designer", "workflow/WorkflowDesigner", "workflow:design", "Settings", 4, 1, 1});
+        menuData.add(new Object[]{"M45", "M4", 1, "抄送我的", "/workflow/cc", "workflow/MyCc", "workflow:cc:list", "Message", 5, 1, 1});
+        menuData.add(new Object[]{"M46", "M4", 1, "催办中心", "/workflow/urge", "workflow/UrgeCenter", "workflow:urge:list", "Bell", 6, 1, 1});
 
         // 工作流按钮权限
-        menuData.add(new Object[]{"M411", "M41", 2, "发起流程", null, null, "workflow:create", null, 1, 0, 1});
-        menuData.add(new Object[]{"M412", "M41", 2, "更新流程定义", null, null, "workflow:update", null, 2, 0, 1});
-        menuData.add(new Object[]{"M413", "M41", 2, "删除流程定义", null, null, "workflow:delete", null, 3, 0, 1});
-        menuData.add(new Object[]{"M431", "M43", 2, "审批流程", null, null, "workflow:approve", null, 1, 0, 1});
+        menuData.add(new Object[]{"M411", "M41", 2, "发起流程", null, null, "workflow:start", null, 1, 0, 1});
+        menuData.add(new Object[]{"M414", "M41", 2, "保存草稿", null, null, "workflow:draft", null, 2, 0, 1});
+        menuData.add(new Object[]{"M412", "M41", 2, "新增流程定义", null, null, "workflow:definition:create", null, 3, 0, 1});
+        menuData.add(new Object[]{"M415", "M41", 2, "更新流程定义", null, null, "workflow:definition:update", null, 4, 0, 1});
+        menuData.add(new Object[]{"M413", "M41", 2, "删除流程定义", null, null, "workflow:definition:delete", null, 5, 0, 1});
+        menuData.add(new Object[]{"M421", "M42", 2, "催办流程", null, null, "workflow:urge", null, 1, 0, 1});
+        menuData.add(new Object[]{"M422", "M42", 2, "撤回流程", null, null, "workflow:withdraw", null, 2, 0, 1});
+        menuData.add(new Object[]{"M423", "M42", 2, "取消流程", null, null, "workflow:cancel", null, 3, 0, 1});
+        menuData.add(new Object[]{"M431", "M43", 2, "审批通过", null, null, "workflow:approve", null, 1, 0, 1});
+        menuData.add(new Object[]{"M432", "M43", 2, "审批驳回", null, null, "workflow:reject", null, 2, 0, 1});
+        menuData.add(new Object[]{"M433", "M43", 2, "回退流程", null, null, "workflow:rollback", null, 3, 0, 1});
+        menuData.add(new Object[]{"M434", "M43", 2, "加签转办", null, null, "workflow:add-sign", null, 4, 0, 1});
+        menuData.add(new Object[]{"M451", "M45", 2, "抄送已读", null, null, "workflow:cc:read", null, 1, 0, 1});
+        menuData.add(new Object[]{"M461", "M46", 2, "催办已读", null, null, "workflow:urge:read", null, 1, 0, 1});
 
         // 创建所有菜单
         List<MenuEntity> menus = menuData.stream()
@@ -391,7 +404,9 @@ public class DataInitializationRunner implements CommandLineRunner {
         if (managerRole != null) {
             List<String> managerMenuNames = Arrays.asList("首页", "用户管理", "新增用户", "编辑用户", "删除用户", "分配角色", "重置密码",
                     "部门管理", "新增部门", "编辑部门", "删除部门", "查询部门", "部门列表",
-                    "工作流管理", "流程模板", "我的流程", "待我审批", "发起流程", "审批流程",
+                    "工作流管理", "流程模板", "我的流程", "待我审批", "抄送我的", "催办中心",
+                    "发起流程", "保存草稿", "催办流程", "撤回流程", "取消流程",
+                    "审批通过", "审批驳回", "回退流程", "加签转办", "抄送已读", "催办已读",
                     "文件管理", "上传文件", "删除文件");
             for (String menuName : managerMenuNames) {
                 MenuEntity menu = menuMap.get(menuName);
@@ -406,7 +421,9 @@ public class DataInitializationRunner implements CommandLineRunner {
         if (developerRole != null) {
             List<String> developerMenuNames = Arrays.asList("首页", "用户管理", "角色管理", "菜单管理", "字典管理", "参数配置",
                     "字典项列表", "新增字典项", "编辑字典项", "删除字典项",
-                    "数据统计", "报表管理", "工作流管理", "流程模板", "我的流程", "发起流程",
+                    "数据统计", "报表管理", "工作流管理", "流程模板", "流程设计", "我的流程", "抄送我的", "催办中心",
+                    "发起流程", "保存草稿", "新增流程定义", "更新流程定义", "删除流程定义",
+                    "催办流程", "撤回流程", "取消流程", "抄送已读", "催办已读",
                     "文件管理", "上传文件", "删除文件");
             for (String menuName : developerMenuNames) {
                 MenuEntity menu = menuMap.get(menuName);
@@ -420,7 +437,8 @@ public class DataInitializationRunner implements CommandLineRunner {
         RoleEntity operatorRole = roleMap.get("ROLE_OPERATOR");
         if (operatorRole != null) {
             List<String> operatorMenuNames = Arrays.asList("首页", "数据统计", "报表管理",
-                    "工作流管理", "流程模板", "我的流程", "发起流程",
+                    "工作流管理", "流程模板", "我的流程", "抄送我的", "催办中心",
+                    "发起流程", "保存草稿", "催办流程", "撤回流程", "取消流程", "抄送已读", "催办已读",
                     "文件管理", "上传文件", "删除文件");
             for (String menuName : operatorMenuNames) {
                 MenuEntity menu = menuMap.get(menuName);
@@ -433,7 +451,8 @@ public class DataInitializationRunner implements CommandLineRunner {
         // 普通用户权限
         RoleEntity userRole = roleMap.get("ROLE_USER");
         if (userRole != null) {
-            List<String> userMenuNames = Arrays.asList("首页", "工作流管理", "流程模板", "我的流程", "发起流程",
+            List<String> userMenuNames = Arrays.asList("首页", "工作流管理", "流程模板", "我的流程", "抄送我的", "催办中心",
+                    "发起流程", "保存草稿", "催办流程", "撤回流程", "取消流程", "抄送已读", "催办已读",
                     "文件管理", "上传文件", "删除文件");
             for (String menuName : userMenuNames) {
                 MenuEntity menu = menuMap.get(menuName);
@@ -483,13 +502,25 @@ public class DataInitializationRunner implements CommandLineRunner {
         List<Object[]> workflowMenuData = Arrays.asList(
                 new Object[]{"M4", null, 0, "工作流管理", "/workflow", null, null, "Workflow", 3, 1, 1},
                 new Object[]{"M41", "M4", 1, "流程模板", "/workflow/definitions", "workflow/WorkflowCenter", "workflow:definition:list", "GitBranch", 1, 1, 1},
-                new Object[]{"M44", "M4", 1, "流程设计", "/workflow/designer", "workflow/WorkflowDesigner", "workflow:design", "Settings", 4, 1, 1},
                 new Object[]{"M42", "M4", 1, "我的流程", "/workflow/my", "workflow/MyWorkflow", "workflow:instance:list", "Workflow", 2, 1, 1},
                 new Object[]{"M43", "M4", 1, "待我审批", "/workflow/pending", "workflow/PendingApproval", "workflow:pending:list", "Clock3", 3, 1, 1},
-                new Object[]{"M411", "M41", 2, "发起流程", null, null, "workflow:create", null, 1, 0, 1},
-                new Object[]{"M412", "M41", 2, "更新流程定义", null, null, "workflow:update", null, 2, 0, 1},
-                new Object[]{"M413", "M41", 2, "删除流程定义", null, null, "workflow:delete", null, 3, 0, 1},
-                new Object[]{"M431", "M43", 2, "审批流程", null, null, "workflow:approve", null, 1, 0, 1}
+                new Object[]{"M44", "M4", 1, "流程设计", "/workflow/designer", "workflow/WorkflowDesigner", "workflow:design", "Settings", 4, 1, 1},
+                new Object[]{"M45", "M4", 1, "抄送我的", "/workflow/cc", "workflow/MyCc", "workflow:cc:list", "Message", 5, 1, 1},
+                new Object[]{"M46", "M4", 1, "催办中心", "/workflow/urge", "workflow/UrgeCenter", "workflow:urge:list", "Bell", 6, 1, 1},
+                new Object[]{"M411", "M41", 2, "发起流程", null, null, "workflow:start", null, 1, 0, 1},
+                new Object[]{"M414", "M41", 2, "保存草稿", null, null, "workflow:draft", null, 2, 0, 1},
+                new Object[]{"M412", "M41", 2, "新增流程定义", null, null, "workflow:definition:create", null, 3, 0, 1},
+                new Object[]{"M415", "M41", 2, "更新流程定义", null, null, "workflow:definition:update", null, 4, 0, 1},
+                new Object[]{"M413", "M41", 2, "删除流程定义", null, null, "workflow:definition:delete", null, 5, 0, 1},
+                new Object[]{"M421", "M42", 2, "催办流程", null, null, "workflow:urge", null, 1, 0, 1},
+                new Object[]{"M422", "M42", 2, "撤回流程", null, null, "workflow:withdraw", null, 2, 0, 1},
+                new Object[]{"M423", "M42", 2, "取消流程", null, null, "workflow:cancel", null, 3, 0, 1},
+                new Object[]{"M431", "M43", 2, "审批通过", null, null, "workflow:approve", null, 1, 0, 1},
+                new Object[]{"M432", "M43", 2, "审批驳回", null, null, "workflow:reject", null, 2, 0, 1},
+                new Object[]{"M433", "M43", 2, "回退流程", null, null, "workflow:rollback", null, 3, 0, 1},
+                new Object[]{"M434", "M43", 2, "加签转办", null, null, "workflow:add-sign", null, 4, 0, 1},
+                new Object[]{"M451", "M45", 2, "抄送已读", null, null, "workflow:cc:read", null, 1, 0, 1},
+                new Object[]{"M461", "M46", 2, "催办已读", null, null, "workflow:urge:read", null, 1, 0, 1}
         );
 
         Map<String, MenuEntity> resolvedMenuMap = new HashMap<>();
@@ -679,6 +710,8 @@ public class DataInitializationRunner implements CommandLineRunner {
             case "M42" -> "我的流程";
             case "M43" -> "待我审批";
             case "M44" -> "流程设计";
+            case "M45" -> "抄送我的";
+            case "M46" -> "催办中心";
             case "M28" -> "文件管理";
             case "M24" -> "字典管理";
             default -> tempId;
@@ -908,10 +941,34 @@ public class DataInitializationRunner implements CommandLineRunner {
 
         // 创建示例流程定义
         List<WorkflowDefinitionEntity> definitions = Arrays.asList(
-                createWorkflowDefinition("费用报销流程", "expense-reimbursement", "财务", "用于员工费用报销申请审批"),
-                createWorkflowDefinition("请假申请流程", "leave-request", "人事", "用于员工请假申请审批"),
-                createWorkflowDefinition("采购申请流程", "purchase-request", "采购", "用于物品采购申请审批"),
-                createWorkflowDefinition("合同审批流程", "contract-approval", "法务", "用于合同签订前的审批流程")
+                createWorkflowDefinition("费用报销流程", "expense-reimbursement", "财务", "用于员工费用报销申请审批", """
+                        {"sections":[{"key":"basic","title":"报销信息","fields":[
+                        {"field":"expenseType","label":"报销类型","component":"select","required":true,"options":[{"label":"差旅","value":"travel"},{"label":"办公","value":"office"},{"label":"招待","value":"entertain"}]},
+                        {"field":"amount","label":"报销金额","component":"number","required":true},
+                        {"field":"expenseDate","label":"发生日期","component":"date","required":true},
+                        {"field":"reason","label":"报销说明","component":"textarea","required":true}
+                        ]}]}"""),
+                createWorkflowDefinition("请假申请流程", "leave-request", "人事", "用于员工请假申请审批", """
+                        {"sections":[{"key":"leave","title":"请假信息","fields":[
+                        {"field":"leaveType","label":"请假类型","component":"select","required":true,"options":[{"label":"事假","value":"personal"},{"label":"年假","value":"annual"},{"label":"病假","value":"sick"}]},
+                        {"field":"days","label":"请假天数","component":"number","required":true},
+                        {"field":"startDate","label":"开始日期","component":"date","required":true},
+                        {"field":"reason","label":"请假原因","component":"textarea","required":true}
+                        ]}]}"""),
+                createWorkflowDefinition("采购申请流程", "purchase-request", "采购", "用于物品采购申请审批", """
+                        {"sections":[{"key":"purchase","title":"采购信息","fields":[
+                        {"field":"itemName","label":"物品名称","component":"input","required":true},
+                        {"field":"quantity","label":"数量","component":"number","required":true},
+                        {"field":"budget","label":"预算金额","component":"number","required":true},
+                        {"field":"reason","label":"采购说明","component":"textarea","required":true}
+                        ]}]}"""),
+                createWorkflowDefinition("合同审批流程", "contract-approval", "法务", "用于合同签订前的审批流程", """
+                        {"sections":[{"key":"contract","title":"合同信息","fields":[
+                        {"field":"contractName","label":"合同名称","component":"input","required":true},
+                        {"field":"partner","label":"合作方","component":"input","required":true},
+                        {"field":"contractAmount","label":"合同金额","component":"number","required":true},
+                        {"field":"summary","label":"合同摘要","component":"textarea","required":true}
+                        ]}]}""")
         );
 
         definitions = workflowDefinitionRepository.saveAll(definitions);
@@ -976,13 +1033,15 @@ public class DataInitializationRunner implements CommandLineRunner {
             String definitionName,
             String definitionKey,
             String category,
-            String description
+            String description,
+            String formConfig
     ) {
         WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
         definition.setDefinitionName(definitionName);
         definition.setDefinitionKey(definitionKey);
         definition.setCategory(category);
         definition.setDescription(description);
+        definition.setFormConfig(formConfig);
         definition.setVersion(1);
         definition.setStatus(1); // 启用状态
         definition.setCreateUser("system");

@@ -93,4 +93,16 @@ public class WorkflowNodeEntity extends BaseEntity {
      */
     @Column(name = "next_nodes", columnDefinition = "TEXT")
     private String nextNodes;
+
+    /**
+     * 抄送人ID列表（JSON字符串，存储用户ID数组）
+     */
+    @Column(name = "cc_user_ids", columnDefinition = "TEXT")
+    private String ccUserIds;
+
+    /**
+     * 抄送角色ID列表（JSON字符串，存储角色ID数组）
+     */
+    @Column(name = "cc_role_ids", columnDefinition = "TEXT")
+    private String ccRoleIds;
 }

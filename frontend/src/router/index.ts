@@ -37,6 +37,18 @@ const staticRoutes: RouteRecordRaw[] = [
         name: 'WorkflowDetail',
         component: () => import('@/views/workflow/WorkflowDetail.vue'),
         meta: { title: '流程详情' }
+      },
+      {
+        path: 'workflow/cc',
+        name: 'WorkflowCc',
+        component: () => import('@/views/workflow/MyCc.vue'),
+        meta: { title: '抄送我的' }
+      },
+      {
+        path: 'workflow/urge',
+        name: 'WorkflowUrge',
+        component: () => import('@/views/workflow/UrgeCenter.vue'),
+        meta: { title: '催办中心' }
       }
     ]
   },

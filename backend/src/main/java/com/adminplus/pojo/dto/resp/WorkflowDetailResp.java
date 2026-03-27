@@ -1,5 +1,6 @@
 package com.adminplus.pojo.dto.resp;
 
+import java.util.Map;
 import java.util.List;
 
 /**
@@ -15,6 +16,11 @@ public record WorkflowDetailResp(
         // 当前节点信息
         WorkflowNodeResp currentNode,
         // 当前用户是否可以审批
-        Boolean canApprove
+        Boolean canApprove,
+        String formConfig,
+        Map<String, Object> formData,
+        List<WorkflowCcResp> ccRecords,
+        List<WorkflowAddSignResp> addSignRecords,
+        WorkflowOperationPermissionsResp operationPermissions
 ) {
 }

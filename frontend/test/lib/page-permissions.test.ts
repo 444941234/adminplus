@@ -22,19 +22,13 @@ describe('page permission helpers', () => {
   })
 
   it('combines workflow detail visibility with approval permission', () => {
-    expect(
-      getWorkflowPermissionState(createPermissionChecker(['workflow:approve']), true)
-    ).toEqual({
-      canApprovePendingActions: true,
-      canApproveDetail: true
-    })
+    const resultWithApprove = getWorkflowPermissionState(createPermissionChecker(['workflow:approve']), true)
+    expect(resultWithApprove.canApprovePendingActions).toBe(true)
+    expect(resultWithApprove.canApproveDetail).toBe(true)
 
-    expect(
-      getWorkflowPermissionState(createPermissionChecker(['workflow:approve']), false)
-    ).toEqual({
-      canApprovePendingActions: true,
-      canApproveDetail: false
-    })
+    const resultWithoutApprove = getWorkflowPermissionState(createPermissionChecker(['workflow:approve']), false)
+    expect(resultWithoutApprove.canApprovePendingActions).toBe(true)
+    expect(resultWithoutApprove.canApproveDetail).toBe(false)
   })
 
   it('returns user page action capabilities from permission keys', () => {

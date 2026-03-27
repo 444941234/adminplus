@@ -1,23 +1,29 @@
 import { get, post, put, del } from '@/utils/request'
 import type {
+  WorkflowAddSign,
   WorkflowApproval,
+  WorkflowCc,
   WorkflowDefinition,
   WorkflowDefinitionReq,
   WorkflowDetail,
+  WorkflowDraftDetail,
+  WorkflowFormValues,
   WorkflowInstance,
   WorkflowNode,
-  WorkflowNodeReq
+  WorkflowNodeReq,
+  WorkflowUrge
 } from '@/types'
 
 interface ApprovalPayload {
   comment: string
   attachments?: string
+  targetNodeId?: string
 }
 
-interface StartWorkflowPayload {
+export interface StartWorkflowPayload {
   definitionId: string
   title: string
-  businessData?: string
+  formData?: WorkflowFormValues
   remark?: string
 }
 
@@ -57,8 +63,20 @@ export function createWorkflowDraft(data: StartWorkflowPayload) {
   return post<WorkflowInstance>('/workflow/instances/draft', data)
 }
 
-export function submitWorkflow(instanceId: string) {
-  return post<WorkflowInstance>(`/workflow/instances/${instanceId}/submit`)
+export function getWorkflowDraftDetail(instanceId: string) {
+  return get<WorkflowDraftDetail>(`/workflow/instances/${instanceId}/draft`)
+}
+
+export function updateWorkflowDraft(instanceId: string, data: StartWorkflowPayload) {
+  return put<WorkflowInstance>(`/workflow/instances/${instanceId}/draft`, data)
+}
+
+export function submitWorkflow(instanceId: string, data: StartWorkflowPayload) {
+  return post<WorkflowInstance>(`/workflow/instances/${instanceId}/submit`, data)
+}
+
+export function deleteWorkflowDraft(instanceId: string) {
+  return del<void>(`/workflow/instances/${instanceId}/draft`)
 }
 
 export function approveWorkflow(instanceId: string, data: ApprovalPayload) {
@@ -75,6 +93,14 @@ export function cancelWorkflow(instanceId: string) {
 
 export function withdrawWorkflow(instanceId: string) {
   return post<void>(`/workflow/instances/${instanceId}/withdraw`)
+}
+
+export function rollbackWorkflow(instanceId: string, data: ApprovalPayload) {
+  return post<WorkflowInstance>(`/workflow/instances/${instanceId}/rollback`, data)
+}
+
+export function getRollbackableNodes(instanceId: string) {
+  return get<WorkflowNode[]>(`/workflow/instances/${instanceId}/rollbackable-nodes`)
 }
 
 // ========== Workflow Definition Management ==========
@@ -111,4 +137,74 @@ export function updateWorkflowNode(nodeId: string, data: WorkflowNodeReq) {
 
 export function deleteWorkflowNode(nodeId: string) {
   return del<void>(`/workflow/definitions/nodes/${nodeId}`)
+}
+
+// ========== Workflow CC (Carbon Copy) Management ==========
+
+export function getMyCcRecords() {
+  return get<WorkflowCc[]>('/workflow/cc/my')
+}
+
+export function getMyUnreadCcRecords() {
+  return get<WorkflowCc[]>('/workflow/cc/my/unread')
+}
+
+export function countMyUnreadCcRecords() {
+  return get<number>('/workflow/cc/my/unread/count')
+}
+
+export function getInstanceCcRecords(instanceId: string) {
+  return get<WorkflowCc[]>(`/workflow/cc/instance/${instanceId}`)
+}
+
+export function markCcAsRead(ccId: string) {
+  return put<void>(`/workflow/cc/${ccId}/read`)
+}
+
+export function markCcAsReadBatch(ccIds: string[]) {
+  return put<void>('/workflow/cc/read-batch', ccIds)
+}
+
+// ========== Workflow Urge Management ==========
+
+export function urgeWorkflow(instanceId: string, data: { content: string; targetApproverId?: string }) {
+  return post<void>(`/workflow/urge/${instanceId}`, data)
+}
+
+export function getReceivedUrgeRecords() {
+  return get<WorkflowUrge[]>('/workflow/urge/received')
+}
+
+export function getSentUrgeRecords() {
+  return get<WorkflowUrge[]>('/workflow/urge/sent')
+}
+
+export function getUnreadUrgeRecords() {
+  return get<WorkflowUrge[]>('/workflow/urge/unread')
+}
+
+export function countUnreadUrgeRecords() {
+  return get<number>('/workflow/urge/unread/count')
+}
+
+export function getInstanceUrgeRecords(instanceId: string) {
+  return get<WorkflowUrge[]>(`/workflow/urge/instance/${instanceId}`)
+}
+
+export function markUrgeAsRead(urgeId: string) {
+  return put<void>(`/workflow/urge/${urgeId}/read`)
+}
+
+export function markUrgeAsReadBatch(urgeIds: string[]) {
+  return put<void>('/workflow/urge/read-batch', urgeIds)
+}
+
+// ========== Workflow Add Sign Management ==========
+
+export function addSignWorkflow(instanceId: string, data: { addUserId: string; addType: 'BEFORE' | 'AFTER' | 'TRANSFER'; reason: string }) {
+  return post<WorkflowAddSign>(`/workflow/instances/${instanceId}/add-sign`, data)
+}
+
+export function getAddSignRecords(instanceId: string) {
+  return get<WorkflowAddSign[]>(`/workflow/instances/${instanceId}/add-sign-records`)
 }

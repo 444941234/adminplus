@@ -58,7 +58,7 @@ class WorkflowDefinitionControllerTest {
         objectMapper = new ObjectMapper();
         testDefinition = new WorkflowDefinitionResp(
                 "def-001", "请假审批", "leave_approval",
-                "请假类别", "请假审批流程", 1, 1, null, Instant.now(), Instant.now()
+                "请假类别", "请假审批流程", 1, 1, null, 0, Instant.now(), Instant.now()
         );
         definitionReq = WorkflowDefinitionReq.builder()
                 .definitionName("请假审批")

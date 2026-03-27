@@ -383,17 +383,23 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
                 entity.getUserId(),
                 entity.getUserName(),
                 entity.getDeptId(),
+                null,
                 entity.getTitle(),
                 entity.getBusinessData(),
                 entity.getCurrentNodeId(),
                 entity.getCurrentNodeName(),
-                entity.getStatus(),
+                entity.getStatus() == null ? null : entity.getStatus().toUpperCase(),
                 entity.getSubmitTime(),
                 entity.getFinishTime(),
                 entity.getRemark(),
                 entity.getCreateTime(),
                 false,  // pendingApproval - 待实现
-                false   // canApprove - 待实现
+                false,  // canApprove - 待实现
+                false,
+                false,
+                false,
+                false,
+                false
         );
     }
 }

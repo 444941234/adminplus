@@ -1,13 +1,21 @@
 package com.adminplus.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.adminplus.pojo.dto.req.ApprovalActionReq;
 import com.adminplus.pojo.dto.req.WorkflowStartReq;
 import com.adminplus.pojo.dto.resp.WorkflowApprovalResp;
 import com.adminplus.pojo.dto.resp.WorkflowDefinitionResp;
 import com.adminplus.pojo.dto.resp.WorkflowDetailResp;
+import com.adminplus.pojo.dto.resp.WorkflowDraftDetailResp;
 import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
 import com.adminplus.pojo.dto.resp.WorkflowNodeResp;
 import com.adminplus.pojo.entity.*;
+import com.adminplus.pojo.dto.req.AddSignReq;
+import com.adminplus.pojo.dto.resp.WorkflowAddSignResp;
+import com.adminplus.pojo.dto.resp.WorkflowCcResp;
+import com.adminplus.pojo.dto.resp.WorkflowOperationPermissionsResp;
 import com.adminplus.repository.*;
 import com.adminplus.service.WorkflowDefinitionService;
 import com.adminplus.service.WorkflowInstanceService;
@@ -40,6 +48,9 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     private final DeptRepository deptRepository;
     private final UserRoleRepository userRoleRepository;
     private final WorkflowDefinitionService definitionService;
+    private final WorkflowCcRepository ccRepository;
+    private final WorkflowAddSignRepository addSignRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -60,7 +71,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         instance.setUserName(user.getNickname());
         instance.setDeptId(user.getDeptId());
         instance.setTitle(req.title());
-        instance.setBusinessData(req.businessData());
+        instance.setBusinessData(serializeFormData(req.formData()));
         instance.setStatus("draft");
         instance.setRemark(req.remark());
 
@@ -72,7 +83,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional
-    public WorkflowInstanceResp submit(String instanceId) {
+    public WorkflowInstanceResp submit(String instanceId, WorkflowStartReq req) {
         String userId = getCurrentUserId();
         log.info("提交工作流: instanceId={}, userId={}", instanceId, userId);
 
@@ -86,6 +97,10 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         // 验证是否为发起人
         if (!instance.getUserId().equals(userId)) {
             throw new IllegalArgumentException("只有发起人可以提交工作流");
+        }
+
+        if (req != null) {
+            applyDraftChanges(instance, req);
         }
 
         instance.setStatus("running");
@@ -108,6 +123,9 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         // 创建审批记录
         createApprovalRecords(instance, firstNode);
 
+        // 创建抄送记录（流程发起时抄送）
+        createCcRecords(instance, firstNode, "start", instance.getRemark());
+
         log.info("工作流提交成功: id={}, currentNode={}", instance.getId(), firstNode.getNodeName());
         return toInstanceResponse(instance, false, false);
     }
@@ -121,7 +139,66 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         WorkflowInstanceResp draft = createDraft(req);
 
         // 然后提交
-        return submit(draft.id());
+        return submit(draft.id(), null);
+    }
+
+    @Override
+    public WorkflowDraftDetailResp getDraftDetail(String instanceId) {
+        String userId = getCurrentUserId();
+        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+
+        if (!instance.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("只有发起人可以查看草稿");
+        }
+        if (!instance.isDraft()) {
+            throw new IllegalArgumentException("当前流程不是草稿状态");
+        }
+
+        WorkflowDefinitionEntity definition = definitionRepository.findById(instance.getDefinitionId())
+                .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在"));
+
+        return new WorkflowDraftDetailResp(
+                toInstanceResponse(instance, false, false),
+                definition.getFormConfig(),
+                deserializeFormData(instance.getBusinessData())
+        );
+    }
+
+    @Override
+    @Transactional
+    public WorkflowInstanceResp updateDraft(String instanceId, WorkflowStartReq req) {
+        String userId = getCurrentUserId();
+        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+
+        if (!instance.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("只有发起人可以更新草稿");
+        }
+        if (!instance.isDraft()) {
+            throw new IllegalArgumentException("只有草稿状态可以更新");
+        }
+
+        applyDraftChanges(instance, req);
+        WorkflowInstanceEntity saved = instanceRepository.save(instance);
+        return toInstanceResponse(saved, false, false);
+    }
+
+    @Override
+    @Transactional
+    public void deleteDraft(String instanceId) {
+        String userId = getCurrentUserId();
+        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+
+        if (!instance.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("只有发起人可以删除草稿");
+        }
+        if (!instance.isDraft()) {
+            throw new IllegalArgumentException("只有草稿状态可以删除");
+        }
+
+        instanceRepository.delete(instance);
     }
 
     @Override
@@ -157,12 +234,30 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         // 判断当前用户是否可以审批
         boolean canApprove = canUserApprove(instance, userId);
 
+        WorkflowDefinitionEntity definition = definitionRepository.findById(instance.getDefinitionId())
+                .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在"));
+
+        List<WorkflowCcResp> ccRecords = ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
+                .stream()
+                .map(this::toCcResponse)
+                .collect(Collectors.toList());
+
+        List<WorkflowAddSignResp> addSignRecords = addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId)
+                .stream()
+                .map(this::toAddSignResponse)
+                .collect(Collectors.toList());
+
         return new WorkflowDetailResp(
                 toInstanceResponse(instance, instance.isRunning() && canApprove, canApprove),
                 approvals,
                 nodes,
                 currentNode,
-                canApprove
+                canApprove,
+                definition.getFormConfig(),
+                deserializeFormData(instance.getBusinessData()),
+                ccRecords,
+                addSignRecords,
+                buildOperationPermissions(instance, canApprove)
         );
     }
 
@@ -175,7 +270,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         if (status == null || status.isEmpty()) {
             instances = instanceRepository.findByUserIdAndDeletedFalseOrderBySubmitTimeDesc(userId);
         } else {
-            instances = instanceRepository.findByUserIdAndStatusAndDeletedFalseOrderBySubmitTimeDesc(userId, status);
+            instances = instanceRepository.findByUserIdAndStatusAndDeletedFalseOrderBySubmitTimeDesc(userId, normalizeStatusForStorage(status));
         }
 
         return instances.stream()
@@ -332,6 +427,9 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             instance.setStatus("rejected");
             instance.setFinishTime(Instant.now());
             log.info("工作流被拒绝: id={}", instanceId);
+
+            // 创建抄送记录（拒绝时抄送）
+            createCcRecords(instance, currentNode, "reject", req.comment());
         } else {
             // 同意，检查是否所有人都已审批
             boolean allApproved = pendingApprovals.stream()
@@ -340,6 +438,9 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             if (allApproved) {
                 // 当前节点所有审批人都已同意，流转到下一节点
                 moveToNextNode(instance);
+
+                // 创建抄送记录（审批通过时抄送）
+                createCcRecords(instance, currentNode, "approve", req.comment());
             } else {
                 log.info("等待其他审批人审批: instanceId={}", instanceId);
             }
@@ -492,6 +593,11 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     }
 
     private WorkflowInstanceResp toInstanceResponse(WorkflowInstanceEntity entity, Boolean pendingApproval, Boolean canApprove) {
+        String currentUserId = getCurrentUserId();
+        String deptName = deptRepository.findById(entity.getDeptId())
+                .map(DeptEntity::getName)
+                .orElse(null);
+
         return new WorkflowInstanceResp(
                 entity.getId(),
                 entity.getDefinitionId(),
@@ -499,17 +605,23 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 entity.getUserId(),
                 entity.getUserName(),
                 entity.getDeptId(),
+                deptName,
                 entity.getTitle(),
                 entity.getBusinessData(),
                 entity.getCurrentNodeId(),
                 entity.getCurrentNodeName(),
-                entity.getStatus(),
+                normalizeStatusForResponse(entity.getStatus()),
                 entity.getSubmitTime(),
                 entity.getFinishTime(),
                 entity.getRemark(),
                 entity.getCreateTime(),
                 pendingApproval,
-                canApprove
+                canApprove,
+                entity.getUserId().equals(currentUserId) && !entity.isRunning() && !entity.isApproved() && !entity.isFinished(),
+                entity.getUserId().equals(currentUserId) && entity.isCancellable(),
+                entity.getUserId().equals(currentUserId) && entity.isRunning(),
+                entity.getUserId().equals(currentUserId) && entity.isDraft(),
+                entity.getUserId().equals(currentUserId) && entity.isDraft()
         );
     }
 
@@ -529,6 +641,149 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         );
     }
 
+    @Override
+    @Transactional
+    public WorkflowInstanceResp rollback(String instanceId, ApprovalActionReq req) {
+        String userId = getCurrentUserId();
+        log.info("回退工作流: instanceId={}, userId={}", instanceId, userId);
+
+        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+
+        if (!instance.isRunning()) {
+            throw new IllegalArgumentException("只有进行中的工作流可以回退");
+        }
+
+        // 验证审批权限
+        WorkflowApprovalEntity approval = approvalRepository
+                .findByInstanceIdAndNodeIdAndDeletedFalse(instanceId, instance.getCurrentNodeId())
+                .stream()
+                .filter(a -> a.isPending() && a.getApproverId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("您没有权限回退此工作流"));
+
+        // 解析目标节点ID（从请求中获取）
+        String requestedTargetNodeId = req.targetNodeId();
+        String finalTargetNodeId;
+        if (requestedTargetNodeId == null || requestedTargetNodeId.isEmpty()) {
+            // 如果没有指定目标节点，则回退到上一节点
+            finalTargetNodeId = findPreviousNodeId(instance);
+            if (finalTargetNodeId == null) {
+                throw new IllegalArgumentException("没有可以回退的节点");
+            }
+        } else {
+            finalTargetNodeId = requestedTargetNodeId;
+        }
+
+        // 验证目标节点是否在可回退范围内
+        List<WorkflowNodeResp> rollbackableNodes = getRollbackableNodes(instanceId);
+        String targetNodeIdForValidation = finalTargetNodeId; // effectively final variable for lambda
+        boolean isValidTarget = rollbackableNodes.stream()
+                .anyMatch(n -> n.id().equals(targetNodeIdForValidation));
+        if (!isValidTarget) {
+            throw new IllegalArgumentException("无法回退到指定节点");
+        }
+
+        WorkflowNodeEntity targetNode = nodeRepository.findById(finalTargetNodeId)
+                .orElseThrow(() -> new IllegalArgumentException("目标节点不存在"));
+
+        // 获取当前节点信息
+        String currentNodeId = instance.getCurrentNodeId();
+        String currentNodeName = instance.getCurrentNodeName();
+
+        // 更新当前审批记录为回退状态
+        approval.setApprovalStatus("rejected");
+        approval.setComment(req.comment());
+        approval.setApprovalTime(Instant.now());
+        approval.setIsRollback(true);
+        approval.setRollbackFromNodeId(currentNodeId);
+        approval.setRollbackFromNodeName(currentNodeName);
+        approvalRepository.save(approval);
+
+        // 更新实例状态到目标节点
+        instance.setCurrentNodeId(finalTargetNodeId);
+        instance.setCurrentNodeName(targetNode.getNodeName());
+        instanceRepository.save(instance);
+
+        // 清理目标节点的旧审批记录，重新创建
+        cleanupAndCreateApprovals(instance, targetNode);
+
+        log.info("工作流已回退: instanceId={}, fromNode={}, toNode={}",
+                instanceId, currentNodeName, targetNode.getNodeName());
+
+        return toInstanceResponse(instance, false, canUserApprove(instance, userId));
+    }
+
+    @Override
+    public List<WorkflowNodeResp> getRollbackableNodes(String instanceId) {
+        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+
+        // 获取所有节点
+        List<WorkflowNodeEntity> allNodes = nodeRepository
+                .findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(instance.getDefinitionId());
+
+        // 获取已审批通过的节点列表（从审批记录中获取）
+        List<String> approvedNodeIds = approvalRepository
+                .findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
+                .stream()
+                .filter(a -> a.isApproved() && !a.getIsRollback())
+                .map(WorkflowApprovalEntity::getNodeId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 只返回已审批通过的节点，且不是当前节点
+        return allNodes.stream()
+                .filter(n -> approvedNodeIds.contains(n.getId()) && !n.getId().equals(instance.getCurrentNodeId()))
+                .map(this::toNodeResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 查找上一个节点ID
+     */
+    private String findPreviousNodeId(WorkflowInstanceEntity instance) {
+        List<WorkflowNodeEntity> nodes = nodeRepository
+                .findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(instance.getDefinitionId());
+
+        // 获取已审批通过的节点列表
+        List<String> approvedNodeIds = approvalRepository
+                .findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instance.getId())
+                .stream()
+                .filter(a -> a.isApproved() && !a.getIsRollback())
+                .map(WorkflowApprovalEntity::getNodeId)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // 找到最近一个已审批通过的节点（不是当前节点）
+        for (int i = approvedNodeIds.size() - 1; i >= 0; i--) {
+            String nodeId = approvedNodeIds.get(i);
+            if (!nodeId.equals(instance.getCurrentNodeId())) {
+                return nodeId;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 清理目标节点的旧审批记录并重新创建
+     */
+    private void cleanupAndCreateApprovals(WorkflowInstanceEntity instance, WorkflowNodeEntity targetNode) {
+        // 查找目标节点的所有审批记录
+        List<WorkflowApprovalEntity> existingApprovals = approvalRepository
+                .findByInstanceIdAndNodeIdAndDeletedFalse(instance.getId(), targetNode.getId());
+
+        // 如果存在旧的审批记录，将其标记为已删除
+        if (!existingApprovals.isEmpty()) {
+            existingApprovals.forEach(a -> a.setDeleted(true));
+            approvalRepository.saveAll(existingApprovals);
+        }
+
+        // 重新创建审批记录
+        createApprovalRecords(instance, targetNode);
+    }
+
     private WorkflowNodeResp toNodeResponse(WorkflowNodeEntity entity) {
         return new WorkflowNodeResp(
                 entity.getId(),
@@ -543,5 +798,335 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 entity.getDescription(),
                 entity.getCreateTime()
         );
+    }
+
+    /**
+     * 创建抄送记录
+     *
+     * @param instance    工作流实例
+     * @param node        当前节点
+     * @param ccType      抄送类型（approve/reject/rollback/start）
+     * @param ccContent   抄送内容
+     */
+    private void createCcRecords(WorkflowInstanceEntity instance, WorkflowNodeEntity node, String ccType, String ccContent) {
+        try {
+            // 解析节点配置的抄送用户ID列表
+            Set<String> ccUserIds = new HashSet<>();
+
+            // 1. 从节点的 ccUserIds 字段解析
+            if (node.getCcUserIds() != null && !node.getCcUserIds().isEmpty()) {
+                // 假设存储格式为 JSON 数组字符串: ["user1", "user2"]
+                String userIdsStr = node.getCcUserIds().trim();
+                if (userIdsStr.startsWith("[") && userIdsStr.endsWith("]")) {
+                    userIdsStr = userIdsStr.substring(1, userIdsStr.length() - 1);
+                    String[] userIds = userIdsStr.split(",");
+                    for (String uid : userIds) {
+                        uid = uid.trim().replace("\"", "").replace("'", "");
+                        if (!uid.isEmpty()) {
+                            ccUserIds.add(uid);
+                        }
+                    }
+                }
+            }
+
+            // 2. 从节点的 ccRoleIds 字段解析角色，获取该角色的所有用户
+            if (node.getCcRoleIds() != null && !node.getCcRoleIds().isEmpty()) {
+                String roleIdsStr = node.getCcRoleIds().trim();
+                if (roleIdsStr.startsWith("[") && roleIdsStr.endsWith("]")) {
+                    roleIdsStr = roleIdsStr.substring(1, roleIdsStr.length() - 1);
+                    String[] roleIds = roleIdsStr.split(",");
+                    for (String rid : roleIds) {
+                        rid = rid.trim().replace("\"", "").replace("'", "");
+                        if (!rid.isEmpty()) {
+                            List<UserRoleEntity> userRoles = userRoleRepository.findByRoleId(rid);
+                            ccUserIds.addAll(userRoles.stream().map(UserRoleEntity::getUserId).collect(Collectors.toSet()));
+                        }
+                    }
+                }
+            }
+
+            // 创建抄送记录
+            for (String ccUserId : ccUserIds) {
+                WorkflowCcEntity cc = new WorkflowCcEntity();
+                cc.setInstanceId(instance.getId());
+                cc.setNodeId(node.getId());
+                cc.setNodeName(node.getNodeName());
+                cc.setUserId(ccUserId);
+                cc.setCcType(ccType);
+                cc.setCcContent(ccContent);
+                cc.setIsRead(false);
+
+                // 查询用户姓名
+                userRepository.findById(ccUserId).ifPresent(user -> {
+                    cc.setUserName(user.getNickname());
+                });
+
+                ccRepository.save(cc);
+            }
+
+            if (!ccUserIds.isEmpty()) {
+                log.info("创建抄送记录: instanceId={}, node={}, ccType={}, ccCount={}",
+                        instance.getId(), node.getNodeName(), ccType, ccUserIds.size());
+            }
+        } catch (Exception e) {
+            log.error("创建抄送记录失败: instanceId={}, node={}", instance.getId(), node.getNodeName(), e);
+            // 不抛出异常，避免影响主流程
+        }
+    }
+
+    @Override
+    @Transactional
+    public WorkflowAddSignResp addSign(String instanceId, AddSignReq req) {
+        String initiatorId = getCurrentUserId();
+        log.info("加签/转办: instanceId={}, initiatorId={}, addType={}, addUserId={}",
+                instanceId, initiatorId, req.addType(), req.addUserId());
+
+        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+
+        // 只有运行中的工作流可以加签/转办
+        if (!instance.isRunning()) {
+            throw new IllegalArgumentException("只有运行中的工作流可以加签/转办");
+        }
+
+        // 获取当前节点
+        WorkflowNodeEntity currentNode = nodeRepository.findById(instance.getCurrentNodeId())
+                .orElseThrow(() -> new IllegalArgumentException("当前节点不存在"));
+
+        // 获取当前用户的审批记录
+        WorkflowApprovalEntity myApproval = approvalRepository
+                .findByInstanceIdAndNodeIdAndDeletedFalse(instanceId, instance.getCurrentNodeId())
+                .stream()
+                .filter(a -> a.isPending() && a.getApproverId().equals(initiatorId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("您没有权限对当前流程进行加签/转办"));
+
+        // 验证被加签人存在
+        UserEntity addUser = userRepository.findById(req.addUserId())
+                .orElseThrow(() -> new IllegalArgumentException("被加签人不存在"));
+
+        // 获取发起人信息
+        UserEntity initiator = userRepository.findById(initiatorId)
+                .orElseThrow(() -> new IllegalArgumentException("加签发起人不存在"));
+
+        // 处理转办
+        if (req.addType() == AddSignReq.AddSignType.TRANSFER) {
+            return handleTransfer(instance, currentNode, myApproval, addUser, initiator, req);
+        }
+
+        // 处理加签（前加签、后加签）
+        return handleAddSign(instance, currentNode, myApproval, addUser, initiator, req);
+    }
+
+    /**
+     * 处理转办
+     */
+    private WorkflowAddSignResp handleTransfer(
+            WorkflowInstanceEntity instance,
+            WorkflowNodeEntity currentNode,
+            WorkflowApprovalEntity myApproval,
+            UserEntity addUser,
+            UserEntity initiator,
+            AddSignReq req) {
+
+        log.info("处理转办: instanceId={}, fromUser={}, toUser={}",
+                instance.getId(), initiator.getId(), req.addUserId());
+
+        // 更新原始审批记录为已转办
+        myApproval.setApprovalStatus("transferred");
+        myApproval.setComment("已转办给：" + addUser.getNickname() + "。原因：" + req.reason());
+        myApproval.setApprovalTime(Instant.now());
+        approvalRepository.save(myApproval);
+
+        // 创建新的审批记录给被转办人
+        WorkflowApprovalEntity newApproval = new WorkflowApprovalEntity();
+        newApproval.setInstanceId(instance.getId());
+        newApproval.setNodeId(currentNode.getId());
+        newApproval.setNodeName(currentNode.getNodeName());
+        newApproval.setApproverId(addUser.getId());
+        newApproval.setApproverName(addUser.getNickname());
+        newApproval.setApprovalStatus("pending");
+        approvalRepository.save(newApproval);
+
+        // 创建加签记录
+        WorkflowAddSignEntity addSign = new WorkflowAddSignEntity();
+        addSign.setInstanceId(instance.getId());
+        addSign.setNodeId(currentNode.getId());
+        addSign.setNodeName(currentNode.getNodeName());
+        addSign.setInitiatorId(initiator.getId());
+        addSign.setInitiatorName(initiator.getNickname());
+        addSign.setAddUserId(addUser.getId());
+        addSign.setAddUserName(addUser.getNickname());
+        addSign.setAddType("transfer");
+        addSign.setAddReason(req.reason());
+        addSign.setOriginalApproverId(myApproval.getApproverId());
+        addSignRepository.save(addSign);
+
+        log.info("转办完成: instanceId={}, original={}, new={}",
+                instance.getId(), initiator.getNickname(), addUser.getNickname());
+
+        return toAddSignResponse(addSign);
+    }
+
+    /**
+     * 处理加签
+     */
+    private WorkflowAddSignResp handleAddSign(
+            WorkflowInstanceEntity instance,
+            WorkflowNodeEntity currentNode,
+            WorkflowApprovalEntity myApproval,
+            UserEntity addUser,
+            UserEntity initiator,
+            AddSignReq req) {
+
+        log.info("处理加签: instanceId={}, initiatorId={}, addUserId={}, addType={}",
+                instance.getId(), initiator.getId(), req.addUserId(), req.addType());
+
+        // 创建新的审批记录给被加签人
+        WorkflowApprovalEntity newApproval = new WorkflowApprovalEntity();
+        newApproval.setInstanceId(instance.getId());
+        newApproval.setNodeId(currentNode.getId());
+        newApproval.setNodeName(currentNode.getNodeName());
+        newApproval.setApproverId(addUser.getId());
+        newApproval.setApproverName(addUser.getNickname());
+        newApproval.setApprovalStatus("pending");
+        approvalRepository.save(newApproval);
+
+        // 创建加签记录
+        WorkflowAddSignEntity addSign = new WorkflowAddSignEntity();
+        addSign.setInstanceId(instance.getId());
+        addSign.setNodeId(currentNode.getId());
+        addSign.setNodeName(currentNode.getNodeName());
+        addSign.setInitiatorId(initiator.getId());
+        addSign.setInitiatorName(initiator.getNickname());
+        addSign.setAddUserId(addUser.getId());
+        addSign.setAddUserName(addUser.getNickname());
+        addSign.setAddType(req.addType().name().toLowerCase());
+        addSign.setAddReason(req.reason());
+        addSignRepository.save(addSign);
+
+        // 如果是会签节点，需要重新计算是否所有人都已审批
+        if (currentNode.getIsCounterSign()) {
+            // 会签节点需要所有人都审批通过，加签后需要继续等待
+            log.info("会签节点加签，需要所有审批人审批");
+        }
+
+        log.info("加签完成: instanceId={}, addType={}, addUser={}",
+                instance.getId(), req.addType(), addUser.getNickname());
+
+        return toAddSignResponse(addSign);
+    }
+
+    @Override
+    public List<WorkflowAddSignResp> getAddSignRecords(String instanceId) {
+        log.info("查询加签记录: instanceId={}", instanceId);
+        return addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId)
+                .stream()
+                .map(this::toAddSignResponse)
+                .collect(Collectors.toList());
+    }
+
+    private WorkflowAddSignResp toAddSignResponse(WorkflowAddSignEntity entity) {
+        return new WorkflowAddSignResp(
+                entity.getId(),
+                entity.getInstanceId(),
+                entity.getNodeId(),
+                entity.getNodeName(),
+                entity.getInitiatorId(),
+                entity.getInitiatorName(),
+                entity.getAddUserId(),
+                entity.getAddUserName(),
+                entity.getAddType(),
+                entity.getAddReason(),
+                entity.getOriginalApproverId(),
+                entity.getCreateTime()
+        );
+    }
+
+    private WorkflowCcResp toCcResponse(WorkflowCcEntity entity) {
+        return new WorkflowCcResp(
+                entity.getId(),
+                entity.getInstanceId(),
+                entity.getNodeId(),
+                entity.getNodeName(),
+                entity.getUserId(),
+                entity.getUserName(),
+                entity.getCcType(),
+                entity.getCcContent(),
+                entity.getIsRead(),
+                entity.getReadTime(),
+                entity.getCreateTime()
+        );
+    }
+
+    private void applyDraftChanges(WorkflowInstanceEntity instance, WorkflowStartReq req) {
+        if (!instance.getDefinitionId().equals(req.definitionId())) {
+            WorkflowDefinitionEntity definition = definitionRepository.findById(req.definitionId())
+                    .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在"));
+            instance.setDefinitionId(definition.getId());
+            instance.setDefinitionName(definition.getDefinitionName());
+        }
+
+        instance.setTitle(req.title());
+        instance.setBusinessData(serializeFormData(req.formData()));
+        instance.setRemark(req.remark());
+    }
+
+    private String serializeFormData(Map<String, Object> formData) {
+        try {
+            return objectMapper.writeValueAsString(formData == null ? Collections.emptyMap() : formData);
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("表单数据格式不正确", e);
+        }
+    }
+
+    private Map<String, Object> deserializeFormData(String businessData) {
+        if (businessData == null || businessData.isBlank()) {
+            return Collections.emptyMap();
+        }
+
+        try {
+            return objectMapper.readValue(businessData, new TypeReference<>() {});
+        } catch (JsonProcessingException e) {
+            throw new IllegalArgumentException("业务表单数据解析失败", e);
+        }
+    }
+
+    private WorkflowOperationPermissionsResp buildOperationPermissions(WorkflowInstanceEntity instance, boolean canApprove) {
+        String currentUserId = getCurrentUserId();
+        boolean isOwner = Objects.equals(instance.getUserId(), currentUserId);
+
+        return new WorkflowOperationPermissionsResp(
+                canApprove,
+                canApprove,
+                canApprove,
+                canApprove,
+                canApprove,
+                isOwner && instance.isRunning(),
+                isOwner && (instance.isDraft() || instance.isRejected()),
+                isOwner && instance.isCancellable()
+        );
+    }
+
+    private String normalizeStatusForStorage(String status) {
+        return switch (status == null ? "" : status.toUpperCase(Locale.ROOT)) {
+            case "DRAFT" -> "draft";
+            case "PENDING", "PROCESSING" -> "running";
+            case "APPROVED", "FINISHED", "COMPLETED" -> "approved";
+            case "REJECTED", "WITHDRAWN" -> "rejected";
+            case "CANCELLED" -> "cancelled";
+            default -> status == null ? null : status.toLowerCase(Locale.ROOT);
+        };
+    }
+
+    private String normalizeStatusForResponse(String status) {
+        return switch (status) {
+            case "draft" -> "DRAFT";
+            case "running" -> "PROCESSING";
+            case "approved" -> "APPROVED";
+            case "rejected" -> "REJECTED";
+            case "cancelled" -> "CANCELLED";
+            default -> status == null ? null : status.toUpperCase(Locale.ROOT);
+        };
     }
 }

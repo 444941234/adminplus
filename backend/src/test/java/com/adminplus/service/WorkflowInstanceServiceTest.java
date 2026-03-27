@@ -18,6 +18,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.adminplus.common.security.AppUserDetails;
+import com.fasterxml.jackson.core.type.TypeReference;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -26,6 +28,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -67,6 +70,21 @@ class WorkflowInstanceServiceTest {
     @Mock
     private WorkflowDefinitionService definitionService;
 
+    @Mock
+    private com.adminplus.repository.DeptRepository deptRepository;
+
+    @Mock
+    private com.adminplus.repository.UserRoleRepository userRoleRepository;
+
+    @Mock
+    private com.adminplus.repository.WorkflowCcRepository ccRepository;
+
+    @Mock
+    private com.adminplus.repository.WorkflowAddSignRepository addSignRepository;
+
+    @Mock
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
     @InjectMocks
     private WorkflowInstanceServiceImpl service;
 
@@ -89,6 +107,7 @@ class WorkflowInstanceServiceTest {
         testDefinition.setDefinitionName("Leave Approval");
         testDefinition.setDefinitionKey("leave_approval");
         testDefinition.setStatus(1);
+        testDefinition.setFormConfig("{\"sections\":[{\"key\":\"basic\",\"title\":\"基础信息\",\"fields\":[]}]}");
 
         // Setup test nodes
         testNode1 = new WorkflowNodeEntity();
@@ -136,19 +155,33 @@ class WorkflowInstanceServiceTest {
         testInstance.setStatus("draft");
 
         // Setup valid start request
-        validStartReq = new WorkflowStartReq(
-                "def-001",
-                "Leave Request",
-                "{\"days\":3}",
-                "Need time off"
-        );
+        validStartReq = WorkflowStartReq.builder()
+                .definitionId("def-001")
+                .title("Leave Request")
+                .formData(Map.of("days", 3))
+                .remark("Need time off")
+                .build();
+
+        // Mock objectMapper for serializeFormData/deserializeFormData
+        // Use lenient() because not all tests need this stubbing
+        try {
+            lenient().when(objectMapper.writeValueAsString(any())).thenReturn("{\"days\":3}");
+            lenient().when(objectMapper.readValue(any(String.class), any(com.fasterxml.jackson.core.type.TypeReference.class)))
+                    .thenReturn(Map.of("days", 3));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void mockSecurityContext(String userId) {
+        AppUserDetails userDetails = new AppUserDetails(
+                userId, "testuser", null, "Test User",
+                null, null, null, "dept-001", 1, null, null
+        );
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userId,
+                userDetails,
                 null,
-                Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))
+                userDetails.getAuthorities()
         );
         SecurityContextHolder.createEmptyContext();
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -264,10 +297,11 @@ class WorkflowInstanceServiceTest {
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             // When
-            WorkflowInstanceResp result = service.submit("inst-001");
+            WorkflowInstanceResp result = service.submit("inst-001", null);
 
             // Then
-            assertThat(result.status()).isEqualTo("running");
+            // Status is normalized: "running" -> "PROCESSING"
+            assertThat(result.status()).isEqualTo("PROCESSING");
             assertThat(result.currentNodeId()).isEqualTo("node-001");
             verify(instanceRepository).save(any(WorkflowInstanceEntity.class));
             verify(approvalRepository).save(any(WorkflowApprovalEntity.class));
@@ -291,7 +325,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Optional.of(testApprover));
 
             // When
-            service.submit("inst-001");
+            service.submit("inst-001", null);
 
             // Then
             verify(approvalRepository).save(any(WorkflowApprovalEntity.class));
@@ -311,7 +345,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Optional.empty());
 
             // When/Then
-            assertThatThrownBy(() -> service.submit("non-existent"))
+            assertThatThrownBy(() -> service.submit("non-existent", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("工作流实例不存在");
         }
@@ -326,7 +360,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Optional.of(testInstance));
 
             // When/Then
-            assertThatThrownBy(() -> service.submit("inst-001"))
+            assertThatThrownBy(() -> service.submit("inst-001", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("只有发起人可以提交工作流");
         }
@@ -341,7 +375,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Optional.of(testInstance));
 
             // When/Then
-            assertThatThrownBy(() -> service.submit("inst-001"))
+            assertThatThrownBy(() -> service.submit("inst-001", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("只有草稿或进行中的工作流可以提交");
         }
@@ -358,7 +392,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(List.of());
 
             // When/Then
-            assertThatThrownBy(() -> service.submit("inst-001"))
+            assertThatThrownBy(() -> service.submit("inst-001", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("工作流没有配置审批节点");
         }
@@ -391,7 +425,8 @@ class WorkflowInstanceServiceTest {
             WorkflowInstanceResp result = service.start(validStartReq);
 
             // Then
-            assertThat(result.status()).isEqualTo("running");
+            // Status is normalized: "running" -> "PROCESSING"
+            assertThat(result.status()).isEqualTo("PROCESSING");
             verify(instanceRepository, times(2)).save(any(WorkflowInstanceEntity.class));
         }
     }
@@ -428,7 +463,9 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = new ApprovalActionReq("Approved", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Approved")
+                    .build();
 
             // When
             WorkflowInstanceResp result = service.approve("inst-001", req);
@@ -475,7 +512,9 @@ class WorkflowInstanceServiceTest {
             when(userRepository.findById(anyString()))
                     .thenReturn(Optional.of(testApprover));
 
-            ApprovalActionReq req = new ApprovalActionReq("Approved", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Approved")
+                    .build();
 
             // When
             service.approve("inst-001", req);
@@ -518,7 +557,9 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = new ApprovalActionReq("Approved", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Approved")
+                    .build();
 
             // When
             WorkflowInstanceResp result = service.approve("inst-001", req);
@@ -552,7 +593,9 @@ class WorkflowInstanceServiceTest {
             when(approvalRepository.findByInstanceIdAndNodeIdAndDeletedFalse("inst-001", "node-001"))
                     .thenReturn(Arrays.asList(approval));
 
-            ApprovalActionReq req = new ApprovalActionReq("Approved", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Approved")
+                    .build();
 
             // When/Then
             assertThatThrownBy(() -> service.approve("inst-001", req))
@@ -572,7 +615,9 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.findById("inst-001"))
                     .thenReturn(Optional.of(testInstance));
 
-            ApprovalActionReq req = new ApprovalActionReq("Approved", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Approved")
+                    .build();
 
             // When/Then
             assertThatThrownBy(() -> service.approve("inst-001", req))
@@ -613,7 +658,9 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = new ApprovalActionReq("Insufficient leave balance", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Insufficient leave balance")
+                    .build();
 
             // When
             WorkflowInstanceResp result = service.reject("inst-001", req);
@@ -827,6 +874,12 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Arrays.asList(testNode1, testNode2));
             when(nodeRepository.findById("node-001"))
                     .thenReturn(Optional.of(testNode1));
+            when(definitionRepository.findById("def-001"))
+                    .thenReturn(Optional.of(testDefinition));
+            when(ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc("inst-001"))
+                    .thenReturn(Arrays.asList());
+            when(addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc("inst-001"))
+                    .thenReturn(Arrays.asList());
 
             // When
             WorkflowDetailResp result = service.getDetail("inst-001");
@@ -868,7 +921,8 @@ class WorkflowInstanceServiceTest {
 
             // Then
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).status()).isEqualTo("running");
+            // Status is normalized: "running" -> "PROCESSING"
+            assertThat(result.get(0).status()).isEqualTo("PROCESSING");
         }
 
         @Test
@@ -942,7 +996,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Optional.of(testApprover));
 
             // When
-            WorkflowInstanceResp result = service.submit("inst-001");
+            WorkflowInstanceResp result = service.submit("inst-001", null);
 
             // Then
             assertThat(result.currentNodeId()).isEqualTo("node-001");
@@ -978,7 +1032,9 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = new ApprovalActionReq(longComment, null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment(longComment)
+                    .build();
 
             // When
             WorkflowInstanceResp result = service.approve("inst-001", req);
@@ -1015,13 +1071,204 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = new ApprovalActionReq("Approved", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Approved")
+                    .build();
 
             // When
             service.approve("inst-001", req);
 
             // Then
             verify(approvalRepository).save(any(WorkflowApprovalEntity.class));
+        }
+    }
+
+    @Nested
+    @DisplayName("Draft Operations")
+    class DraftOperations {
+
+        @Test
+        @DisplayName("Should get draft detail with formConfig and formData")
+        void shouldGetDraftDetailSuccessfully() {
+            // Given
+            mockSecurityContext(CURRENT_USER_ID);
+            testInstance.setStatus("draft");
+            when(instanceRepository.findById("inst-001"))
+                    .thenReturn(Optional.of(testInstance));
+            when(definitionRepository.findById("def-001"))
+                    .thenReturn(Optional.of(testDefinition));
+
+            // When
+            var result = service.getDraftDetail("inst-001");
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.instance()).isNotNull();
+            assertThat(result.instance().id()).isEqualTo("inst-001");
+            assertThat(result.formConfig()).isNotNull();
+            assertThat(result.formData()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should throw exception when non-owner gets draft detail")
+        void shouldThrowWhenNonOwnerGetsDraftDetail() {
+            // Given
+            mockSecurityContext("different-user");
+            testInstance.setStatus("draft");
+            when(instanceRepository.findById("inst-001"))
+                    .thenReturn(Optional.of(testInstance));
+
+            // When/Then
+            assertThatThrownBy(() -> service.getDraftDetail("inst-001"))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("只有发起人可以查看草稿");
+        }
+
+        @Test
+        @DisplayName("Should update draft successfully")
+        void shouldUpdateDraftSuccessfully() {
+            // Given
+            mockSecurityContext(CURRENT_USER_ID);
+            testInstance.setStatus("draft");
+            when(instanceRepository.findById("inst-001"))
+                    .thenReturn(Optional.of(testInstance));
+            when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
+                    .thenAnswer(invocation -> invocation.getArgument(0));
+
+            WorkflowStartReq updateReq = WorkflowStartReq.builder()
+                    .definitionId("def-001")
+                    .title("Updated Title")
+                    .formData(Map.of("days", 5))
+                    .remark("Updated remark")
+                    .build();
+
+            // When
+            WorkflowInstanceResp result = service.updateDraft("inst-001", updateReq);
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.title()).isEqualTo("Updated Title");
+        }
+
+        @Test
+        @DisplayName("Should throw when updating non-draft workflow")
+        void shouldThrowWhenUpdatingNonDraft() {
+            // Given
+            mockSecurityContext(CURRENT_USER_ID);
+            testInstance.setStatus("running");
+            when(instanceRepository.findById("inst-001"))
+                    .thenReturn(Optional.of(testInstance));
+
+            // When/Then
+            assertThatThrownBy(() -> service.updateDraft("inst-001", validStartReq))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("只有草稿状态可以更新");
+        }
+
+        @Test
+        @DisplayName("Should delete draft successfully")
+        void shouldDeleteDraftSuccessfully() {
+            // Given
+            mockSecurityContext(CURRENT_USER_ID);
+            testInstance.setStatus("draft");
+            when(instanceRepository.findById("inst-001"))
+                    .thenReturn(Optional.of(testInstance));
+
+            // When
+            service.deleteDraft("inst-001");
+
+            // Then
+            verify(instanceRepository).delete(testInstance);
+        }
+    }
+
+    @Nested
+    @DisplayName("Detail Aggregation")
+    class DetailAggregation {
+
+        @Test
+        @DisplayName("Should return aggregated detail with ccRecords and addSignRecords")
+        void shouldReturnAggregatedDetail() {
+            // Given
+            mockSecurityContext(CURRENT_USER_ID);
+            testInstance.setStatus("running");
+            testInstance.setCurrentNodeId("node-001");
+
+            WorkflowApprovalEntity approval = new WorkflowApprovalEntity();
+            approval.setId("appr-001");
+            approval.setInstanceId("inst-001");
+            approval.setNodeId("node-001");
+            approval.setApproverId(APPROVER_ID);
+
+            WorkflowCcEntity cc = new WorkflowCcEntity();
+            cc.setId("cc-001");
+            cc.setInstanceId("inst-001");
+            cc.setUserId("user-002");
+
+            WorkflowAddSignEntity addSign = new WorkflowAddSignEntity();
+            addSign.setId("addsign-001");
+            addSign.setInstanceId("inst-001");
+            addSign.setAddUserId("user-003");
+
+            when(instanceRepository.findById("inst-001"))
+                    .thenReturn(Optional.of(testInstance));
+            when(approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc("inst-001"))
+                    .thenReturn(Arrays.asList(approval));
+            when(nodeRepository.findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc("def-001"))
+                    .thenReturn(Arrays.asList(testNode1, testNode2));
+            when(nodeRepository.findById("node-001"))
+                    .thenReturn(Optional.of(testNode1));
+            when(definitionRepository.findById("def-001"))
+                    .thenReturn(Optional.of(testDefinition));
+            when(ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc("inst-001"))
+                    .thenReturn(Arrays.asList(cc));
+            when(addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc("inst-001"))
+                    .thenReturn(Arrays.asList(addSign));
+
+            // When
+            WorkflowDetailResp result = service.getDetail("inst-001");
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.instance().id()).isEqualTo("inst-001");
+            assertThat(result.approvals()).hasSize(1);
+            assertThat(result.nodes()).hasSize(2);
+            assertThat(result.ccRecords()).hasSize(1);
+            assertThat(result.addSignRecords()).hasSize(1);
+            assertThat(result.formConfig()).isNotNull();
+            assertThat(result.formData()).isNotNull();
+            assertThat(result.operationPermissions()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("Should return empty ccRecords and addSignRecords when none exist")
+        void shouldReturnEmptyRecordsWhenNoneExist() {
+            // Given
+            mockSecurityContext(CURRENT_USER_ID);
+            testInstance.setStatus("running");
+            testInstance.setCurrentNodeId("node-001");
+
+            when(instanceRepository.findById("inst-001"))
+                    .thenReturn(Optional.of(testInstance));
+            when(approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc("inst-001"))
+                    .thenReturn(Arrays.asList());
+            when(nodeRepository.findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc("def-001"))
+                    .thenReturn(Arrays.asList(testNode1));
+            when(nodeRepository.findById("node-001"))
+                    .thenReturn(Optional.of(testNode1));
+            when(definitionRepository.findById("def-001"))
+                    .thenReturn(Optional.of(testDefinition));
+            when(ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc("inst-001"))
+                    .thenReturn(Arrays.asList());
+            when(addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc("inst-001"))
+                    .thenReturn(Arrays.asList());
+
+            // When
+            WorkflowDetailResp result = service.getDetail("inst-001");
+
+            // Then
+            assertThat(result.ccRecords()).isEmpty();
+            assertThat(result.addSignRecords()).isEmpty();
         }
     }
 }

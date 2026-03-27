@@ -1,8 +1,9 @@
 package com.adminplus.pojo.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
+
+import java.util.Map;
 
 /**
  * 工作流发起请求
@@ -18,7 +19,7 @@ public record WorkflowStartReq(
         @NotBlank(message = "流程标题不能为空")
         String title,
 
-        String businessData,
+        Map<String, Object> formData,
 
         String remark
 ) {

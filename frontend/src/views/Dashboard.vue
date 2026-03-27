@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted } from 'vue'
 import { Card, CardContent } from '@/components/ui'
-import { Users, Shield, Menu, FileText, BarChart3, GitBranch, Clock3, FolderOpen, Server } from 'lucide-vue-next'
+import { Users, Shield, Menu, FileText, BarChart3, GitBranch, Clock3, FolderOpen, Server, Bell } from 'lucide-vue-next'
 import { getStats, getRecentLogs } from '@/api'
 import type { DashboardStats, OperationLog } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -44,7 +44,8 @@ const iconMap = {
   Server,
   BarChart3,
   GitBranch,
-  Clock3
+  Clock3,
+  Bell
 }
 
 const quickActions = computed(() =>

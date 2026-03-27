@@ -15,6 +15,7 @@ public record WorkflowInstanceResp(
         String userId,
         String userName,
         String deptId,
+        String deptName,
         String title,
         String businessData,
         String currentNodeId,
@@ -27,6 +28,11 @@ public record WorkflowInstanceResp(
         // 待审批标志
         Boolean pendingApproval,
         // 当前用户是否可以审批
-        Boolean canApprove
+        Boolean canApprove,
+        Boolean canWithdraw,
+        Boolean canCancel,
+        Boolean canUrge,
+        Boolean canEditDraft,
+        Boolean canSubmitDraft
 ) {
 }

@@ -196,6 +196,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
                 entity.getStatus(),
                 entity.getVersion(),
                 entity.getFormConfig(),
+                nodeRepository.countByDefinitionIdAndDeletedFalse(entity.getId()),
                 entity.getCreateTime(),
                 entity.getUpdateTime()
         );

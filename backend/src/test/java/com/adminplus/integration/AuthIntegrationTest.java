@@ -11,8 +11,8 @@ import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.repository.UserRoleRepository;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +32,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author AdminPlus
  * @since 2026-03-25
  */
-@DisplayName("Auth Integration Tests")
-@Disabled("Integration tests require PostgreSQL on localhost:5433")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
+
 class AuthIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
@@ -95,11 +96,13 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("Login Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class LoginTests {
 
         @Test
-        @DisplayName("should login successfully with valid credentials")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void login_WithValidCredentials_ShouldReturnToken() throws Exception {
             UserLoginReq loginReq = new UserLoginReq("testuser", "Test@123456", "test-captcha-id", "1234");
 
@@ -115,7 +118,8 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("should fail login with invalid password")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void login_WithInvalidPassword_ShouldFail() throws Exception {
             UserLoginReq loginReq = new UserLoginReq("testuser", "wrongpassword", "test-captcha-id", "1234");
 
@@ -126,7 +130,8 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("should fail login with non-existent user")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void login_WithNonExistentUser_ShouldFail() throws Exception {
             UserLoginReq loginReq = new UserLoginReq("nonexistent", "password", "test-captcha-id", "1234");
 
@@ -138,11 +143,13 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("Get Current User Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class GetCurrentUserTests {
 
         @Test
-        @DisplayName("should return current user info with valid token")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void getCurrentUser_WithValidToken_ShouldReturnUser() throws Exception {
             String token = generateToken(testUser.getId(), testUser.getUsername(), new String[]{"user:view"});
 
@@ -153,7 +160,8 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         }
 
         @Test
-        @DisplayName("should fail without authentication")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void getCurrentUser_WithoutAuth_ShouldFail() throws Exception {
             mockMvc.perform(get("/v1/auth/me"))
                     .andExpect(status().isUnauthorized());
@@ -161,11 +169,13 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("Logout Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class LogoutTests {
 
         @Test
-        @DisplayName("should logout successfully")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void logout_WithValidToken_ShouldSucceed() throws Exception {
             String token = generateToken(testUser.getId(), testUser.getUsername(), new String[]{"user:view"});
 
@@ -180,11 +190,13 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Nested
-    @DisplayName("Refresh Token Tests")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class RefreshTokenTests {
 
         @Test
-        @DisplayName("should refresh token with valid refresh token")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void refreshToken_WithValidToken_ShouldReturnNewToken() throws Exception {
             // First login to get refresh token
             UserLoginReq loginReq = new UserLoginReq("testuser", "Test@123456", "test-captcha-id", "1234");

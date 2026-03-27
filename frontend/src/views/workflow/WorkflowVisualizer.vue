@@ -9,7 +9,8 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import '@vue-flow/controls/dist/style.css'
 import '@vue-flow/minimap/dist/style.css'
-import { getWorkflowDefinition, getWorkflowNodes } from '@/api'
+import { getWorkflowDefinition, getWorkflowDetail, getWorkflowNodes } from '@/api'
+import type { WorkflowDetail as WorkflowDetailData, WorkflowNode as WorkflowNodeData } from '@/types'
 
 interface WorkflowNode {
   id: string
@@ -20,6 +21,7 @@ interface WorkflowNode {
   approverId?: string
   isCounterSign: boolean
   autoPassSameUser: boolean
+  state?: 'completed' | 'current' | 'pending'
 }
 
 interface WorkflowDefinition {
@@ -92,6 +94,15 @@ const edges = computed<Edge[]>(() => {
 })
 
 function getNodeColor(node: WorkflowNode, index: number): string {
+  if (node.state === 'current') {
+    return '#ef4444'
+  }
+  if (node.state === 'completed') {
+    return '#10b981'
+  }
+  if (node.state === 'pending') {
+    return '#94a3b8'
+  }
   if (node.isCounterSign) {
     return '#f59e0b' // Amber for countersign
   }
@@ -102,6 +113,46 @@ function getNodeColor(node: WorkflowNode, index: number): string {
     return '#3b82f6' // Blue for start node
   }
   return '#6366f1' // Indigo for regular nodes
+}
+
+function getApproverTypeLabel(type?: string) {
+  const map: Record<string, string> = {
+    user: '用户',
+    role: '角色',
+    dept: '部门',
+    leader: '领导'
+  }
+  return map[type || ''] || type || '-'
+}
+
+function mapWorkflowNodes(
+  nodes: WorkflowNodeData[],
+  currentNodeId?: string | null,
+  completedNodeIds = new Set<string>()
+): WorkflowNode[] {
+  return nodes.map((node) => ({
+    id: node.id,
+    name: node.nodeName,
+    code: node.nodeCode,
+    order: node.nodeOrder,
+    approverType: node.approverType,
+    approverId: node.approverId,
+    isCounterSign: node.isCounterSign,
+    autoPassSameUser: node.autoPassSameUser,
+    state: node.id === currentNodeId
+      ? 'current'
+      : completedNodeIds.has(node.id)
+        ? 'completed'
+        : 'pending'
+  }))
+}
+
+function getCompletedNodeIds(detail: WorkflowDetailData) {
+  return new Set(
+    detail.approvals
+      .filter((approval) => ['approved', 'APPROVED', 'finish', 'FINISH', 'passed', 'PASS'].includes(approval.approvalStatus))
+      .map((approval) => approval.nodeId)
+  )
 }
 
 function onNodeClick(event: any) {
@@ -116,7 +167,6 @@ async function loadWorkflowDefinition() {
   loading.value = true
   try {
     if (props.definitionId) {
-      // Load definition and nodes from API
       const [defRes, nodesRes] = await Promise.all([
         getWorkflowDefinition(props.definitionId),
         getWorkflowNodes(props.definitionId)
@@ -128,19 +178,24 @@ async function loadWorkflowDefinition() {
         key: defRes.data.definitionKey,
         category: defRes.data.category || '',
         description: defRes.data.description,
-        nodes: nodesRes.data.map(node => ({
-          id: node.id,
-          name: node.nodeName,
-          code: node.nodeCode,
-          order: node.nodeOrder,
-          approverType: node.approverType,
-          approverId: node.approverId,
-          isCounterSign: node.isCounterSign,
-          autoPassSameUser: node.autoPassSameUser
-        }))
+        nodes: mapWorkflowNodes(nodesRes.data)
+      }
+    } else if (props.instanceId) {
+      const detailRes = await getWorkflowDetail(props.instanceId)
+      const detail = detailRes.data
+      definition.value = {
+        id: detail.instance.definitionId,
+        name: detail.instance.definitionName,
+        key: detail.instance.definitionId,
+        category: '',
+        description: detail.instance.remark || '',
+        nodes: mapWorkflowNodes(
+          detail.nodes,
+          detail.currentNode?.id || detail.instance.currentNodeId,
+          getCompletedNodeIds(detail)
+        )
       }
     }
-    // Note: instanceId loading can be added later if needed
 
     emit('loaded', definition.value!)
 
@@ -178,11 +233,11 @@ onMounted(() => {
 <template>
   <div class="workflow-visualizer">
     <div v-if="loading" class="loading">
-      <p>加载流程定义中...</p>
+      <p>加载流程图中...</p>
     </div>
 
     <div v-else-if="!definition" class="empty-state">
-      <p>请选择流程定义</p>
+      <p>{{ instanceId ? '暂无流程实例数据' : '请选择流程定义' }}</p>
     </div>
 
     <VueFlow
@@ -206,7 +261,16 @@ onMounted(() => {
           </div>
           <div v-if="data.node" class="node-details">
             <span class="node-badge">
-              {{ data.node.approverType === 'user' ? '用户' : '角色' }}
+              {{ getApproverTypeLabel(data.node.approverType) }}
+            </span>
+            <span v-if="data.node.state === 'current'" class="node-badge current">
+              处理中
+            </span>
+            <span v-else-if="data.node.state === 'completed'" class="node-badge completed">
+              已完成
+            </span>
+            <span v-else-if="data.node.state === 'pending'" class="node-badge pending">
+              未到达
             </span>
             <span v-if="data.node.isCounterSign" class="node-badge countersign">
               会签
@@ -272,6 +336,21 @@ onMounted(() => {
 
 .node-badge.countersign {
   background-color: #fbbf24;
+  color: white;
+}
+
+.node-badge.current {
+  background-color: #ef4444;
+  color: white;
+}
+
+.node-badge.completed {
+  background-color: #10b981;
+  color: white;
+}
+
+.node-badge.pending {
+  background-color: #94a3b8;
   color: white;
 }
 

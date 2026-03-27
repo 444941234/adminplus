@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.common.security.AppUserDetails;
 import com.adminplus.pojo.dto.req.ApprovalActionReq;
 import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
 import com.adminplus.pojo.entity.*;
@@ -68,6 +69,21 @@ class ApprovalStatusTransitionTest {
     @Mock
     private WorkflowDefinitionService definitionService;
 
+    @Mock
+    private com.adminplus.repository.DeptRepository deptRepository;
+
+    @Mock
+    private com.adminplus.repository.UserRoleRepository userRoleRepository;
+
+    @Mock
+    private com.adminplus.repository.WorkflowCcRepository ccRepository;
+
+    @Mock
+    private com.adminplus.repository.WorkflowAddSignRepository addSignRepository;
+
+    @Mock
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
     @InjectMocks
     private WorkflowInstanceServiceImpl service;
 
@@ -132,13 +148,27 @@ class ApprovalStatusTransitionTest {
         pendingApproval.setApproverId(APPROVER_ID);
         pendingApproval.setApproverName("Manager Smith");
         pendingApproval.setApprovalStatus("pending");
+
+        // Mock objectMapper for serializeFormData/deserializeFormData
+        // Use lenient() because not all tests need this stubbing
+        try {
+            lenient().when(objectMapper.writeValueAsString(any())).thenReturn("{}");
+            lenient().when(objectMapper.readValue(any(String.class), any(com.fasterxml.jackson.core.type.TypeReference.class)))
+                    .thenReturn(java.util.Map.of());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void mockSecurityContext(String userId) {
+        AppUserDetails userDetails = new AppUserDetails(
+                userId, "testuser", null, "Test User",
+                null, null, null, "dept-001", 1, null, null
+        );
         Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userId,
+                userDetails,
                 null,
-                Arrays.asList(new SimpleGrantedAuthority("ROLE_USER"))
+                userDetails.getAuthorities()
         );
         SecurityContextHolder.createEmptyContext();
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -172,7 +202,7 @@ class ApprovalStatusTransitionTest {
                     .thenReturn(Optional.of(testApprover));
 
             // When
-            WorkflowInstanceResp result = service.submit("inst-001");
+            WorkflowInstanceResp result = service.submit("inst-001", null);
 
             // Then
             assertThat(testInstance.getStatus()).isEqualTo("running");
@@ -260,7 +290,9 @@ class ApprovalStatusTransitionTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = new ApprovalActionReq("Approved", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Approved")
+                    .build();
 
             // When - Approve last node
             service.approve("inst-001", req);
@@ -293,7 +325,9 @@ class ApprovalStatusTransitionTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = new ApprovalActionReq("Insufficient documentation", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Insufficient documentation")
+                    .build();
 
             // When
             service.reject("inst-001", req);
@@ -361,7 +395,9 @@ class ApprovalStatusTransitionTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = new ApprovalActionReq("Approved", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Approved")
+                    .build();
 
             // When - Second approver approves (but third still pending)
             service.approve("inst-001", req);
@@ -415,7 +451,7 @@ class ApprovalStatusTransitionTest {
                     .thenReturn(Optional.of(testInstance));
 
             // When/Then
-            assertThatThrownBy(() -> service.submit("inst-001"))
+            assertThatThrownBy(() -> service.submit("inst-001", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("只有草稿或进行中的工作流可以提交");
         }
@@ -445,7 +481,7 @@ class ApprovalStatusTransitionTest {
                     .hasMessageContaining("只有草稿或被拒绝的流程可以撤回");
 
             // Cannot submit
-            assertThatThrownBy(() -> service.submit("inst-001"))
+            assertThatThrownBy(() -> service.submit("inst-001", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("只有草稿或进行中的工作流可以提交");
         }
@@ -475,7 +511,7 @@ class ApprovalStatusTransitionTest {
                     .hasMessageContaining("只有草稿或被拒绝的流程可以撤回");
 
             // Cannot submit
-            assertThatThrownBy(() -> service.submit("inst-001"))
+            assertThatThrownBy(() -> service.submit("inst-001", null))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("只有草稿或进行中的工作流可以提交");
         }
@@ -497,7 +533,9 @@ class ApprovalStatusTransitionTest {
             when(instanceRepository.findById("inst-001"))
                     .thenReturn(Optional.of(testInstance));
 
-            ApprovalActionReq req = new ApprovalActionReq("Approved", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Approved")
+                    .build();
 
             // When/Then
             assertThatThrownBy(() -> service.approve("inst-001", req))
@@ -517,7 +555,9 @@ class ApprovalStatusTransitionTest {
             when(instanceRepository.findById("inst-001"))
                     .thenReturn(Optional.of(testInstance));
 
-            ApprovalActionReq req = new ApprovalActionReq("Reject", null);
+            ApprovalActionReq req = ApprovalActionReq.builder()
+                    .comment("Reject")
+                    .build();
 
             // When/Then
             assertThatThrownBy(() -> service.reject("inst-001", req))
@@ -584,7 +624,7 @@ class ApprovalStatusTransitionTest {
 
             // When - Submit
             assertThat(testInstance.getSubmitTime()).isNull();
-            service.submit("inst-001");
+            service.submit("inst-001", null);
 
             // Then - Submit time set
             assertThat(testInstance.getSubmitTime()).isNotNull();
@@ -614,7 +654,9 @@ class ApprovalStatusTransitionTest {
 
             // When - Reject (ends workflow)
             assertThat(testInstance.getFinishTime()).isNull();
-            service.reject("inst-001", new ApprovalActionReq("No", null));
+            service.reject("inst-001", ApprovalActionReq.builder()
+                    .comment("No")
+                    .build());
 
             // Then - Finish time set
             assertThat(testInstance.getFinishTime()).isNotNull();

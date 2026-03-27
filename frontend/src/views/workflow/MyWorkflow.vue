@@ -1,56 +1,90 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import {
-  Badge,
   Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  Textarea
 } from '@/components/ui'
-import { cancelWorkflow, getMyWorkflows, withdrawWorkflow } from '@/api'
-import type { WorkflowInstance } from '@/types'
+import {
+  deleteWorkflowDraft,
+  getEnabledWorkflowDefinitions,
+  getMyWorkflows,
+  getWorkflowDefinition,
+  getWorkflowDraftDetail,
+  submitWorkflow,
+  updateWorkflowDraft
+} from '@/api'
+import WorkflowActionButtons from '@/components/workflow/WorkflowActionButtons.vue'
+import WorkflowListFilters from '@/components/workflow/WorkflowListFilters.vue'
+import WorkflowStartDialog from '@/components/workflow/WorkflowStartDialog.vue'
+import WorkflowStatusBadge from '@/components/workflow/WorkflowStatusBadge.vue'
+import { useWorkflowActions } from '@/composables/workflow/useWorkflowActions'
+import { useWorkflowForm } from '@/composables/workflow/useWorkflowForm'
+import type { WorkflowDefinition, WorkflowFormValues, WorkflowInstance } from '@/types'
 import { toast } from 'vue-sonner'
-import { RefreshCw } from 'lucide-vue-next'
 import { useUserStore } from '@/stores/user'
+import { getWorkflowPermissionState } from '@/lib/page-permissions'
 
 const loading = ref(false)
 const statusFilter = ref('ALL')
 const workflows = ref<WorkflowInstance[]>([])
+const enabledDefinitions = ref<WorkflowDefinition[]>([])
 const userStore = useUserStore()
+const {
+  actionLoading,
+  cancelWorkflowAction,
+  urgeWorkflowAction,
+  withdrawWorkflowAction
+} = useWorkflowActions()
+const {
+  formConfig,
+  formValues,
+  fieldErrors,
+  initForm,
+  validateForm,
+  buildSubmitPayload
+} = useWorkflowForm()
 
-const terminalStatuses = new Set(['APPROVED', 'REJECTED', 'CANCELLED', 'FINISHED', 'COMPLETED'])
-const canManageMyWorkflow = computed(() => userStore.hasPermission('workflow:create'))
+// 催办对话框
+const urgeDialogOpen = ref(false)
+const urgeContent = ref('')
+const selectedWorkflowId = ref<string | null>(null)
+const draftDialogOpen = ref(false)
+const draftLoading = ref(false)
+const draftDefinitionLoading = ref(false)
+const selectedDraftId = ref<string | null>(null)
+const draftForm = ref({
+  definitionId: '',
+  title: '',
+  remark: ''
+})
+
+const permissionState = computed(() => getWorkflowPermissionState(userStore.hasPermission))
+const canManageMyWorkflow = computed(() => permissionState.value.canStartWorkflow)
+const draftFormModel = computed<WorkflowFormValues>({
+  get: () => formValues.value,
+  set: (value) => {
+    formValues.value = value
+  }
+})
 
 const formatDateTime = (value?: string | null) => {
   if (!value) return '-'
   return new Date(value).toLocaleString('zh-CN', { hour12: false })
-}
-
-const getStatusLabel = (status?: string) => {
-  const map: Record<string, string> = {
-    DRAFT: '草稿',
-    PENDING: '审批中',
-    PROCESSING: '进行中',
-    APPROVED: '已通过',
-    REJECTED: '已驳回',
-    CANCELLED: '已取消',
-    WITHDRAWN: '已撤回',
-    FINISHED: '已完成',
-    COMPLETED: '已完成'
-  }
-  return map[status || ''] || status || '-'
 }
 
 const fetchData = async () => {
@@ -66,31 +100,185 @@ const fetchData = async () => {
   }
 }
 
-const handleWithdraw = async (workflow: WorkflowInstance) => {
+const fetchEnabledDefinitions = async () => {
   try {
-    await withdrawWorkflow(workflow.id)
-    toast.success('流程已撤回')
-    fetchData()
+    const res = await getEnabledWorkflowDefinitions()
+    enabledDefinitions.value = res.data
   } catch (error) {
-    const message = error instanceof Error ? error.message : '撤回失败'
+    const message = error instanceof Error ? error.message : '获取启用流程模板失败'
     toast.error(message)
+  }
+}
+
+const handleWithdraw = async (workflow: WorkflowInstance) => {
+  if (!permissionState.value.canWithdrawWorkflow) return
+  const result = await withdrawWorkflowAction(workflow.id)
+  if (result) {
+    fetchData()
   }
 }
 
 const handleCancel = async (workflow: WorkflowInstance) => {
+  if (!permissionState.value.canCancelWorkflow) return
+  const result = await cancelWorkflowAction(workflow.id)
+  if (result) {
+    fetchData()
+  }
+}
+
+const handleUrge = (workflow: WorkflowInstance) => {
+  if (!permissionState.value.canUrgeWorkflow) return
+  selectedWorkflowId.value = workflow.id
+  urgeContent.value = ''
+  urgeDialogOpen.value = true
+}
+
+const handleUrgeConfirm = async () => {
+  if (!selectedWorkflowId.value) return
+  if (!urgeContent.value.trim()) {
+    toast.warning('请输入催办内容')
+    return
+  }
+
+  const result = await urgeWorkflowAction(selectedWorkflowId.value, {
+    content: urgeContent.value.trim()
+  })
+
+  if (result !== null) {
+    urgeDialogOpen.value = false
+    urgeContent.value = ''
+    selectedWorkflowId.value = null
+  }
+}
+
+const loadDraftDefinition = async (definitionId: string) => {
+  draftDefinitionLoading.value = true
   try {
-    await cancelWorkflow(workflow.id)
-    toast.success('流程已取消')
+    const res = await getWorkflowDefinition(definitionId)
+    const nextDefinition = res.data
+    const existingIndex = enabledDefinitions.value.findIndex((item) => item.id === nextDefinition.id)
+    if (existingIndex >= 0) {
+      enabledDefinitions.value.splice(existingIndex, 1, nextDefinition)
+    } else {
+      enabledDefinitions.value.push(nextDefinition)
+    }
+    initForm(nextDefinition.formConfig, formValues.value)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取流程模板详情失败'
+    toast.error(message)
+  } finally {
+    draftDefinitionLoading.value = false
+  }
+}
+
+const validateDraftForm = () => {
+  if (!draftForm.value.definitionId) {
+    toast.warning('请选择流程类型')
+    return false
+  }
+  if (!draftForm.value.title.trim()) {
+    toast.warning('请输入流程标题')
+    return false
+  }
+  if (!validateForm()) {
+    toast.warning('请完善表单必填项')
+    return false
+  }
+  return true
+}
+
+const openDraftDialog = async (workflow: WorkflowInstance) => {
+  draftLoading.value = true
+  draftDialogOpen.value = true
+  selectedDraftId.value = workflow.id
+  try {
+    const res = await getWorkflowDraftDetail(workflow.id)
+    draftForm.value = {
+      definitionId: res.data.instance.definitionId,
+      title: res.data.instance.title,
+      remark: res.data.instance.remark || ''
+    }
+    initForm(res.data.formConfig, res.data.formData)
+    await loadDraftDefinition(res.data.instance.definitionId)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '获取草稿详情失败'
+    toast.error(message)
+    draftDialogOpen.value = false
+    selectedDraftId.value = null
+  } finally {
+    draftLoading.value = false
+  }
+}
+
+const handleDraftSave = async () => {
+  if (!permissionState.value.canDraftWorkflow) return
+  if (!selectedDraftId.value || !validateDraftForm()) return
+
+  draftLoading.value = true
+  try {
+    await updateWorkflowDraft(selectedDraftId.value, {
+      definitionId: draftForm.value.definitionId,
+      title: draftForm.value.title.trim(),
+      formData: buildSubmitPayload().formData,
+      remark: draftForm.value.remark.trim() || undefined
+    })
+    toast.success('草稿已更新')
+    draftDialogOpen.value = false
+    selectedDraftId.value = null
     fetchData()
   } catch (error) {
-    const message = error instanceof Error ? error.message : '取消失败'
+    const message = error instanceof Error ? error.message : '保存草稿失败'
+    toast.error(message)
+  } finally {
+    draftLoading.value = false
+  }
+}
+
+const handleDraftSubmit = async () => {
+  if (!permissionState.value.canDraftWorkflow) return
+  if (!selectedDraftId.value || !validateDraftForm()) return
+
+  draftLoading.value = true
+  try {
+    await submitWorkflow(selectedDraftId.value, {
+      definitionId: draftForm.value.definitionId,
+      title: draftForm.value.title.trim(),
+      formData: buildSubmitPayload().formData,
+      remark: draftForm.value.remark.trim() || undefined
+    })
+    toast.success('草稿提交成功')
+    draftDialogOpen.value = false
+    selectedDraftId.value = null
+    fetchData()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '提交草稿失败'
+    toast.error(message)
+  } finally {
+    draftLoading.value = false
+  }
+}
+
+const handleQuickSubmitDraft = async (workflow: WorkflowInstance) => {
+  await openDraftDialog(workflow)
+}
+
+const handleDeleteDraft = async (workflow: WorkflowInstance) => {
+  if (!permissionState.value.canDraftWorkflow) return
+  if (!window.confirm('确认删除该草稿吗？')) return
+
+  try {
+    await deleteWorkflowDraft(workflow.id)
+    toast.success('草稿已删除')
+    fetchData()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '删除草稿失败'
     toast.error(message)
   }
 }
 
-const canOperate = (workflow: WorkflowInstance) => !terminalStatuses.has(workflow.status)
-
-onMounted(fetchData)
+onMounted(async () => {
+  await Promise.all([fetchData(), fetchEnabledDefinitions()])
+})
 </script>
 
 <template>
@@ -98,25 +286,7 @@ onMounted(fetchData)
     <Card>
       <CardHeader class="flex flex-row items-center justify-between space-y-0">
         <CardTitle>我的流程</CardTitle>
-        <div class="flex items-center gap-3">
-          <Select v-model="statusFilter" @update:model-value="fetchData">
-            <SelectTrigger class="w-[180px]">
-              <SelectValue placeholder="全部状态" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">全部状态</SelectItem>
-              <SelectItem value="DRAFT">草稿</SelectItem>
-              <SelectItem value="PENDING">审批中</SelectItem>
-              <SelectItem value="APPROVED">已通过</SelectItem>
-              <SelectItem value="REJECTED">已驳回</SelectItem>
-              <SelectItem value="CANCELLED">已取消</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button variant="outline" @click="fetchData">
-            <RefreshCw class="mr-2 h-4 w-4" />
-            刷新
-          </Button>
-        </div>
+        <WorkflowListFilters :status="statusFilter" @update:status="(value) => { statusFilter = value; fetchData() }" @refresh="fetchData" />
       </CardHeader>
       <CardContent class="p-0">
         <Table>
@@ -145,38 +315,74 @@ onMounted(fetchData)
               <TableCell>{{ workflow.definitionName }}</TableCell>
               <TableCell>{{ workflow.currentNodeName || '-' }}</TableCell>
               <TableCell>
-                <Badge variant="secondary">{{ getStatusLabel(workflow.status) }}</Badge>
+                <WorkflowStatusBadge :status="workflow.status" />
               </TableCell>
               <TableCell>{{ formatDateTime(workflow.submitTime || workflow.createTime) }}</TableCell>
               <TableCell class="text-right">
-                <div class="flex justify-end gap-2">
-                  <RouterLink :to="`/workflow/detail/${workflow.id}`">
-                    <Button size="sm" variant="outline">详情</Button>
-                  </RouterLink>
-                  <Button
-                    v-if="canManageMyWorkflow"
-                    size="sm"
-                    variant="outline"
-                    :disabled="!canOperate(workflow)"
-                    @click="handleWithdraw(workflow)"
-                  >
-                    撤回
-                  </Button>
-                  <Button
-                    v-if="canManageMyWorkflow"
-                    size="sm"
-                    variant="ghost"
-                    :disabled="!canOperate(workflow)"
-                    @click="handleCancel(workflow)"
-                  >
-                    取消
-                  </Button>
-                </div>
+                <WorkflowActionButtons
+                  :workflow="workflow"
+                  mode="my"
+                  :can-manage="canManageMyWorkflow"
+                  :can-urge="permissionState.canUrgeWorkflow"
+                  :can-withdraw="permissionState.canWithdrawWorkflow"
+                  :can-cancel="permissionState.canCancelWorkflow"
+                  :can-draft="permissionState.canDraftWorkflow"
+                  @edit-draft="openDraftDialog"
+                  @submit-draft="handleQuickSubmitDraft"
+                  @delete-draft="handleDeleteDraft"
+                  @urge="handleUrge"
+                  @withdraw="handleWithdraw"
+                  @cancel="handleCancel"
+                />
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
       </CardContent>
     </Card>
+
+    <!-- 催办对话框 -->
+    <Dialog v-model:open="urgeDialogOpen">
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>催办</DialogTitle>
+        </DialogHeader>
+        <div class="space-y-4 py-4">
+          <div>
+            <label class="text-sm font-medium">催办内容</label>
+            <Textarea
+              v-model="urgeContent"
+              placeholder="请输入催办内容，如：请尽快审批"
+              class="mt-2"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" @click="urgeDialogOpen = false">取消</Button>
+          <Button :disabled="actionLoading" @click="handleUrgeConfirm">发送催办</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    <WorkflowStartDialog
+      :open="draftDialogOpen"
+      mode="draft"
+      :definitions="enabledDefinitions"
+      :definition-id="draftForm.definitionId"
+      :title="draftForm.title"
+      :remark="draftForm.remark"
+      :form-config="formConfig"
+      :form-values="draftFormModel"
+      :field-errors="fieldErrors"
+      :loading="draftLoading"
+      :definition-loading="draftDefinitionLoading"
+      @update:open="(value) => { draftDialogOpen = value }"
+      @update:definition-id="(value) => { draftForm.definitionId = value; loadDraftDefinition(value) }"
+      @update:title="(value) => { draftForm.title = value }"
+      @update:remark="(value) => { draftForm.remark = value }"
+      @update:form-values="(value) => { formValues = value }"
+      @save-draft="handleDraftSave"
+      @submit="handleDraftSubmit"
+    />
   </div>
 </template>

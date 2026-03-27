@@ -17,6 +17,7 @@ public record WorkflowDefinitionResp(
         Integer status,
         Integer version,
         String formConfig,
+        Integer nodeCount,
         Instant createTime,
         Instant updateTime
 ) {

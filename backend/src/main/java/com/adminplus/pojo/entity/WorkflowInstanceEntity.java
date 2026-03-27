@@ -89,15 +89,15 @@ public class WorkflowInstanceEntity extends BaseEntity {
     private Long version;
 
     /**
-     * 节点路径（JSONB，记录审批路径历史）
+     * 节点路径（JSON字符串，记录审批路径历史）
      */
-    @Column(name = "node_path", columnDefinition = "jsonb")
+    @Column(name = "node_path", columnDefinition = "TEXT")
     private String nodePath;
 
     /**
-     * 状态机上下文（JSONB，存储状态机扩展状态）
+     * 状态机上下文（JSON字符串，存储状态机扩展状态）
      */
-    @Column(name = "state_machine_context", columnDefinition = "jsonb")
+    @Column(name = "state_machine_context", columnDefinition = "TEXT")
     private String stateMachineContext;
 
     /**

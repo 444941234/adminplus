@@ -19,20 +19,26 @@ import {
   TableRow,
   Textarea
 } from '@/components/ui'
-import { approveWorkflow, getPendingWorkflows, rejectWorkflow } from '@/api'
+import { getPendingWorkflows } from '@/api'
+import WorkflowActionButtons from '@/components/workflow/WorkflowActionButtons.vue'
+import { useWorkflowActions } from '@/composables/workflow/useWorkflowActions'
 import type { WorkflowInstance } from '@/types'
 import { toast } from 'vue-sonner'
 import { useUserStore } from '@/stores/user'
 import { getWorkflowPermissionState } from '@/lib/page-permissions'
 
 const loading = ref(false)
-const dialogLoading = ref(false)
 const actionDialogOpen = ref(false)
 const actionType = ref<'approve' | 'reject'>('approve')
 const comment = ref('')
 const currentWorkflow = ref<WorkflowInstance | null>(null)
 const workflows = ref<WorkflowInstance[]>([])
 const userStore = useUserStore()
+const {
+  actionLoading,
+  approveWorkflowAction,
+  rejectWorkflowAction
+} = useWorkflowActions()
 
 const permissionState = computed(() => getWorkflowPermissionState(userStore.hasPermission))
 const canApproveWorkflow = computed(() => permissionState.value.canApprovePendingActions)
@@ -69,23 +75,14 @@ const submitAction = async () => {
     return
   }
 
-  dialogLoading.value = true
-  try {
-    const payload = { comment: comment.value.trim() }
-    if (actionType.value === 'approve') {
-      await approveWorkflow(currentWorkflow.value.id, payload)
-      toast.success('审批已通过')
-    } else {
-      await rejectWorkflow(currentWorkflow.value.id, payload)
-      toast.success('流程已驳回')
-    }
+  const payload = { comment: comment.value.trim() }
+  const result = actionType.value === 'approve'
+    ? await approveWorkflowAction(currentWorkflow.value.id, payload)
+    : await rejectWorkflowAction(currentWorkflow.value.id, payload)
+
+  if (result) {
     actionDialogOpen.value = false
     fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '审批失败'
-    toast.error(message)
-  } finally {
-    dialogLoading.value = false
   }
 }
 
@@ -124,13 +121,13 @@ onMounted(fetchData)
               <TableCell>{{ workflow.currentNodeName || '-' }}</TableCell>
               <TableCell>{{ formatDateTime(workflow.submitTime || workflow.createTime) }}</TableCell>
               <TableCell class="text-right">
-                <div class="flex justify-end gap-2">
-                  <RouterLink :to="`/workflow/detail/${workflow.id}`">
-                    <Button size="sm" variant="outline">详情</Button>
-                  </RouterLink>
-                  <Button v-if="canApproveWorkflow" size="sm" @click="openActionDialog(workflow, 'approve')">通过</Button>
-                  <Button v-if="canApproveWorkflow" size="sm" variant="destructive" @click="openActionDialog(workflow, 'reject')">驳回</Button>
-                </div>
+                <WorkflowActionButtons
+                  :workflow="workflow"
+                  mode="pending"
+                  :can-approve="canApproveWorkflow"
+                  @approve="(item) => openActionDialog(item, 'approve')"
+                  @reject="(item) => openActionDialog(item, 'reject')"
+                />
               </TableCell>
             </TableRow>
           </TableBody>
@@ -151,7 +148,7 @@ onMounted(fetchData)
         </div>
         <DialogFooter>
           <Button variant="outline" @click="actionDialogOpen = false">取消</Button>
-          <Button :variant="actionType === 'approve' ? 'default' : 'destructive'" :disabled="dialogLoading" @click="submitAction">
+          <Button :variant="actionType === 'approve' ? 'default' : 'destructive'" :disabled="actionLoading" @click="submitAction">
             确认
           </Button>
         </DialogFooter>

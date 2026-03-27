@@ -1,0 +1,199 @@
+package com.adminplus.service.impl;
+
+import com.adminplus.pojo.dto.req.UrgeActionReq;
+import com.adminplus.pojo.dto.resp.WorkflowUrgeResp;
+import com.adminplus.pojo.entity.*;
+import com.adminplus.repository.*;
+import com.adminplus.service.WorkflowUrgeService;
+import com.adminplus.utils.SecurityUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * 工作流催办服务实现
+ *
+ * @author AdminPlus
+ * @since 2026-03-26
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
+
+    private final WorkflowUrgeRepository urgeRepository;
+    private final WorkflowInstanceRepository instanceRepository;
+    private final WorkflowApprovalRepository approvalRepository;
+    private final WorkflowNodeRepository nodeRepository;
+    private final UserRepository userRepository;
+
+    @Override
+    @Transactional
+    public void urgeWorkflow(String instanceId, UrgeActionReq req) {
+        String urgeUserId = getCurrentUserId();
+        log.info("催办工作流: instanceId={}, urgeUserId={}", instanceId, urgeUserId);
+
+        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+
+        // 只有发起人可以催办
+        if (!instance.getUserId().equals(urgeUserId)) {
+            throw new IllegalArgumentException("只有发起人可以催办工作流");
+        }
+
+        // 只有运行中的工作流可以催办
+        if (!instance.isRunning()) {
+            throw new IllegalArgumentException("只有运行中的工作流可以催办");
+        }
+
+        // 获取当前节点
+        WorkflowNodeEntity currentNode = nodeRepository.findById(instance.getCurrentNodeId())
+                .orElseThrow(() -> new IllegalArgumentException("当前节点不存在"));
+
+        // 获取当前节点的所有待审批记录
+        List<WorkflowApprovalEntity> pendingApprovals = approvalRepository
+                .findByInstanceIdAndNodeIdAndDeletedFalse(instanceId, instance.getCurrentNodeId())
+                .stream()
+                .filter(a -> a.isPending())
+                .collect(Collectors.toList());
+
+        if (pendingApprovals.isEmpty()) {
+            throw new IllegalArgumentException("当前节点没有待审批人");
+        }
+
+        // 获取催办人信息
+        UserEntity urgeUser = userRepository.findById(urgeUserId)
+                .orElseThrow(() -> new IllegalArgumentException("催办人不存在"));
+
+        // 创建催办记录
+        int urgeCount = 0;
+        for (WorkflowApprovalEntity approval : pendingApprovals) {
+            // 如果指定了目标审批人，则只催办该人
+            if (req.targetApproverId() != null && !req.targetApproverId().isEmpty()
+                    && !approval.getApproverId().equals(req.targetApproverId())) {
+                continue;
+            }
+
+            WorkflowUrgeEntity urge = new WorkflowUrgeEntity();
+            urge.setInstanceId(instanceId);
+            urge.setNodeId(currentNode.getId());
+            urge.setNodeName(currentNode.getNodeName());
+            urge.setUrgeUserId(urgeUserId);
+            urge.setUrgeUserName(urgeUser.getNickname());
+            urge.setUrgeTargetId(approval.getApproverId());
+            urge.setUrgeTargetName(approval.getApproverName());
+            urge.setUrgeContent(req.content());
+            urge.setIsRead(false);
+
+            urgeRepository.save(urge);
+            urgeCount++;
+
+            // TODO: 发送催办通知（站内信、邮件、企业微信等）
+            log.info("发送催办通知: instanceId={}, targetUserId={}", instanceId, approval.getApproverId());
+        }
+
+        log.info("催办工作流完成: instanceId={}, urgeCount={}", instanceId, urgeCount);
+    }
+
+    @Override
+    public List<WorkflowUrgeResp> getReceivedUrgeRecords(String userId) {
+        log.info("查询用户收到的催办记录: userId={}", userId);
+        return urgeRepository.findByUrgeTargetId(userId).stream()
+                .map(this::toUrgeResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<WorkflowUrgeResp> getSentUrgeRecords(String userId) {
+        log.info("查询用户发送的催办记录: userId={}", userId);
+        return urgeRepository.findByUrgeUserId(userId).stream()
+                .map(this::toUrgeResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<WorkflowUrgeResp> getUnreadUrgeRecords(String userId) {
+        log.info("查询用户未读催办记录: userId={}", userId);
+        return urgeRepository.findUnreadByUrgeTargetId(userId).stream()
+                .map(this::toUrgeResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public long countUnreadUrgeRecords(String userId) {
+        long count = urgeRepository.countUnreadByUrgeTargetId(userId);
+        log.info("统计用户未读催办数量: userId={}, count={}", userId, count);
+        return count;
+    }
+
+    @Override
+    @Transactional
+    public void markAsRead(String urgeId) {
+        String userId = getCurrentUserId();
+        log.info("标记催办记录为已读: urgeId={}, userId={}", urgeId, userId);
+
+        WorkflowUrgeEntity urge = urgeRepository.findById(urgeId)
+                .orElseThrow(() -> new IllegalArgumentException("催办记录不存在"));
+
+        // 验证权限（只有被催办人可以标记已读）
+        if (!urge.getUrgeTargetId().equals(userId)) {
+            throw new IllegalArgumentException("无权限标记此催办记录");
+        }
+
+        urge.markAsRead();
+        urgeRepository.save(urge);
+    }
+
+    @Override
+    @Transactional
+    public void markAsReadBatch(List<String> urgeIds) {
+        String userId = getCurrentUserId();
+        log.info("批量标记催办记录为已读: count={}, userId={}", urgeIds.size(), userId);
+
+        List<WorkflowUrgeEntity> urgeList = urgeRepository.findAllById(urgeIds);
+
+        // 过滤出属于当前用户的记录
+        List<WorkflowUrgeEntity> userUrgeList = urgeList.stream()
+                .filter(u -> u.getUrgeTargetId().equals(userId))
+                .collect(Collectors.toList());
+
+        // 标记为已读
+        userUrgeList.forEach(WorkflowUrgeEntity::markAsRead);
+        urgeRepository.saveAll(userUrgeList);
+
+        log.info("实际标记催办记录为已读: count={}", userUrgeList.size());
+    }
+
+    @Override
+    public List<WorkflowUrgeResp> getInstanceUrgeRecords(String instanceId) {
+        log.info("查询工作流实例催办记录: instanceId={}", instanceId);
+        return urgeRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId).stream()
+                .map(this::toUrgeResponse)
+                .collect(Collectors.toList());
+    }
+
+    private WorkflowUrgeResp toUrgeResponse(WorkflowUrgeEntity entity) {
+        return new WorkflowUrgeResp(
+                entity.getId(),
+                entity.getInstanceId(),
+                entity.getNodeId(),
+                entity.getNodeName(),
+                entity.getUrgeUserId(),
+                entity.getUrgeUserName(),
+                entity.getUrgeTargetId(),
+                entity.getUrgeTargetName(),
+                entity.getUrgeContent(),
+                entity.getIsRead(),
+                entity.getReadTime(),
+                entity.getCreateTime()
+        );
+    }
+
+    private String getCurrentUserId() {
+        return SecurityUtils.getCurrentUserId();
+    }
+}

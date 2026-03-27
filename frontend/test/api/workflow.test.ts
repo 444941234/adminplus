@@ -198,9 +198,9 @@ describe('Workflow API', () => {
       }
       vi.mocked(post).mockResolvedValue({ code: 200, message: 'success', data: mockInstance })
 
-      const result = await submitWorkflow('1')
+      const result = await submitWorkflow('1', {} as any)
 
-      expect(post).toHaveBeenCalledWith('/workflow/instances/1/submit')
+      expect(post).toHaveBeenCalledWith('/workflow/instances/1/submit', {})
       expect(result.data.status).toBe('pending')
     })
   })

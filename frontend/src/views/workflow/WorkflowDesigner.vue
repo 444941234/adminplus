@@ -25,8 +25,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-  Textarea,
-  Checkbox
+  Textarea
 } from '@/components/ui'
 import {
   getWorkflowDefinitions,
@@ -42,7 +41,14 @@ import type { WorkflowDefinition, WorkflowNode, WorkflowDefinitionReq, WorkflowN
 import { toast } from 'vue-sonner'
 import { Plus, Pencil, Trash2, Settings, ArrowLeft } from 'lucide-vue-next'
 import WorkflowVisualizer from './WorkflowVisualizer.vue'
+import WorkflowNodeProperties from '@/components/workflow/designer/WorkflowNodeProperties.vue'
 import { useUserStore } from '@/stores/user'
+import { getWorkflowPermissionState } from '@/lib/page-permissions'
+
+type WorkflowNodeForm = Omit<WorkflowNodeReq, 'approverId' | 'description'> & {
+  approverId: string
+  description: string
+}
 
 // State
 const loading = ref(false)
@@ -69,7 +75,7 @@ const definitionForm = ref<WorkflowDefinitionReq>({
   formConfig: ''
 })
 
-const nodeForm = ref<WorkflowNodeReq>({
+const nodeForm = ref<WorkflowNodeForm>({
   nodeName: '',
   nodeCode: '',
   nodeOrder: 1,
@@ -84,11 +90,12 @@ const editingDefinitionId = ref<string | null>(null)
 const editingNodeId = ref<string | null>(null)
 
 const userStore = useUserStore()
+const permissionState = computed(() => getWorkflowPermissionState(userStore.hasPermission))
 
 // Permissions
-const canCreateDefinition = computed(() => userStore.hasPermission('workflow:create'))
-const canEditDefinition = computed(() => userStore.hasPermission('workflow:edit'))
-const canDeleteDefinition = computed(() => userStore.hasPermission('workflow:delete'))
+const canCreateDefinition = computed(() => permissionState.value.canCreateDefinition)
+const canEditDefinition = computed(() => permissionState.value.canEditDefinition)
+const canDeleteDefinition = computed(() => permissionState.value.canDeleteDefinition)
 
 // Helpers
 const formatDateTime = (value?: string | null) => {
@@ -332,7 +339,7 @@ onMounted(fetchDefinitions)
                 </TableCell>
                 <TableCell>{{ definition.category || '-' }}</TableCell>
                 <TableCell>
-                  <Badge variant="outline">{{ (definition as any).nodeCount ?? 0 }}</Badge>
+                  <Badge variant="outline">{{ definition.nodeCount ?? 0 }}</Badge>
                 </TableCell>
                 <TableCell>
                   <Badge :variant="definition.status === 1 ? 'default' : 'secondary'">
@@ -530,81 +537,7 @@ onMounted(fetchDefinitions)
         <DialogHeader>
           <DialogTitle>{{ isEditMode ? '编辑节点' : '添加节点' }}</DialogTitle>
         </DialogHeader>
-        <div class="space-y-4">
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <Label>节点名称 <span class="text-destructive">*</span></Label>
-              <Input
-                v-model="nodeForm.nodeName"
-                placeholder="如：部门经理审批"
-              />
-            </div>
-            <div class="space-y-2">
-              <Label>节点编码 <span class="text-destructive">*</span></Label>
-              <Input
-                v-model="nodeForm.nodeCode"
-                placeholder="如：dept_manager"
-              />
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="space-y-2">
-              <Label>审批顺序</Label>
-              <Input
-                v-model.number="nodeForm.nodeOrder"
-                type="number"
-                min="1"
-                placeholder="节点顺序"
-              />
-            </div>
-            <div class="space-y-2">
-              <Label>审批类型</Label>
-              <Select v-model="nodeForm.approverType">
-                <SelectTrigger>
-                  <SelectValue placeholder="请选择审批类型" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="user">用户审批</SelectItem>
-                  <SelectItem value="role">角色审批</SelectItem>
-                  <SelectItem value="dept">部门审批</SelectItem>
-                  <SelectItem value="leader">领导审批</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div class="space-y-2">
-            <Label>审批人ID</Label>
-            <Input
-              v-model="nodeForm.approverId"
-              :placeholder="nodeForm.approverType === 'user' ? '用户ID' :
-                            nodeForm.approverType === 'role' ? '角色ID' :
-                            nodeForm.approverType === 'dept' ? '部门ID' : '留空'"
-            />
-          </div>
-          <div class="flex gap-6">
-            <div class="flex items-center space-x-2">
-              <Checkbox
-                id="counterSign"
-                v-model:checked="nodeForm.isCounterSign"
-              />
-              <Label for="counterSign" class="text-sm font-normal cursor-pointer">会签</Label>
-            </div>
-            <div class="flex items-center space-x-2">
-              <Checkbox
-                id="autoPass"
-                v-model:checked="nodeForm.autoPassSameUser"
-              />
-              <Label for="autoPass" class="text-sm font-normal cursor-pointer">自动通过</Label>
-            </div>
-          </div>
-          <div class="space-y-2">
-            <Label>描述</Label>
-            <Textarea
-              v-model="nodeForm.description"
-              placeholder="节点描述信息"
-            />
-          </div>
-        </div>
+        <WorkflowNodeProperties v-model="nodeForm" />
         <DialogFooter>
           <Button variant="outline" @click="nodeDialogOpen = false">取消</Button>
           <Button :disabled="dialogLoading" @click="handleSaveNode">

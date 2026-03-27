@@ -34,4 +34,9 @@ public interface WorkflowNodeRepository extends JpaRepository<WorkflowNodeEntity
      * 根据定义ID和顺序查询节点
      */
     List<WorkflowNodeEntity> findByDefinitionIdAndNodeOrderAndDeletedFalse(String definitionId, Integer nodeOrder);
+
+    /**
+     * 统计定义下的节点数量
+     */
+    int countByDefinitionIdAndDeletedFalse(String definitionId);
 }

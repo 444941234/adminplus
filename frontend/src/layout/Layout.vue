@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Users,
   Shield,
+  Bell,
   Menu as MenuIcon,
   Building2,
   BookOpen,
@@ -26,6 +27,8 @@ import {
 } from 'lucide-vue-next'
 import { useUserStore } from '@/stores/user'
 import { resetDynamicRoutes } from '@/router'
+import { useWorkflowNoticeCounts } from '@/composables/workflow/useWorkflowNoticeCounts'
+import { getWorkflowPermissionState } from '@/lib/page-permissions'
 import {
   buildOpenGroupState,
   getSidebarMenuItems,
@@ -37,11 +40,14 @@ import {
 const route = useRoute()
 const userStore = useUserStore()
 const collapsed = ref(false)
+const { pendingCount, ccUnreadCount, urgeUnreadCount, fetchCounts } = useWorkflowNoticeCounts()
+const workflowPermissionState = computed(() => getWorkflowPermissionState(userStore.hasPermission))
 
 const iconMap: Record<string, typeof LayoutDashboard> = {
   LayoutDashboard,
   Users,
   Shield,
+  Bell,
   Menu: MenuIcon,
   HomeFilled: LayoutDashboard,
   User: Users,
@@ -140,6 +146,7 @@ const getSidebarGroups = (nodes: SidebarDisplayNode[]) => nodes.filter(isDisplay
 
 watch(sidebarTree, ensureActiveGroupsExpanded, { immediate: true, deep: true })
 watch(() => route.path, ensureActiveGroupsExpanded)
+watch(() => route.path, fetchCounts)
 
 const handleLogout = async () => {
   await userStore.logout()
@@ -152,6 +159,7 @@ onMounted(() => {
   if (userStore.token && !userStore.userInfo) {
     userStore.fetchUserInfo()
   }
+  fetchCounts()
 })
 </script>
 
@@ -338,6 +346,35 @@ onMounted(() => {
         </div>
         
         <div class="flex items-center gap-4">
+          <div class="hidden md:flex items-center gap-2">
+            <RouterLink v-if="workflowPermissionState.canApprovePendingActions" to="/workflow/pending">
+              <Button variant="outline" size="sm" class="gap-2">
+                <Clock3 class="w-4 h-4" />
+                待审批
+                <span v-if="pendingCount > 0" class="rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
+                  {{ pendingCount }}
+                </span>
+              </Button>
+            </RouterLink>
+            <RouterLink v-if="workflowPermissionState.canViewCc" to="/workflow/cc">
+              <Button variant="outline" size="sm" class="gap-2">
+                <Users class="w-4 h-4" />
+                抄送
+                <span v-if="ccUnreadCount > 0" class="rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
+                  {{ ccUnreadCount }}
+                </span>
+              </Button>
+            </RouterLink>
+            <RouterLink v-if="workflowPermissionState.canViewUrge" to="/workflow/urge">
+              <Button variant="outline" size="sm" class="gap-2">
+                <Bell class="w-4 h-4" />
+                催办
+                <span v-if="urgeUnreadCount > 0" class="rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
+                  {{ urgeUnreadCount }}
+                </span>
+              </Button>
+            </RouterLink>
+          </div>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
               <Button variant="ghost" class="flex items-center gap-2">

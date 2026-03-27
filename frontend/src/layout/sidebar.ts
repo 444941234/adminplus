@@ -39,7 +39,9 @@ const staticMenus: SidebarMenuItemData[] = [
   { path: '/workflow/definitions', icon: 'GitBranch', label: '流程模板' },
   { path: '/workflow/designer', icon: 'Settings', label: '流程设计' },
   { path: '/workflow/my', icon: 'Workflow', label: '我的流程' },
-  { path: '/workflow/pending', icon: 'Clock3', label: '待我审批' }
+  { path: '/workflow/pending', icon: 'Clock3', label: '待我审批' },
+  { path: '/workflow/cc', icon: 'Users', label: '抄送我的' },
+  { path: '/workflow/urge', icon: 'Bell', label: '催办中心' }
 ]
 
 export const staticSidebarTree: SidebarNode[] = [
@@ -85,7 +87,9 @@ export const staticSidebarTree: SidebarNode[] = [
       { kind: 'item', id: 'workflow-definitions', path: '/workflow/definitions', label: '流程模板', icon: 'GitBranch' },
       { kind: 'item', id: 'workflow-designer', path: '/workflow/designer', label: '流程设计', icon: 'Settings' },
       { kind: 'item', id: 'workflow-my', path: '/workflow/my', label: '我的流程', icon: 'Workflow' },
-      { kind: 'item', id: 'workflow-pending', path: '/workflow/pending', label: '待我审批', icon: 'Clock3' }
+      { kind: 'item', id: 'workflow-pending', path: '/workflow/pending', label: '待我审批', icon: 'Clock3' },
+      { kind: 'item', id: 'workflow-cc', path: '/workflow/cc', label: '抄送我的', icon: 'Users' },
+      { kind: 'item', id: 'workflow-urge', path: '/workflow/urge', label: '催办中心', icon: 'Bell' }
     ]
   }
 ]

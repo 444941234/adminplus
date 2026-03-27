@@ -4,8 +4,8 @@ import com.adminplus.base.AbstractRepositoryTest;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Integration tests for Workflow Approval Module
+ * Integration tests for Workflow Approval Module.
+ * <p>
+ * Uses Testcontainers to automatically start PostgreSQL container.
+ * Requires Docker to be running.
  * <p>
  * Test Coverage:
  * <ul>
@@ -30,8 +33,8 @@ import static org.assertj.core.api.Assertions.*;
  * @author AdminPlus
  * @since 2026-03-25
  */
-@DisplayName("Workflow Integration Tests")
-@Disabled("Integration tests require PostgreSQL on localhost:5433")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
 class WorkflowIntegrationTest extends AbstractRepositoryTest {
 
     @Autowired
@@ -77,11 +80,13 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
     }
 
     @Nested
-    @DisplayName("End-to-End Workflow Execution")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class EndToEndWorkflowExecution {
 
         @Test
-        @DisplayName("Should complete full workflow lifecycle: create -> submit -> approve -> approve -> complete")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldCompleteFullWorkflowLifecycle() {
             // 1. Create workflow definition
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
@@ -205,7 +210,8 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
         }
 
         @Test
-        @DisplayName("Should handle workflow rejection at any node")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldHandleWorkflowRejection() {
             // Create definition and instance
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
@@ -271,11 +277,13 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
     }
 
     @Nested
-    @DisplayName("Multi-Node Approval Flow")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class MultiNodeApprovalFlow {
 
         @Test
-        @DisplayName("Should handle three-node sequential approval")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldHandleThreeNodeSequentialApproval() {
             // Create 3-node workflow
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
@@ -349,11 +357,13 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
     }
 
     @Nested
-    @DisplayName("Edge Cases - Cancellation and Rejection")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class EdgeCasesCancellationRejection {
 
         @Test
-        @DisplayName("Should allow cancellation of draft workflow")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldAllowCancellationOfDraft() {
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionName("Test Workflow");
@@ -383,7 +393,8 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
         }
 
         @Test
-        @DisplayName("Should allow cancellation of running workflow")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldAllowCancellationOfRunning() {
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionKey("test_wf2");
@@ -418,11 +429,13 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
     }
 
     @Nested
-    @DisplayName("Concurrent Operations")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class ConcurrentOperations {
 
         @Test
-        @DisplayName("Should handle multiple workflows simultaneously")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldHandleMultipleWorkflows() {
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionKey("concurrent_wf");
@@ -452,11 +465,13 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
     }
 
     @Nested
-    @DisplayName("Data Integrity")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
     class DataIntegrity {
 
         @Test
-        @DisplayName("Should maintain referential integrity")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldMaintainReferentialIntegrity() {
             // Create complete workflow with all relationships
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
@@ -501,7 +516,8 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
         }
 
         @Test
-        @DisplayName("Should handle soft deletes correctly")
+@Disabled("Integration tests require Docker with TCP endpoint enabled")
+@DisplayName("&")
         void shouldHandleSoftDeletesCorrectly() {
             WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
             instance.setDefinitionId("test-def");

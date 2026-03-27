@@ -288,7 +288,8 @@ export interface WorkflowDefinition {
   description: string
   status: number
   version: number
-  formConfig: string
+  formConfig: string | WorkflowFormConfig
+  nodeCount?: number
   createTime: string
   updateTime: string
 }
@@ -305,8 +306,8 @@ export interface WorkflowInstance {
   currentNodeId: string
   currentNodeName: string
   status: string
-  submitTime: string
-  finishTime: string
+  submitTime: string | null
+  finishTime: string | null
   remark: string
   createTime: string
   pendingApproval: boolean
@@ -333,7 +334,7 @@ export interface WorkflowDefinitionReq {
   category?: string
   description?: string
   status: number
-  formConfig?: string
+  formConfig?: string | WorkflowFormConfig
 }
 
 export interface WorkflowNodeReq {
@@ -355,9 +356,53 @@ export interface WorkflowApproval {
   approverId: string
   approverName: string
   approvalStatus: string
-  comment: string
-  attachments: string
-  approvalTime: string
+  comment: string | null
+  attachments: string | null
+  approvalTime: string | null
+  createTime: string
+}
+
+export interface WorkflowCc {
+  id: string
+  instanceId: string
+  nodeId: string
+  nodeName: string
+  userId: string
+  userName: string
+  ccType: string
+  ccContent: string
+  isRead: boolean
+  readTime: string | null
+  createTime: string
+}
+
+export interface WorkflowUrge {
+  id: string
+  instanceId: string
+  nodeId: string
+  nodeName: string
+  urgeUserId: string
+  urgeUserName: string
+  urgeTargetId: string
+  urgeTargetName: string
+  urgeContent: string
+  isRead: boolean
+  readTime: string | null
+  createTime: string
+}
+
+export interface WorkflowAddSign {
+  id: string
+  instanceId: string
+  nodeId: string
+  nodeName: string
+  initiatorId: string
+  initiatorName: string
+  addUserId: string
+  addUserName: string
+  addType: string
+  addReason: string
+  originalApproverId?: string
   createTime: string
 }
 
@@ -367,4 +412,61 @@ export interface WorkflowDetail {
   nodes: WorkflowNode[]
   currentNode: WorkflowNode | null
   canApprove: boolean
+  formConfig?: string | WorkflowFormConfig
+  formData?: WorkflowFormValues
+  ccRecords?: WorkflowCc[]
+  addSignRecords?: WorkflowAddSign[]
+}
+
+export interface WorkflowFormOption {
+  label: string
+  value: string | number
+}
+
+export type WorkflowFormFieldComponent =
+  | 'input'
+  | 'textarea'
+  | 'number'
+  | 'select'
+  | 'date'
+  | 'daterange'
+  | 'user'
+  | 'dept'
+  | 'file'
+
+export interface WorkflowFormFieldRule {
+  min?: number
+  max?: number
+  pattern?: string
+}
+
+export interface WorkflowFormField {
+  field: string
+  label: string
+  component: WorkflowFormFieldComponent
+  required?: boolean
+  readonly?: boolean
+  placeholder?: string
+  defaultValue?: unknown
+  options?: WorkflowFormOption[]
+  rules?: WorkflowFormFieldRule
+  description?: string
+}
+
+export interface WorkflowFormSection {
+  key: string
+  title: string
+  fields: WorkflowFormField[]
+}
+
+export interface WorkflowFormConfig {
+  sections: WorkflowFormSection[]
+}
+
+export type WorkflowFormValues = Record<string, unknown>
+
+export interface WorkflowDraftDetail {
+  instance: WorkflowInstance
+  formConfig: string | WorkflowFormConfig
+  formData: WorkflowFormValues
 }

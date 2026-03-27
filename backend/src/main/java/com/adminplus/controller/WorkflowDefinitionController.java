@@ -35,7 +35,7 @@ public class WorkflowDefinitionController {
     @PostMapping
     @Operation(summary = "创建工作流定义")
     @OperationLog(module = "工作流管理", operationType = 2, description = "创建工作流定义 {#req.definitionName}")
-    @PreAuthorize("hasAuthority('workflow:create')")
+    @PreAuthorize("hasAnyAuthority('workflow:definition:create', 'workflow:create')")
     public ApiResponse<WorkflowDefinitionResp> create(@Valid @RequestBody WorkflowDefinitionReq req) {
         log.info("创建工作流定义: {}", req.definitionName());
         WorkflowDefinitionResp resp = definitionService.create(req);
@@ -45,7 +45,7 @@ public class WorkflowDefinitionController {
     @PutMapping("/{id}")
     @Operation(summary = "更新工作流定义")
     @OperationLog(module = "工作流管理", operationType = 3, description = "更新工作流定义 {#id}")
-    @PreAuthorize("hasAuthority('workflow:update')")
+    @PreAuthorize("hasAnyAuthority('workflow:definition:update', 'workflow:update')")
     public ApiResponse<WorkflowDefinitionResp> update(
             @PathVariable String id,
             @Valid @RequestBody WorkflowDefinitionReq req) {
@@ -57,7 +57,7 @@ public class WorkflowDefinitionController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除工作流定义")
     @OperationLog(module = "工作流管理", operationType = 4, description = "删除工作流定义 {#id}")
-    @PreAuthorize("hasAuthority('workflow:delete')")
+    @PreAuthorize("hasAnyAuthority('workflow:definition:delete', 'workflow:delete')")
     public ApiResponse<Void> delete(@PathVariable String id) {
         log.info("删除工作流定义: id={}", id);
         definitionService.delete(id);
@@ -92,7 +92,7 @@ public class WorkflowDefinitionController {
     @PostMapping("/{definitionId}/nodes")
     @Operation(summary = "添加工作流节点")
     @OperationLog(module = "工作流管理", operationType = 2, description = "添加工作流节点 {#req.nodeName}")
-    @PreAuthorize("hasAuthority('workflow:update')")
+    @PreAuthorize("hasAnyAuthority('workflow:definition:update', 'workflow:update')")
     public ApiResponse<WorkflowNodeResp> addNode(
             @PathVariable String definitionId,
             @Valid @RequestBody WorkflowNodeReq req) {
@@ -104,7 +104,7 @@ public class WorkflowDefinitionController {
     @PutMapping("/nodes/{nodeId}")
     @Operation(summary = "更新工作流节点")
     @OperationLog(module = "工作流管理", operationType = 3, description = "更新工作流节点 {#nodeId}")
-    @PreAuthorize("hasAuthority('workflow:update')")
+    @PreAuthorize("hasAnyAuthority('workflow:definition:update', 'workflow:update')")
     public ApiResponse<WorkflowNodeResp> updateNode(
             @PathVariable String nodeId,
             @Valid @RequestBody WorkflowNodeReq req) {
@@ -116,7 +116,7 @@ public class WorkflowDefinitionController {
     @DeleteMapping("/nodes/{nodeId}")
     @Operation(summary = "删除工作流节点")
     @OperationLog(module = "工作流管理", operationType = 4, description = "删除工作流节点 {#nodeId}")
-    @PreAuthorize("hasAuthority('workflow:update')")
+    @PreAuthorize("hasAnyAuthority('workflow:definition:update', 'workflow:update')")
     public ApiResponse<Void> deleteNode(@PathVariable String nodeId) {
         log.info("删除工作流节点: nodeId={}", nodeId);
         definitionService.deleteNode(nodeId);

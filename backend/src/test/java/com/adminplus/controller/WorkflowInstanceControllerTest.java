@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -57,8 +58,9 @@ class WorkflowInstanceControllerTest {
         objectMapper = new ObjectMapper();
         testInstance = new WorkflowInstanceResp(
                 "inst-001", "def-001", "请假审批", "user-001", "发起人",
-                "dept-001", "请假申请", null, null, null, "pending",
-                Instant.now(), null, null, Instant.now(), true, true
+                "dept-001", null, "请假申请", null, null, null,
+                "pending", Instant.now(), null, null, Instant.now(),
+                true, true, false, false, true, false, false
         );
         startReq = WorkflowStartReq.builder()
                 .definitionId("def-001")
@@ -98,14 +100,14 @@ class WorkflowInstanceControllerTest {
         @DisplayName("should submit workflow")
         void submit_ShouldSubmitWorkflow() throws Exception {
             // Given
-            when(instanceService.submit("inst-001")).thenReturn(testInstance);
+            when(instanceService.submit("inst-001", null)).thenReturn(testInstance);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/instances/inst-001/submit"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(instanceService).submit("inst-001");
+            verify(instanceService).submit("inst-001", null);
         }
     }
 
@@ -139,7 +141,8 @@ class WorkflowInstanceControllerTest {
         void getDetail_ShouldReturnDetail() throws Exception {
             // Given
             WorkflowDetailResp detail = new WorkflowDetailResp(
-                    testInstance, List.of(), List.of(), null, true
+                    testInstance, List.of(), List.of(), null, true,
+                    null, null, List.of(), List.of(), null
             );
             when(instanceService.getDetail("inst-001")).thenReturn(detail);
 

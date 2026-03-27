@@ -1,6 +1,7 @@
 package com.adminplus.base;
 
 import com.adminplus.config.IntegrationTestConfig;
+import com.adminplus.config.TestcontainersConfiguration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,6 +21,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -28,7 +30,8 @@ import java.util.List;
 /**
  * Abstract base class for integration tests.
  * <p>
- * Requires PostgreSQL running on localhost:5433 (started via docker-compose.test.yml)
+ * Uses Testcontainers to automatically start PostgreSQL container.
+ * Requires Docker to be running with TCP endpoint enabled (Docker Desktop > Settings > General > "Expose daemon on tcp://localhost:2375").
  * </p>
  *
  * @author AdminPlus
@@ -37,8 +40,9 @@ import java.util.List;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Import(IntegrationTestConfig.class)
-@Disabled("Integration tests require PostgreSQL on localhost:5433. Start with: docker run -d --name adminplus-test-postgres -p 5433:5432 -e POSTGRES_DB=adminplus_test -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test postgres:16-alpine")
+@Import({IntegrationTestConfig.class, TestcontainersConfiguration.class})
+@Testcontainers
+@Disabled("Integration tests require Docker with TCP endpoint enabled. Enable in Docker Desktop > Settings > General > 'Expose daemon on tcp://localhost:2375'")
 public abstract class AbstractIntegrationTest {
 
     @Autowired

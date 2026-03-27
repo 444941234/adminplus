@@ -75,6 +75,20 @@ const dashboardQuickActions: DashboardQuickAction[] = [
     icon: 'Clock3',
     color: 'text-amber-500',
     permissions: ['workflow:pending:list', 'workflow:approve']
+  },
+  {
+    path: '/workflow/cc',
+    label: '抄送我的',
+    icon: 'Users',
+    color: 'text-cyan-500',
+    permissions: ['workflow:cc:list']
+  },
+  {
+    path: '/workflow/urge',
+    label: '催办中心',
+    icon: 'Bell',
+    color: 'text-rose-500',
+    permissions: ['workflow:urge:list', 'workflow:urge']
   }
 ]
 
@@ -86,10 +100,43 @@ export const getWorkflowPermissionState = (
   hasPermission: PermissionChecker,
   canApproveDetail = false
 ) => {
+  const canStart = hasPermission('workflow:start') || hasPermission('workflow:create')
+  const canDraft = hasPermission('workflow:draft') || hasPermission('workflow:create')
   const canApprove = hasPermission('workflow:approve')
+  const canReject = hasPermission('workflow:reject') || canApprove
+  const canRollback = hasPermission('workflow:rollback') || canApprove
+  const canAddSign = hasPermission('workflow:add-sign') || canApprove
+  const canUrge = hasPermission('workflow:urge') || hasPermission('workflow:create')
+  const canWithdraw = hasPermission('workflow:withdraw') || hasPermission('workflow:create')
+  const canCancel = hasPermission('workflow:cancel') || hasPermission('workflow:create')
+  const canViewCc = hasPermission('workflow:cc:list')
+  const canMarkCcRead = hasPermission('workflow:cc:read') || canViewCc
+  const canViewUrge = hasPermission('workflow:urge:list') || hasPermission('workflow:urge')
+  const canMarkUrgeRead = hasPermission('workflow:urge:read') || canViewUrge
+  const canViewDefinitions = hasPermission('workflow:definition:list')
+  const canCreateDefinition = hasPermission('workflow:definition:create') || hasPermission('workflow:create')
+  const canEditDefinition = hasPermission('workflow:definition:update') || hasPermission('workflow:update')
+  const canDeleteDefinition = hasPermission('workflow:definition:delete') || hasPermission('workflow:delete')
+
   return {
+    canStartWorkflow: canStart,
+    canDraftWorkflow: canDraft,
     canApprovePendingActions: canApprove,
-    canApproveDetail: canApprove && canApproveDetail
+    canApproveDetail: canApprove && canApproveDetail,
+    canRejectDetail: canReject && canApproveDetail,
+    canRollbackDetail: canRollback && canApproveDetail,
+    canAddSignDetail: canAddSign && canApproveDetail,
+    canUrgeWorkflow: canUrge,
+    canWithdrawWorkflow: canWithdraw,
+    canCancelWorkflow: canCancel,
+    canViewCc,
+    canMarkCcRead,
+    canViewUrge,
+    canMarkUrgeRead,
+    canViewDefinitions,
+    canCreateDefinition,
+    canEditDefinition,
+    canDeleteDefinition
   }
 }
 
