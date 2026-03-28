@@ -144,6 +144,9 @@ public class RoleServiceImpl implements RoleService {
 
         role = roleRepository.save(role);
 
+        // 记录审计日志
+        logService.log("角色管理", OperationType.UPDATE, "更新角色: " + role.getName() + " (" + role.getCode() + ")");
+
         return new RoleResp(
                 role.getId(),
                 role.getCode(),
@@ -210,7 +213,8 @@ public class RoleServiceImpl implements RoleService {
         }
 
         // 记录审计日志
-        logService.log("角色管理", OperationType.UPDATE, "分配菜单权限: " + role.getName() + " -> " + menuIds.size() + " 个菜单");
+        int menuCount = (menuIds != null) ? menuIds.size() : 0;
+        logService.log("角色管理", OperationType.UPDATE, "分配菜单权限: " + role.getName() + " -> " + menuCount + " 个菜单");
     }
 
     @Override

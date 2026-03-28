@@ -54,6 +54,7 @@ const editId = ref('')
 
 const deleteDialogOpen = ref(false)
 const deleteDeptId = ref('')
+const deleteLoading = ref(false)
 
 const form = reactive({
   parentId: '0',
@@ -298,6 +299,7 @@ const handleDeleteConfirm = (id: string) => {
 }
 
 const handleDelete = async () => {
+  deleteLoading.value = true
   try {
     await deleteDept(deleteDeptId.value)
     toast.success('部门删除成功')
@@ -306,6 +308,7 @@ const handleDelete = async () => {
     const message = error instanceof Error ? error.message : '删除部门失败'
     toast.error(message)
   } finally {
+    deleteLoading.value = false
     deleteDialogOpen.value = false
   }
 }
@@ -318,11 +321,10 @@ onMounted(fetchData)
     <Card>
       <CardContent class="p-4">
         <div class="flex gap-4 items-center">
-          <Input v-model="searchQuery" placeholder="搜索部门名称/编码/负责人" class="w-72" />
-          <Button variant="outline">
-            <Search class="w-4 h-4 mr-2" />
-            筛选
-          </Button>
+          <div class="relative">
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input v-model="searchQuery" placeholder="搜索部门名称/编码/负责人" class="w-72 pl-9" />
+          </div>
           <div class="flex-1" />
           <Button v-if="canAddDept" @click="handleAdd">
             <Plus class="w-4 h-4 mr-2" />
@@ -473,8 +475,10 @@ onMounted(fetchData)
           <AlertDialogDescription>删除后不可恢复，若存在下级部门或关联数据，后端会拒绝本次删除。</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="handleDelete">确认删除</AlertDialogAction>
+          <AlertDialogCancel :disabled="deleteLoading">取消</AlertDialogCancel>
+          <AlertDialogAction :disabled="deleteLoading" @click="handleDelete">
+            {{ deleteLoading ? '删除中...' : '确认删除' }}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

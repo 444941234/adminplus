@@ -19,6 +19,7 @@ import com.adminplus.pojo.dto.resp.WorkflowOperationPermissionsResp;
 import com.adminplus.repository.*;
 import com.adminplus.service.WorkflowDefinitionService;
 import com.adminplus.service.WorkflowInstanceService;
+import com.adminplus.common.exception.BizException;
 import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -557,14 +558,10 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 break;
         }
 
-        // 如果找不到审批人，使用系统管理员作为默认审批人（方便测试）
+        // 如果找不到审批人，抛出异常而非静默使用 admin
         if (approvers.isEmpty()) {
-            log.warn("无法解析审批人，使用默认审批人: type={}, node={}", node.getApproverType(), node.getNodeName());
-            userRepository.findByUsername("admin").ifPresent(admin -> approvers.add(admin.getId()));
-        }
-
-        if (approvers.isEmpty()) {
-            throw new IllegalArgumentException("无法解析审批人: type=" + node.getApproverType());
+            log.error("无法解析审批人: type={}, node={}", node.getApproverType(), node.getNodeName());
+            throw new BizException("无法解析审批人，请联系管理员配置审批流程: " + node.getNodeName());
         }
 
         return approvers;

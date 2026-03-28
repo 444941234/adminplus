@@ -1,7 +1,9 @@
 package com.adminplus.pojo.dto.req;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
@@ -25,8 +27,10 @@ public record DeptCreateReq(
         @Size(max = 30, message = "负责人长度不能超过30")
         String leader,
 
+        @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
         String phone,
 
+        @Email(message = "邮箱格式不正确")
         @Size(max = 50, message = "邮箱长度不能超过50")
         String email,
 

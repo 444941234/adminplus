@@ -310,6 +310,9 @@ public class UserServiceImpl implements UserService {
 
         user = userRepository.save(user);
 
+        // 记录审计日志
+        logService.log("用户管理", OperationType.UPDATE, "更新用户: " + user.getUsername());
+
         // 查询部门名称
         String deptName = null;
         if (user.getDeptId() != null) {

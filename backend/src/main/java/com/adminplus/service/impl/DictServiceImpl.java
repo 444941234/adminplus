@@ -145,6 +145,12 @@ public class DictServiceImpl implements DictService {
         DictEntity dict = dictRepository.findById(id)
                 .orElseThrow(() -> new BizException("字典不存在"));
 
+        // 检查是否有字典项
+        List<DictItemEntity> items = dictItemRepository.findByDictIdOrderBySortOrderAsc(id);
+        if (!items.isEmpty()) {
+            throw new BizException("该字典下存在字典项，无法删除");
+        }
+
         dict.setDeleted(true);
         dictRepository.save(dict);
         log.info("删除字典成功: {}", dict.getDictType());

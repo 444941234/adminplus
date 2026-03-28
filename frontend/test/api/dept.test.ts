@@ -27,11 +27,11 @@ describe('Dept API', () => {
       const mockDeptTree = [
         {
           id: '1',
-          deptName: '总公司',
+          name: '总公司',
           parentId: '0',
           children: [
-            { id: '2', deptName: '技术部', parentId: '1', children: [] },
-            { id: '3', deptName: '市场部', parentId: '1', children: [] }
+            { id: '2', name: '技术部', parentId: '1', children: [] },
+            { id: '3', name: '市场部', parentId: '1', children: [] }
           ]
         }
       ]
@@ -48,9 +48,9 @@ describe('Dept API', () => {
     it('should fetch department by id', async () => {
       const mockDept = {
         id: '1',
-        deptName: '技术部',
+        name: '技术部',
         parentId: '0',
-        sort: 1,
+        sortOrder: 1,
         status: 1
       }
       vi.mocked(get).mockResolvedValue({ code: 200, message: 'success', data: mockDept })
@@ -65,9 +65,9 @@ describe('Dept API', () => {
   describe('createDept', () => {
     it('should create a new department', async () => {
       const newDept = {
-        deptName: '新部门',
+        name: '新部门',
         parentId: '1',
-        sort: 1,
+        sortOrder: 1,
         status: 1
       }
       const mockCreatedDept = { id: '4', ...newDept }
@@ -76,13 +76,13 @@ describe('Dept API', () => {
       const result = await createDept(newDept)
 
       expect(post).toHaveBeenCalledWith('/sys/depts', newDept)
-      expect(result.data.deptName).toBe('新部门')
+      expect(result.data.name).toBe('新部门')
     })
   })
 
   describe('updateDept', () => {
     it('should update department information', async () => {
-      const updates = { deptName: '更新后的部门', sort: 2 }
+      const updates = { name: '更新后的部门', sortOrder: 2 }
       const mockUpdatedDept = {
         id: '1',
         parentId: '0',
@@ -94,7 +94,7 @@ describe('Dept API', () => {
       const result = await updateDept('1', updates)
 
       expect(put).toHaveBeenCalledWith('/sys/depts/1', updates)
-      expect(result.data.deptName).toBe('更新后的部门')
+      expect(result.data.name).toBe('更新后的部门')
     })
   })
 

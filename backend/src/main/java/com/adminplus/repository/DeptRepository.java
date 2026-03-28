@@ -51,6 +51,16 @@ public interface DeptRepository extends JpaRepository<DeptEntity, String> {
     boolean existsByNameAndDeletedFalse(String name);
 
     /**
+     * 检查部门编码是否存在（排除指定ID）
+     */
+    boolean existsByCodeAndIdNotAndDeletedFalse(String code, String id);
+
+    /**
+     * 检查部门编码是否存在
+     */
+    boolean existsByCodeAndDeletedFalse(String code);
+
+    /**
      * 根据 ancestors 查找子孙节点
      */
     @Query("SELECT d FROM DeptEntity d WHERE d.ancestors LIKE :ancestorsPrefix || '%' ORDER BY d.sortOrder ASC")

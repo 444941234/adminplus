@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 部门服务实现
@@ -135,6 +134,12 @@ public class DeptServiceImpl implements DeptService {
             throw new BizException("部门名称已存在");
         }
 
+        // 检查部门编码是否已存在
+        if (req.code() != null && !req.code().isBlank()
+                && deptRepository.existsByCodeAndDeletedFalse(req.code())) {
+            throw new BizException("部门编码已存在");
+        }
+
         var dept = new DeptEntity();
         dept.setName(req.name());
         dept.setCode(req.code());
@@ -177,6 +182,13 @@ public class DeptServiceImpl implements DeptService {
             }
         }
 
+        // 如果更新部门编码，检查是否与其他部门重复
+        if (req.code().isPresent() && !req.code().get().equals(dept.getCode())) {
+            if (deptRepository.existsByCodeAndIdNotAndDeletedFalse(req.code().get(), id)) {
+                throw new BizException("部门编码已存在");
+            }
+        }
+
         req.parentId().ifPresent(parentId -> {
             // 不能将自己设置为父部门
             if (id.equals(parentId)) {
@@ -186,28 +198,48 @@ public class DeptServiceImpl implements DeptService {
             if (isChildDept(id, parentId)) {
                 throw new BizException("不能将部门设置为自己的子部门");
             }
+
+            // 记录旧 ancestors 用于级联更新子孙
+            String oldAncestors = dept.getAncestors() != null ? dept.getAncestors() : "";
+
             if (parentId != null && !parentId.equals("0")) {
                 DeptEntity parent = deptRepository.findById(parentId)
                         .orElseThrow(() -> new BizException("父部门不存在"));
                 dept.setParent(parent);
-                // 更新 ancestors
                 String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
-                dept.setAncestors(parentAncestors + parent.getId() + ",");
+                String newAncestors = parentAncestors + parent.getId() + ",";
+                dept.setAncestors(newAncestors);
+                // 级联更新所有子孙的 ancestors
+                cascadeUpdateAncestors(oldAncestors, newAncestors, id);
             } else {
                 dept.setParent(null);
                 dept.setAncestors("0,");
+                cascadeUpdateAncestors(oldAncestors, "0,", id);
             }
         });
 
         req.name().ifPresent(dept::setName);
         req.code().ifPresent(dept::setCode);
         req.leader().ifPresent(dept::setLeader);
-        req.phone().ifPresent(dept::setPhone);
-        req.email().ifPresent(dept::setEmail);
+        req.phone().ifPresent(phone -> {
+            if (!phone.isBlank() && !phone.matches("^1[3-9]\\d{9}$")) {
+                throw new BizException("手机号格式不正确");
+            }
+            dept.setPhone(phone);
+        });
+        req.email().ifPresent(email -> {
+            if (!email.isBlank() && !email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
+                throw new BizException("邮箱格式不正确");
+            }
+            dept.setEmail(email);
+        });
         req.sortOrder().ifPresent(dept::setSortOrder);
         req.status().ifPresent(dept::setStatus);
 
         var savedDept = deptRepository.save(dept);
+
+        // 记录审计日志
+        logService.log("部门管理", OperationType.UPDATE, "更新部门: " + savedDept.getName());
 
         return toResp(savedDept);
     }
@@ -230,38 +262,49 @@ public class DeptServiceImpl implements DeptService {
     }
 
     /**
-     * 检查目标部门是否是指定部门的子部门（防止循环引用）
+     * 检查目标部门是否是指定部门的子孙（防止循环引用）
+     * <p>
+     * 利用 ancestors 字段：检查 targetId 的 ancestors 路径中是否包含 parentId
+     * </p>
      */
     private boolean isChildDept(String parentId, String targetId) {
         if (targetId == null || targetId.equals("0")) {
             return false;
         }
+        return deptRepository.findById(targetId)
+                .map(dept -> {
+                    String ancestors = dept.getAncestors();
+                    return ancestors != null && ancestors.contains(parentId + ",");
+                })
+                .orElse(false);
+    }
 
-        List<DeptEntity> allDepts = deptRepository.findAllByOrderBySortOrderAsc();
+    /**
+     * 级联更新子孙节点的 ancestors 字段
+     * <p>
+     * 当父部门变更时，所有子孙的 ancestors 前缀需要从 oldPrefix 替换为 newPrefix
+     * </p>
+     *
+     * @param oldAncestors 变更前的 ancestors 路径
+     * @param newAncestors 变更后的 ancestors 路径
+     * @param deptId       被移动的部门ID（排除自身）
+     */
+    private void cascadeUpdateAncestors(String oldAncestors, String newAncestors, String deptId) {
+        // 查找所有子孙（ancestors 包含 oldAncestors + deptId 的节点）
+        String descendantsPrefix = oldAncestors + deptId + ",";
+        List<DeptEntity> descendants = deptRepository.findByAncestorsStartingWith(descendantsPrefix);
 
-        // 从目标部门开始向上查找
-        String currentId = targetId;
-        while (currentId != null && !currentId.equals("0")) {
-            if (currentId.equals(parentId)) {
-                return true;
+        // 构造替换后的前缀
+        String newPrefix = newAncestors + deptId + ",";
+
+        for (DeptEntity descendant : descendants) {
+            String currentAncestors = descendant.getAncestors();
+            if (currentAncestors != null && currentAncestors.startsWith(descendantsPrefix)) {
+                String updatedAncestors = newPrefix + currentAncestors.substring(descendantsPrefix.length());
+                descendant.setAncestors(updatedAncestors);
             }
-
-            final String finalCurrentId = currentId;
-            DeptEntity currentDept = allDepts.stream()
-                    .filter(d -> d.getId().equals(finalCurrentId))
-                    .findFirst()
-                    .orElse(null);
-
-            if (currentDept == null) {
-                break;
-            }
-
-            // 使用 parent 对象获取父节点 ID
-            DeptEntity parent = currentDept.getParent();
-            currentId = parent != null ? parent.getId() : null;
         }
-
-        return false;
+        deptRepository.saveAll(descendants);
     }
 
     @Override
@@ -274,19 +317,18 @@ public class DeptServiceImpl implements DeptService {
         List<String> result = new ArrayList<>();
         result.add(deptId);
 
-        // 递归获取所有子部门ID
-        List<String> parentIds = List.of(deptId);
-        while (!parentIds.isEmpty()) {
-            List<DeptEntity> children = deptRepository.findByParentIdInOrderBySortOrderAsc(parentIds);
-            if (children.isEmpty()) {
-                break;
-            }
-            List<String> childIds = children.stream()
-                    .map(DeptEntity::getId)
-                    .toList();
-            result.addAll(childIds);
-            parentIds = childIds;
+        // 构造 ancestors 前缀：当前部门的 ancestors + 自身ID
+        // 例如 dept(ancestors="0,1,") -> 子孙的 ancestors 以 "0,1,deptId," 开头
+        var dept = deptRepository.findById(deptId).orElse(null);
+        if (dept == null) {
+            return result;
         }
+        String ancestorsPrefix = (dept.getAncestors() != null ? dept.getAncestors() : "") + deptId + ",";
+
+        List<DeptEntity> descendants = deptRepository.findByAncestorsStartingWith(ancestorsPrefix);
+        result.addAll(descendants.stream()
+                .map(DeptEntity::getId)
+                .toList());
 
         return result;
     }

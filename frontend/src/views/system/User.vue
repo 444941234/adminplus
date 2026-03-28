@@ -48,6 +48,8 @@ const formDialogOpen = ref(false)
 const editUserId = ref('')
 const deleteDialogOpen = ref(false)
 const deleteUserId = ref('')
+const deleteLoading = ref(false)
+
 const passwordDialogOpen = ref(false)
 const resetUserId = ref('')
 const resetUsername = ref('')
@@ -57,6 +59,13 @@ const assignUser = ref<User | null>(null)
 // 状态切换确认
 const statusConfirmOpen = ref(false)
 const statusChangeUser = ref<User | null>(null)
+
+const formatTime = (date: string) => {
+  if (!date) return '-'
+  const d = new Date(date)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
 
 const permissionState = computed(() => getUserPagePermissionState(userStore.hasPermission))
 const canAddUser = computed(() => permissionState.value.canAddUser)
@@ -184,6 +193,7 @@ const handleDeleteConfirm = (id: string) => {
 }
 
 const handleDelete = async () => {
+  deleteLoading.value = true
   try {
     await deleteUser(deleteUserId.value)
     toast.success('用户删除成功')
@@ -192,6 +202,7 @@ const handleDelete = async () => {
     const message = error instanceof Error ? error.message : '删除用户失败'
     toast.error(message)
   } finally {
+    deleteLoading.value = false
     deleteDialogOpen.value = false
   }
 }
@@ -297,8 +308,8 @@ onMounted(async () => {
                   {{ user.status === 1 ? '正常' : '禁用' }}
                 </Badge>
               </td>
-              <td class="p-4 text-sm text-muted-foreground">{{ user.createTime }}</td>
-              <td class="p-4">
+              <td class="p-4 text-sm text-muted-foreground">{{ formatTime(user.createTime) }}
+            </td>              <td class="p-4">
                 <div class="flex gap-2">
                   <Button v-if="canEditUser" size="sm" variant="ghost" @click="handleEdit(user.id)">
                     <Edit class="h-4 w-4" />
@@ -392,7 +403,7 @@ onMounted(async () => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="handleDelete">确认删除</AlertDialogAction>
+          <AlertDialogAction :disabled="deleteLoading" @click="handleDelete">确认删除</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

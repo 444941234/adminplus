@@ -128,16 +128,33 @@ public class MenuServiceImpl implements MenuService {
                 .orElseThrow(() -> new BizException("菜单不存在"));
 
         req.parentId().ifPresent(parentId -> {
+            // 不能将自己设置为父菜单
+            if (id.equals(parentId)) {
+                throw new BizException("不能将自己设置为父菜单");
+            }
+
+            // 检查是否将菜单设置为自己的子菜单（防止循环引用）
+            if (parentId != null && !parentId.equals("0") && isChildMenu(id, parentId)) {
+                throw new BizException("不能将菜单设置为自己的子菜单");
+            }
+
+            // 记录旧 ancestors 用于级联更新
+            String oldAncestors = menu.getAncestors() != null ? menu.getAncestors() : "";
+
             if (parentId != null && !parentId.equals("0")) {
                 MenuEntity parent = menuRepository.findById(parentId)
                         .orElseThrow(() -> new BizException("父菜单不存在"));
                 menu.setParent(parent);
                 // 更新 ancestors
                 String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
-                menu.setAncestors(parentAncestors + parent.getId() + ",");
+                String newAncestors = parentAncestors + parent.getId() + ",";
+                menu.setAncestors(newAncestors);
+                // 级联更新所有子孙的 ancestors
+                cascadeUpdateAncestors(oldAncestors, newAncestors, id);
             } else {
                 menu.setParent(null);
                 menu.setAncestors("0,");
+                cascadeUpdateAncestors(oldAncestors, "0,", id);
             }
         });
 
@@ -152,6 +169,9 @@ public class MenuServiceImpl implements MenuService {
         req.status().ifPresent(menu::setStatus);
 
         var savedMenu = menuRepository.save(menu);
+
+        // 记录审计日志
+        logService.log("菜单管理", OperationType.UPDATE, "更新菜单: " + savedMenu.getName());
 
         return toResp(savedMenu);
     }
@@ -283,6 +303,43 @@ public class MenuServiceImpl implements MenuService {
                 addParentMenus(menuMap, menuIds, parentId);
             }
         }
+    }
+
+    /**
+     * 检查目标菜单是否是指定菜单的子孙（防止循环引用）
+     */
+    private boolean isChildMenu(String parentId, String targetId) {
+        if (targetId == null || targetId.equals("0")) {
+            return false;
+        }
+        return menuRepository.findById(targetId)
+                .map(menu -> {
+                    String ancestors = menu.getAncestors();
+                    return ancestors != null && ancestors.contains(parentId + ",");
+                })
+                .orElse(false);
+    }
+
+    /**
+     * 级联更新子孙节点的 ancestors 字段
+     * <p>
+     * 当父菜单变更时，所有子孙的 ancestors 前缀需要从 oldPrefix 替换为 newPrefix
+     * </p>
+     */
+    private void cascadeUpdateAncestors(String oldAncestors, String newAncestors, String menuId) {
+        String descendantsPrefix = oldAncestors + menuId + ",";
+        List<MenuEntity> descendants = menuRepository.findByAncestorsStartingWith(descendantsPrefix);
+
+        String newPrefix = newAncestors + menuId + ",";
+
+        for (MenuEntity descendant : descendants) {
+            String currentAncestors = descendant.getAncestors();
+            if (currentAncestors != null && currentAncestors.startsWith(descendantsPrefix)) {
+                String updatedAncestors = newPrefix + currentAncestors.substring(descendantsPrefix.length());
+                descendant.setAncestors(updatedAncestors);
+            }
+        }
+        menuRepository.saveAll(descendants);
     }
 
     /**

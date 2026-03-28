@@ -233,7 +233,9 @@ class DeptServiceTest {
         @DisplayName("should return single id when no children")
         void getDeptAndChildrenIds_WithNoChildren_ShouldReturnSingleId() {
             // Given
-            when(deptRepository.findByParentIdInOrderBySortOrderAsc(any())).thenReturn(List.of());
+            testDept.setAncestors("0,");
+            when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
+            when(deptRepository.findByAncestorsStartingWith("0,dept-001,")).thenReturn(List.of());
 
             // When
             List<String> result = deptService.getDeptAndChildrenIds("dept-001");
@@ -246,14 +248,14 @@ class DeptServiceTest {
         @DisplayName("should return all child ids recursively")
         void getDeptAndChildrenIds_WithChildren_ShouldReturnAllIds() {
             // Given
+            testDept.setAncestors("0,");
             DeptEntity child1 = new DeptEntity();
             child1.setId("child-001");
             DeptEntity child2 = new DeptEntity();
             child2.setId("child-002");
-            when(deptRepository.findByParentIdInOrderBySortOrderAsc(List.of("dept-001")))
+            when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
+            when(deptRepository.findByAncestorsStartingWith("0,dept-001,"))
                     .thenReturn(List.of(child1, child2));
-            when(deptRepository.findByParentIdInOrderBySortOrderAsc(List.of("child-001", "child-002")))
-                    .thenReturn(List.of());
 
             // When
             List<String> result = deptService.getDeptAndChildrenIds("dept-001");
