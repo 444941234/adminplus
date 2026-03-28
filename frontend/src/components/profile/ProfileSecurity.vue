@@ -98,7 +98,6 @@ const handlePasswordChange = async () => {
     isPasswordDialogOpen.value = false
     resetPasswordForm()
   } catch (error: any) {
-    console.error('Failed to change password:', error)
     toast.error(error.response?.data?.message || '密码修改失败，请重试')
   } finally {
     isChangingPassword.value = false

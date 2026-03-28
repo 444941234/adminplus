@@ -6,6 +6,7 @@ import { getStats, getRecentLogs } from '@/api'
 import type { DashboardStats, OperationLog } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { getDashboardQuickActions } from '@/lib/page-permissions'
+import { toast } from 'vue-sonner'
 
 const loading = ref(true)
 const stats = ref<DashboardStats | null>(null)
@@ -22,7 +23,8 @@ const fetchDashboard = async () => {
     stats.value = statsRes.data
     recentLogs.value = logsRes.data
   } catch (error) {
-    console.error('获取数据失败', error)
+    const message = error instanceof Error ? error.message : '获取仪表盘数据失败'
+    toast.error(message)
   } finally {
     loading.value = false
   }

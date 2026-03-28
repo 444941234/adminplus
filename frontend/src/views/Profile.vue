@@ -23,7 +23,6 @@ const fetchProfile = async () => {
     const res = await getProfile()
     profile.value = res.data
   } catch (error) {
-    console.error('Failed to fetch profile:', error)
     toast.error('获取个人资料失败')
   } finally {
     profileLoading.value = false
@@ -36,9 +35,7 @@ const fetchActivityStats = async () => {
     const res = await getActivityStats()
     activityStats.value = res.data
   } catch (error) {
-    console.error('Failed to fetch activity stats:', error)
-    console.warn('Activity stats could not be loaded. Some dashboard features may be unavailable.')
-    // Don't show toast for activity stats as it's not critical
+    // Activity stats are non-critical, silently degrade
   } finally {
     activityLoading.value = false
   }
@@ -58,7 +55,6 @@ const handleUpdateField = async (field: keyof Profile, value: string) => {
     } as Profile
     toast.success('更新成功')
   } catch (error) {
-    console.error('Failed to update profile:', error)
     toast.error('更新失败')
     // Revert on error by refetching
     await fetchProfile()
