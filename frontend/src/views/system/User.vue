@@ -2,14 +2,6 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Badge,
   Button,
   Card,
@@ -22,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { ChevronLeft, ChevronRight, Edit, KeyRound, Plus, Search, Shield, Trash2 } from 'lucide-vue-next'
+import { Edit, KeyRound, Plus, Search, Shield, Trash2 } from 'lucide-vue-next'
+import { ConfirmDialog, Pagination } from '@/components/common'
 import { getDeptTree, getRoleList, getUserList, updateUserStatus, deleteUser } from '@/api'
 import type { Dept, PageResult, Role, User } from '@/types'
 import { getUserPagePermissionState } from '@/lib/page-permissions'
@@ -72,26 +65,6 @@ const canAddUser = computed(() => permissionState.value.canAddUser)
 const canEditUser = computed(() => permissionState.value.canEditUser)
 const canDeleteUser = computed(() => permissionState.value.canDeleteUser)
 const canAssignUser = computed(() => permissionState.value.canAssignUser)
-
-const totalPages = computed(() => Math.ceil(tableData.value.total / tableData.value.size) || 1)
-
-const visiblePages = computed(() => {
-  const current = tableData.value.page
-  const total = totalPages.value
-  const pages: Array<number | string> = []
-  if (total <= 7) {
-    for (let i = 1; i <= total; i += 1) pages.push(i)
-    return pages
-  }
-  pages.push(1)
-  if (current > 3) pages.push('...')
-  const start = Math.max(2, current - 1)
-  const end = Math.min(total - 1, current + 1)
-  for (let i = start; i <= end; i += 1) pages.push(i)
-  if (current < total - 2) pages.push('...')
-  pages.push(total)
-  return pages
-})
 
 const deptOptions = computed(() => {
   const options: Array<{ id: string; label: string }> = [{ id: '0', label: '无部门' }]
@@ -218,6 +191,7 @@ const openAssignDialog = (user: User) => {
   assignDialogOpen.value = true
 }
 
+const totalPages = computed(() => Math.ceil(tableData.value.total / tableData.value.size) || 1)
 const goToPage = async (page: number) => {
   if (page < 1 || page > totalPages.value || page === tableData.value.page) return
   tableData.value.page = page
@@ -335,36 +309,12 @@ onMounted(async () => {
           </tbody>
         </table>
 
-        <div class="flex items-center justify-between border-t px-4 py-4">
-          <p class="text-sm text-muted-foreground">
-            共 <span class="font-medium">{{ tableData.total }}</span> 条记录，
-            第 <span class="font-medium">{{ tableData.page }}</span> / <span class="font-medium">{{ totalPages }}</span> 页
-          </p>
-          <div class="flex items-center gap-1">
-            <Button variant="outline" size="icon" :disabled="tableData.page === 1" @click="goToPage(tableData.page - 1)">
-              <ChevronLeft class="h-4 w-4" />
-            </Button>
-            <template v-for="(page, index) in visiblePages" :key="index">
-              <span v-if="page === '...'" class="px-2 text-muted-foreground">...</span>
-              <Button
-                v-else
-                size="icon"
-                :variant="page === tableData.page ? 'default' : 'outline'"
-                @click="goToPage(page as number)"
-              >
-                {{ page }}
-              </Button>
-            </template>
-            <Button
-              variant="outline"
-              size="icon"
-              :disabled="tableData.page >= totalPages"
-              @click="goToPage(tableData.page + 1)"
-            >
-              <ChevronRight class="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          :current="tableData.page"
+          :total="tableData.total"
+          :page-size="tableData.size"
+          @change="goToPage"
+        />
       </CardContent>
     </Card>
 
@@ -395,33 +345,22 @@ onMounted(async () => {
     />
 
     <!-- 删除确认对话框 -->
-    <AlertDialog v-if="canDeleteUser" v-model:open="deleteDialogOpen">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认删除用户</AlertDialogTitle>
-          <AlertDialogDescription>删除后不可恢复，如果用户仍有关联数据，后端可能会拒绝删除。</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction :disabled="deleteLoading" @click="handleDelete">确认删除</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      v-if="canDeleteUser"
+      v-model:open="deleteDialogOpen"
+      title="确认删除用户"
+      description="删除后不可恢复，如果用户仍有关联数据，后端可能会拒绝删除。"
+      :loading="deleteLoading"
+      @confirm="handleDelete"
+    />
 
     <!-- 状态切换确认对话框 -->
-    <AlertDialog v-if="canEditUser" v-model:open="statusConfirmOpen">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认{{ statusChangeUser?.status === 1 ? '禁用' : '启用' }}用户</AlertDialogTitle>
-          <AlertDialogDescription>
-            确定要{{ statusChangeUser?.status === 1 ? '禁用' : '启用' }}用户「{{ statusChangeUser?.username }}」吗？
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="handleStatusConfirm">确认</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      v-if="canEditUser"
+      v-model:open="statusConfirmOpen"
+      :title="`确认${statusChangeUser?.status === 1 ? '禁用' : '启用'}用户`"
+      :description="`确定要${statusChangeUser?.status === 1 ? '禁用' : '启用'}用户「${statusChangeUser?.username}」吗？`"
+      @confirm="handleStatusConfirm"
+    />
   </div>
 </template>

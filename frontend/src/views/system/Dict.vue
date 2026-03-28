@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Badge,
   Button,
   Card,
@@ -27,7 +19,8 @@ import {
   SelectValue,
   Textarea
 } from '@/components/ui'
-import { ChevronLeft, ChevronRight, Edit, ListTree, Plus, Search, Trash2 } from 'lucide-vue-next'
+import { Edit, ListTree, Plus, Trash2 } from 'lucide-vue-next'
+import { ConfirmDialog, PageHeader, Pagination } from '@/components/common'
 import {
   createDict,
   createDictItem,
@@ -98,27 +91,6 @@ const canAddDictItem = computed(() => userStore.hasPermission('dictitem:add'))
 const canEditDictItem = computed(() => userStore.hasPermission('dictitem:edit'))
 const canDeleteDictItem = computed(() => userStore.hasPermission('dictitem:delete'))
 
-const totalPages = computed(() => Math.ceil(tableData.value.total / tableData.value.size) || 1)
-
-const visiblePages = computed(() => {
-  const current = tableData.value.page
-  const total = totalPages.value
-  const pages: Array<number | string> = []
-  if (total <= 7) {
-    for (let i = 1; i <= total; i += 1) pages.push(i)
-    return pages
-  }
-  pages.push(1)
-  if (current > 3) pages.push('...')
-  const start = Math.max(2, current - 1)
-  const end = Math.min(total - 1, current + 1)
-  for (let i = start; i <= end; i += 1) {
-    pages.push(i)
-  }
-  if (current < total - 2) pages.push('...')
-  pages.push(total)
-  return pages
-})
 
 const getDictRemark = (dict: Dict) => dict.description ?? ''
 const getItemParentId = (item: DictItem) => item.parentId ?? '0'
@@ -165,6 +137,7 @@ const handleSearch = () => {
   fetchData()
 }
 
+const totalPages = computed(() => Math.ceil(tableData.value.total / tableData.value.size) || 1)
 const goToPage = (page: number) => {
   if (page >= 1 && page <= totalPages.value && page !== tableData.value.page) {
     tableData.value.page = page
@@ -425,23 +398,17 @@ onMounted(fetchData)
 
 <template>
   <div class="space-y-4">
-    <Card>
-      <CardContent class="p-4">
-        <div class="flex gap-4 items-center">
-          <Input v-model="searchQuery" placeholder="搜索字典名称/类型" class="w-72" @keyup.enter="handleSearch" />
-          <Button @click="handleSearch">
-            <Search class="w-4 h-4 mr-2" />
-            搜索
-          </Button>
-          <Button variant="outline" @click="searchQuery = ''; handleSearch()">重置</Button>
-          <div class="flex-1" />
-          <Button v-if="canAddDict" @click="handleAdd">
-            <Plus class="w-4 h-4 mr-2" />
-            新增字典
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <PageHeader
+      v-model:search="searchQuery"
+      placeholder="搜索字典名称/类型"
+      @search="handleSearch"
+      @reset="searchQuery = ''; handleSearch()"
+    >
+      <Button v-if="canAddDict" @click="handleAdd">
+        <Plus class="w-4 h-4 mr-2" />
+        新增字典
+      </Button>
+    </PageHeader>
 
     <Card>
       <CardContent class="p-0">
@@ -496,36 +463,12 @@ onMounted(fetchData)
           </tbody>
         </table>
 
-        <div class="flex items-center justify-between px-4 py-4 border-t">
-          <p class="text-sm text-muted-foreground">
-            共 <span class="font-medium">{{ tableData.total }}</span> 条记录，
-            第 <span class="font-medium">{{ tableData.page }}</span> / <span class="font-medium">{{ totalPages }}</span> 页
-          </p>
-          <div class="flex items-center gap-1">
-            <Button variant="outline" size="icon" :disabled="tableData.page === 1" @click="goToPage(tableData.page - 1)">
-              <ChevronLeft class="w-4 h-4" />
-            </Button>
-            <template v-for="(page, index) in visiblePages" :key="index">
-              <span v-if="page === '...'" class="px-2 text-muted-foreground">...</span>
-              <Button
-                v-else
-                :variant="page === tableData.page ? 'default' : 'outline'"
-                size="icon"
-                @click="goToPage(page as number)"
-              >
-                {{ page }}
-              </Button>
-            </template>
-            <Button
-              variant="outline"
-              size="icon"
-              :disabled="tableData.page >= totalPages"
-              @click="goToPage(tableData.page + 1)"
-            >
-              <ChevronRight class="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          :current="tableData.page"
+          :total="tableData.total"
+          :page-size="tableData.size"
+          @change="goToPage"
+        />
       </CardContent>
     </Card>
 
@@ -563,18 +506,14 @@ onMounted(fetchData)
       </DialogContent>
     </Dialog>
 
-    <AlertDialog v-if="canDeleteDict" v-model:open="deleteDialogOpen">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认删除字典</AlertDialogTitle>
-          <AlertDialogDescription>删除字典后将无法恢复，如果存在关联字典项，后端可能会拒绝删除。</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction :disabled="deleteLoading" @click="handleDelete">确认删除</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      v-if="canDeleteDict"
+      v-model:open="deleteDialogOpen"
+      title="确认删除字典"
+      description="删除字典后将无法恢复，如果存在关联字典项，后端可能会拒绝删除。"
+      :loading="deleteLoading"
+      @confirm="handleDelete"
+    />
 
     <Dialog v-if="canListDictItems" v-model:open="itemDialogOpen">
       <DialogContent class="sm:max-w-4xl">
@@ -708,17 +647,13 @@ onMounted(fetchData)
       </DialogContent>
     </Dialog>
 
-    <AlertDialog v-if="canDeleteDictItem" v-model:open="deleteItemDialogOpen">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认删除字典项</AlertDialogTitle>
-          <AlertDialogDescription>删除后不可恢复，如果存在子项，后端可能会拒绝删除。</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction :disabled="deleteItemLoading" @click="handleDeleteItem">确认删除</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      v-if="canDeleteDictItem"
+      v-model:open="deleteItemDialogOpen"
+      title="确认删除字典项"
+      description="删除后不可恢复，如果存在子项，后端可能会拒绝删除。"
+      :loading="deleteItemLoading"
+      @confirm="handleDeleteItem"
+    />
   </div>
 </template>

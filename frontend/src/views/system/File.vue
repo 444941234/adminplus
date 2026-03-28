@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Badge,
   Button,
   Card,
@@ -22,6 +14,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Download, FolderOpen, RefreshCw, Search, Trash2, Upload } from 'lucide-vue-next'
+import { ConfirmDialog } from '@/components/common'
 import { deleteManagedFile, getFilesByDirectory, getMyFiles, uploadManagedFile } from '@/api'
 import type { FileRecord } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -245,17 +238,12 @@ onMounted(fetchFiles)
       </CardContent>
     </Card>
 
-    <AlertDialog v-if="canDeleteFile" v-model:open="deleteDialogOpen">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认删除文件</AlertDialogTitle>
-          <AlertDialogDescription>删除后不可恢复，如果当前用户无权限，后端会拒绝本次删除。</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="handleDelete">确认删除</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      v-if="canDeleteFile"
+      v-model:open="deleteDialogOpen"
+      title="确认删除文件"
+      description="删除后不可恢复，如果当前用户无权限，后端会拒绝本次删除。"
+      @confirm="handleDelete"
+    />
   </div>
 </template>

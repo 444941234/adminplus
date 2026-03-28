@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Button,
   Card,
   CardContent,
@@ -26,6 +18,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Edit, Plus, Search, Trash2 } from 'lucide-vue-next'
+import { ConfirmDialog } from '@/components/common'
 import { createDept, deleteDept, getDeptById, getDeptTree, updateDept } from '@/api'
 import { isValidChinaPhone, isValidEmail } from '@/lib/validators'
 import type { Dept } from '@/types'
@@ -468,19 +461,13 @@ onMounted(fetchData)
       </DialogContent>
     </Dialog>
 
-    <AlertDialog v-if="canDeleteDept" v-model:open="deleteDialogOpen">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认删除部门</AlertDialogTitle>
-          <AlertDialogDescription>删除后不可恢复，若存在下级部门或关联数据，后端会拒绝本次删除。</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel :disabled="deleteLoading">取消</AlertDialogCancel>
-          <AlertDialogAction :disabled="deleteLoading" @click="handleDelete">
-            {{ deleteLoading ? '删除中...' : '确认删除' }}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      v-if="canDeleteDept"
+      v-model:open="deleteDialogOpen"
+      title="确认删除部门"
+      description="删除后不可恢复，若存在下级部门或关联数据，后端会拒绝本次删除。"
+      :loading="deleteLoading"
+      @confirm="handleDelete"
+    />
   </div>
 </template>

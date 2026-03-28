@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Badge,
   Button,
   Card,
@@ -29,6 +21,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Edit, KeyRound, Plus, Trash2 } from 'lucide-vue-next'
+import { ConfirmDialog } from '@/components/common'
 import { assignMenus, createRole, deleteRole, getMenuTree, getRoleById, getRoleList, getRoleMenus, updateRole } from '@/api'
 import { getRolePagePermissionState } from '@/lib/page-permissions'
 import { isValidRoleCode } from '@/lib/validators'
@@ -501,17 +494,13 @@ onMounted(async () => {
       </DialogContent>
     </Dialog>
 
-    <AlertDialog v-if="canDeleteRole" v-model:open="deleteDialogOpen">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>确认删除角色</AlertDialogTitle>
-          <AlertDialogDescription>删除后不可恢复，如果角色已绑定用户，后端可能会拒绝删除。</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction :disabled="deleteLoading" @click="handleDelete">确认删除</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      v-if="canDeleteRole"
+      v-model:open="deleteDialogOpen"
+      title="确认删除角色"
+      description="删除后不可恢复，如果角色已绑定用户，后端可能会拒绝删除。"
+      :loading="deleteLoading"
+      @confirm="handleDelete"
+    />
   </div>
 </template>

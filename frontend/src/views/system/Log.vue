@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Badge,
   Button,
   Card,
@@ -28,7 +20,8 @@ import {
   SelectValue,
   Textarea
 } from '@/components/ui'
-import { ChevronLeft, ChevronRight, Download, Eye, Search, Trash2 } from 'lucide-vue-next'
+import { Download, Eye, Search, Trash2 } from 'lucide-vue-next'
+import { ConfirmDialog, Pagination } from '@/components/common'
 import {
   cleanupExpiredLogs,
   deleteLog,
@@ -98,28 +91,6 @@ const allSelected = computed(
 )
 
 const totalPages = computed(() => Math.ceil(tableData.value.total / tableData.value.size) || 1)
-
-const visiblePages = computed(() => {
-  const current = tableData.value.page
-  const total = totalPages.value
-  const pages: Array<number | string> = []
-
-  if (total <= 7) {
-    for (let page = 1; page <= total; page += 1) pages.push(page)
-    return pages
-  }
-
-  pages.push(1)
-  if (current > 3) pages.push('...')
-  const start = Math.max(2, current - 1)
-  const end = Math.min(total - 1, current + 1)
-  for (let page = start; page <= end; page += 1) {
-    pages.push(page)
-  }
-  if (current < total - 2) pages.push('...')
-  pages.push(total)
-  return pages
-})
 
 const queryParams = computed(() => ({
   page: tableData.value.page,
@@ -506,36 +477,12 @@ onMounted(async () => {
           </tbody>
         </table>
 
-        <div class="flex items-center justify-between border-t px-4 py-4">
-          <p class="text-sm text-muted-foreground">
-            共 <span class="font-medium">{{ tableData.total }}</span> 条记录，
-            第 <span class="font-medium">{{ tableData.page }}</span> / <span class="font-medium">{{ totalPages }}</span> 页
-          </p>
-          <div class="flex items-center gap-1">
-            <Button variant="outline" size="icon" :disabled="tableData.page === 1" @click="goToPage(tableData.page - 1)">
-              <ChevronLeft class="h-4 w-4" />
-            </Button>
-            <template v-for="(page, index) in visiblePages" :key="index">
-              <span v-if="page === '...'" class="px-2 text-muted-foreground">...</span>
-              <Button
-                v-else
-                size="icon"
-                :variant="page === tableData.page ? 'default' : 'outline'"
-                @click="goToPage(page as number)"
-              >
-                {{ page }}
-              </Button>
-            </template>
-            <Button
-              variant="outline"
-              size="icon"
-              :disabled="tableData.page >= totalPages"
-              @click="goToPage(tableData.page + 1)"
-            >
-              <ChevronRight class="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          :current="tableData.page"
+          :total="tableData.total"
+          :page-size="tableData.size"
+          @change="goToPage"
+        />
       </CardContent>
     </Card>
 
@@ -599,38 +546,20 @@ onMounted(async () => {
       </DialogContent>
     </Dialog>
 
-    <AlertDialog v-if="canDeleteLog" v-model:open="deleteDialogOpen">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{{ deleteLogId ? '确认删除日志' : '确认批量删除日志' }}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {{ deleteLogId ? '删除后不可恢复，请确认是否继续。' : `将删除 ${selectedLogIds.length} 条日志，删除后不可恢复。` }}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="handleDelete">确认删除</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      v-if="canDeleteLog"
+      v-model:open="deleteDialogOpen"
+      :title="deleteLogId ? '确认删除日志' : '确认批量删除日志'"
+      :description="deleteLogId ? '删除后不可恢复，请确认是否继续。' : `将删除 ${selectedLogIds.length} 条日志，删除后不可恢复。`"
+      @confirm="handleDelete"
+    />
 
-    <AlertDialog v-if="canDeleteLog" v-model:open="cleanupDialogOpen">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{{ cleanupMode === 'condition' ? '确认按条件清理日志' : '确认清理过期日志' }}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {{
-              cleanupMode === 'condition'
-                ? '将按照当前筛选条件批量删除日志，操作不可恢复。'
-                : '将触发后端过期日志清理任务，操作不可恢复。'
-            }}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="handleCleanup">确认清理</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      v-if="canDeleteLog"
+      v-model:open="cleanupDialogOpen"
+      :title="cleanupMode === 'condition' ? '确认按条件清理日志' : '确认清理过期日志'"
+      :description="cleanupMode === 'condition' ? '将按照当前筛选条件批量删除日志，操作不可恢复。' : '将触发后端过期日志清理任务，操作不可恢复。'"
+      @confirm="handleCleanup"
+    />
   </div>
 </template>

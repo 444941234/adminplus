@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
   Badge,
   Button,
   Card,
@@ -28,6 +20,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { ChevronDown, ChevronRight, Edit, Plus, Search, Trash2 } from 'lucide-vue-next'
+import { ConfirmDialog } from '@/components/common'
 import { batchDelete, batchUpdateStatus, createMenu, deleteMenu, getMenuById, getMenuTree, updateMenu } from '@/api'
 import type { Menu } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -658,19 +651,13 @@ onMounted(fetchData)
       </DialogContent>
     </Dialog>
 
-    <AlertDialog v-if="canDeleteMenu" v-model:open="deleteDialogOpen">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{{ deleteMenuId ? '确认删除菜单' : '确认批量删除菜单' }}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {{ deleteMenuId ? '删除后不可恢复，如果存在子菜单或角色绑定，后端可能会拒绝删除。' : `将删除 ${selectedMenuIds.length} 个菜单，删除后不可恢复，且后端可能因层级或角色绑定拒绝部分删除。` }}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction :disabled="deleteLoading" @click="handleDelete">确认删除</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmDialog
+      v-if="canDeleteMenu"
+      v-model:open="deleteDialogOpen"
+      :title="deleteMenuId ? '确认删除菜单' : '确认批量删除菜单'"
+      :description="deleteMenuId ? '删除后不可恢复，如果存在子菜单或角色绑定，后端可能会拒绝删除。' : `将删除 ${selectedMenuIds.length} 个菜单，删除后不可恢复，且后端可能因层级或角色绑定拒绝部分删除。`"
+      :loading="deleteLoading"
+      @confirm="handleDelete"
+    />
   </div>
 </template>
