@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -20,7 +19,7 @@ import {
   Textarea
 } from '@/components/ui'
 import { Edit, ListTree, Plus, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, PageHeader, Pagination } from '@/components/common'
+import { ConfirmDialog, PageHeader, Pagination, StatusBadge } from '@/components/common'
 import {
   createDict,
   createDictItem,
@@ -437,13 +436,7 @@ onMounted(fetchData)
               <td class="p-4"><code class="bg-muted px-2 py-0.5 rounded text-sm">{{ dict.dictType }}</code></td>
               <td class="p-4 text-muted-foreground">{{ getDictRemark(dict) || '-' }}</td>
               <td class="p-4">
-                <Badge
-                  :variant="dict.status === 1 ? 'default' : 'destructive'"
-                  :class="canEditDict ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''"
-                  @click="canEditDict && handleStatusToggle(dict)"
-                >
-                  {{ dict.status === 1 ? '正常' : '禁用' }}
-                </Badge>
+                <StatusBadge :status="dict.status" :clickable="canEditDict" @toggle="handleStatusToggle(dict)" />
               </td>
               <td class="p-4 text-muted-foreground">{{ dict.createTime }}</td>
               <td class="p-4">
@@ -556,13 +549,7 @@ onMounted(fetchData)
                 <td class="p-4">{{ item.sortOrder }}</td>
                 <td class="p-4 text-muted-foreground">{{ item.remark || '-' }}</td>
                 <td class="p-4">
-                  <Badge
-                    :variant="item.status === 1 ? 'default' : 'destructive'"
-                    :class="canEditDictItem ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''"
-                    @click="canEditDictItem && handleToggleItemStatus(item)"
-                  >
-                    {{ item.status === 1 ? '正常' : '禁用' }}
-                  </Badge>
+                  <StatusBadge :status="item.status" :clickable="canEditDictItem" @toggle="handleToggleItemStatus(item)" />
                 </td>
                 <td class="p-4">
                   <div class="flex gap-2">

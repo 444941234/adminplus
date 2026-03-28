@@ -2,7 +2,6 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -15,7 +14,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Edit, KeyRound, Plus, Search, Shield, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, Pagination } from '@/components/common'
+import { ConfirmDialog, Pagination, StatusBadge } from '@/components/common'
 import { getDeptTree, getRoleList, getUserList, updateUserStatus, deleteUser } from '@/api'
 import type { Dept, PageResult, Role, User } from '@/types'
 import { getUserPagePermissionState } from '@/lib/page-permissions'
@@ -274,13 +273,7 @@ onMounted(async () => {
               <td class="p-4">{{ user.deptName || '-' }}</td>
               <td class="p-4 text-sm text-muted-foreground">{{ user.roles?.join('、') || '-' }}</td>
               <td class="p-4">
-                <Badge
-                  :variant="user.status === 1 ? 'default' : 'destructive'"
-                  :class="canEditUser ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''"
-                  @click="canEditUser && handleStatusClick(user)"
-                >
-                  {{ user.status === 1 ? '正常' : '禁用' }}
-                </Badge>
+                <StatusBadge :status="user.status" :clickable="canEditUser" @toggle="handleStatusClick(user)" />
               </td>
               <td class="p-4 text-sm text-muted-foreground">{{ formatTime(user.createTime) }}
             </td>              <td class="p-4">

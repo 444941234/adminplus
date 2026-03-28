@@ -21,7 +21,7 @@ import {
   Textarea
 } from '@/components/ui'
 import { Download, Eye, Search, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, Pagination } from '@/components/common'
+import { ConfirmDialog, Pagination, StatusBadge } from '@/components/common'
 import {
   cleanupExpiredLogs,
   deleteLog,
@@ -89,7 +89,6 @@ const hasSelectedLogs = computed(() => selectedLogIds.value.length > 0)
 const allSelected = computed(
   () => tableData.value.records.length > 0 && tableData.value.records.every((log) => selectedLogIds.value.includes(log.id))
 )
-
 const totalPages = computed(() => Math.ceil(tableData.value.total / tableData.value.size) || 1)
 
 const queryParams = computed(() => ({
@@ -452,9 +451,7 @@ onMounted(async () => {
               </td>
               <td class="p-4 text-muted-foreground">{{ getDuration(log) }} ms</td>
               <td class="p-4">
-                <Badge :variant="log.status === 1 ? 'default' : 'destructive'">
-                  {{ log.status === 1 ? '成功' : '失败' }}
-                </Badge>
+                <StatusBadge :status="log.status" active-text="成功" inactive-text="失败" />
               </td>
               <td class="p-4 text-sm text-muted-foreground">{{ log.createTime }}</td>
               <td class="p-4">

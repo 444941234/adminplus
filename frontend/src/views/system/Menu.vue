@@ -20,7 +20,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { ChevronDown, ChevronRight, Edit, Plus, Search, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog } from '@/components/common'
+import { ConfirmDialog, StatusBadge } from '@/components/common'
 import { batchDelete, batchUpdateStatus, createMenu, deleteMenu, getMenuById, getMenuTree, updateMenu } from '@/api'
 import type { Menu } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -500,9 +500,7 @@ onMounted(fetchData)
                 </Badge>
               </td>
               <td class="p-4">
-                <Badge :variant="row.menu.status === 1 ? 'default' : 'destructive'">
-                  {{ row.menu.status === 1 ? '正常' : '禁用' }}
-                </Badge>
+                <StatusBadge :status="row.menu.status" />
               </td>
               <td class="p-4 text-muted-foreground">{{ row.menu.sortOrder }}</td>
               <td class="p-4">

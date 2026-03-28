@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import {
-  Badge,
   Button,
   Card,
   CardContent,
@@ -21,7 +20,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Edit, KeyRound, Plus, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog } from '@/components/common'
+import { ConfirmDialog, StatusBadge } from '@/components/common'
 import { assignMenus, createRole, deleteRole, getMenuTree, getRoleById, getRoleList, getRoleMenus, updateRole } from '@/api'
 import { getRolePagePermissionState } from '@/lib/page-permissions'
 import { isValidRoleCode } from '@/lib/validators'
@@ -356,9 +355,7 @@ onMounted(async () => {
                 {{ role.dataScope === 1 ? '全部数据' : `范围 ${role.dataScope}` }}
               </td>
               <td class="p-4">
-                <Badge :variant="role.status === 1 ? 'default' : 'destructive'">
-                  {{ role.status === 1 ? '正常' : '禁用' }}
-                </Badge>
+                <StatusBadge :status="role.status" />
               </td>
               <td class="p-4 text-muted-foreground">{{ role.sortOrder }}</td>
               <td class="p-4">
