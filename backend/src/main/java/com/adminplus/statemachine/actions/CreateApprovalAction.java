@@ -45,14 +45,10 @@ public class CreateApprovalAction implements Action<WorkflowState, WorkflowEvent
                 return;
             }
 
-            // TODO: 在实际实现中，这里需要：
-            // 1. 获取 WorkflowInstanceEntity（从扩展状态或消息头）
-            // 2. 获取当前节点ID（从扩展状态）
-            // 3. 创建 WorkflowApprovalEntity 并保存到数据库
-            // 4. 注入 WorkflowApprovalRepository 依赖
+            // NOTE: 审批记录由 WorkflowStateMachineServiceImpl 在状态转换后直接管理，
+            // 此 Action 仅负责日志记录。实际的审批实体通过 approvalRepository 创建。
 
-            log.debug("Would create approval record for approver: {}", approverId);
-            log.info("Approval creation logic to be implemented with WorkflowApprovalRepository");
+            log.debug("Approval record for approver {} will be managed by service layer", approverId);
 
         } catch (Exception e) {
             log.error("Error executing CreateApprovalAction", e);

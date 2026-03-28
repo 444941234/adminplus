@@ -92,7 +92,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
             urgeRepository.save(urge);
             urgeCount++;
 
-            // TODO: 发送催办通知（站内信、邮件、企业微信等）
+            // TODO(notification): 发送催办通知 — 待通知服务基础设施就绪后实现（站内信、邮件、企业微信等）
             log.info("发送催办通知: instanceId={}, targetUserId={}", instanceId, approval.getApproverId());
         }
 

@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * 工作流状态机服务实现
  * <p>
@@ -46,6 +48,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
     private final WorkflowInstanceRepository instanceRepository;
     private final WorkflowApprovalRepository approvalRepository;
     private final WorkflowNodeRepository nodeRepository;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -359,9 +362,13 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
      */
     @SuppressWarnings("unchecked")
     private String serializeExtendedState(StateMachine<WorkflowState, WorkflowEvent> sm) {
-        // TODO: 实现JSON序列化
-        Map<Object, Object> variables = sm.getExtendedState().getVariables();
-        return variables.toString();
+        try {
+            Map<Object, Object> variables = sm.getExtendedState().getVariables();
+            return objectMapper.writeValueAsString(variables);
+        } catch (Exception e) {
+            log.warn("Failed to serialize extended state, falling back to toString()", e);
+            return sm.getExtendedState().getVariables().toString();
+        }
     }
 
     /**
@@ -375,7 +382,38 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
      * 转换为响应对象
      */
     private WorkflowInstanceResp convertToResp(WorkflowInstanceEntity entity) {
-        // TODO: 实现完整的转换逻辑，包括pendingApproval和canApprove标志
+        String currentUserId = getCurrentUserId();
+        boolean isOwner = currentUserId.equals(entity.getUserId());
+
+        // pendingApproval: 当前节点是否有待审批记录
+        boolean pendingApproval = entity.isRunning()
+                && approvalRepository.countByInstanceIdAndApprovalStatusAndDeletedFalse(
+                        entity.getId(), "pending") > 0;
+
+        // canApprove: 当前用户是否可以审批当前节点
+        boolean canApprove = false;
+        if (entity.isRunning() && entity.getCurrentNodeId() != null) {
+            canApprove = approvalRepository
+                    .findByInstanceIdAndNodeIdAndApproverIdAndApprovalStatusAndDeletedFalse(
+                            entity.getId(), entity.getCurrentNodeId(), currentUserId, "pending")
+                    .isPresent();
+        }
+
+        // canWithdraw: 运行中且是发起人
+        boolean canWithdraw = entity.isRunning() && isOwner;
+
+        // canCancel: 运行中且是发起人
+        boolean canCancel = entity.isRunning() && isOwner;
+
+        // canUrge: 运行中且有pending审批，且是发起人
+        boolean canUrge = entity.isRunning() && isOwner && pendingApproval;
+
+        // canEditDraft: 草稿且是发起人
+        boolean canEditDraft = entity.isDraft() && isOwner;
+
+        // canSubmitDraft: 草稿且是发起人
+        boolean canSubmitDraft = entity.isDraft() && isOwner;
+
         return new WorkflowInstanceResp(
                 entity.getId(),
                 entity.getDefinitionId(),
@@ -393,13 +431,13 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
                 entity.getFinishTime(),
                 entity.getRemark(),
                 entity.getCreateTime(),
-                false,  // pendingApproval - 待实现
-                false,  // canApprove - 待实现
-                false,
-                false,
-                false,
-                false,
-                false
+                pendingApproval,
+                canApprove,
+                canWithdraw,
+                canCancel,
+                canUrge,
+                canEditDraft,
+                canSubmitDraft
         );
     }
 }

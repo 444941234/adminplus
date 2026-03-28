@@ -2,6 +2,7 @@ package com.adminplus.statemachine.listener;
 
 import com.adminplus.statemachine.enums.WorkflowEvent;
 import com.adminplus.statemachine.enums.WorkflowState;
+import com.adminplus.statemachine.event.WorkflowTransitionEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.Message;
@@ -38,15 +39,21 @@ public class StateChangeListener extends StateMachineListenerAdapter<WorkflowSta
         State<WorkflowState, WorkflowEvent> source = transition.getSource();
         State<WorkflowState, WorkflowEvent> target = transition.getTarget();
 
-        log.info("State transition: {} -> {}",
-                source != null ? source.getId() : "null",
-                target != null ? target.getId() : "null");
+        String sourceId = source != null ? source.getId().name() : "null";
+        String targetId = target != null ? target.getId().name() : "null";
 
-        // TODO: 在实际实现中，这里可以发布自定义的Spring事件
-        // 例如: new WorkflowTransitionEvent(sourceId, targetId, eventId, timestamp)
-        // if (eventPublisher != null) {
-        //     eventPublisher.publishEvent(new WorkflowTransitionEvent(...));
-        // }
+        log.info("State transition: {} -> {}", sourceId, targetId);
+
+        if (eventPublisher != null) {
+            WorkflowTransitionEvent event = new WorkflowTransitionEvent(
+                    this,
+                    sourceId,
+                    targetId,
+                    transition.getTrigger() != null ? transition.getTrigger().getEvent().name() : "unknown",
+                    null
+            );
+            eventPublisher.publishEvent(event);
+        }
     }
 
     @Override

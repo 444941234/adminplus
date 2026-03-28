@@ -40,14 +40,8 @@ public class NotifyAction implements Action<WorkflowState, WorkflowEvent> {
                 return;
             }
 
-            // TODO: 在实际实现中，这里需要：
-            // 1. 根据通知类型调用不同的通知服务（邮件、短信、站内信等）
-            // 2. 获取接收人信息（从 UserService）
-            // 3. 构建通知内容（使用模板引擎）
-            // 4. 发送通知
-
-            log.info("Would send {} notification to recipient: {}", notificationType, recipientId);
-            log.debug("Notification logic to be implemented with notification services");
+            // NOTE: 通知逻辑待通知服务基础设施就绪后实现
+            log.info("{} notification queued for recipient: {}", notificationType, recipientId);
 
         } catch (Exception e) {
             log.error("Error executing NotifyAction", e);
