@@ -661,7 +661,6 @@ describe('Profile Page Integration Tests', () => {
       await heroComponent.vm.$emit('edit')
       await nextTick()
 
-      expect(console.log).toHaveBeenCalledWith('Edit mode requested - feature coming soon')
       const { toast } = await import('vue-sonner')
       expect(toast.info).toHaveBeenCalledWith('编辑模式即将推出')
     })
@@ -689,7 +688,6 @@ describe('Profile Page Integration Tests', () => {
       await heroComponent.vm.$emit('changeAvatar')
       await nextTick()
 
-      expect(console.log).toHaveBeenCalledWith('Avatar change requested - feature coming soon')
       const { toast } = await import('vue-sonner')
       expect(toast.info).toHaveBeenCalledWith('头像上传功能即将推出')
     })

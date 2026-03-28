@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { usePageList } from '@/composables/usePageList'
 import {
   Button,
   Card,
@@ -34,13 +35,14 @@ import {
   updateDictItemStatus,
   updateDictStatus
 } from '@/api'
-import type { Dict, DictItem, PageResult } from '@/types'
+import type { Dict, DictItem } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
 
-const loading = ref(false)
-const searchQuery = ref('')
-const tableData = ref<PageResult<Dict>>({ records: [], total: 0, page: 1, size: 10 })
+const { loading, searchQuery, tableData, fetchData, goToPage, handleSearch, handleReset } = usePageList<Dict>(
+  (params) => getDictList(params),
+  { page: 1, size: 10 }
+)
 const userStore = useUserStore()
 
 const dialogOpen = ref(false)
@@ -114,36 +116,6 @@ const resetItemForm = () => {
   })
 }
 
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const res = await getDictList({
-      page: tableData.value.page,
-      size: tableData.value.size,
-      keyword: searchQuery.value.trim() || undefined
-    })
-    tableData.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取字典列表失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
-
-const handleSearch = () => {
-  tableData.value.page = 1
-  fetchData()
-}
-
-const totalPages = computed(() => Math.ceil(tableData.value.total / tableData.value.size) || 1)
-const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages.value && page !== tableData.value.page) {
-    tableData.value.page = page
-    fetchData()
-  }
-}
-
 const handleAdd = () => {
   resetForm()
   isEdit.value = false
@@ -192,7 +164,7 @@ const handleSubmit = async () => {
         status: Number(form.status),
         description: form.remark.trim() || undefined
       })
-      if (Number(form.status) !== (tableData.value.records.find((item) => item.id === editId.value)?.status ?? Number(form.status))) {
+      if (Number(form.status) !== (tableData.records.find((item) => item.id === editId.value)?.status ?? Number(form.status))) {
         await updateDictStatus(editId.value, Number(form.status))
       }
       toast.success('字典更新成功')
@@ -401,7 +373,7 @@ onMounted(fetchData)
       v-model:search="searchQuery"
       placeholder="搜索字典名称/类型"
       @search="handleSearch"
-      @reset="searchQuery = ''; handleSearch()"
+      @reset="handleReset"
     >
       <Button v-if="canAddDict" @click="handleAdd">
         <Plus class="w-4 h-4 mr-2" />
