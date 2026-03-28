@@ -2,6 +2,7 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.OperationType;
+import com.adminplus.constants.UserStatus;
 import com.adminplus.pojo.dto.req.UserCreateReq;
 import com.adminplus.pojo.dto.req.UserUpdateReq;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -24,13 +25,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -61,9 +60,27 @@ public class UserServiceImpl implements UserService {
 
         // 判断是否为超级管理员
         boolean isAdmin = SecurityUtils.isAdmin();
+        // 是否有关键词搜索
+        boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
 
-        if (deptId != null && !deptId.isEmpty()) {
-            // 获取部门及其所有子部门ID
+        if (hasKeyword && deptId != null && !deptId.isEmpty()) {
+            // 关键词 + 部门搜索
+            List<String> deptIds = deptService.getDeptAndChildrenIds(deptId);
+            pageResult = userRepository.findByKeywordAndDeptIdIn(keyword.trim(), deptIds, pageable);
+        } else if (hasKeyword && !isAdmin) {
+            // 关键词搜索（非管理员，限定部门范围）
+            String currentDeptId = SecurityUtils.getCurrentUserDeptId();
+            if (currentDeptId != null) {
+                List<String> accessibleDeptIds = deptService.getDeptAndChildrenIds(currentDeptId);
+                pageResult = userRepository.findByKeywordAndDeptIdIn(keyword.trim(), accessibleDeptIds, pageable);
+            } else {
+                pageResult = Page.empty(pageable);
+            }
+        } else if (hasKeyword) {
+            // 关键词搜索（管理员，全范围）
+            pageResult = userRepository.findByKeyword(keyword.trim(), pageable);
+        } else if (deptId != null && !deptId.isEmpty()) {
+            // 仅部门搜索
             List<String> deptIds = deptService.getDeptAndChildrenIds(deptId);
             pageResult = userRepository.findByDeptIdIn(deptIds, pageable);
         } else if (!isAdmin) {
@@ -196,20 +213,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Async
-    public CompletableFuture<PageResultResp<UserResp>> getUserListAsync(Integer page, Integer size, String keyword, String deptId) {
-        log.info("使用虚拟线程异步查询用户列表");
-        return CompletableFuture.completedFuture(getUserList(page, size, keyword, deptId));
-    }
-
-    @Override
-    @Async
-    public CompletableFuture<UserResp> getUserByIdAsync(String id) {
-        log.info("使用虚拟线程异步查询用户: {}", id);
-        return CompletableFuture.completedFuture(getUserById(id));
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public UserEntity getUserByUsername(String username) {
         return userRepository.findByUsername(username)
@@ -245,7 +248,7 @@ public class UserServiceImpl implements UserService {
         user.setPhone(XssUtils.escape(req.phone()));
         user.setAvatar(req.avatar());
         user.setDeptId(req.deptId());
-        user.setStatus(1);
+        user.setStatus(UserStatus.ENABLED);
 
         user = userRepository.save(user);
 
@@ -315,6 +318,19 @@ public class UserServiceImpl implements UserService {
                     .orElse(null);
         }
 
+        // 查询用户角色
+        List<UserRoleEntity> updateUserRoles = userRoleRepository.findByUserId(id);
+        List<String> roleIds = updateUserRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .toList();
+        Map<String, String> roleMap = roleRepository.findAllById(roleIds).stream()
+                .collect(Collectors.toMap(RoleEntity::getId, RoleEntity::getName));
+        List<String> roleNames = updateUserRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .map(roleMap::get)
+                .filter(Objects::nonNull)
+                .toList();
+
         return new UserResp(
                 user.getId(),
                 user.getUsername(),
@@ -325,7 +341,7 @@ public class UserServiceImpl implements UserService {
                 user.getStatus(),
                 user.getDeptId(),
                 deptName,
-                List.of(),
+                roleNames,
                 user.getCreateTime(),
                 user.getUpdateTime()
         );
@@ -334,11 +350,16 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(String id) {
+        // 不能删除自己
+        if (id.equals(SecurityUtils.getCurrentUserIdOrDefault())) {
+            throw new BizException("不能删除自己");
+        }
+
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
-        user.setDeleted(true);
-        userRepository.save(user);
+        // 逻辑删除（Entity 配置了 @SQLDelete，delete() 会触发 UPDATE SET deleted=true）
+        userRepository.delete(user);
 
         // 记录审计日志
         logService.log("用户管理", OperationType.DELETE, "删除用户: " + user.getUsername());
@@ -347,6 +368,16 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void updateUserStatus(String id, Integer status) {
+        // 不能禁用自己
+        if (id.equals(SecurityUtils.getCurrentUserIdOrDefault()) && status == 0) {
+            throw new BizException("不能禁用自己");
+        }
+
+        // 校验 status 值范围
+        if (status != null && status != 0 && status != 1) {
+            throw new BizException("状态值不合法，只能为 0 或 1");
+        }
+
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -393,9 +424,10 @@ public class UserServiceImpl implements UserService {
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
-        // 批量验证所有角色是否存在
+        // 查询角色信息（用于验证和日志记录）
+        List<RoleEntity> foundRoles = null;
         if (roleIds != null && !roleIds.isEmpty()) {
-            List<RoleEntity> foundRoles = roleRepository.findAllById(roleIds);
+            foundRoles = roleRepository.findAllById(roleIds);
             if (foundRoles.size() != roleIds.size()) {
                 // 找出缺失的角色ID
                 List<String> foundIds = foundRoles.stream().map(RoleEntity::getId).toList();
@@ -421,10 +453,9 @@ public class UserServiceImpl implements UserService {
             userRoleRepository.saveAll(userRoles);
         }
 
-        // 记录审计日志 - 复用已查询的用户和角色信息
-        if (roleIds != null && !roleIds.isEmpty()) {
-            List<RoleEntity> allRoles = roleRepository.findAllById(roleIds);
-            String roleNames = allRoles.stream()
+        // 记录审计日志 - 复用已查询的角色信息
+        if (foundRoles != null && !foundRoles.isEmpty()) {
+            String roleNames = foundRoles.stream()
                     .map(RoleEntity::getName)
                     .collect(Collectors.joining(", "));
             logService.log("用户管理", OperationType.UPDATE, "分配角色: " + user.getUsername() + " -> " + roleNames);

@@ -9,6 +9,7 @@ import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.RoleMenuEntity;
 import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.RoleRepository;
+import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.LogService;
 import com.adminplus.service.RoleService;
 import com.adminplus.utils.SecurityUtils;
@@ -32,6 +33,7 @@ public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
     private final RoleMenuRepository roleMenuRepository;
+    private final UserRoleRepository userRoleRepository;
     private final LogService logService;
 
     @Override
@@ -43,10 +45,8 @@ public class RoleServiceImpl implements RoleService {
         if (SecurityUtils.isAdmin()) {
             roles = roleRepository.findAll();
         } else {
-            // 非超级管理员不能查看超级管理员角色
-            roles = roleRepository.findAll().stream()
-                    .filter(role -> !"ROLE_ADMIN".equals(role.getCode()))
-                    .toList();
+            // 非超级管理员不能查看超级管理员角色（数据库层面过滤）
+            roles = roleRepository.findByDeletedFalseAndCodeNot("ROLE_ADMIN");
         }
 
         return roles.stream().map(role -> new RoleResp(
@@ -173,10 +173,15 @@ public class RoleServiceImpl implements RoleService {
             throw new BizException("超级管理员角色不能删除");
         }
 
+        // 检查是否有用户绑定了该角色
+        if (userRoleRepository.existsByRoleId(id)) {
+            throw new BizException("该角色已分配给用户，无法删除");
+        }
+
         // 删除角色-菜单关联
         roleMenuRepository.deleteByRoleId(id);
 
-        // 删除角色（逻辑删除或物理删除，这里使用物理删除）
+        // 逻辑删除（Entity 配置了 @SQLDelete，JPA delete 会触发 UPDATE SET deleted=true）
         roleRepository.delete(role);
 
         // 记录审计日志

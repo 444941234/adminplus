@@ -4,6 +4,8 @@ import com.adminplus.pojo.entity.UserEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -48,4 +50,26 @@ public interface UserRepository extends JpaRepository<UserEntity, String> {
      * 根据部门ID列表查询用户列表
      */
     Page<UserEntity> findByDeptIdIn(List<String> deptIds, Pageable pageable);
+
+    /**
+     * 根据关键词搜索用户（用户名、昵称、邮箱、手机号）
+     */
+    @Query("SELECT u FROM UserEntity u WHERE " +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "u.phone LIKE CONCAT('%', :keyword, '%')")
+    Page<UserEntity> findByKeyword(@Param("keyword") String keyword, Pageable pageable);
+
+    /**
+     * 根据关键词和部门ID列表搜索用户
+     */
+    @Query("SELECT u FROM UserEntity u WHERE u.deptId IN :deptIds AND (" +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "u.phone LIKE CONCAT('%', :keyword, '%'))")
+    Page<UserEntity> findByKeywordAndDeptIdIn(@Param("keyword") String keyword,
+                                               @Param("deptIds") List<String> deptIds,
+                                               Pageable pageable);
 }

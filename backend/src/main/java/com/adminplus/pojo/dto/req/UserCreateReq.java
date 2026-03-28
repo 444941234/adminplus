@@ -17,7 +17,6 @@ public record UserCreateReq(
         String username,
 
         @NotBlank(message = "密码不能为空")
-        @Size(min = 8, max = 20, message = "密码长度必须在8-20之间")
         String password,
 
         @Size(max = 50, message = "昵称长度不能超过50")

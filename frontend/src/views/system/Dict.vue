@@ -118,10 +118,7 @@ const visiblePages = computed(() => {
   return pages
 })
 
-const getDictRemark = (dict: Dict) => dict.remark ?? dict.description ?? ''
-const getItemLabel = (item: DictItem) => item.label ?? item.itemLabel ?? ''
-const getItemValue = (item: DictItem) => item.value ?? item.itemValue ?? ''
-const getItemSort = (item: DictItem) => item.sortOrder ?? item.sort ?? 0
+const getDictRemark = (dict: Dict) => dict.description ?? ''
 const getItemParentId = (item: DictItem) => item.parentId ?? '0'
 
 const resetForm = () => {
@@ -191,7 +188,7 @@ const handleEdit = async (id: string) => {
     Object.assign(form, {
       dictType: dict.dictType,
       dictName: dict.dictName,
-      remark: getDictRemark(dict),
+      description: dict.description || '',
       status: String(dict.status ?? 1)
     })
   } catch (error) {
@@ -219,7 +216,7 @@ const handleSubmit = async () => {
       await updateDict(editId.value, {
         dictName: form.dictName.trim(),
         status: Number(form.status),
-        remark: form.remark.trim() || undefined
+        description: form.remark.trim() || undefined
       })
       if (Number(form.status) !== (tableData.value.records.find((item) => item.id === editId.value)?.status ?? Number(form.status))) {
         await updateDictStatus(editId.value, Number(form.status))
@@ -229,7 +226,7 @@ const handleSubmit = async () => {
       await createDict({
         dictType: form.dictType.trim(),
         dictName: form.dictName.trim(),
-        remark: form.remark.trim() || undefined
+        description: form.remark.trim() || undefined
       })
       toast.success('字典创建成功')
     }
@@ -296,13 +293,13 @@ const itemParentOptions = computed(() => {
     .filter((item) => !isEditItem.value || item.id !== editItemId.value)
     .map((item) => ({
       id: item.id,
-      label: getItemLabel(item)
+      label: item.label
     }))
 })
 
 const itemLabelMap = computed(() => {
   return itemTableData.value.records.reduce<Record<string, string>>((acc, item) => {
-    acc[item.id] = getItemLabel(item)
+    acc[item.id] = item.label
     return acc
   }, {})
 })
@@ -333,9 +330,9 @@ const handleEditItem = async (id: string) => {
     const item = res.data
     Object.assign(itemForm, {
       parentId: item.parentId || '0',
-      label: getItemLabel(item),
-      value: getItemValue(item),
-      sortOrder: getItemSort(item),
+      label: item.label,
+      value: item.value,
+      sortOrder: item.sortOrder,
       status: String(item.status ?? 1),
       remark: item.remark || ''
     })
@@ -606,12 +603,12 @@ onMounted(fetchData)
                 <td colspan="7" class="p-8 text-center text-muted-foreground">暂无字典项</td>
               </tr>
               <tr v-for="item in itemTableData.records" :key="item.id" class="hover:bg-muted/30">
-                <td class="p-4 font-medium">{{ getItemLabel(item) }}</td>
-                <td class="p-4"><code class="bg-muted px-2 py-0.5 rounded text-sm">{{ getItemValue(item) }}</code></td>
+                <td class="p-4 font-medium">{{ item.label }}</td>
+                <td class="p-4"><code class="bg-muted px-2 py-0.5 rounded text-sm">{{ item.value }}</code></td>
                 <td class="p-4 text-muted-foreground">
-                  {{ getItemParentId(item) === '0' ? '顶级字典项' : itemLabelMap[getItemParentId(item)] || '-' }}
+                  {{ getItemParentId(item) === '0' ? '顶级字典项' : itemLabelMap[item.parentId ?? '0'] || '-' }}
                 </td>
-                <td class="p-4">{{ getItemSort(item) }}</td>
+                <td class="p-4">{{ item.sortOrder }}</td>
                 <td class="p-4 text-muted-foreground">{{ item.remark || '-' }}</td>
                 <td class="p-4">
                   <Badge

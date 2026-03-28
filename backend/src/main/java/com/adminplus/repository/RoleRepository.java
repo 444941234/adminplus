@@ -35,4 +35,9 @@ public interface RoleRepository extends JpaRepository<RoleEntity, String> {
      * 查询所有未删除的角色
      */
     List<RoleEntity> findByDeletedFalse();
+
+    /**
+     * 查询未删除且编码不等于指定值的角色
+     */
+    List<RoleEntity> findByDeletedFalseAndCodeNot(String code);
 }

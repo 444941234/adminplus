@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { Edit, KeyRound, Plus, Search, Trash2 } from 'lucide-vue-next'
+import { Edit, KeyRound, Plus, Trash2 } from 'lucide-vue-next'
 import { assignMenus, createRole, deleteRole, getMenuTree, getRoleById, getRoleList, getRoleMenus, updateRole } from '@/api'
 import { getRolePagePermissionState } from '@/lib/page-permissions'
 import { isValidRoleCode } from '@/lib/validators'
@@ -86,11 +86,6 @@ const canEditRole = computed(() => permissionState.value.canEditRole)
 const canDeleteRole = computed(() => permissionState.value.canDeleteRole)
 const canAssignRole = computed(() => permissionState.value.canAssignRole)
 
-const getRoleName = (role: Role) => role.roleName ?? role.name ?? ''
-const getRoleCode = (role: Role) => role.roleCode ?? role.code ?? ''
-const getRoleSort = (role: Role) => role.sort ?? role.sortOrder ?? 0
-const getRoleDataScope = (role: Role) => role.dataScope ?? 1
-
 const resetForm = () => {
   Object.assign(form, {
     name: '',
@@ -107,7 +102,7 @@ const filteredRoles = computed(() => {
   if (!keyword) return roles.value
 
   return roles.value.filter((role) =>
-    [getRoleName(role), getRoleCode(role), role.description ?? ''].some((value) =>
+    [role.name, role.code, role.description ?? ''].some((value) =>
       value.toLowerCase().includes(keyword)
     )
   )
@@ -158,8 +153,6 @@ const fetchMenus = async () => {
   }
 }
 
-const handleSearch = () => {}
-
 const handleAdd = () => {
   resetForm()
   isEdit.value = false
@@ -176,12 +169,12 @@ const handleEdit = async (id: string) => {
     const res = await getRoleById(id)
     const role = res.data
     Object.assign(form, {
-      name: getRoleName(role),
-      code: getRoleCode(role),
+      name: role.name,
+      code: role.code,
       description: role.description || '',
-      dataScope: String(getRoleDataScope(role)),
+      dataScope: String(role.dataScope),
       status: String(role.status ?? 1),
-      sortOrder: getRoleSort(role)
+      sortOrder: role.sortOrder
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : '获取角色详情失败'
@@ -266,6 +259,18 @@ const toggleMenuSelection = (menuId: string, checked: boolean) => {
   selectedMenuIds.value = Array.from(next)
 }
 
+const isAllMenusSelected = computed(() =>
+  menuOptions.value.length > 0 && menuOptions.value.every((item) => selectedMenuIds.value.includes(item.id))
+)
+
+const isSomeMenusSelected = computed(() =>
+  menuOptions.value.some((item) => selectedMenuIds.value.includes(item.id)) && !isAllMenusSelected.value
+)
+
+const toggleAllMenus = (checked: boolean) => {
+  selectedMenuIds.value = checked ? menuOptions.value.map((item) => item.id) : []
+}
+
 const handleOpenAssign = async (role: Role) => {
   assignRole.value = role
   assignDialogOpen.value = true
@@ -311,13 +316,9 @@ onMounted(async () => {
           <Input
             v-model="searchQuery"
             placeholder="搜索角色名称、编码或描述"
+            clearable
             class="w-80"
-            @keyup.enter="handleSearch"
           />
-          <Button @click="handleSearch">
-            <Search class="mr-2 h-4 w-4" />
-            搜索
-          </Button>
           <Button variant="outline" @click="searchQuery = ''">重置</Button>
           <div class="flex-1" />
           <Button v-if="canAddRole" @click="handleAdd">
@@ -350,20 +351,20 @@ onMounted(async () => {
               <td colspan="7" class="p-8 text-center text-muted-foreground">暂无数据</td>
             </tr>
             <tr v-for="role in filteredRoles" :key="role.id" class="hover:bg-muted/30">
-              <td class="p-4 font-medium">{{ getRoleName(role) }}</td>
+              <td class="p-4 font-medium">{{ role.name }}</td>
               <td class="p-4">
-                <code class="rounded bg-muted px-2 py-0.5 text-sm">{{ getRoleCode(role) }}</code>
+                <code class="rounded bg-muted px-2 py-0.5 text-sm">{{ role.code }}</code>
               </td>
               <td class="p-4 text-muted-foreground">{{ role.description || '-' }}</td>
               <td class="p-4 text-muted-foreground">
-                {{ getRoleDataScope(role) === 1 ? '全部数据' : `范围 ${getRoleDataScope(role)}` }}
+                {{ role.dataScope === 1 ? '全部数据' : `范围 ${role.dataScope}` }}
               </td>
               <td class="p-4">
                 <Badge :variant="role.status === 1 ? 'default' : 'destructive'">
                   {{ role.status === 1 ? '正常' : '禁用' }}
                 </Badge>
               </td>
-              <td class="p-4 text-muted-foreground">{{ getRoleSort(role) }}</td>
+              <td class="p-4 text-muted-foreground">{{ role.sortOrder }}</td>
               <td class="p-4">
                 <div class="flex gap-2">
                   <Button v-if="canAssignRole" size="sm" variant="ghost" @click="handleOpenAssign(role)">
@@ -463,11 +464,19 @@ onMounted(async () => {
     <Dialog v-if="canAssignRole" v-model:open="assignDialogOpen">
       <DialogContent class="sm:max-w-[680px]">
         <DialogHeader>
-          <DialogTitle>分配菜单权限{{ assignRole ? ` - ${getRoleName(assignRole)}` : '' }}</DialogTitle>
+          <DialogTitle>分配菜单权限{{ assignRole ? ` - ${assignRole.name}` : '' }}</DialogTitle>
         </DialogHeader>
         <div v-if="assignLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
         <ScrollArea v-else class="max-h-[420px] rounded-md border">
           <div class="space-y-1 p-4">
+            <label class="flex cursor-pointer items-center gap-3 rounded border-b px-3 py-2 mb-2 font-medium transition-colors hover:bg-muted/50">
+              <Checkbox
+                :checked="isAllMenusSelected"
+                :indeterminate="isSomeMenusSelected"
+                @update:checked="toggleAllMenus"
+              />
+              <span class="text-sm">全选</span>
+            </label>
             <label
               v-for="item in menuOptions"
               :key="item.id"

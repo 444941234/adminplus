@@ -31,7 +31,7 @@ public class FileController {
     @PostMapping("/upload")
     @Operation(summary = "上传文件")
     @OperationLog(module = "文件管理", operationType = 2, description = "上传文件 {#file.originalFilename}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('file:upload')")
     public ApiResponse<FileEntity> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "directory", defaultValue = "files") String directory) {
@@ -42,7 +42,7 @@ public class FileController {
     @DeleteMapping("/{fileId}")
     @Operation(summary = "删除文件")
     @OperationLog(module = "文件管理", operationType = 4, description = "删除文件 {#fileId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('file:delete')")
     public ApiResponse<Void> deleteFile(@PathVariable String fileId) {
         fileService.deleteFileWithAuth(fileId);
         return ApiResponse.ok();
@@ -50,7 +50,7 @@ public class FileController {
 
     @GetMapping("/{fileId}")
     @Operation(summary = "获取文件信息")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('file:list')")
     public ApiResponse<FileEntity> getFile(@PathVariable String fileId) {
         FileEntity fileEntity = fileService.getFileWithAuth(fileId);
         return ApiResponse.ok(fileEntity);
@@ -66,7 +66,7 @@ public class FileController {
 
     @GetMapping("/directory/{directory}")
     @Operation(summary = "根据目录获取文件列表")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAuthority('file:list')")
     public ApiResponse<List<FileEntity>> getFilesByDirectory(@PathVariable String directory) {
         List<FileEntity> files = fileService.getFilesByDirectory(directory);
         return ApiResponse.ok(files);

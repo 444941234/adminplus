@@ -8,6 +8,7 @@ import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.RoleMenuEntity;
 import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.RoleRepository;
+import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.impl.RoleServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,6 +42,9 @@ class RoleServiceTest {
 
     @Mock
     private RoleMenuRepository roleMenuRepository;
+
+    @Mock
+    private UserRoleRepository userRoleRepository;
 
     @Mock
     private LogService logService;
@@ -100,8 +104,8 @@ class RoleServiceTest {
         @Test
         @DisplayName("should return role list")
         void getRoleList_ShouldReturnRoleList() {
-            // Given
-            when(roleRepository.findAll()).thenReturn(List.of(testRole));
+            // Given — non-admin user, database-level filter
+            when(roleRepository.findByDeletedFalseAndCodeNot("ROLE_ADMIN")).thenReturn(List.of(testRole));
 
             // When
             List<RoleResp> result = roleService.getRoleList();
@@ -114,7 +118,7 @@ class RoleServiceTest {
         @DisplayName("should return empty list when no roles")
         void getRoleList_WhenNoRoles_ShouldReturnEmptyList() {
             // Given
-            when(roleRepository.findAll()).thenReturn(List.of());
+            when(roleRepository.findByDeletedFalseAndCodeNot("ROLE_ADMIN")).thenReturn(List.of());
 
             // When
             List<RoleResp> result = roleService.getRoleList();
@@ -209,6 +213,7 @@ class RoleServiceTest {
         void deleteRole_ShouldDeleteRole() {
             // Given
             when(roleRepository.findById("role-001")).thenReturn(Optional.of(testRole));
+            when(userRoleRepository.existsByRoleId("role-001")).thenReturn(false);
             doNothing().when(roleMenuRepository).deleteByRoleId("role-001");
             doNothing().when(roleRepository).delete(testRole);
 
@@ -218,6 +223,19 @@ class RoleServiceTest {
             // Then
             verify(roleMenuRepository).deleteByRoleId("role-001");
             verify(roleRepository).delete(testRole);
+        }
+
+        @Test
+        @DisplayName("should throw exception when role has users")
+        void deleteRole_WhenRoleHasUsers_ShouldThrowException() {
+            // Given
+            when(roleRepository.findById("role-001")).thenReturn(Optional.of(testRole));
+            when(userRoleRepository.existsByRoleId("role-001")).thenReturn(true);
+
+            // When & Then
+            assertThatThrownBy(() -> roleService.deleteRole("role-001"))
+                    .isInstanceOf(BizException.class)
+                    .hasMessageContaining("已分配给用户");
         }
 
         @Test

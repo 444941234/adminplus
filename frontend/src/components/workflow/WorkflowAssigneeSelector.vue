@@ -29,7 +29,7 @@ const deptOptions = ref<AssigneeOption[]>([])
 
 const flattenDeptTree = (nodes: Dept[], parentLabel = ''): AssigneeOption[] => {
   return nodes.flatMap((node) => {
-    const currentName = node.deptName || node.name || '未命名部门'
+    const currentName = node.name || '未命名部门'
     const currentLabel = parentLabel ? `${parentLabel} / ${currentName}` : currentName
     const currentNode = [{ id: node.id, label: currentLabel }]
     const children = node.children ? flattenDeptTree(node.children, currentLabel) : []
@@ -62,7 +62,7 @@ const loadRoleOptions = async () => {
   const res = await getRoleList()
   roleOptions.value = res.data.records.map((role: Role) => ({
     id: role.id,
-    label: role.roleName || role.name || role.roleCode || role.code || role.id
+    label: role.name || role.code || role.id
   }))
 }
 

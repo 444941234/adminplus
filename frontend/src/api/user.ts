@@ -38,7 +38,7 @@ export function updateUserStatus(id: string, status: number) {
 
 // 重置密码
 export function resetPassword(id: string, password: string) {
-  return put<void>(`/sys/users/${id}/password?password=${encodeURIComponent(password)}`)
+  return put<void>(`/sys/users/${id}/password`, { password })
 }
 
 // 分配角色

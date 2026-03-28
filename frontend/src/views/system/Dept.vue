@@ -70,10 +70,6 @@ const canAddDept = computed(() => userStore.hasPermission('dept:add'))
 const canEditDept = computed(() => userStore.hasPermission('dept:edit'))
 const canDeleteDept = computed(() => userStore.hasPermission('dept:delete'))
 
-const getDeptName = (dept: Dept) => dept.deptName ?? dept.name ?? ''
-const getDeptCode = (dept: Dept) => dept.deptCode ?? dept.code ?? ''
-const getDeptSort = (dept: Dept) => dept.sort ?? dept.sortOrder ?? 0
-
 const resetForm = () => {
   Object.assign(form, {
     parentId: '0',
@@ -131,8 +127,8 @@ const renderDepts = (deptList: Dept[], level = 0): DeptRow[] => {
     const children = dept.children ?? []
     const hasChildren = children.length > 0
     const isExpanded = expandedKeys.value.has(dept.id)
-    const displayName = getDeptName(dept)
-    const displayCode = getDeptCode(dept)
+    const displayName = dept.name
+    const displayCode = dept.code
 
     if (searchQuery.value.trim()) {
       const keyword = searchQuery.value.trim().toLowerCase()
@@ -145,7 +141,7 @@ const renderDepts = (deptList: Dept[], level = 0): DeptRow[] => {
           ...dept,
           displayName,
           displayCode,
-          displaySort: getDeptSort(dept),
+          displaySort: dept.sortOrder,
           level,
           hasChildren,
           isExpanded: true
@@ -156,7 +152,7 @@ const renderDepts = (deptList: Dept[], level = 0): DeptRow[] => {
           ...dept,
           displayName,
           displayCode,
-          displaySort: getDeptSort(dept),
+          displaySort: dept.sortOrder,
           level,
           hasChildren,
           isExpanded: true
@@ -170,7 +166,7 @@ const renderDepts = (deptList: Dept[], level = 0): DeptRow[] => {
       ...dept,
       displayName,
       displayCode,
-      displaySort: getDeptSort(dept),
+      displaySort: dept.sortOrder,
       level,
       hasChildren,
       isExpanded
@@ -188,7 +184,7 @@ const flattenDeptOptions = (deptList: Dept[], level = 0): Array<{ id: string; la
   return deptList.flatMap((dept) => {
     const current = {
       id: dept.id,
-      label: `${'　'.repeat(level)}${getDeptName(dept)}`
+      label: `${'　'.repeat(level)}${dept.name}`
     }
     return [current, ...flattenDeptOptions(dept.children ?? [], level + 1)]
   })
@@ -235,12 +231,12 @@ const handleEdit = async (id: string) => {
     const dept = res.data
     Object.assign(form, {
       parentId: dept.parentId || '0',
-      name: getDeptName(dept),
-      code: getDeptCode(dept),
+      name: dept.name,
+      code: dept.code,
       leader: dept.leader || '',
       phone: dept.phone || '',
       email: dept.email || '',
-      sortOrder: getDeptSort(dept),
+      sortOrder: dept.sortOrder,
       status: String(dept.status ?? 1)
     })
   } catch (error) {

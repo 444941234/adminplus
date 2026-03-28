@@ -247,13 +247,13 @@ class UserServiceTest {
         void deleteUser_ShouldDeleteUser() {
             // Given
             when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
-            when(userRepository.save(any())).thenReturn(testUser);
+            doNothing().when(userRepository).delete(any(UserEntity.class));
 
             // When
             userService.deleteUser("user-001");
 
             // Then
-            verify(userRepository).save(any(UserEntity.class));
+            verify(userRepository).delete(any(UserEntity.class));
         }
 
         @Test

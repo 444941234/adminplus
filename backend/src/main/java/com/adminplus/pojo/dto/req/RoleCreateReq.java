@@ -2,6 +2,7 @@ package com.adminplus.pojo.dto.req;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -13,6 +14,7 @@ import jakarta.validation.constraints.Size;
 public record RoleCreateReq(
         @NotBlank(message = "角色编码不能为空")
         @Size(max = 50, message = "角色编码长度不能超过50")
+        @Pattern(regexp = "^[A-Za-z][A-Za-z0-9_:-]{1,49}$", message = "角色编码需以字母开头，只能包含字母、数字、下划线、冒号或短横线")
         String code,
 
         @NotBlank(message = "角色名称不能为空")

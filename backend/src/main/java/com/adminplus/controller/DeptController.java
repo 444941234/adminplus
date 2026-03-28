@@ -51,7 +51,7 @@ public class DeptController {
 
     @PostMapping
     @Operation(summary = "创建部门")
-    @OperationLog(module = "部门管理", operationType = 2, description = "新增部门 {#req.deptName}")
+    @OperationLog(module = "部门管理", operationType = 2, description = "新增部门 {#req.name}")
     @PreAuthorize("hasAuthority('dept:add')")
     public ApiResponse<DeptResp> createDept(@Valid @RequestBody DeptCreateReq req) {
         DeptResp dept = deptService.createDept(req);

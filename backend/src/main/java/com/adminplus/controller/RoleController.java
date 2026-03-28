@@ -55,7 +55,7 @@ public class RoleController {
 
     @PostMapping
     @Operation(summary = "创建角色")
-    @OperationLog(module = "角色管理", operationType = 2, description = "新增角色 {#req.roleName}")
+    @OperationLog(module = "角色管理", operationType = 2, description = "新增角色 {#req.name}")
     @PreAuthorize("hasAuthority('role:add')")
     public ApiResponse<RoleResp> createRole(@Valid @RequestBody RoleCreateReq req) {
         RoleResp role = roleService.createRole(req);

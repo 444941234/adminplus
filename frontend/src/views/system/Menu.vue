@@ -72,7 +72,7 @@ const selectedMenuIds = ref<string[]>([])
 const form = reactive<MenuFormState>({
   parentId: '0',
   name: '',
-  type: '1',
+  type: '0',
   path: '',
   component: '',
   permKey: '',
@@ -94,7 +94,7 @@ const resetForm = () => {
   Object.assign(form, {
     parentId: '0',
     name: '',
-    type: '1',
+    type: '0',
     path: '',
     component: '',
     permKey: '',
@@ -188,9 +188,9 @@ const parentOptions = computed(() => {
 })
 
 const typeLabelMap: Record<number, string> = {
-  1: '目录',
-  2: '菜单',
-  3: '按钮'
+  0: '目录',
+  1: '菜单',
+  2: '按钮'
 }
 
 const validateForm = () => {
@@ -199,17 +199,17 @@ const validateForm = () => {
     return false
   }
 
-  if (form.type !== '3' && !form.path.trim()) {
+  if (form.type !== '2' && !form.path.trim()) {
     toast.warning('请输入路由路径')
     return false
   }
 
-  if (form.type === '2' && !form.component.trim()) {
+  if (form.type === '1' && !form.component.trim()) {
     toast.warning('请输入组件路径')
     return false
   }
 
-  if (form.type === '3' && !form.permKey.trim()) {
+  if (form.type === '2' && !form.permKey.trim()) {
     toast.warning('请输入权限标识')
     return false
   }
@@ -270,7 +270,7 @@ const toggleSelectAll = (checked: boolean) => {
   selectedMenuIds.value = checked ? flattenedRows.value.map((row) => row.id) : []
 }
 
-const handleAdd = (parentId = '0', type = '1') => {
+const handleAdd = (parentId = '0', type = '0') => {
   resetForm()
   isEdit.value = false
   editId.value = ''
@@ -482,9 +482,9 @@ onMounted(fetchData)
               <td class="p-4">
                 <Badge
                   :variant="
-                    row.menu.type === 1
+                    row.menu.type === 0
                       ? 'default'
-                      : row.menu.type === 2
+                      : row.menu.type === 1
                         ? 'secondary'
                         : 'outline'
                   "
@@ -512,10 +512,10 @@ onMounted(fetchData)
               <td class="p-4">
                 <div class="flex gap-2">
                   <Button
-                    v-if="canAddMenu && row.menu.type !== 3"
+                    v-if="canAddMenu && row.menu.type !== 2"
                     size="sm"
                     variant="ghost"
-                    @click="handleAdd(row.menu.id, row.menu.type === 1 ? '2' : '3')"
+                    @click="handleAdd(row.menu.id, row.menu.type === 0 ? '1' : '2')"
                   >
                     <Plus class="h-4 w-4" />
                   </Button>
@@ -567,9 +567,9 @@ onMounted(fetchData)
                   <SelectValue placeholder="请选择菜单类型" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">目录</SelectItem>
-                  <SelectItem value="2">菜单</SelectItem>
-                  <SelectItem value="3">按钮</SelectItem>
+                  <SelectItem value="0">目录</SelectItem>
+                  <SelectItem value="1">菜单</SelectItem>
+                  <SelectItem value="2">按钮</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -585,7 +585,7 @@ onMounted(fetchData)
               <Label>路由路径</Label>
               <Input
                 v-model="form.path"
-                :placeholder="form.type === '3' ? '按钮通常可留空' : '例如：/system/user'"
+                :placeholder="form.type === '2' ? '按钮通常可留空' : '例如：/system/user'"
               />
             </div>
             <div class="space-y-2">
@@ -599,7 +599,7 @@ onMounted(fetchData)
               <Label>组件路径</Label>
               <Input
                 v-model="form.component"
-                :disabled="form.type !== '2'"
+                :disabled="form.type !== '1'"
                 placeholder="例如：system/User.vue"
               />
             </div>
@@ -607,7 +607,7 @@ onMounted(fetchData)
               <Label>权限标识</Label>
               <Input
                 v-model="form.permKey"
-                :placeholder="form.type === '3' ? '例如：user:add' : '可选，页面权限标识'"
+                :placeholder="form.type === '2' ? '例如：user:add' : '可选，页面权限标识'"
               />
             </div>
           </div>

@@ -7,7 +7,6 @@ import com.adminplus.pojo.dto.resp.UserResp;
 import com.adminplus.pojo.entity.UserEntity;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 用户服务接口
@@ -23,19 +22,9 @@ public interface UserService {
     PageResultResp<UserResp> getUserList(Integer page, Integer size, String keyword, String deptId);
 
     /**
-     * 异步分页查询用户列表（使用虚拟线程）
-     */
-    CompletableFuture<PageResultResp<UserResp>> getUserListAsync(Integer page, Integer size, String keyword, String deptId);
-
-    /**
      * 根据ID查询用户
      */
     UserResp getUserById(String id);
-
-    /**
-     * 异步根据ID查询用户（使用虚拟线程）
-     */
-    CompletableFuture<UserResp> getUserByIdAsync(String id);
 
     /**
      * 根据用户名查询用户

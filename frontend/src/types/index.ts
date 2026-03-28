@@ -33,15 +33,12 @@ export interface User {
 // 角色
 export interface Role {
   id: string
-  roleName?: string
-  roleCode?: string
-  name?: string
-  code?: string
+  name: string
+  code: string
   description: string
   status: number
-  sort?: number
-  sortOrder?: number
-  dataScope?: number
+  sortOrder: number
+  dataScope: number
   createTime: string
   updateTime?: string
 }
@@ -67,17 +64,14 @@ export interface Menu {
 // 部门
 export interface Dept {
   id: string
-  deptName?: string
-  name?: string
-  deptCode?: string
-  code?: string
+  name: string
+  code: string
   parentId: string
   leader: string
   phone: string
   email: string
   status: number
-  sort?: number
-  sortOrder?: number
+  sortOrder: number
   createTime?: string
   updateTime?: string
   children?: Dept[]
@@ -88,7 +82,7 @@ export interface Dict {
   id: string
   dictName: string
   dictType: string
-  description?: string
+  description: string
   remark?: string
   status: number
   createTime: string
@@ -101,12 +95,9 @@ export interface DictItem {
   dictId: string
   dictType?: string
   parentId?: string
-  itemLabel?: string
-  label?: string
-  itemValue?: string
-  value?: string
-  sort?: number
-  sortOrder?: number
+  label: string
+  value: string
+  sortOrder: number
   status: number
   remark?: string
   children?: DictItem[]

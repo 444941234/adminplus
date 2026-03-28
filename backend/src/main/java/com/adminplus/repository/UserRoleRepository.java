@@ -39,4 +39,9 @@ public interface UserRoleRepository extends JpaRepository<UserRoleEntity, String
      * 删除角色的所有用户
      */
     void deleteByRoleId(String roleId);
+
+    /**
+     * 检查角色是否已分配给用户
+     */
+    boolean existsByRoleId(String roleId);
 }
