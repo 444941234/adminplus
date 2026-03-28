@@ -161,6 +161,7 @@ const workflowDetail: WorkflowDetailData = {
     userId: 'user-001',
     userName: '张三',
     deptId: 'dept-001',
+    deptName: '技术部',
     title: '年假申请',
     businessData: '{}',
     currentNodeId: 'node-002',
@@ -171,7 +172,12 @@ const workflowDetail: WorkflowDetailData = {
     remark: '请尽快处理',
     createTime: '2026-03-27T08:00:00Z',
     pendingApproval: true,
-    canApprove: true
+    canApprove: true,
+    canWithdraw: false,
+    canCancel: false,
+    canUrge: false,
+    canEditDraft: false,
+    canSubmitDraft: false
   },
   approvals: [
     {

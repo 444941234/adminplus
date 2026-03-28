@@ -290,6 +290,7 @@ export interface WorkflowInstance {
   userId: string
   userName: string
   deptId: string
+  deptName: string | null
   title: string
   businessData: string
   currentNodeId: string
@@ -301,6 +302,11 @@ export interface WorkflowInstance {
   createTime: string
   pendingApproval: boolean
   canApprove: boolean
+  canWithdraw: boolean
+  canCancel: boolean
+  canUrge: boolean
+  canEditDraft: boolean
+  canSubmitDraft: boolean
 }
 
 export interface WorkflowNode {
