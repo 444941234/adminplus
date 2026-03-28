@@ -69,12 +69,10 @@ const handleUpdateField = async (field: keyof Profile, value: string) => {
 
 // Event handlers for ProfileHero component
 const handleEdit = () => {
-  console.log('Edit mode requested - feature coming soon')
   toast.info('编辑模式即将推出')
 }
 
 const handleChangeAvatar = () => {
-  console.log('Avatar change requested - feature coming soon')
   toast.info('头像上传功能即将推出')
 }
 
