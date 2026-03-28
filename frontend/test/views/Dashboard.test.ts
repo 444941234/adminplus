@@ -14,6 +14,16 @@ vi.mock('@/lib/page-permissions', () => ({
   getDashboardQuickActions: vi.fn(() => [])
 }))
 
+// Mock vue-sonner
+vi.mock('vue-sonner', () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn()
+  }
+}))
+
 import Dashboard from '@/views/Dashboard.vue'
 import { useUserStore } from '@/stores/user'
 import { getStats, getRecentLogs } from '@/api'
@@ -91,8 +101,6 @@ describe('Dashboard Page', () => {
       vi.mocked(getStats).mockRejectedValue(new Error('Network error'))
       vi.mocked(getRecentLogs).mockRejectedValue(new Error('Network error'))
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
       wrapper = mount(Dashboard, {
         global: {
           plugins: [pinia]
@@ -102,10 +110,9 @@ describe('Dashboard Page', () => {
       await nextTick()
       await nextTick()
 
-      expect(consoleSpy).toHaveBeenCalledWith('获取数据失败', expect.any(Error))
+      const { toast } = await import('vue-sonner')
+      expect(toast.error).toHaveBeenCalledWith('Network error')
       expect(wrapper.vm.loading).toBe(false)
-
-      consoleSpy.mockRestore()
     })
   })
 

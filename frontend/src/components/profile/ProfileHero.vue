@@ -19,7 +19,6 @@
  */
 import { computed } from 'vue'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { Profile } from '@/types'
 
@@ -33,21 +32,9 @@ interface Props {
   isOnline?: boolean
 }
 
-/**
- * Component events
- */
-interface Emits {
-  /** Emitted when edit button is clicked */
-  (e: 'edit'): void
-  /** Emitted when change avatar button is clicked */
-  (e: 'changeAvatar'): void
-}
-
 const props = withDefaults(defineProps<Props>(), {
   isOnline: false
 })
-
-const emit = defineEmits<Emits>()
 
 /**
  * Computes user initials from nickname or username
@@ -99,10 +86,6 @@ const roles = computed(() => {
         </div>
       </div>
 
-      <div class="profile-hero__actions">
-        <Button @click="emit('edit')">编辑资料</Button>
-        <Button variant="ghost" @click="emit('changeAvatar')">更换头像</Button>
-      </div>
     </div>
   </div>
 </template>

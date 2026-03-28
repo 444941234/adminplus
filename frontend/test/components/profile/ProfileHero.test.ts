@@ -40,28 +40,6 @@ describe('ProfileHero', () => {
     expect(wrapper.find('.profile-hero__status').exists()).toBe(false)
   })
 
-  it('should emit edit event when Edit Profile button is clicked', async () => {
-    const wrapper = mount(ProfileHero, {
-      props: { profile: mockProfile }
-    })
-
-    const buttons = wrapper.findAll('button')
-    await buttons[0].trigger('click')
-
-    expect(wrapper.emitted('edit')).toBeTruthy()
-  })
-
-  it('should emit changeAvatar event when Change Avatar button is clicked', async () => {
-    const wrapper = mount(ProfileHero, {
-      props: { profile: mockProfile }
-    })
-
-    const buttons = wrapper.findAll('button')
-    await buttons[1].trigger('click')
-
-    expect(wrapper.emitted('changeAvatar')).toBeTruthy()
-  })
-
   it('should show initials from nickname', () => {
     const wrapper = mount(ProfileHero, {
       props: { profile: mockProfile }

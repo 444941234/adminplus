@@ -63,15 +63,6 @@ const handleUpdateField = async (field: keyof Profile, value: string) => {
   }
 }
 
-// Event handlers for ProfileHero component
-const handleEdit = () => {
-  toast.info('编辑模式即将推出')
-}
-
-const handleChangeAvatar = () => {
-  toast.info('头像上传功能即将推出')
-}
-
 // Initialize data
 onMounted(() => {
   fetchProfile()
@@ -89,8 +80,6 @@ onMounted(() => {
     <div v-else-if="profile" class="profile-page__hero">
       <ProfileHero
         :profile="profile"
-        @edit="handleEdit"
-        @change-avatar="handleChangeAvatar"
       />
     </div>
 

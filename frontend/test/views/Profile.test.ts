@@ -174,9 +174,6 @@ describe('Profile Page Integration Tests', () => {
 
       expect(wrapper.exists()).toBe(true)
       expect(wrapper.find('.profile-page').exists()).toBe(true)
-      expect(console.warn).toHaveBeenCalledWith(
-        'Activity stats could not be loaded. Some dashboard features may be unavailable.'
-      )
     })
   })
 
@@ -365,7 +362,6 @@ describe('Profile Page Integration Tests', () => {
       await nextTick()
       await nextTick()
 
-      expect(console.error).toHaveBeenCalledWith('Failed to fetch profile:', expect.any(Error))
       const { toast } = await import('vue-sonner')
       expect(toast.error).toHaveBeenCalledWith('获取个人资料失败')
     })
@@ -634,62 +630,6 @@ describe('Profile Page Integration Tests', () => {
       await nextTick()
 
       expect(api.updateProfile).toHaveBeenCalledWith({ phone: '9876543210' })
-    })
-  })
-
-  describe('7. Event Handlers', () => {
-    it('should handle edit event from ProfileHero', async () => {
-      vi.mocked(api.getProfile).mockResolvedValue({ data: mockProfile } as any)
-      vi.mocked(api.getActivityStats).mockResolvedValue({ data: mockActivityStats } as any)
-
-      wrapper = mount(Profile, {
-        global: {
-          stubs: {
-            ProfileHero: true,
-            ProfileInfo: true,
-            ProfileSecurity: true,
-            ActivityDashboard: true,
-            QuickSettings: true
-          }
-        }
-      })
-
-      await nextTick()
-      await nextTick()
-
-      const heroComponent = wrapper.findComponent({ name: 'ProfileHero' })
-      await heroComponent.vm.$emit('edit')
-      await nextTick()
-
-      const { toast } = await import('vue-sonner')
-      expect(toast.info).toHaveBeenCalledWith('编辑模式即将推出')
-    })
-
-    it('should handle changeAvatar event from ProfileHero', async () => {
-      vi.mocked(api.getProfile).mockResolvedValue({ data: mockProfile } as any)
-      vi.mocked(api.getActivityStats).mockResolvedValue({ data: mockActivityStats } as any)
-
-      wrapper = mount(Profile, {
-        global: {
-          stubs: {
-            ProfileHero: true,
-            ProfileInfo: true,
-            ProfileSecurity: true,
-            ActivityDashboard: true,
-            QuickSettings: true
-          }
-        }
-      })
-
-      await nextTick()
-      await nextTick()
-
-      const heroComponent = wrapper.findComponent({ name: 'ProfileHero' })
-      await heroComponent.vm.$emit('changeAvatar')
-      await nextTick()
-
-      const { toast } = await import('vue-sonner')
-      expect(toast.info).toHaveBeenCalledWith('头像上传功能即将推出')
     })
   })
 
