@@ -136,7 +136,7 @@ describe('User API', () => {
 
       const result = await resetPassword('1', 'newPassword123')
 
-      expect(put).toHaveBeenCalledWith('/sys/users/1/password?password=newPassword123')
+      expect(put).toHaveBeenCalledWith('/sys/users/1/password', { password: 'newPassword123' })
       expect(result.code).toBe(200)
     })
   })
