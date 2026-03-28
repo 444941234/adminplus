@@ -67,6 +67,7 @@ const editId = ref('')
 
 const deleteDialogOpen = ref(false)
 const deleteMenuId = ref('')
+const deleteLoading = ref(false)
 const selectedMenuIds = ref<string[]>([])
 
 const form = reactive<MenuFormState>({
@@ -359,6 +360,7 @@ const handleBatchDeleteConfirm = () => {
 }
 
 const handleDelete = async () => {
+  deleteLoading.value = true
   try {
     if (deleteMenuId.value) {
       await deleteMenu(deleteMenuId.value)
@@ -373,6 +375,7 @@ const handleDelete = async () => {
     const message = error instanceof Error ? error.message : '删除菜单失败'
     toast.error(message)
   } finally {
+    deleteLoading.value = false
     deleteDialogOpen.value = false
   }
 }
@@ -665,7 +668,7 @@ onMounted(fetchData)
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="handleDelete">确认删除</AlertDialogAction>
+          <AlertDialogAction :disabled="deleteLoading" @click="handleDelete">确认删除</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

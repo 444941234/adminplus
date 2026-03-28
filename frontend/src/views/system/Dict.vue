@@ -58,6 +58,7 @@ const editId = ref('')
 
 const deleteDialogOpen = ref(false)
 const deleteDictId = ref('')
+const deleteLoading = ref(false)
 
 const itemDialogOpen = ref(false)
 const itemLoading = ref(false)
@@ -71,6 +72,7 @@ const editItemId = ref('')
 
 const deleteItemDialogOpen = ref(false)
 const deleteItemId = ref('')
+const deleteItemLoading = ref(false)
 
 const form = reactive({
   dictType: '',
@@ -257,6 +259,7 @@ const handleDeleteConfirm = (id: string) => {
 }
 
 const handleDelete = async () => {
+  deleteLoading.value = true
   try {
     await deleteDict(deleteDictId.value)
     toast.success('字典删除成功')
@@ -265,6 +268,7 @@ const handleDelete = async () => {
     const message = error instanceof Error ? error.message : '删除字典失败'
     toast.error(message)
   } finally {
+    deleteLoading.value = false
     deleteDialogOpen.value = false
   }
 }
@@ -390,6 +394,7 @@ const handleDeleteItemConfirm = (id: string) => {
 
 const handleDeleteItem = async () => {
   if (!activeDict.value) return
+  deleteItemLoading.value = true
   try {
     await deleteDictItem(activeDict.value.id, deleteItemId.value)
     toast.success('字典项删除成功')
@@ -398,6 +403,7 @@ const handleDeleteItem = async () => {
     const message = error instanceof Error ? error.message : '删除字典项失败'
     toast.error(message)
   } finally {
+    deleteItemLoading.value = false
     deleteItemDialogOpen.value = false
   }
 }
@@ -565,7 +571,7 @@ onMounted(fetchData)
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="handleDelete">确认删除</AlertDialogAction>
+          <AlertDialogAction :disabled="deleteLoading" @click="handleDelete">确认删除</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -710,7 +716,7 @@ onMounted(fetchData)
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="handleDeleteItem">确认删除</AlertDialogAction>
+          <AlertDialogAction :disabled="deleteItemLoading" @click="handleDeleteItem">确认删除</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

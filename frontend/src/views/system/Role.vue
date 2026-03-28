@@ -65,6 +65,7 @@ const editId = ref('')
 
 const deleteDialogOpen = ref(false)
 const deleteRoleId = ref('')
+const deleteLoading = ref(false)
 
 const assignDialogOpen = ref(false)
 const assignLoading = ref(false)
@@ -237,6 +238,7 @@ const handleDeleteConfirm = (id: string) => {
 }
 
 const handleDelete = async () => {
+  deleteLoading.value = true
   try {
     await deleteRole(deleteRoleId.value)
     toast.success('角色删除成功')
@@ -245,6 +247,7 @@ const handleDelete = async () => {
     const message = error instanceof Error ? error.message : '删除角色失败'
     toast.error(message)
   } finally {
+    deleteLoading.value = false
     deleteDialogOpen.value = false
   }
 }
@@ -506,7 +509,7 @@ onMounted(async () => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>取消</AlertDialogCancel>
-          <AlertDialogAction @click="handleDelete">确认删除</AlertDialogAction>
+          <AlertDialogAction :disabled="deleteLoading" @click="handleDelete">确认删除</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
