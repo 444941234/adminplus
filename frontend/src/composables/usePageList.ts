@@ -41,11 +41,12 @@ export function usePageList<T>(
         keyword: searchQuery.value.trim() || undefined,
         ...extraParams
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ;(tableData as any).records = res.data.records
-      tableData.total = res.data.total
-      tableData.page = res.data.page
-      tableData.size = res.data.size
+      Object.assign(tableData, {
+        records: res.data.records,
+        total: res.data.total,
+        page: res.data.page,
+        size: res.data.size
+      })
     } catch (error) {
       const message = error instanceof Error ? error.message : '获取列表失败'
       toast.error(message)
