@@ -33,9 +33,10 @@ import {
   getLogList,
   getLogStatistics
 } from '@/api'
-import type { Log, PageResult } from '@/types'
+import type { Log } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
+import { usePageList } from '@/composables/usePageList'
 
 interface LogStatisticsView {
   totalCount: number
@@ -49,9 +50,7 @@ interface LogStatisticsView {
 
 const userStore = useUserStore()
 
-const loading = ref(false)
 const statisticsLoading = ref(false)
-const tableData = ref<PageResult<Log>>({ records: [], total: 0, page: 1, size: 10 })
 const statistics = ref<LogStatisticsView>({
   totalCount: 0,
   loginCount: 0,
@@ -87,13 +86,29 @@ const canDeleteLog = computed(() => userStore.hasPermission('log:delete'))
 const canExportLog = computed(() => userStore.hasPermission('log:export'))
 const hasSelectedLogs = computed(() => selectedLogIds.value.length > 0)
 const allSelected = computed(
-  () => tableData.value.records.length > 0 && tableData.value.records.every((log) => selectedLogIds.value.includes(log.id))
+  () => tableData.records.length > 0 && tableData.records.every((log) => selectedLogIds.value.includes(log.id))
 )
-const totalPages = computed(() => Math.ceil(tableData.value.total / tableData.value.size) || 1)
+
+const { loading, tableData, fetchData, goToPage } = usePageList<Log>(
+  (params) => getLogList(params),
+  {
+    page: 1,
+    size: 10,
+    getParams: () => ({
+      username: filters.username.trim() || undefined,
+      module: filters.module.trim() || undefined,
+      logType: filters.logType === 'all' ? undefined : Number(filters.logType),
+      operationType: filters.operationType === 'all' ? undefined : Number(filters.operationType),
+      status: filters.status === 'all' ? undefined : Number(filters.status),
+      startTime: filters.startTime || undefined,
+      endTime: filters.endTime || undefined
+    })
+  }
+)
 
 const queryParams = computed(() => ({
-  page: tableData.value.page,
-  size: tableData.value.size,
+  page: tableData.page,
+  size: tableData.size,
   username: filters.username.trim() || undefined,
   module: filters.module.trim() || undefined,
   logType: filters.logType === 'all' ? undefined : Number(filters.logType),
@@ -150,18 +165,10 @@ const fetchStatistics = async () => {
   }
 }
 
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const res = await getLogList(queryParams.value)
-    tableData.value = res.data
-    selectedLogIds.value = selectedLogIds.value.filter((id) => res.data.records.some((log) => log.id === id))
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取日志列表失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
+const fetchDataWithSelection = async () => {
+  const prevSelected = new Set(selectedLogIds.value)
+  await fetchData()
+  selectedLogIds.value = selectedLogIds.value.filter((id) => prevSelected.has(id) && tableData.records.some((log) => log.id === id))
 }
 
 const toggleLogSelection = (logId: string, checked: boolean) => {
@@ -175,12 +182,12 @@ const toggleLogSelection = (logId: string, checked: boolean) => {
 }
 
 const toggleSelectAll = (checked: boolean) => {
-  selectedLogIds.value = checked ? tableData.value.records.map((log) => log.id) : []
+  selectedLogIds.value = checked ? tableData.records.map((log) => log.id) : []
 }
 
 const handleSearch = async () => {
-  tableData.value.page = 1
-  await fetchData()
+  tableData.page = 1
+  await fetchDataWithSelection()
 }
 
 const handleReset = async () => {
@@ -193,14 +200,8 @@ const handleReset = async () => {
     startTime: '',
     endTime: ''
   })
-  tableData.value.page = 1
-  await fetchData()
-}
-
-const goToPage = async (page: number) => {
-  if (page < 1 || page > totalPages.value || page === tableData.value.page) return
-  tableData.value.page = page
-  await fetchData()
+  tableData.page = 1
+  await fetchDataWithSelection()
 }
 
 const handleView = async (id: string) => {

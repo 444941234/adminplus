@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { toast } from 'vue-sonner'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
@@ -204,7 +205,7 @@ async function loadWorkflowDefinition() {
       fitView({ padding: 0.2 })
     }, 100)
   } catch (error) {
-    console.error('Failed to load workflow definition:', error)
+    toast.error('加载流程图失败')
   } finally {
     loading.value = false
   }

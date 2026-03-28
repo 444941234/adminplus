@@ -16,16 +16,15 @@ import {
 import { Edit, KeyRound, Plus, Search, Shield, Trash2 } from 'lucide-vue-next'
 import { ConfirmDialog, Pagination, StatusBadge } from '@/components/common'
 import { getDeptTree, getRoleList, getUserList, updateUserStatus, deleteUser } from '@/api'
-import type { Dept, PageResult, Role, User } from '@/types'
+import type { Dept, Role, User } from '@/types'
 import { getUserPagePermissionState } from '@/lib/page-permissions'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
+import { usePageList } from '@/composables/usePageList'
 import UserFormDialog from '@/components/user/UserFormDialog.vue'
 import PasswordResetDialog from '@/components/user/PasswordResetDialog.vue'
 import AssignRoleDialog from '@/components/user/AssignRoleDialog.vue'
 
-const loading = ref(false)
-const tableData = ref<PageResult<User>>({ records: [], total: 0, page: 1, size: 10 })
 const roleList = ref<Role[]>([])
 const deptTree = ref<Dept[]>([])
 const userStore = useUserStore()
@@ -34,6 +33,18 @@ const filters = reactive({
   keyword: '',
   deptId: 'all'
 })
+
+const { loading, tableData, fetchData: fetchUsers, goToPage } = usePageList<User>(
+  (params) => getUserList(params),
+  {
+    page: 1,
+    size: 10,
+    getParams: () => ({
+      keyword: filters.keyword.trim() || undefined,
+      deptId: filters.deptId === 'all' || filters.deptId === '0' ? undefined : filters.deptId
+    })
+  }
+)
 
 // 对话框状态
 const formDialogOpen = ref(false)
@@ -80,29 +91,9 @@ const deptOptions = computed(() => {
   return options
 })
 
-const queryParams = computed(() => ({
-  page: tableData.value.page,
-  size: tableData.value.size,
-  keyword: filters.keyword.trim() || undefined,
-  deptId: filters.deptId === 'all' || filters.deptId === '0' ? undefined : filters.deptId
-}))
-
-const fetchUsers = async () => {
-  loading.value = true
-  try {
-    const res = await getUserList(queryParams.value)
-    tableData.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取用户列表失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
-
 // 防抖搜索（300ms）
 const debouncedSearch = useDebounceFn(() => {
-  tableData.value.page = 1
+  tableData.page = 1
   fetchUsers()
 }, 300)
 
@@ -124,7 +115,7 @@ const handleSearch = () => {
 const handleResetSearch = async () => {
   filters.keyword = ''
   filters.deptId = 'all'
-  tableData.value.page = 1
+  tableData.page = 1
   await fetchUsers()
 }
 
@@ -188,13 +179,6 @@ const openPasswordDialog = (user: User) => {
 const openAssignDialog = (user: User) => {
   assignUser.value = user
   assignDialogOpen.value = true
-}
-
-const totalPages = computed(() => Math.ceil(tableData.value.total / tableData.value.size) || 1)
-const goToPage = async (page: number) => {
-  if (page < 1 || page > totalPages.value || page === tableData.value.page) return
-  tableData.value.page = page
-  await fetchUsers()
 }
 
 onMounted(async () => {

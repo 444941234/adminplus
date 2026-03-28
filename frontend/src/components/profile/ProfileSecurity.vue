@@ -249,11 +249,11 @@ const handleDialogOpenChange = (open: boolean) => {
 
 /* Consistent card styling to match other components */
 .profile-security__card :deep(.rounded-lg) {
-  border-radius: 16px !important;
+  border-radius: 16px;
 }
 
 .profile-security__card :deep(.shadow-sm) {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 /* Consistent header styling */

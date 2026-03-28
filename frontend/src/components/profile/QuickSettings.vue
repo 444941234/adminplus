@@ -315,9 +315,9 @@ onMounted(fetchSettings)
 }
 
 /* Language Select Trigger - match Switch width */
-.language-select-trigger {
-  min-width: 140px !important;
-  width: 140px !important;
+:deep(.language-select-trigger) {
+  min-width: 140px;
+  width: 140px;
 }
 
 /* Mobile Responsive */

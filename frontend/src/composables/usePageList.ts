@@ -11,6 +11,8 @@ export interface PageResult<T> {
 export interface UsePageListOptions {
   page?: number
   size?: number
+  /** Reactive params getter — called on every fetch (search, reset, page change) */
+  getParams?: () => Record<string, unknown>
 }
 
 /**
@@ -39,6 +41,7 @@ export function usePageList<T>(
         page: tableData.page,
         size: tableData.size,
         keyword: searchQuery.value.trim() || undefined,
+        ...options.getParams?.(),
         ...extraParams
       })
       Object.assign(tableData, {
