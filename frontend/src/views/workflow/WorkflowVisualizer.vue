@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { toast } from 'vue-sonner'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
@@ -12,6 +11,7 @@ import '@vue-flow/controls/dist/style.css'
 import '@vue-flow/minimap/dist/style.css'
 import { getWorkflowDefinition, getWorkflowDetail, getWorkflowNodes } from '@/api'
 import type { WorkflowDetail as WorkflowDetailData, WorkflowNode as WorkflowNodeData } from '@/types'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
 interface WorkflowNode {
   id: string
@@ -49,7 +49,7 @@ const emit = defineEmits<{
   (e: 'loaded', definition: WorkflowDefinition): void
 }>()
 
-const loading = ref(false)
+const { loading, run: runLoad } = useAsyncAction('加载流程图失败')
 const definition = ref<WorkflowDefinition | null>(null)
 const { onConnect, onNodesChange, addEdges, fitView } = useVueFlow()
 
@@ -165,8 +165,7 @@ function onNodeClick(event: any) {
 async function loadWorkflowDefinition() {
   if (!props.definitionId && !props.instanceId) return
 
-  loading.value = true
-  try {
+  runLoad(async () => {
     if (props.definitionId) {
       const [defRes, nodesRes] = await Promise.all([
         getWorkflowDefinition(props.definitionId),
@@ -204,11 +203,7 @@ async function loadWorkflowDefinition() {
     setTimeout(() => {
       fitView({ padding: 0.2 })
     }, 100)
-  } catch (error) {
-    toast.error('加载流程图失败')
-  } finally {
-    loading.value = false
-  }
+  })
 }
 
 onConnect((params) => {

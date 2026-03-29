@@ -35,9 +35,11 @@ import WorkflowOverviewCard from '@/components/workflow/WorkflowOverviewCard.vue
 import WorkflowTimelineTabs from '@/components/workflow/WorkflowTimelineTabs.vue'
 import WorkflowVisualizer from '@/views/workflow/WorkflowVisualizer.vue'
 import { useWorkflowActions } from '@/composables/workflow/useWorkflowActions'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
 const route = useRoute()
-const loading = ref(false)
+const { loading, run: runFetchDetail } = useAsyncAction('获取流程详情失败')
+const { run: runRollbackNodes } = useAsyncAction('获取可回退节点失败')
 const approvalComment = ref('')
 const selectedRollbackNodeId = ref<string>('')
 const rollbackableNodes = ref<WorkflowNode[]>([])
@@ -66,10 +68,9 @@ const workflowPermissionState = computed(() =>
   getWorkflowPermissionState(userStore.hasPermission, detail.value?.canApprove ?? false)
 )
 
-const fetchDetail = async () => {
+const fetchDetail = () => {
   if (!workflowId.value) return
-  loading.value = true
-  try {
+  runFetchDetail(async () => {
     const res = await getWorkflowDetail(workflowId.value)
     detail.value = res.data
 
@@ -84,12 +85,7 @@ const fetchDetail = async () => {
     } catch (urgeError) {
       console.error('获取催办记录失败:', urgeError)
     }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取流程详情失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
+  })
 }
 
 const handleAction = async (type: 'approve' | 'reject') => {
@@ -132,21 +128,24 @@ const handleRollback = async () => {
   }
 }
 
-const toggleRollback = async () => {
+const toggleRollback = () => {
   showRollback.value = !showRollback.value
   if (showRollback.value && rollbackableNodes.value.length === 0) {
-    try {
-      const res = await getRollbackableNodes(workflowId.value)
-      rollbackableNodes.value = res.data
-      // 默认选中第一个（上一个节点）
-      if (rollbackableNodes.value.length > 0) {
-        selectedRollbackNodeId.value = rollbackableNodes.value[0].id
+    runRollbackNodes(
+      async () => {
+        const res = await getRollbackableNodes(workflowId.value)
+        rollbackableNodes.value = res.data
+        // 默认选中第一个（上一个节点）
+        if (rollbackableNodes.value.length > 0) {
+          selectedRollbackNodeId.value = rollbackableNodes.value[0].id
+        }
+      },
+      {
+        onError: () => {
+          showRollback.value = false
+        }
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : '获取可回退节点失败'
-      toast.error(message)
-      showRollback.value = false
-    }
+    )
   }
 }
 

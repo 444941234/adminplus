@@ -22,10 +22,11 @@ import { toast } from 'vue-sonner'
 import { Play } from 'lucide-vue-next'
 import { useUserStore } from '@/stores/user'
 import { getWorkflowPermissionState } from '@/lib/page-permissions'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
-const loading = ref(false)
-const dialogLoading = ref(false)
-const definitionLoading = ref(false)
+const { loading, run: runFetch } = useAsyncAction('获取流程模板失败')
+const { loading: dialogLoading, run: runDialog } = useAsyncAction('操作失败')
+const { loading: definitionLoading, run: runDefinition } = useAsyncAction('获取流程模板详情失败')
 const definitions = ref<WorkflowDefinition[]>([])
 const selectedDefinition = ref<WorkflowDefinition | null>(null)
 const startDialogOpen = ref(false)
@@ -56,9 +57,8 @@ const formModel = computed<WorkflowFormValues>({
 
 import { formatDateTime } from '@/utils/format'
 
-const fetchDefinitions = async () => {
-  loading.value = true
-  try {
+const fetchDefinitions = () =>
+  runFetch(async () => {
     const [allRes, enabledRes] = await Promise.all([
       getWorkflowDefinitions(),
       getEnabledWorkflowDefinitions()
@@ -68,13 +68,7 @@ const fetchDefinitions = async () => {
       ...item,
       status: enabledIds.has(item.id) ? 1 : item.status
     }))
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取流程模板失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
+  })
 
 const openStartDialog = async (definition?: WorkflowDefinition) => {
   form.value = {
@@ -91,25 +85,22 @@ const openStartDialog = async (definition?: WorkflowDefinition) => {
   }
 }
 
-const loadDefinitionDetail = async (definitionId: string) => {
-  definitionLoading.value = true
-  dialogLoading.value = true
-  try {
-    const res = await getWorkflowDefinition(definitionId)
-    selectedDefinition.value = res.data
-    initForm(res.data.formConfig)
-    if (!form.value.title.trim()) {
-      form.value.title = `${res.data.definitionName}申请`
+const loadDefinitionDetail = (definitionId: string) =>
+  runDefinition(
+    async () => {
+      const res = await getWorkflowDefinition(definitionId)
+      selectedDefinition.value = res.data
+      initForm(res.data.formConfig)
+      if (!form.value.title.trim()) {
+        form.value.title = `${res.data.definitionName}申请`
+      }
+    },
+    {
+      onError: () => {
+        initForm()
+      }
     }
-  } catch (error) {
-    initForm()
-    const message = error instanceof Error ? error.message : '获取流程模板详情失败'
-    toast.error(message)
-  } finally {
-    definitionLoading.value = false
-    dialogLoading.value = false
-  }
-}
+  )
 
 const validateBeforeSubmit = () => {
   if (!form.value.definitionId) {
@@ -127,50 +118,48 @@ const validateBeforeSubmit = () => {
   return true
 }
 
-const handleStartWorkflow = async () => {
+const handleStartWorkflow = () => {
   if (!validateBeforeSubmit()) return
 
-  dialogLoading.value = true
-  try {
-    await startWorkflow({
-      definitionId: form.value.definitionId,
-      title: form.value.title.trim(),
-      formData: buildSubmitPayload().formData,
-      remark: form.value.remark.trim() || undefined
-    })
-    toast.success('流程发起成功')
-    startDialogOpen.value = false
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '发起流程失败'
-    toast.error(message)
-  } finally {
-    dialogLoading.value = false
-  }
+  runDialog(
+    async () => {
+      await startWorkflow({
+        definitionId: form.value.definitionId,
+        title: form.value.title.trim(),
+        formData: buildSubmitPayload().formData,
+        remark: form.value.remark.trim() || undefined
+      })
+      startDialogOpen.value = false
+    },
+    {
+      successMessage: '流程发起成功',
+      errorMessage: '发起流程失败'
+    }
+  )
 }
 
-const handleSaveDraft = async () => {
+const handleSaveDraft = () => {
   if (!permissionState.value.canDraftWorkflow) {
     toast.warning('当前没有保存草稿权限')
     return
   }
   if (!validateBeforeSubmit()) return
 
-  dialogLoading.value = true
-  try {
-    await createWorkflowDraft({
-      definitionId: form.value.definitionId,
-      title: form.value.title.trim(),
-      formData: buildSubmitPayload().formData,
-      remark: form.value.remark.trim() || undefined
-    })
-    toast.success('草稿已保存')
-    startDialogOpen.value = false
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '保存草稿失败'
-    toast.error(message)
-  } finally {
-    dialogLoading.value = false
-  }
+  runDialog(
+    async () => {
+      await createWorkflowDraft({
+        definitionId: form.value.definitionId,
+        title: form.value.title.trim(),
+        formData: buildSubmitPayload().formData,
+        remark: form.value.remark.trim() || undefined
+      })
+      startDialogOpen.value = false
+    },
+    {
+      successMessage: '草稿已保存',
+      errorMessage: '保存草稿失败'
+    }
+  )
 }
 
 watch(

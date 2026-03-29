@@ -38,8 +38,14 @@ import type { WorkflowDefinition, WorkflowFormValues, WorkflowInstance } from '@
 import { toast } from 'vue-sonner'
 import { useUserStore } from '@/stores/user'
 import { getWorkflowPermissionState } from '@/lib/page-permissions'
+import { useAsyncAction } from '@/composables/useAsyncAction'
+import { formatDateTime } from '@/utils/format'
 
-const loading = ref(false)
+const { loading, run: runList } = useAsyncAction('获取我的流程失败')
+const { loading: draftLoading, run: runDraft } = useAsyncAction('操作失败')
+const { loading: draftDefinitionLoading, run: runDraftDefinition } = useAsyncAction('获取流程模板详情失败')
+const { run: runDeleteDraft } = useAsyncAction('删除草稿失败')
+
 const statusFilter = ref('ALL')
 const workflows = ref<WorkflowInstance[]>([])
 const enabledDefinitions = ref<WorkflowDefinition[]>([])
@@ -64,8 +70,6 @@ const urgeDialogOpen = ref(false)
 const urgeContent = ref('')
 const selectedWorkflowId = ref<string | null>(null)
 const draftDialogOpen = ref(false)
-const draftLoading = ref(false)
-const draftDefinitionLoading = ref(false)
 const selectedDraftId = ref<string | null>(null)
 const draftForm = ref({
   definitionId: '',
@@ -82,30 +86,15 @@ const draftFormModel = computed<WorkflowFormValues>({
   }
 })
 
-import { formatDateTime } from '@/utils/format'
+const fetchData = () => runList(async () => {
+  const res = await getMyWorkflows(statusFilter.value === 'ALL' ? undefined : statusFilter.value)
+  workflows.value = res.data
+}, { errorMessage: '获取我的流程失败' })
 
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const res = await getMyWorkflows(statusFilter.value === 'ALL' ? undefined : statusFilter.value)
-    workflows.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取我的流程失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
-
-const fetchEnabledDefinitions = async () => {
-  try {
-    const res = await getEnabledWorkflowDefinitions()
-    enabledDefinitions.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取启用流程模板失败'
-    toast.error(message)
-  }
-}
+const fetchEnabledDefinitions = () => runList(async () => {
+  const res = await getEnabledWorkflowDefinitions()
+  enabledDefinitions.value = res.data
+}, { errorMessage: '获取启用流程模板失败' })
 
 const handleWithdraw = async (workflow: WorkflowInstance) => {
   if (!permissionState.value.canWithdrawWorkflow) return
@@ -148,25 +137,17 @@ const handleUrgeConfirm = async () => {
   }
 }
 
-const loadDraftDefinition = async (definitionId: string) => {
-  draftDefinitionLoading.value = true
-  try {
-    const res = await getWorkflowDefinition(definitionId)
-    const nextDefinition = res.data
-    const existingIndex = enabledDefinitions.value.findIndex((item) => item.id === nextDefinition.id)
-    if (existingIndex >= 0) {
-      enabledDefinitions.value.splice(existingIndex, 1, nextDefinition)
-    } else {
-      enabledDefinitions.value.push(nextDefinition)
-    }
-    initForm(nextDefinition.formConfig, formValues.value)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取流程模板详情失败'
-    toast.error(message)
-  } finally {
-    draftDefinitionLoading.value = false
+const loadDraftDefinition = (definitionId: string) => runDraftDefinition(async () => {
+  const res = await getWorkflowDefinition(definitionId)
+  const nextDefinition = res.data
+  const existingIndex = enabledDefinitions.value.findIndex((item) => item.id === nextDefinition.id)
+  if (existingIndex >= 0) {
+    enabledDefinitions.value.splice(existingIndex, 1, nextDefinition)
+  } else {
+    enabledDefinitions.value.push(nextDefinition)
   }
-}
+  initForm(nextDefinition.formConfig, formValues.value)
+}, { errorMessage: '获取流程模板详情失败' })
 
 const validateDraftForm = () => {
   if (!draftForm.value.definitionId) {
@@ -184,11 +165,10 @@ const validateDraftForm = () => {
   return true
 }
 
-const openDraftDialog = async (workflow: WorkflowInstance) => {
-  draftLoading.value = true
+const openDraftDialog = (workflow: WorkflowInstance) => {
   draftDialogOpen.value = true
   selectedDraftId.value = workflow.id
-  try {
+  runDraft(async () => {
     const res = await getWorkflowDraftDetail(workflow.id)
     draftForm.value = {
       definitionId: res.data.instance.definitionId,
@@ -197,80 +177,73 @@ const openDraftDialog = async (workflow: WorkflowInstance) => {
     }
     initForm(res.data.formConfig, res.data.formData)
     await loadDraftDefinition(res.data.instance.definitionId)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取草稿详情失败'
-    toast.error(message)
-    draftDialogOpen.value = false
-    selectedDraftId.value = null
-  } finally {
-    draftLoading.value = false
-  }
+  }, {
+    errorMessage: '获取草稿详情失败',
+    onError: () => {
+      draftDialogOpen.value = false
+      selectedDraftId.value = null
+    }
+  })
 }
 
-const handleDraftSave = async () => {
+const handleDraftSave = () => {
   if (!permissionState.value.canDraftWorkflow) return
   if (!selectedDraftId.value || !validateDraftForm()) return
 
-  draftLoading.value = true
-  try {
-    await updateWorkflowDraft(selectedDraftId.value, {
+  runDraft(async () => {
+    await updateWorkflowDraft(selectedDraftId.value!, {
       definitionId: draftForm.value.definitionId,
       title: draftForm.value.title.trim(),
       formData: buildSubmitPayload().formData,
       remark: draftForm.value.remark.trim() || undefined
     })
-    toast.success('草稿已更新')
-    draftDialogOpen.value = false
-    selectedDraftId.value = null
-    fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '保存草稿失败'
-    toast.error(message)
-  } finally {
-    draftLoading.value = false
-  }
+  }, {
+    successMessage: '草稿已更新',
+    onSuccess: () => {
+      draftDialogOpen.value = false
+      selectedDraftId.value = null
+      fetchData()
+    }
+  })
 }
 
-const handleDraftSubmit = async () => {
+const handleDraftSubmit = () => {
   if (!permissionState.value.canDraftWorkflow) return
   if (!selectedDraftId.value || !validateDraftForm()) return
 
-  draftLoading.value = true
-  try {
-    await submitWorkflow(selectedDraftId.value, {
+  runDraft(async () => {
+    await submitWorkflow(selectedDraftId.value!, {
       definitionId: draftForm.value.definitionId,
       title: draftForm.value.title.trim(),
       formData: buildSubmitPayload().formData,
       remark: draftForm.value.remark.trim() || undefined
     })
-    toast.success('草稿提交成功')
-    draftDialogOpen.value = false
-    selectedDraftId.value = null
-    fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '提交草稿失败'
-    toast.error(message)
-  } finally {
-    draftLoading.value = false
-  }
+  }, {
+    successMessage: '草稿提交成功',
+    onSuccess: () => {
+      draftDialogOpen.value = false
+      selectedDraftId.value = null
+      fetchData()
+    }
+  })
 }
 
 const handleQuickSubmitDraft = async (workflow: WorkflowInstance) => {
   await openDraftDialog(workflow)
 }
 
-const handleDeleteDraft = async (workflow: WorkflowInstance) => {
+const handleDeleteDraft = (workflow: WorkflowInstance) => {
   if (!permissionState.value.canDraftWorkflow) return
   if (!window.confirm('确认删除该草稿吗？')) return
 
-  try {
+  runDeleteDraft(async () => {
     await deleteWorkflowDraft(workflow.id)
-    toast.success('草稿已删除')
-    fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '删除草稿失败'
-    toast.error(message)
-  }
+  }, {
+    successMessage: '草稿已删除',
+    onSuccess: () => {
+      fetchData()
+    }
+  })
 }
 
 onMounted(async () => {

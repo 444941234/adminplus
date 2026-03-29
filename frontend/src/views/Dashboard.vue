@@ -6,29 +6,18 @@ import { getStats, getRecentLogs } from '@/api'
 import type { DashboardStats, OperationLog } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { getDashboardQuickActions } from '@/lib/page-permissions'
-import { toast } from 'vue-sonner'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
-const loading = ref(true)
+const { loading, run: runDashboard } = useAsyncAction('获取仪表盘数据失败')
 const stats = ref<DashboardStats | null>(null)
 const recentLogs = ref<OperationLog[]>([])
 const userStore = useUserStore()
 
-const fetchDashboard = async () => {
-  loading.value = true
-  try {
-    const [statsRes, logsRes] = await Promise.all([
-      getStats(),
-      getRecentLogs()
-    ])
-    stats.value = statsRes.data
-    recentLogs.value = logsRes.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取仪表盘数据失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
+const fetchDashboard = () => runDashboard(async () => {
+  const [statsRes, logsRes] = await Promise.all([getStats(), getRecentLogs()])
+  stats.value = statsRes.data
+  recentLogs.value = logsRes.data
+})
 
 const statCards = [
   { label: '用户总数', key: 'userCount' as const, icon: Users, color: 'bg-blue-500' },

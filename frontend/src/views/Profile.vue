@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { toast } from 'vue-sonner'
 import ProfileHero from '@/components/profile/ProfileHero.vue'
 import ProfileInfo from '@/components/profile/ProfileInfo.vue'
 import ProfileSecurity from '@/components/profile/ProfileSecurity.vue'
@@ -8,59 +7,39 @@ import ActivityDashboard from '@/components/profile/ActivityDashboard.vue'
 import QuickSettings from '@/components/profile/QuickSettings.vue'
 import { getProfile, updateProfile, getActivityStats } from '@/api'
 import type { Profile, ActivityStats } from '@/types'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
 // State management
 const profile = ref<Profile | null>(null)
 const activityStats = ref<ActivityStats | null>(null)
-const profileLoading = ref(false)
-const activityLoading = ref(false)
-const updating = ref(false)
+const { loading: profileLoading, run: runProfile } = useAsyncAction('获取个人资料失败')
+const { loading: activityLoading, run: runActivity } = useAsyncAction()
+const { loading: updating, run: runUpdate } = useAsyncAction('更新失败')
 
 // Data fetching
-const fetchProfile = async () => {
-  profileLoading.value = true
-  try {
-    const res = await getProfile()
-    profile.value = res.data
-  } catch (error) {
-    toast.error('获取个人资料失败')
-  } finally {
-    profileLoading.value = false
-  }
-}
+const fetchProfile = () => runProfile(async () => {
+  const res = await getProfile()
+  profile.value = res.data
+})
 
-const fetchActivityStats = async () => {
-  activityLoading.value = true
-  try {
-    const res = await getActivityStats()
-    activityStats.value = res.data
-  } catch (error) {
-    // Activity stats are non-critical, silently degrade
-  } finally {
-    activityLoading.value = false
-  }
-}
+const fetchActivityStats = () => runActivity(async () => {
+  const res = await getActivityStats()
+  activityStats.value = res.data
+}, { onError: () => {} })
 
 // Profile update handlers
-const handleUpdateField = async (field: keyof Profile, value: string) => {
+const handleUpdateField = (field: keyof Profile, value: string) => {
   if (!profile.value) return
 
-  updating.value = true
-  try {
+  runUpdate(async () => {
     await updateProfile({ [field]: value })
-    // Update local state with type-safe approach using spread operator
-    profile.value = {
-      ...profile.value,
-      [field]: value
-    } as Profile
-    toast.success('更新成功')
-  } catch (error) {
-    toast.error('更新失败')
-    // Revert on error by refetching
-    await fetchProfile()
-  } finally {
-    updating.value = false
-  }
+  }, {
+    successMessage: '更新成功',
+    onSuccess: () => {
+      profile.value = { ...profile.value!, [field]: value } as Profile
+    },
+    onError: () => fetchProfile()
+  })
 }
 
 // Initialize data

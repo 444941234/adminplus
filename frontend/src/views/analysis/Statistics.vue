@@ -14,10 +14,10 @@ import {
 } from '@/components/ui'
 import { getOnlineUsers, getStatistics, getSystemInfo } from '@/api'
 import type { ChartData, OnlineUser, StatisticsData, SystemInfo } from '@/types'
-import { toast } from 'vue-sonner'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 import { Activity, Eye, TrendingUp, UserPlus } from 'lucide-vue-next'
 
-const loading = ref(false)
+const { loading, run: runList } = useAsyncAction('获取统计信息失败')
 const statistics = ref<StatisticsData | null>(null)
 const onlineUsers = ref<OnlineUser[]>([])
 const systemInfo = ref<SystemInfo | null>(null)
@@ -59,24 +59,16 @@ const getMaxValue = (chart?: ChartData | null) => {
 
 import { formatDateTime } from '@/utils/format'
 
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const [statisticsRes, onlineUsersRes, systemInfoRes] = await Promise.all([
-      getStatistics(),
-      getOnlineUsers(),
-      getSystemInfo()
-    ])
-    statistics.value = statisticsRes.data
-    onlineUsers.value = onlineUsersRes.data
-    systemInfo.value = systemInfoRes.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取统计信息失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
+const fetchData = () => runList(async () => {
+  const [statisticsRes, onlineUsersRes, systemInfoRes] = await Promise.all([
+    getStatistics(),
+    getOnlineUsers(),
+    getSystemInfo()
+  ])
+  statistics.value = statisticsRes.data
+  onlineUsers.value = onlineUsersRes.data
+  systemInfo.value = systemInfoRes.data
+})
 
 onMounted(fetchData)
 </script>

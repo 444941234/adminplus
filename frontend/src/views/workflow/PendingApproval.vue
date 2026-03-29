@@ -26,8 +26,9 @@ import type { WorkflowInstance } from '@/types'
 import { toast } from 'vue-sonner'
 import { useUserStore } from '@/stores/user'
 import { getWorkflowPermissionState } from '@/lib/page-permissions'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
-const loading = ref(false)
+const { loading, run: runFetch } = useAsyncAction('获取待审批流程失败')
 const actionDialogOpen = ref(false)
 const actionType = ref<'approve' | 'reject'>('approve')
 const comment = ref('')
@@ -45,18 +46,11 @@ const canApproveWorkflow = computed(() => permissionState.value.canApprovePendin
 
 import { formatDateTime } from '@/utils/format'
 
-const fetchData = async () => {
-  loading.value = true
-  try {
+const fetchData = () =>
+  runFetch(async () => {
     const res = await getPendingWorkflows()
     workflows.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取待审批流程失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
+  })
 
 const openActionDialog = (workflow: WorkflowInstance, type: 'approve' | 'reject') => {
   currentWorkflow.value = workflow

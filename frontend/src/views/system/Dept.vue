@@ -24,6 +24,7 @@ import { isValidChinaPhone, isValidEmail } from '@/lib/validators'
 import type { Dept } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
 interface DeptRow extends Dept {
   displayName: string
@@ -34,20 +35,20 @@ interface DeptRow extends Dept {
   isExpanded: boolean
 }
 
-const loading = ref(false)
+const { loading, run: runList } = useAsyncAction('获取部门列表失败')
 const treeData = ref<Dept[]>([])
 const searchQuery = ref('')
 const expandedKeys = ref<Set<string>>(new Set())
 const userStore = useUserStore()
 
 const dialogOpen = ref(false)
-const dialogLoading = ref(false)
+const { loading: dialogLoading, run: runDialog } = useAsyncAction('获取部门详情失败')
 const isEdit = ref(false)
 const editId = ref('')
 
 const deleteDialogOpen = ref(false)
 const deleteDeptId = ref('')
-const deleteLoading = ref(false)
+const { loading: deleteLoading, run: runDelete } = useAsyncAction('删除部门失败')
 
 const form = reactive({
   parentId: '0',
@@ -91,19 +92,12 @@ const ensureExpandedForTree = (deptList: Dept[]) => {
   expandedKeys.value = next
 }
 
-const fetchData = async () => {
-  loading.value = true
-  try {
+const fetchData = () =>
+  runList(async () => {
     const res = await getDeptTree()
     treeData.value = res.data
     ensureExpandedForTree(res.data)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取部门列表失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
+  })
 
 const toggleExpand = (id: string) => {
   const next = new Set(expandedKeys.value)
@@ -215,12 +209,11 @@ const handleAdd = () => {
   dialogOpen.value = true
 }
 
-const handleEdit = async (id: string) => {
+const handleEdit = (id: string) => {
   isEdit.value = true
   editId.value = id
-  dialogLoading.value = true
   dialogOpen.value = true
-  try {
+  runDialog(async () => {
     const res = await getDeptById(id)
     const dept = res.data
     Object.assign(form, {
@@ -233,16 +226,14 @@ const handleEdit = async (id: string) => {
       sortOrder: dept.sortOrder,
       status: String(dept.status ?? 1)
     })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取部门详情失败'
-    toast.error(message)
-    dialogOpen.value = false
-  } finally {
-    dialogLoading.value = false
-  }
+  }, {
+    onError: () => {
+      dialogOpen.value = false
+    }
+  })
 }
 
-const handleSubmit = async () => {
+const handleSubmit = () => {
   if (!form.name.trim()) {
     toast.warning('请输入部门名称')
     return
@@ -256,8 +247,7 @@ const handleSubmit = async () => {
     return
   }
 
-  dialogLoading.value = true
-  try {
+  runDialog(async () => {
     const payload = {
       parentId: form.parentId === '0' ? undefined : form.parentId,
       name: form.name.trim(),
@@ -271,19 +261,17 @@ const handleSubmit = async () => {
 
     if (isEdit.value) {
       await updateDept(editId.value, payload)
-      toast.success('部门更新成功')
     } else {
       await createDept(payload)
-      toast.success('部门创建成功')
     }
-    dialogOpen.value = false
-    fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '保存部门失败'
-    toast.error(message)
-  } finally {
-    dialogLoading.value = false
-  }
+  }, {
+    errorMessage: '保存部门失败',
+    successMessage: isEdit.value ? '部门更新成功' : '部门创建成功',
+    onSuccess: () => {
+      dialogOpen.value = false
+      fetchData()
+    }
+  })
 }
 
 const handleDeleteConfirm = (id: string) => {
@@ -291,20 +279,16 @@ const handleDeleteConfirm = (id: string) => {
   deleteDialogOpen.value = true
 }
 
-const handleDelete = async () => {
-  deleteLoading.value = true
-  try {
+const handleDelete = () =>
+  runDelete(async () => {
     await deleteDept(deleteDeptId.value)
-    toast.success('部门删除成功')
     fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '删除部门失败'
-    toast.error(message)
-  } finally {
-    deleteLoading.value = false
-    deleteDialogOpen.value = false
-  }
-}
+  }, {
+    successMessage: '部门删除成功',
+    onSuccess: () => {
+      deleteDialogOpen.value = false
+    }
+  })
 
 onMounted(fetchData)
 </script>

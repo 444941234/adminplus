@@ -132,6 +132,9 @@ describe('Dashboard Page', () => {
 
       expect(wrapper.vm.loading).toBe(true)
 
+      // useAsyncAction adds extra async layers; flush all microtasks
+      await new Promise(resolve => setTimeout(resolve, 0))
+      await nextTick()
       await nextTick()
       await nextTick()
 

@@ -4,6 +4,14 @@ import { nextTick } from 'vue'
 import Profile from '@/views/Profile.vue'
 import * as api from '@/api'
 
+// Helper to flush all microtasks from useAsyncAction's async chain
+const flushAsync = async () => {
+  await new Promise(resolve => setTimeout(resolve, 0))
+  await nextTick()
+  await nextTick()
+  await nextTick()
+}
+
 // Mock child components to simplify testing
 vi.mock('@/components/profile/ProfileHero.vue', () => ({
   default: {
@@ -124,8 +132,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick() // Double tick for async operations
+      await flushAsync()
 
       expect(wrapper.find('.profile-page').exists()).toBe(true)
     })
@@ -146,8 +153,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       expect(wrapper.exists()).toBe(true)
       expect(wrapper.find('.profile-page').exists()).toBe(true)
@@ -169,8 +175,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       expect(wrapper.exists()).toBe(true)
       expect(wrapper.find('.profile-page').exists()).toBe(true)
@@ -194,8 +199,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const heroComponent = wrapper.findComponent({ name: 'ProfileHero' })
       expect(heroComponent.exists()).toBe(true)
@@ -218,8 +222,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const infoComponent = wrapper.findComponent({ name: 'ProfileInfo' })
       expect(infoComponent.exists()).toBe(true)
@@ -242,8 +245,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const securityComponent = wrapper.findComponent({ name: 'ProfileSecurity' })
       expect(securityComponent.exists()).toBe(true)
@@ -265,8 +267,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const activityComponent = wrapper.findComponent({ name: 'ActivityDashboard' })
       expect(activityComponent.exists()).toBe(true)
@@ -289,8 +290,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const settingsComponent = wrapper.findComponent({ name: 'QuickSettings' })
       expect(settingsComponent.exists()).toBe(true)
@@ -314,8 +314,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       expect(api.getProfile).toHaveBeenCalledTimes(1)
       expect(api.getActivityStats).toHaveBeenCalledTimes(1)
@@ -337,8 +336,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       expect(api.getActivityStats).toHaveBeenCalledTimes(1)
     })
@@ -359,11 +357,10 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const { toast } = await import('vue-sonner')
-      expect(toast.error).toHaveBeenCalledWith('获取个人资料失败')
+      expect(toast.error).toHaveBeenCalledWith('Network Error')
     })
 
     it('should not show toast error when activity stats fetch fails', async () => {
@@ -382,8 +379,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const { toast } = await import('vue-sonner')
       expect(toast.error).not.toHaveBeenCalledWith(expect.stringContaining('activity'))
@@ -420,8 +416,7 @@ describe('Profile Page Integration Tests', () => {
 
       // Resolve the promise
       resolveProfile!({ data: mockProfile })
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       expect(wrapper.find('.profile-page__loading').exists()).toBe(false)
     })
@@ -442,8 +437,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const infoComponent = wrapper.findComponent({ name: 'ProfileInfo' })
       expect(infoComponent.props('loading')).toBe(false)
@@ -465,8 +459,7 @@ describe('Profile Page Integration Tests', () => {
 
       // Resolve the update
       resolveUpdate!({ data: mockProfile })
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       expect(infoComponent.props('loading')).toBe(false)
     })
@@ -489,8 +482,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       // Profile hero should not be rendered
       expect(wrapper.findComponent({ name: 'ProfileHero' }).exists()).toBe(false)
@@ -514,8 +506,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       // Should show empty state message
       expect(wrapper.find('.profile-page__activity-empty').exists()).toBe(true)
@@ -539,18 +530,16 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const infoComponent = wrapper.findComponent({ name: 'ProfileInfo' })
       await infoComponent.vm.$emit('updateField', 'nickname', 'New Name')
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       // Should refetch profile to revert
       expect(api.getProfile).toHaveBeenCalledTimes(2)
       const { toast } = await import('vue-sonner')
-      expect(toast.error).toHaveBeenCalledWith('更新失败')
+      expect(toast.error).toHaveBeenCalledWith('Update failed')
     })
   })
 
@@ -572,15 +561,13 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const infoComponent = wrapper.findComponent({ name: 'ProfileInfo' })
 
       // Emit updateField event
       await infoComponent.vm.$emit('updateField', 'nickname', 'Updated Name')
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       // Verify API was called
       expect(api.updateProfile).toHaveBeenCalledWith({ nickname: 'Updated Name' })
@@ -605,29 +592,25 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const infoComponent = wrapper.findComponent({ name: 'ProfileInfo' })
 
       // Update nickname
       await infoComponent.vm.$emit('updateField', 'nickname', 'New Nickname')
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       expect(api.updateProfile).toHaveBeenCalledWith({ nickname: 'New Nickname' })
 
       // Update email
       await infoComponent.vm.$emit('updateField', 'email', 'newemail@example.com')
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       expect(api.updateProfile).toHaveBeenCalledWith({ email: 'newemail@example.com' })
 
       // Update phone
       await infoComponent.vm.$emit('updateField', 'phone', '9876543210')
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       expect(api.updateProfile).toHaveBeenCalledWith({ phone: '9876543210' })
     })
@@ -650,8 +633,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       // Check that grid layout exists
       const grid = wrapper.find('.profile-page__grid')
@@ -679,8 +661,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const mainColumn = wrapper.find('.profile-page__main')
       const securityComponent = wrapper.findComponent({ name: 'ProfileSecurity' })
@@ -708,8 +689,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       expect(wrapper.exists()).toBe(true)
       const heroComponent = wrapper.findComponent({ name: 'ProfileHero' })
@@ -733,8 +713,7 @@ describe('Profile Page Integration Tests', () => {
         }
       })
 
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       const infoComponent = wrapper.findComponent({ name: 'ProfileInfo' })
 
@@ -746,8 +725,7 @@ describe('Profile Page Integration Tests', () => {
       ]
 
       await Promise.all(updates)
-      await nextTick()
-      await nextTick()
+      await flushAsync()
 
       // All updates should have been attempted
       expect(api.updateProfile).toHaveBeenCalledTimes(3)

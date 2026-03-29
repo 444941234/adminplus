@@ -4,9 +4,9 @@ import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from '@/compo
 import { RefreshCw, Server, Users } from 'lucide-vue-next'
 import { getOnlineUsers, getSystemInfo } from '@/api'
 import type { OnlineUser, SystemInfo } from '@/types'
-import { toast } from 'vue-sonner'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
-const loading = ref(false)
+const { loading, run: runFetch } = useAsyncAction('获取系统监控数据失败')
 const systemInfo = ref<SystemInfo | null>(null)
 const onlineUsers = ref<OnlineUser[]>([])
 
@@ -25,19 +25,12 @@ const formatUptime = (uptime?: number) => {
   return `${minutes}分钟`
 }
 
-const fetchData = async () => {
-  loading.value = true
-  try {
+const fetchData = () =>
+  runFetch(async () => {
     const [systemRes, usersRes] = await Promise.all([getSystemInfo(), getOnlineUsers()])
     systemInfo.value = systemRes.data
     onlineUsers.value = usersRes.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取系统监控数据失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
+  })
 
 onMounted(fetchData)
 </script>

@@ -19,11 +19,13 @@ import { deleteManagedFile, getFilesByDirectory, getMyFiles, uploadManagedFile }
 import type { FileRecord } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
 const userStore = useUserStore()
 
-const loading = ref(false)
-const uploading = ref(false)
+const { loading, run: runFetch } = useAsyncAction('获取文件列表失败')
+const { loading: uploading, run: runUpload } = useAsyncAction('文件上传失败')
+const { run: runDelete } = useAsyncAction('文件删除失败')
 const files = ref<FileRecord[]>([])
 const searchQuery = ref('')
 const scope = ref<'my' | 'directory'>('my')
@@ -51,18 +53,11 @@ const formatFileSize = (size: number) => {
   return `${(size / 1024 / 1024 / 1024).toFixed(1)} GB`
 }
 
-const fetchFiles = async () => {
-  loading.value = true
-  try {
+const fetchFiles = () =>
+  runFetch(async () => {
     const res = scope.value === 'my' ? await getMyFiles() : await getFilesByDirectory(directory.value.trim() || 'files')
     files.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取文件列表失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
+  })
 
 const handleSearch = async () => {
   await fetchFiles()
@@ -78,7 +73,7 @@ const handleFileChange = (event: Event) => {
   selectedFile.value = target.files?.[0] ?? null
 }
 
-const handleUpload = async () => {
+const handleUpload = () => {
   if (!selectedFile.value) {
     toast.warning('请先选择文件')
     return
@@ -87,20 +82,16 @@ const handleUpload = async () => {
     toast.warning('请输入目录名')
     return
   }
-  uploading.value = true
-  try {
-    await uploadManagedFile(selectedFile.value, directory.value.trim())
-    toast.success('文件上传成功')
-    selectedFile.value = null
-    const input = document.getElementById('managed-file-input') as HTMLInputElement | null
-    if (input) input.value = ''
-    await fetchFiles()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '文件上传失败'
-    toast.error(message)
-  } finally {
-    uploading.value = false
-  }
+  runUpload(
+    async () => {
+      await uploadManagedFile(selectedFile.value!, directory.value.trim())
+      selectedFile.value = null
+      const input = document.getElementById('managed-file-input') as HTMLInputElement | null
+      if (input) input.value = ''
+      await fetchFiles()
+    },
+    { successMessage: '文件上传成功' }
+  )
 }
 
 const handleOpenFile = (file: FileRecord) => {
@@ -112,18 +103,21 @@ const handleDeleteConfirm = (id: string) => {
   deleteDialogOpen.value = true
 }
 
-const handleDelete = async () => {
-  try {
-    await deleteManagedFile(deleteFileId.value)
-    toast.success('文件删除成功')
-    await fetchFiles()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '文件删除失败'
-    toast.error(message)
-  } finally {
+const handleDelete = () =>
+  runDelete(
+    async () => {
+      await deleteManagedFile(deleteFileId.value)
+      await fetchFiles()
+    },
+    {
+      successMessage: '文件删除成功',
+      onSuccess: () => {
+        deleteDialogOpen.value = false
+      }
+    }
+  ).finally(() => {
     deleteDialogOpen.value = false
-  }
-}
+  })
 
 onMounted(fetchFiles)
 </script>
