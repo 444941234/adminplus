@@ -12,8 +12,8 @@ server:
     max-connections: 8192
     accept-count: 100
     connection-timeout: 20000
-    # 限制 POST 请求体大小
-    max-swallow-size: -1
+    # 限制请求体吞入大小 (2MB)，防止超大请求耗尽内存 (DoS 防护)
+    max-swallow-size: 2097152
     # 启用访问日志（生产环境建议启用）
     accesslog:
       enabled: false
