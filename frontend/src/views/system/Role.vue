@@ -27,6 +27,7 @@ import { isValidRoleCode } from '@/lib/validators'
 import type { Menu, Role } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
 interface RoleFormState {
   name: string
@@ -44,23 +45,24 @@ interface MenuOption {
   disabled: boolean
 }
 
-const loading = ref(false)
 const roles = ref<Role[]>([])
 const menus = ref<Menu[]>([])
 const searchQuery = ref('')
 const userStore = useUserStore()
 
+const { loading: listLoading, run: runList } = useAsyncAction('获取角色列表失败')
+const { loading: dialogLoading, run: runDialog } = useAsyncAction('操作失败')
+const { loading: deleteLoading, run: runDelete } = useAsyncAction('删除角色失败')
+const { loading: assignLoading, run: runAssign } = useAsyncAction('操作失败')
+
 const dialogOpen = ref(false)
-const dialogLoading = ref(false)
 const isEdit = ref(false)
 const editId = ref('')
 
 const deleteDialogOpen = ref(false)
 const deleteRoleId = ref('')
-const deleteLoading = ref(false)
 
 const assignDialogOpen = ref(false)
-const assignLoading = ref(false)
 const assignRole = ref<Role | null>(null)
 const selectedMenuIds = ref<string[]>([])
 
@@ -123,28 +125,15 @@ const menuOptions = computed<MenuOption[]>(() => {
   return options
 })
 
-const fetchRoles = async () => {
-  loading.value = true
-  try {
-    const res = await getRoleList()
-    roles.value = res.data.records || []
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取角色列表失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
+const fetchRoles = () => runList(async () => {
+  const res = await getRoleList()
+  roles.value = res.data.records || []
+})
 
-const fetchMenus = async () => {
-  try {
-    const res = await getMenuTree()
-    menus.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取菜单列表失败'
-    toast.error(message)
-  }
-}
+const fetchMenus = () => runList(
+  async () => { const res = await getMenuTree(); menus.value = res.data },
+  { errorMessage: '获取菜单列表失败' }
+)
 
 const handleAdd = () => {
   resetForm()
@@ -153,12 +142,11 @@ const handleAdd = () => {
   dialogOpen.value = true
 }
 
-const handleEdit = async (id: string) => {
+const handleEdit = (id: string) => {
   isEdit.value = true
   editId.value = id
-  dialogLoading.value = true
   dialogOpen.value = true
-  try {
+  runDialog(async () => {
     const res = await getRoleById(id)
     const role = res.data
     Object.assign(form, {
@@ -169,16 +157,13 @@ const handleEdit = async (id: string) => {
       status: String(role.status ?? 1),
       sortOrder: role.sortOrder
     })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取角色详情失败'
-    toast.error(message)
-    dialogOpen.value = false
-  } finally {
-    dialogLoading.value = false
-  }
+  }, {
+    errorMessage: '获取角色详情失败',
+    onError: () => { dialogOpen.value = false }
+  })
 }
 
-const handleSubmit = async () => {
+const handleSubmit = () => {
   if (!form.name.trim()) {
     toast.warning('请输入角色名称')
     return
@@ -192,8 +177,7 @@ const handleSubmit = async () => {
     return
   }
 
-  dialogLoading.value = true
-  try {
+  runDialog(async () => {
     if (isEdit.value) {
       await updateRole(editId.value, {
         name: form.name.trim(),
@@ -202,7 +186,6 @@ const handleSubmit = async () => {
         status: Number(form.status),
         sortOrder: Number(form.sortOrder) || 0
       })
-      toast.success('角色更新成功')
     } else {
       await createRole({
         code: form.code.trim(),
@@ -212,16 +195,15 @@ const handleSubmit = async () => {
         status: Number(form.status),
         sortOrder: Number(form.sortOrder) || 0
       })
-      toast.success('角色创建成功')
     }
-    dialogOpen.value = false
-    await fetchRoles()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '保存角色失败'
-    toast.error(message)
-  } finally {
-    dialogLoading.value = false
-  }
+  }, {
+    successMessage: isEdit.value ? '角色更新成功' : '角色创建成功',
+    errorMessage: '保存角色失败',
+    onSuccess: async () => {
+      dialogOpen.value = false
+      await fetchRoles()
+    }
+  })
 }
 
 const handleDeleteConfirm = (id: string) => {
@@ -229,19 +211,16 @@ const handleDeleteConfirm = (id: string) => {
   deleteDialogOpen.value = true
 }
 
-const handleDelete = async () => {
-  deleteLoading.value = true
-  try {
+const handleDelete = () => {
+  runDelete(async () => {
     await deleteRole(deleteRoleId.value)
-    toast.success('角色删除成功')
     await fetchRoles()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '删除角色失败'
-    toast.error(message)
-  } finally {
-    deleteLoading.value = false
+  }, {
+    successMessage: '角色删除成功',
+    errorMessage: '删除角色失败'
+  }).finally(() => {
     deleteDialogOpen.value = false
-  }
+  })
 }
 
 const toggleMenuSelection = (menuId: string, checked: boolean) => {
@@ -266,36 +245,28 @@ const toggleAllMenus = (checked: boolean) => {
   selectedMenuIds.value = checked ? menuOptions.value.map((item) => item.id) : []
 }
 
-const handleOpenAssign = async (role: Role) => {
+const handleOpenAssign = (role: Role) => {
   assignRole.value = role
   assignDialogOpen.value = true
-  assignLoading.value = true
-  try {
+  runAssign(async () => {
     const [menuTreeRes, selectedRes] = await Promise.all([getMenuTree(), getRoleMenus(role.id)])
     menus.value = menuTreeRes.data
     selectedMenuIds.value = selectedRes.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取角色菜单权限失败'
-    toast.error(message)
-    assignDialogOpen.value = false
-  } finally {
-    assignLoading.value = false
-  }
+  }, {
+    errorMessage: '获取角色菜单权限失败',
+    onError: () => { assignDialogOpen.value = false }
+  })
 }
 
-const handleAssignSubmit = async () => {
+const handleAssignSubmit = () => {
   if (!assignRole.value) return
-  assignLoading.value = true
-  try {
-    await assignMenus(assignRole.value.id, selectedMenuIds.value)
-    toast.success('菜单权限分配成功')
-    assignDialogOpen.value = false
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '分配菜单权限失败'
-    toast.error(message)
-  } finally {
-    assignLoading.value = false
-  }
+  runAssign(async () => {
+    await assignMenus(assignRole.value!.id, selectedMenuIds.value)
+  }, {
+    successMessage: '菜单权限分配成功',
+    errorMessage: '分配菜单权限失败',
+    onSuccess: () => { assignDialogOpen.value = false }
+  })
 }
 
 onMounted(async () => {
@@ -339,7 +310,7 @@ onMounted(async () => {
             </tr>
           </thead>
           <tbody class="divide-y">
-            <tr v-if="loading">
+            <tr v-if="listLoading">
               <td colspan="7" class="p-8 text-center text-muted-foreground">加载中...</td>
             </tr>
             <tr v-else-if="filteredRoles.length === 0">

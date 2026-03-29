@@ -19,7 +19,7 @@ import { getDeptTree, getRoleList, getUserList, updateUserStatus, deleteUser } f
 import type { Dept, Role, User } from '@/types'
 import { getUserPagePermissionState } from '@/lib/page-permissions'
 import { useUserStore } from '@/stores/user'
-import { toast } from 'vue-sonner'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 import { usePageList } from '@/composables/usePageList'
 import UserFormDialog from '@/components/user/UserFormDialog.vue'
 import PasswordResetDialog from '@/components/user/PasswordResetDialog.vue'
@@ -51,7 +51,9 @@ const formDialogOpen = ref(false)
 const editUserId = ref('')
 const deleteDialogOpen = ref(false)
 const deleteUserId = ref('')
-const deleteLoading = ref(false)
+
+const { loading: deleteLoading, run: runDelete } = useAsyncAction('删除用户失败')
+const { run: runMeta } = useAsyncAction('获取用户关联数据失败')
 
 const passwordDialogOpen = ref(false)
 const resetUserId = ref('')
@@ -92,16 +94,11 @@ const debouncedSearch = useDebounceFn(() => {
   fetchUsers()
 }, 300)
 
-const fetchMeta = async () => {
-  try {
-    const [rolesRes, deptRes] = await Promise.all([getRoleList(), getDeptTree()])
-    roleList.value = rolesRes.data.records || []
-    deptTree.value = deptRes.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取用户关联数据失败'
-    toast.error(message)
-  }
-}
+const fetchMeta = () => runMeta(async () => {
+  const [rolesRes, deptRes] = await Promise.all([getRoleList(), getDeptTree()])
+  roleList.value = rolesRes.data.records || []
+  deptTree.value = deptRes.data
+})
 
 const handleSearch = () => {
   debouncedSearch()
@@ -129,20 +126,19 @@ const handleStatusClick = (user: User) => {
   statusConfirmOpen.value = true
 }
 
-const handleStatusConfirm = async () => {
+const handleStatusConfirm = () => {
   if (!statusChangeUser.value) return
-  try {
-    const newStatus = statusChangeUser.value.status === 1 ? 0 : 1
-    await updateUserStatus(statusChangeUser.value.id, newStatus)
-    toast.success('状态更新成功')
-    await fetchUsers()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '更新状态失败'
-    toast.error(message)
-  } finally {
+  runDelete(async () => {
+    const newStatus = statusChangeUser.value!.status === 1 ? 0 : 1
+    await updateUserStatus(statusChangeUser.value!.id, newStatus)
+  }, {
+    successMessage: '状态更新成功',
+    errorMessage: '更新状态失败',
+    onSuccess: () => fetchUsers()
+  }).finally(() => {
     statusConfirmOpen.value = false
     statusChangeUser.value = null
-  }
+  })
 }
 
 const handleDeleteConfirm = (id: string) => {
@@ -150,19 +146,15 @@ const handleDeleteConfirm = (id: string) => {
   deleteDialogOpen.value = true
 }
 
-const handleDelete = async () => {
-  deleteLoading.value = true
-  try {
+const handleDelete = () => {
+  runDelete(async () => {
     await deleteUser(deleteUserId.value)
-    toast.success('用户删除成功')
-    await fetchUsers()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '删除用户失败'
-    toast.error(message)
-  } finally {
-    deleteLoading.value = false
+  }, {
+    successMessage: '用户删除成功',
+    onSuccess: () => fetchUsers()
+  }).finally(() => {
     deleteDialogOpen.value = false
-  }
+  })
 }
 
 const openPasswordDialog = (user: User) => {

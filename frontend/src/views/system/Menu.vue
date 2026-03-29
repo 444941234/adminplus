@@ -25,6 +25,7 @@ import { batchDelete, batchUpdateStatus, createMenu, deleteMenu, getMenuById, ge
 import type { Menu } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
 interface MenuFormState {
   parentId: string
@@ -47,20 +48,21 @@ interface MenuTreeRow {
   menu: Menu
 }
 
-const loading = ref(false)
+const { loading, run: runList } = useAsyncAction('获取菜单列表失败')
+const { loading: dialogLoading, run: runDialog } = useAsyncAction('操作失败')
+const { loading: deleteLoading, run: runDelete } = useAsyncAction('删除菜单失败')
+
 const searchQuery = ref('')
 const menus = ref<Menu[]>([])
 const expandedKeys = ref<Set<string>>(new Set())
 const userStore = useUserStore()
 
 const dialogOpen = ref(false)
-const dialogLoading = ref(false)
 const isEdit = ref(false)
 const editId = ref('')
 
 const deleteDialogOpen = ref(false)
 const deleteMenuId = ref('')
-const deleteLoading = ref(false)
 const selectedMenuIds = ref<string[]>([])
 
 const form = reactive<MenuFormState>({
@@ -211,22 +213,14 @@ const validateForm = () => {
   return true
 }
 
-const fetchData = async () => {
-  loading.value = true
-  try {
-    const res = await getMenuTree()
-    menus.value = res.data
-    expandAllMenus(res.data)
-    selectedMenuIds.value = selectedMenuIds.value.filter((id) =>
-      flattenMenuIds(res.data).includes(id)
-    )
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取菜单列表失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
+const fetchData = () => runList(async () => {
+  const res = await getMenuTree()
+  menus.value = res.data
+  expandAllMenus(res.data)
+  selectedMenuIds.value = selectedMenuIds.value.filter((id) =>
+    flattenMenuIds(res.data).includes(id)
+  )
+})
 
 const flattenMenuIds = (menuList: Menu[]): string[] => {
   return menuList.flatMap((menu) => [menu.id, ...flattenMenuIds(menu.children ?? [])])
@@ -273,12 +267,11 @@ const handleAdd = (parentId = '0', type = '0') => {
   dialogOpen.value = true
 }
 
-const handleEdit = async (id: string) => {
+const handleEdit = (id: string) => {
   isEdit.value = true
   editId.value = id
-  dialogLoading.value = true
   dialogOpen.value = true
-  try {
+  runDialog(async () => {
     const res = await getMenuById(id)
     const menu = res.data
     Object.assign(form, {
@@ -293,20 +286,16 @@ const handleEdit = async (id: string) => {
       visible: String(menu.visible ?? 1),
       status: String(menu.status ?? 1)
     })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取菜单详情失败'
-    toast.error(message)
-    dialogOpen.value = false
-  } finally {
-    dialogLoading.value = false
-  }
+  }, {
+    errorMessage: '获取菜单详情失败',
+    onError: () => { dialogOpen.value = false }
+  })
 }
 
-const handleSubmit = async () => {
+const handleSubmit = () => {
   if (!validateForm()) return
 
-  dialogLoading.value = true
-  try {
+  runDialog(async () => {
     const payload = {
       parentId: form.parentId === '0' ? undefined : form.parentId,
       type: Number(form.type),
@@ -322,20 +311,17 @@ const handleSubmit = async () => {
 
     if (isEdit.value) {
       await updateMenu(editId.value, payload)
-      toast.success('菜单更新成功')
     } else {
       await createMenu(payload)
-      toast.success('菜单创建成功')
     }
-
-    dialogOpen.value = false
-    await fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '保存菜单失败'
-    toast.error(message)
-  } finally {
-    dialogLoading.value = false
-  }
+  }, {
+    successMessage: isEdit.value ? '菜单更新成功' : '菜单创建成功',
+    errorMessage: '保存菜单失败',
+    onSuccess: () => {
+      dialogOpen.value = false
+      fetchData()
+    }
+  })
 }
 
 const handleDeleteConfirm = (id: string) => {
@@ -352,40 +338,36 @@ const handleBatchDeleteConfirm = () => {
   deleteDialogOpen.value = true
 }
 
-const handleDelete = async () => {
-  deleteLoading.value = true
-  try {
+const handleDelete = () => {
+  runDelete(async () => {
     if (deleteMenuId.value) {
       await deleteMenu(deleteMenuId.value)
-      toast.success('菜单删除成功')
     } else {
       await batchDelete(selectedMenuIds.value)
-      toast.success(`已删除 ${selectedMenuIds.value.length} 个菜单`)
-      selectedMenuIds.value = []
     }
-    await fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '删除菜单失败'
-    toast.error(message)
-  } finally {
-    deleteLoading.value = false
+  }, {
+    successMessage: deleteMenuId.value ? '菜单删除成功' : `已删除 ${selectedMenuIds.value.length} 个菜单`,
+    onSuccess: () => {
+      if (!deleteMenuId.value) selectedMenuIds.value = []
+      fetchData()
+    }
+  }).finally(() => {
     deleteDialogOpen.value = false
-  }
+  })
 }
 
-const handleBatchStatusChange = async (status: number) => {
+const handleBatchStatusChange = (status: number) => {
   if (!selectedMenuIds.value.length) {
     toast.warning('请先选择要更新状态的菜单')
     return
   }
-  try {
+  runList(async () => {
     await batchUpdateStatus(selectedMenuIds.value, status)
-    toast.success(`已批量${status === 1 ? '启用' : '禁用'}菜单`)
-    await fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '批量更新菜单状态失败'
-    toast.error(message)
-  }
+  }, {
+    successMessage: `已批量${status === 1 ? '启用' : '禁用'}菜单`,
+    errorMessage: '批量更新菜单状态失败',
+    onSuccess: () => fetchData()
+  })
 }
 
 onMounted(fetchData)

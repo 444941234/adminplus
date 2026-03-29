@@ -37,6 +37,7 @@ import type { Log } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
 import { usePageList } from '@/composables/usePageList'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
 interface LogStatisticsView {
   totalCount: number
@@ -50,7 +51,11 @@ interface LogStatisticsView {
 
 const userStore = useUserStore()
 
-const statisticsLoading = ref(false)
+const { loading: statisticsLoading, run: runStatistics } = useAsyncAction('获取日志统计失败')
+const { loading: detailLoading, run: runDetail } = useAsyncAction('获取日志详情失败')
+const { run: runDelete } = useAsyncAction('删除日志失败')
+const { run: runCleanup } = useAsyncAction('日志清理失败')
+
 const statistics = ref<LogStatisticsView>({
   totalCount: 0,
   loginCount: 0,
@@ -62,7 +67,6 @@ const statistics = ref<LogStatisticsView>({
 })
 
 const detailDialogOpen = ref(false)
-const detailLoading = ref(false)
 const currentLog = ref<Log | null>(null)
 
 const deleteDialogOpen = ref(false)
@@ -144,26 +148,18 @@ const getOperationLabel = (type: number) => {
   return types[type] || '其他'
 }
 
-const fetchStatistics = async () => {
-  statisticsLoading.value = true
-  try {
-    const res = await getLogStatistics()
-    statistics.value = {
-      totalCount: Number(res.data.totalCount ?? 0),
-      loginCount: Number(res.data.loginCount ?? 0),
-      operationCount: Number(res.data.operationCount ?? 0),
-      systemCount: Number((res.data as { systemCount?: number }).systemCount ?? 0),
-      todayCount: Number(res.data.todayCount ?? 0),
-      successCount: Number((res.data as { successCount?: number }).successCount ?? 0),
-      failureCount: Number((res.data as { failureCount?: number }).failureCount ?? 0)
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取日志统计失败'
-    toast.error(message)
-  } finally {
-    statisticsLoading.value = false
+const fetchStatistics = () => runStatistics(async () => {
+  const res = await getLogStatistics()
+  statistics.value = {
+    totalCount: Number(res.data.totalCount ?? 0),
+    loginCount: Number(res.data.loginCount ?? 0),
+    operationCount: Number(res.data.operationCount ?? 0),
+    systemCount: Number((res.data as { systemCount?: number }).systemCount ?? 0),
+    todayCount: Number(res.data.todayCount ?? 0),
+    successCount: Number((res.data as { successCount?: number }).successCount ?? 0),
+    failureCount: Number((res.data as { failureCount?: number }).failureCount ?? 0)
   }
-}
+})
 
 const fetchDataWithSelection = async () => {
   const prevSelected = new Set(selectedLogIds.value)
@@ -204,19 +200,14 @@ const handleReset = async () => {
   await fetchDataWithSelection()
 }
 
-const handleView = async (id: string) => {
+const handleView = (id: string) => {
   detailDialogOpen.value = true
-  detailLoading.value = true
-  try {
+  runDetail(async () => {
     const res = await getLogById(id)
     currentLog.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取日志详情失败'
-    toast.error(message)
-    detailDialogOpen.value = false
-  } finally {
-    detailLoading.value = false
-  }
+  }, {
+    onError: () => { detailDialogOpen.value = false }
+  })
 }
 
 const handleDeleteConfirm = (id: string) => {
@@ -233,24 +224,22 @@ const handleBatchDeleteConfirm = () => {
   deleteDialogOpen.value = true
 }
 
-const handleDelete = async () => {
-  try {
+const handleDelete = () => {
+  runDelete(async () => {
     if (deleteLogId.value) {
       await deleteLog(deleteLogId.value)
-      toast.success('日志删除成功')
     } else {
       await deleteLogsBatch(selectedLogIds.value)
-      toast.success(`已删除 ${selectedLogIds.value.length} 条日志`)
-      selectedLogIds.value = []
     }
-    await fetchData()
-    await fetchStatistics()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '删除日志失败'
-    toast.error(message)
-  } finally {
+  }, {
+    successMessage: deleteLogId.value ? '日志删除成功' : `已删除 ${selectedLogIds.value.length} 条日志`,
+    onSuccess: async () => {
+      if (!deleteLogId.value) selectedLogIds.value = []
+      await Promise.all([fetchData(), fetchStatistics()])
+    }
+  }).finally(() => {
     deleteDialogOpen.value = false
-  }
+  })
 }
 
 const handleCleanupConfirm = (mode: 'condition' | 'expired') => {
@@ -258,24 +247,24 @@ const handleCleanupConfirm = (mode: 'condition' | 'expired') => {
   cleanupDialogOpen.value = true
 }
 
-const handleCleanup = async () => {
-  try {
+const handleCleanup = () => {
+  runCleanup(async () => {
     if (cleanupMode.value === 'condition') {
       const res = await deleteLogsByCondition(queryParams.value)
-      toast.success(`已按条件清理 ${res.data ?? 0} 条日志`)
+      return `已按条件清理 ${res.data ?? 0} 条日志`
     } else {
       const res = await cleanupExpiredLogs()
-      toast.success(`已清理 ${res.data ?? 0} 条过期日志`)
+      return `已清理 ${res.data ?? 0} 条过期日志`
     }
-    selectedLogIds.value = []
-    await fetchData()
-    await fetchStatistics()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '日志清理失败'
-    toast.error(message)
-  } finally {
+  }, {
+    onSuccess: async (msg) => {
+      toast.success(msg ?? '日志清理完成')
+      selectedLogIds.value = []
+      await Promise.all([fetchData(), fetchStatistics()])
+    }
+  }).finally(() => {
     cleanupDialogOpen.value = false
-  }
+  })
 }
 
 const handleExport = (type: 'excel' | 'csv') => {

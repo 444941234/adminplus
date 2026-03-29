@@ -39,6 +39,7 @@ import {
 } from '@/api'
 import type { WorkflowDefinition, WorkflowNode, WorkflowDefinitionReq, WorkflowNodeReq } from '@/types'
 import { toast } from 'vue-sonner'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 import { Plus, Pencil, Trash2, Settings, ArrowLeft } from 'lucide-vue-next'
 import WorkflowVisualizer from './WorkflowVisualizer.vue'
 import WorkflowNodeProperties from '@/components/workflow/designer/WorkflowNodeProperties.vue'
@@ -51,8 +52,8 @@ type WorkflowNodeForm = Omit<WorkflowNodeReq, 'approverId' | 'description'> & {
 }
 
 // State
-const loading = ref(false)
-const dialogLoading = ref(false)
+const { loading, run: runList } = useAsyncAction('获取流程定义失败')
+const { loading: dialogLoading, run: runDialog } = useAsyncAction('操作失败')
 const definitions = ref<WorkflowDefinition[]>([])
 const nodes = ref<WorkflowNode[]>([])
 
@@ -100,29 +101,18 @@ const canDeleteDefinition = computed(() => permissionState.value.canDeleteDefini
 import { formatDateTime } from '@/utils/format'
 
 // Data fetching
-const fetchDefinitions = async () => {
-  loading.value = true
-  try {
-    const res = await getWorkflowDefinitions()
-    definitions.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取流程定义失败'
-    toast.error(message)
-  } finally {
-    loading.value = false
-  }
-}
+const fetchDefinitions = () => runList(async () => {
+  const res = await getWorkflowDefinitions()
+  definitions.value = res.data
+})
 
-const fetchNodes = async (definitionId: string) => {
-  try {
-    const res = await getWorkflowNodes(definitionId)
-    nodes.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取节点列表失败'
-    toast.error(message)
-    nodes.value = []
+const fetchNodes = (definitionId: string) => runList(
+  async () => { const res = await getWorkflowNodes(definitionId); nodes.value = res.data },
+  {
+    errorMessage: '获取节点列表失败',
+    onError: () => { nodes.value = [] }
   }
-}
+)
 
 // Definition CRUD
 const openDefinitionDialog = (definition?: WorkflowDefinition) => {
@@ -152,7 +142,7 @@ const openDefinitionDialog = (definition?: WorkflowDefinition) => {
   definitionDialogOpen.value = true
 }
 
-const handleSaveDefinition = async () => {
+const handleSaveDefinition = () => {
   if (!definitionForm.value.definitionName.trim()) {
     toast.warning('请输入流程名称')
     return
@@ -162,38 +152,33 @@ const handleSaveDefinition = async () => {
     return
   }
 
-  dialogLoading.value = true
-  try {
+  runDialog(async () => {
     if (isEditMode.value && editingDefinitionId.value) {
       await updateWorkflowDefinition(editingDefinitionId.value, definitionForm.value)
-      toast.success('更新流程定义成功')
     } else {
       await createWorkflowDefinition(definitionForm.value)
-      toast.success('创建流程定义成功')
     }
-    definitionDialogOpen.value = false
-    fetchDefinitions()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '保存流程定义失败'
-    toast.error(message)
-  } finally {
-    dialogLoading.value = false
-  }
+  }, {
+    successMessage: isEditMode.value ? '更新流程定义成功' : '创建流程定义成功',
+    errorMessage: '保存流程定义失败',
+    onSuccess: () => {
+      definitionDialogOpen.value = false
+      fetchDefinitions()
+    }
+  })
 }
 
-const handleDeleteDefinition = async (definition: WorkflowDefinition) => {
+const handleDeleteDefinition = (definition: WorkflowDefinition) => {
   if (!confirm(`确定要删除流程"${definition.definitionName}"吗？此操作将同时删除该流程的所有节点。`)) {
     return
   }
-
-  try {
+  runList(async () => {
     await deleteWorkflowDefinition(definition.id)
-    toast.success('删除成功')
-    fetchDefinitions()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '删除流程定义失败'
-    toast.error(message)
-  }
+  }, {
+    successMessage: '删除成功',
+    errorMessage: '删除流程定义失败',
+    onSuccess: () => fetchDefinitions()
+  })
 }
 
 // Node CRUD
@@ -228,7 +213,7 @@ const openNodeDialog = (node?: WorkflowNode) => {
   nodeDialogOpen.value = true
 }
 
-const handleSaveNode = async () => {
+const handleSaveNode = () => {
   if (!selectedDefinition.value) return
 
   if (!nodeForm.value.nodeName.trim()) {
@@ -240,40 +225,35 @@ const handleSaveNode = async () => {
     return
   }
 
-  dialogLoading.value = true
-  try {
+  runDialog(async () => {
     if (isEditMode.value && editingNodeId.value) {
       await updateWorkflowNode(editingNodeId.value, nodeForm.value)
-      toast.success('更新节点成功')
     } else {
-      await createWorkflowNode(selectedDefinition.value.id, nodeForm.value)
-      toast.success('创建节点成功')
+      await createWorkflowNode(selectedDefinition.value!.id, nodeForm.value)
     }
-    nodeDialogOpen.value = false
-    fetchNodes(selectedDefinition.value.id)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '保存节点失败'
-    toast.error(message)
-  } finally {
-    dialogLoading.value = false
-  }
+  }, {
+    successMessage: isEditMode.value ? '更新节点成功' : '创建节点成功',
+    errorMessage: '保存节点失败',
+    onSuccess: () => {
+      nodeDialogOpen.value = false
+      fetchNodes(selectedDefinition.value!.id)
+    }
+  })
 }
 
-const handleDeleteNode = async (node: WorkflowNode) => {
+const handleDeleteNode = (node: WorkflowNode) => {
   if (!confirm(`确定要删除节点"${node.nodeName}"吗？`)) {
     return
   }
-
-  try {
+  runList(async () => {
     await deleteWorkflowNode(node.id)
-    toast.success('删除节点成功')
-    if (selectedDefinition.value) {
-      fetchNodes(selectedDefinition.value.id)
+  }, {
+    successMessage: '删除节点成功',
+    errorMessage: '删除节点失败',
+    onSuccess: () => {
+      if (selectedDefinition.value) fetchNodes(selectedDefinition.value.id)
     }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '删除节点失败'
-    toast.error(message)
-  }
+  })
 }
 
 // View navigation

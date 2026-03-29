@@ -38,6 +38,7 @@ import {
 import type { Dict, DictItem } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
+import { useAsyncAction } from '@/composables/useAsyncAction'
 
 const { loading, searchQuery, tableData, fetchData, goToPage, handleSearch, handleReset } = usePageList<Dict>(
   (params) => getDictList(params),
@@ -45,28 +46,29 @@ const { loading, searchQuery, tableData, fetchData, goToPage, handleSearch, hand
 )
 const userStore = useUserStore()
 
+const { loading: dialogLoading, run: runDialog } = useAsyncAction('操作失败')
+const { loading: deleteLoading, run: runDelete } = useAsyncAction('删除字典失败')
+const { loading: itemLoading, run: runItem } = useAsyncAction('操作失败')
+const { loading: itemFormLoading, run: runItemForm } = useAsyncAction('操作失败')
+const { loading: deleteItemLoading, run: runDeleteItem } = useAsyncAction('删除字典项失败')
+
 const dialogOpen = ref(false)
-const dialogLoading = ref(false)
 const isEdit = ref(false)
 const editId = ref('')
 
 const deleteDialogOpen = ref(false)
 const deleteDictId = ref('')
-const deleteLoading = ref(false)
 
 const itemDialogOpen = ref(false)
-const itemLoading = ref(false)
 const activeDict = ref<Dict | null>(null)
 const itemTableData = ref<{ records: DictItem[]; total: number }>({ records: [], total: 0 })
 
 const itemFormDialogOpen = ref(false)
-const itemFormLoading = ref(false)
 const isEditItem = ref(false)
 const editItemId = ref('')
 
 const deleteItemDialogOpen = ref(false)
 const deleteItemId = ref('')
-const deleteItemLoading = ref(false)
 
 const form = reactive({
   dictType: '',
@@ -123,12 +125,11 @@ const handleAdd = () => {
   dialogOpen.value = true
 }
 
-const handleEdit = async (id: string) => {
+const handleEdit = (id: string) => {
   isEdit.value = true
   editId.value = id
-  dialogLoading.value = true
   dialogOpen.value = true
-  try {
+  runDialog(async () => {
     const res = await getDictById(id)
     const dict = res.data
     Object.assign(form, {
@@ -137,16 +138,13 @@ const handleEdit = async (id: string) => {
       description: dict.description || '',
       status: String(dict.status ?? 1)
     })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取字典详情失败'
-    toast.error(message)
-    dialogOpen.value = false
-  } finally {
-    dialogLoading.value = false
-  }
+  }, {
+    errorMessage: '获取字典详情失败',
+    onError: () => { dialogOpen.value = false }
+  })
 }
 
-const handleSubmit = async () => {
+const handleSubmit = () => {
   if (!form.dictType.trim()) {
     toast.warning('请输入字典类型')
     return
@@ -156,8 +154,7 @@ const handleSubmit = async () => {
     return
   }
 
-  dialogLoading.value = true
-  try {
+  runDialog(async () => {
     if (isEdit.value) {
       await updateDict(editId.value, {
         dictName: form.dictName.trim(),
@@ -167,34 +164,31 @@ const handleSubmit = async () => {
       if (Number(form.status) !== (tableData.records.find((item) => item.id === editId.value)?.status ?? Number(form.status))) {
         await updateDictStatus(editId.value, Number(form.status))
       }
-      toast.success('字典更新成功')
     } else {
       await createDict({
         dictType: form.dictType.trim(),
         dictName: form.dictName.trim(),
         description: form.remark.trim() || undefined
       })
-      toast.success('字典创建成功')
     }
-    dialogOpen.value = false
-    fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '保存字典失败'
-    toast.error(message)
-  } finally {
-    dialogLoading.value = false
-  }
+  }, {
+    successMessage: isEdit.value ? '字典更新成功' : '字典创建成功',
+    errorMessage: '保存字典失败',
+    onSuccess: () => {
+      dialogOpen.value = false
+      fetchData()
+    }
+  })
 }
 
-const handleStatusToggle = async (dict: Dict) => {
-  try {
+const handleStatusToggle = (dict: Dict) => {
+  runDialog(async () => {
     await updateDictStatus(dict.id, dict.status === 1 ? 0 : 1)
-    toast.success('状态更新成功')
-    fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '状态更新失败'
-    toast.error(message)
-  }
+  }, {
+    successMessage: '状态更新成功',
+    errorMessage: '状态更新失败',
+    onSuccess: () => fetchData()
+  })
 }
 
 const handleDeleteConfirm = (id: string) => {
@@ -202,32 +196,22 @@ const handleDeleteConfirm = (id: string) => {
   deleteDialogOpen.value = true
 }
 
-const handleDelete = async () => {
-  deleteLoading.value = true
-  try {
+const handleDelete = () => {
+  runDelete(async () => {
     await deleteDict(deleteDictId.value)
-    toast.success('字典删除成功')
-    fetchData()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '删除字典失败'
-    toast.error(message)
-  } finally {
-    deleteLoading.value = false
+  }, {
+    successMessage: '字典删除成功',
+    onSuccess: () => fetchData()
+  }).finally(() => {
     deleteDialogOpen.value = false
-  }
+  })
 }
 
-const fetchDictItems = async (dictId: string) => {
-  itemLoading.value = true
-  try {
+const fetchDictItems = (dictId: string) => {
+  runItem(async () => {
     const res = await getDictItemList(dictId)
     itemTableData.value = res.data
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取字典项失败'
-    toast.error(message)
-  } finally {
-    itemLoading.value = false
-  }
+  }, { errorMessage: '获取字典项失败' })
 }
 
 const openItemDialog = async (dict: Dict) => {
@@ -267,14 +251,13 @@ const openAddChildItemDialog = (parentItem: DictItem) => {
   itemFormDialogOpen.value = true
 }
 
-const handleEditItem = async (id: string) => {
+const handleEditItem = (id: string) => {
   if (!activeDict.value) return
   isEditItem.value = true
   editItemId.value = id
-  itemFormLoading.value = true
   itemFormDialogOpen.value = true
-  try {
-    const res = await getDictItemById(activeDict.value.id, id)
+  runItemForm(async () => {
+    const res = await getDictItemById(activeDict.value!.id, id)
     const item = res.data
     Object.assign(itemForm, {
       parentId: item.parentId || '0',
@@ -284,16 +267,13 @@ const handleEditItem = async (id: string) => {
       status: String(item.status ?? 1),
       remark: item.remark || ''
     })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '获取字典项详情失败'
-    toast.error(message)
-    itemFormDialogOpen.value = false
-  } finally {
-    itemFormLoading.value = false
-  }
+  }, {
+    errorMessage: '获取字典项详情失败',
+    onError: () => { itemFormDialogOpen.value = false }
+  })
 }
 
-const handleSubmitItem = async () => {
+const handleSubmitItem = () => {
   if (!activeDict.value) return
   if (!itemForm.label.trim()) {
     toast.warning('请输入字典项标签')
@@ -304,8 +284,7 @@ const handleSubmitItem = async () => {
     return
   }
 
-  itemFormLoading.value = true
-  try {
+  runItemForm(async () => {
     const payload = {
       parentId: itemForm.parentId === '0' ? undefined : itemForm.parentId,
       label: itemForm.label.trim(),
@@ -315,20 +294,18 @@ const handleSubmitItem = async () => {
       remark: itemForm.remark.trim() || undefined
     }
     if (isEditItem.value) {
-      await updateDictItem(activeDict.value.id, editItemId.value, payload)
-      toast.success('字典项更新成功')
+      await updateDictItem(activeDict.value!.id, editItemId.value, payload)
     } else {
-      await createDictItem(activeDict.value.id, payload)
-      toast.success('字典项创建成功')
+      await createDictItem(activeDict.value!.id, payload)
     }
-    itemFormDialogOpen.value = false
-    fetchDictItems(activeDict.value.id)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '保存字典项失败'
-    toast.error(message)
-  } finally {
-    itemFormLoading.value = false
-  }
+  }, {
+    successMessage: isEditItem.value ? '字典项更新成功' : '字典项创建成功',
+    errorMessage: '保存字典项失败',
+    onSuccess: () => {
+      itemFormDialogOpen.value = false
+      fetchDictItems(activeDict.value!.id)
+    }
+  })
 }
 
 const handleDeleteItemConfirm = (id: string) => {
@@ -336,32 +313,27 @@ const handleDeleteItemConfirm = (id: string) => {
   deleteItemDialogOpen.value = true
 }
 
-const handleDeleteItem = async () => {
+const handleDeleteItem = () => {
   if (!activeDict.value) return
-  deleteItemLoading.value = true
-  try {
-    await deleteDictItem(activeDict.value.id, deleteItemId.value)
-    toast.success('字典项删除成功')
-    fetchDictItems(activeDict.value.id)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '删除字典项失败'
-    toast.error(message)
-  } finally {
-    deleteItemLoading.value = false
+  runDeleteItem(async () => {
+    await deleteDictItem(activeDict.value!.id, deleteItemId.value)
+  }, {
+    successMessage: '字典项删除成功',
+    onSuccess: () => fetchDictItems(activeDict.value!.id)
+  }).finally(() => {
     deleteItemDialogOpen.value = false
-  }
+  })
 }
 
-const handleToggleItemStatus = async (item: DictItem) => {
+const handleToggleItemStatus = (item: DictItem) => {
   if (!activeDict.value) return
-  try {
-    await updateDictItemStatus(activeDict.value.id, item.id, item.status === 1 ? 0 : 1)
-    toast.success('字典项状态更新成功')
-    fetchDictItems(activeDict.value.id)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '字典项状态更新失败'
-    toast.error(message)
-  }
+  runItem(async () => {
+    await updateDictItemStatus(activeDict.value!.id, item.id, item.status === 1 ? 0 : 1)
+  }, {
+    successMessage: '字典项状态更新成功',
+    errorMessage: '字典项状态更新失败',
+    onSuccess: () => fetchDictItems(activeDict.value!.id)
+  })
 }
 
 onMounted(fetchData)
