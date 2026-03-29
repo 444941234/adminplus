@@ -87,22 +87,13 @@ public class SecurityConfig {
     // ==================== 公开端点路径 ====================
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/auth/login",
-            "/auth/register",
-            "/uploads/**",
-            "/captcha/**",
             "/v1/auth/login",
-            "/v1/auth/register",
-            "/v1/uploads/**",
             "/v1/captcha/**",
             "/actuator/health"
     };
 
     private static final String[] AUTH_ENDPOINTS = {
-            "/auth/login",
-            "/auth/register",
-            "/v1/auth/login",
-            "/v1/auth/register"
+            "/v1/auth/login"
     };
 
     // ==================== 依赖注入 ====================

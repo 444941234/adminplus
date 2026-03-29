@@ -38,7 +38,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         String clientIp = getClientIp(request);
 
         // 登录接口限流
-        if ("/auth/login".equals(uri)) {
+        if ("/v1/auth/login".equals(uri)) {
             return checkRateLimit(clientIp, "login", LOGIN_MAX_REQUESTS, LOGIN_TIME_WINDOW, response);
         }
 
@@ -60,26 +60,18 @@ public class RateLimitInterceptor implements HandlerInterceptor {
                                    HttpServletResponse response) throws IOException {
         String redisKey = "rate_limit:" + key + ":" + clientIp;
 
-        // 获取当前计数
-        String countStr = redisTemplate.opsForValue().get(redisKey);
-        int count = countStr == null ? 0 : Integer.parseInt(countStr);
+        // 原子递增，首次请求时设置过期时间
+        Long count = redisTemplate.opsForValue().increment(redisKey);
+        if (count != null && count == 1) {
+            redisTemplate.expire(redisKey, timeWindow, TimeUnit.SECONDS);
+        }
 
-        if (count >= maxRequests) {
-            // 超过限流
+        if (count != null && count > maxRequests) {
             log.warn("限流触发: IP={}, Key={}, Count={}", clientIp, key, count);
             response.setStatus(429);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"code\":429,\"message\":\"请求过于频繁，请稍后再试\",\"data\":null,\"timestamp\":" + System.currentTimeMillis() + "}");
             return false;
-        }
-
-        // 增加计数
-        if (count == 0) {
-            // 第一次请求，设置过期时间
-            redisTemplate.opsForValue().set(redisKey, "1", timeWindow, TimeUnit.SECONDS);
-        } else {
-            // 增加计数
-            redisTemplate.opsForValue().increment(redisKey);
         }
 
         return true;

@@ -11,6 +11,7 @@ import com.adminplus.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -75,7 +76,7 @@ public class AuthController {
     @PostMapping("/refresh")
     @Operation(summary = "刷新 Access Token")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<String> refreshAccessToken(@RequestBody RefreshTokenReq req) {
+    public ApiResponse<String> refreshAccessToken(@Valid @RequestBody RefreshTokenReq req) {
         String newToken = authService.refreshAccessToken(req.refreshToken());
         return ApiResponse.ok(newToken);
     }
@@ -83,7 +84,7 @@ public class AuthController {
     /**
      * 刷新 Token 请求
      */
-    public record RefreshTokenReq(String refreshToken) {
+    public record RefreshTokenReq(@NotBlank String refreshToken) {
     }
 
     /**
