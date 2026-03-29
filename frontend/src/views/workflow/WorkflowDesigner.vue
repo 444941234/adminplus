@@ -97,11 +97,7 @@ const canCreateDefinition = computed(() => permissionState.value.canCreateDefini
 const canEditDefinition = computed(() => permissionState.value.canEditDefinition)
 const canDeleteDefinition = computed(() => permissionState.value.canDeleteDefinition)
 
-// Helpers
-const formatDateTime = (value?: string | null) => {
-  if (!value) return '-'
-  return new Date(value).toLocaleString('zh-CN', { hour12: false })
-}
+import { formatDateTime } from '@/utils/format'
 
 // Data fetching
 const fetchDefinitions = async () => {

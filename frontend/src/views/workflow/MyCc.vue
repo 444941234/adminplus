@@ -35,10 +35,7 @@ const {
 const userStore = useUserStore()
 const permissionState = computed(() => getWorkflowPermissionState(userStore.hasPermission))
 
-const formatDateTime = (value?: string | null) => {
-  if (!value) return '-'
-  return new Date(value).toLocaleString('zh-CN', { hour12: false })
-}
+import { formatDateTime } from '@/utils/format'
 
 const getCcTypeLabel = (type?: string) => {
   const map: Record<string, string> = {

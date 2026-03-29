@@ -57,10 +57,7 @@ const getMaxValue = (chart?: ChartData | null) => {
   return Math.max(...values, 1)
 }
 
-const formatDateTime = (value?: string | null) => {
-  if (!value) return '-'
-  return new Date(value).toLocaleString('zh-CN', { hour12: false })
-}
+import { formatDateTime } from '@/utils/format'
 
 const fetchData = async () => {
   loading.value = true

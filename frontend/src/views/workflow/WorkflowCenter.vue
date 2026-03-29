@@ -54,10 +54,7 @@ const formModel = computed<WorkflowFormValues>({
   }
 })
 
-const formatDateTime = (value?: string | null) => {
-  if (!value) return '-'
-  return new Date(value).toLocaleString('zh-CN', { hour12: false })
-}
+import { formatDateTime } from '@/utils/format'
 
 const fetchDefinitions = async () => {
   loading.value = true

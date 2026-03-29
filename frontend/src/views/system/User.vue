@@ -63,12 +63,7 @@ const assignUser = ref<User | null>(null)
 const statusConfirmOpen = ref(false)
 const statusChangeUser = ref<User | null>(null)
 
-const formatTime = (date: string) => {
-  if (!date) return '-'
-  const d = new Date(date)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
+import { formatDateTime as formatTime } from '@/utils/format'
 
 const permissionState = computed(() => getUserPagePermissionState(userStore.hasPermission))
 const canAddUser = computed(() => permissionState.value.canAddUser)
