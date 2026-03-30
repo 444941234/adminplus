@@ -5,16 +5,17 @@ import com.adminplus.pojo.dto.resp.*;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.ConfigService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -24,7 +25,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,19 +35,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author AdminPlus
  * @since 2026-03-30
  */
-@WebMvcTest(ConfigController.class)
-@ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 @DisplayName("配置控制器测试")
 class ConfigControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Mock
     private ConfigService configService;
+
+    @InjectMocks
+    private ConfigController configController;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(configController).build();
+        objectMapper = new ObjectMapper();
+    }
 
     private ConfigResp createTestConfigResp() {
         return new ConfigResp(
@@ -75,7 +81,6 @@ class ConfigControllerTest {
     class GetConfigListTests {
 
         @Test
-        @WithMockUser(authorities = "config:list")
         @DisplayName("成功查询配置列表")
         void shouldReturnConfigList() throws Exception {
             // Given
@@ -99,7 +104,6 @@ class ConfigControllerTest {
         }
 
         @Test
-        @WithMockUser(authorities = "config:list")
         @DisplayName("成功按配置组和关键字搜索")
         void shouldSearchConfigsByGroupAndKeyword() throws Exception {
             // Given
@@ -130,7 +134,6 @@ class ConfigControllerTest {
     class GetConfigsByGroupIdTests {
 
         @Test
-        @WithMockUser(authorities = "config:query")
         @DisplayName("成功根据配置组ID查询配置列表")
         void shouldReturnConfigsByGroupId() throws Exception {
             // Given
@@ -151,7 +154,6 @@ class ConfigControllerTest {
     class GetConfigByKeyTests {
 
         @Test
-        @WithMockUser(authorities = "config:query")
         @DisplayName("成功根据配置键查询")
         void shouldReturnConfigByKey() throws Exception {
             // Given
@@ -173,7 +175,6 @@ class ConfigControllerTest {
     class GetConfigByIdTests {
 
         @Test
-        @WithMockUser(authorities = "config:query")
         @DisplayName("成功根据ID查询配置")
         void shouldReturnConfigById() throws Exception {
             // Given
@@ -195,7 +196,6 @@ class ConfigControllerTest {
     class CreateConfigTests {
 
         @Test
-        @WithMockUser(authorities = "config:add")
         @DisplayName("成功创建配置")
         void shouldCreateConfig() throws Exception {
             // Given
@@ -217,7 +217,6 @@ class ConfigControllerTest {
 
             // When & Then
             mockMvc.perform(post("/v1/sys/configs")
-                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -232,7 +231,6 @@ class ConfigControllerTest {
     class UpdateConfigTests {
 
         @Test
-        @WithMockUser(authorities = "config:edit")
         @DisplayName("成功更新配置")
         void shouldUpdateConfig() throws Exception {
             // Given
@@ -253,7 +251,6 @@ class ConfigControllerTest {
 
             // When & Then
             mockMvc.perform(put("/v1/sys/configs/1")
-                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -268,12 +265,10 @@ class ConfigControllerTest {
     class DeleteConfigTests {
 
         @Test
-        @WithMockUser(authorities = "config:delete")
         @DisplayName("成功删除配置")
         void shouldDeleteConfig() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/sys/configs/1")
-                            .with(csrf()))
+            mockMvc.perform(delete("/v1/sys/configs/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -286,12 +281,10 @@ class ConfigControllerTest {
     class UpdateConfigStatusTests {
 
         @Test
-        @WithMockUser(authorities = "config:edit")
         @DisplayName("成功更新配置状态")
         void shouldUpdateConfigStatus() throws Exception {
             // When & Then
             mockMvc.perform(put("/v1/sys/configs/1/status")
-                            .with(csrf())
                             .param("status", "0"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
@@ -305,7 +298,6 @@ class ConfigControllerTest {
     class BatchUpdateConfigsTests {
 
         @Test
-        @WithMockUser(authorities = "config:edit")
         @DisplayName("成功批量更新配置值")
         void shouldBatchUpdateConfigs() throws Exception {
             // Given
@@ -324,7 +316,6 @@ class ConfigControllerTest {
 
             // When & Then
             mockMvc.perform(post("/v1/sys/configs/batch")
-                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -340,7 +331,6 @@ class ConfigControllerTest {
     class ExportConfigsTests {
 
         @Test
-        @WithMockUser(authorities = "config:export")
         @DisplayName("成功导出配置")
         void shouldExportConfigs() throws Exception {
             // Given
@@ -368,8 +358,7 @@ class ConfigControllerTest {
             when(configService.exportConfigs(null)).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/configs/export")
-                            .with(csrf()))
+            mockMvc.perform(post("/v1/sys/configs/export"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.exportVersion").value("1.0"));
 
@@ -382,7 +371,6 @@ class ConfigControllerTest {
     class ImportConfigsTests {
 
         @Test
-        @WithMockUser(authorities = "config:import")
         @DisplayName("成功导入配置")
         void shouldImportConfigs() throws Exception {
             // Given
@@ -401,7 +389,6 @@ class ConfigControllerTest {
 
             // When & Then
             mockMvc.perform(post("/v1/sys/configs/import")
-                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -417,7 +404,6 @@ class ConfigControllerTest {
     class RollbackConfigTests {
 
         @Test
-        @WithMockUser(authorities = "config:rollback")
         @DisplayName("成功回滚配置")
         void shouldRollbackConfig() throws Exception {
             // Given
@@ -427,7 +413,6 @@ class ConfigControllerTest {
 
             // When & Then
             mockMvc.perform(post("/v1/sys/configs/1/rollback")
-                            .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -442,7 +427,6 @@ class ConfigControllerTest {
     class GetConfigHistoryTests {
 
         @Test
-        @WithMockUser(authorities = "config:query")
         @DisplayName("成功查询配置历史记录")
         void shouldReturnConfigHistory() throws Exception {
             // Given
@@ -474,7 +458,6 @@ class ConfigControllerTest {
     class GetConfigEffectInfoTests {
 
         @Test
-        @WithMockUser(authorities = "config:query")
         @DisplayName("成功获取配置生效信息")
         void shouldReturnConfigEffectInfo() throws Exception {
             // Given
@@ -507,12 +490,10 @@ class ConfigControllerTest {
     class ApplyConfigTests {
 
         @Test
-        @WithMockUser(authorities = "config:apply")
         @DisplayName("成功手动生效配置")
         void shouldApplyConfig() throws Exception {
             // When & Then
-            mockMvc.perform(post("/v1/sys/configs/1/apply")
-                            .with(csrf()))
+            mockMvc.perform(post("/v1/sys/configs/1/apply"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 

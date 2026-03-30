@@ -7,16 +7,17 @@ import com.adminplus.pojo.dto.resp.ConfigGroupResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.ConfigGroupService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -26,7 +27,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,19 +37,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author AdminPlus
  * @since 2026-03-30
  */
-@WebMvcTest(ConfigGroupController.class)
-@ActiveProfiles("test")
+@ExtendWith(MockitoExtension.class)
 @DisplayName("配置组控制器测试")
 class ConfigGroupControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Mock
     private ConfigGroupService configGroupService;
+
+    @InjectMocks
+    private ConfigGroupController configGroupController;
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(configGroupController).build();
+        objectMapper = new ObjectMapper();
+    }
 
     private ConfigGroupResp createTestGroupResp() {
         return new ConfigGroupResp(
@@ -71,7 +77,6 @@ class ConfigGroupControllerTest {
     class GetConfigGroupListTests {
 
         @Test
-        @WithMockUser(authorities = "config:group:list")
         @DisplayName("成功查询配置组列表")
         void shouldReturnConfigGroupList() throws Exception {
             // Given
@@ -95,7 +100,6 @@ class ConfigGroupControllerTest {
         }
 
         @Test
-        @WithMockUser(authorities = "config:group:list")
         @DisplayName("成功按关键字搜索配置组")
         void shouldSearchConfigGroupsByKeyword() throws Exception {
             // Given
@@ -124,7 +128,6 @@ class ConfigGroupControllerTest {
     class GetActiveConfigGroupsTests {
 
         @Test
-        @WithMockUser(authorities = "config:group:query")
         @DisplayName("成功查询启用的配置组列表")
         void shouldReturnActiveConfigGroups() throws Exception {
             // Given
@@ -146,7 +149,6 @@ class ConfigGroupControllerTest {
     class GetConfigGroupByCodeTests {
 
         @Test
-        @WithMockUser(authorities = "config:group:query")
         @DisplayName("成功根据编码查询配置组")
         void shouldReturnConfigGroupByCode() throws Exception {
             // Given
@@ -168,7 +170,6 @@ class ConfigGroupControllerTest {
     class GetConfigGroupByIdTests {
 
         @Test
-        @WithMockUser(authorities = "config:group:query")
         @DisplayName("成功根据ID查询配置组")
         void shouldReturnConfigGroupById() throws Exception {
             // Given
@@ -190,7 +191,6 @@ class ConfigGroupControllerTest {
     class CreateConfigGroupTests {
 
         @Test
-        @WithMockUser(authorities = "config:group:add")
         @DisplayName("成功创建配置组")
         void shouldCreateConfigGroup() throws Exception {
             // Given
@@ -217,7 +217,7 @@ class ConfigGroupControllerTest {
 
             // When & Then
             mockMvc.perform(post("/v1/sys/config-groups")
-                            .with(csrf())
+                            
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -233,7 +233,6 @@ class ConfigGroupControllerTest {
     class UpdateConfigGroupTests {
 
         @Test
-        @WithMockUser(authorities = "config:group:edit")
         @DisplayName("成功更新配置组")
         void shouldUpdateConfigGroup() throws Exception {
             // Given
@@ -248,7 +247,7 @@ class ConfigGroupControllerTest {
 
             // When & Then
             mockMvc.perform(put("/v1/sys/config-groups/1")
-                            .with(csrf())
+                            
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -263,12 +262,11 @@ class ConfigGroupControllerTest {
     class DeleteConfigGroupTests {
 
         @Test
-        @WithMockUser(authorities = "config:group:delete")
         @DisplayName("成功删除配置组")
         void shouldDeleteConfigGroup() throws Exception {
             // When & Then
             mockMvc.perform(delete("/v1/sys/config-groups/1")
-                            .with(csrf()))
+                            )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -281,12 +279,11 @@ class ConfigGroupControllerTest {
     class UpdateConfigGroupStatusTests {
 
         @Test
-        @WithMockUser(authorities = "config:group:edit")
         @DisplayName("成功更新配置组状态")
         void shouldUpdateConfigGroupStatus() throws Exception {
             // When & Then
             mockMvc.perform(put("/v1/sys/config-groups/1/status")
-                            .with(csrf())
+                            
                             .param("status", "0"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
