@@ -414,7 +414,7 @@ onMounted(fetchData)
           <thead class="border-b bg-muted/50">
             <tr>
               <th class="p-4 text-left font-medium">
-                <Checkbox :checked="allSelected" @update:checked="toggleSelectAll(Boolean($event))" />
+                <Checkbox :model-value="allSelected" @update:model-value="toggleSelectAll(Boolean($event))" />
               </th>
               <th class="p-4 text-left font-medium">菜单名称</th>
               <th class="p-4 text-left font-medium">类型</th>
@@ -436,8 +436,8 @@ onMounted(fetchData)
             <tr v-for="row in flattenedRows" :key="row.id" class="hover:bg-muted/30">
               <td class="p-4">
                 <Checkbox
-                  :checked="selectedMenuIds.includes(row.id)"
-                  @update:checked="toggleMenuSelection(row.id, Boolean($event))"
+                  :model-value="selectedMenuIds.includes(row.id)"
+                  @update:model-value="toggleMenuSelection(row.id, Boolean($event))"
                 />
               </td>
               <td class="p-4">

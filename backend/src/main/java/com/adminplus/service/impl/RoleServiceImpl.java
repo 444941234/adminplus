@@ -18,6 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.adminplus.utils.AssociationDiffHelper;
+
 import java.util.List;
 
 /**
@@ -198,23 +200,31 @@ public class RoleServiceImpl implements RoleService {
         var role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new BizException("角色不存在"));
 
-        // 删除原有的角色-菜单关联
-        roleMenuRepository.deleteByRoleId(roleId);
+        List<String> safeMenuIds = (menuIds != null) ? menuIds : List.of();
 
-        // 添加新的角色-菜单关联
-        if (menuIds != null && !menuIds.isEmpty()) {
-            List<RoleMenuEntity> roleMenus = menuIds.stream().map(menuId -> {
-                var roleMenu = new RoleMenuEntity();
-                roleMenu.setRoleId(roleId);
-                roleMenu.setMenuId(menuId);
-                return roleMenu;
-            }).toList();
-            roleMenuRepository.saveAll(roleMenus);
-        }
+        // diff 精准更新
+        var result = AssociationDiffHelper.diffUpdate(
+                roleId,
+                safeMenuIds,
+                rid -> new java.util.HashSet<>(roleMenuRepository.findMenuIdByRoleId(rid)),
+                roleMenuRepository::deleteByRoleIdAndMenuIdIn,
+                (rid, toAdd) -> {
+                    List<RoleMenuEntity> list = toAdd.stream().map(menuId -> {
+                        var e = new RoleMenuEntity();
+                        e.setRoleId(rid);
+                        e.setMenuId(menuId);
+                        return e;
+                    }).toList();
+                    roleMenuRepository.saveAll(list);
+                }
+        );
 
         // 记录审计日志
-        int menuCount = (menuIds != null) ? menuIds.size() : 0;
-        logService.log("角色管理", OperationType.UPDATE, "分配菜单权限: " + role.getName() + " -> " + menuCount + " 个菜单");
+        if (result.hasChanges()) {
+            logService.log("角色管理", OperationType.UPDATE,
+                    "分配菜单权限: " + role.getName() + " -> " + safeMenuIds.size() + " 个菜单"
+                    + " (新增" + result.added() + "个, 移除" + result.removed() + "个)");
+        }
     }
 
     @Override

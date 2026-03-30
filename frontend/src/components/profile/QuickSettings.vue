@@ -107,9 +107,9 @@ onMounted(fetchSettings)
           </div>
         </div>
         <Switch
-          :checked="settings.notifications"
+          :model-value="settings.notifications"
           :disabled="updating['notifications']"
-          @update:checked="handleNotificationChange"
+          @update:model-value="handleNotificationChange"
         />
       </div>
 
@@ -127,9 +127,9 @@ onMounted(fetchSettings)
           </div>
         </div>
         <Switch
-          :checked="settings.darkMode"
+          :model-value="settings.darkMode"
           :disabled="updating['darkMode']"
-          @update:checked="handleDarkModeChange"
+          @update:model-value="handleDarkModeChange"
         />
       </div>
 
@@ -148,9 +148,9 @@ onMounted(fetchSettings)
           </div>
         </div>
         <Switch
-          :checked="settings.emailUpdates"
+          :model-value="settings.emailUpdates"
           :disabled="updating['emailUpdates']"
-          @update:checked="handleEmailUpdatesChange"
+          @update:model-value="handleEmailUpdatesChange"
         />
       </div>
 

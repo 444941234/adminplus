@@ -103,16 +103,16 @@ const updateField = <K extends keyof WorkflowNodeForm>(key: K, value: WorkflowNo
       <div class="flex items-center space-x-2">
         <Checkbox
           id="counterSign"
-          :checked="modelValue.isCounterSign"
-          @update:checked="(value: boolean | 'indeterminate') => updateField('isCounterSign', value === true)"
+          :model-value="modelValue.isCounterSign"
+          @update:model-value="(value: boolean | 'indeterminate') => updateField('isCounterSign', value === true)"
         />
         <Label for="counterSign" class="cursor-pointer text-sm font-normal">会签</Label>
       </div>
       <div class="flex items-center space-x-2">
         <Checkbox
           id="autoPass"
-          :checked="modelValue.autoPassSameUser"
-          @update:checked="(value: boolean | 'indeterminate') => updateField('autoPassSameUser', value === true)"
+          :model-value="modelValue.autoPassSameUser"
+          @update:model-value="(value: boolean | 'indeterminate') => updateField('autoPassSameUser', value === true)"
         />
         <Label for="autoPass" class="cursor-pointer text-sm font-normal">自动通过</Label>
       </div>

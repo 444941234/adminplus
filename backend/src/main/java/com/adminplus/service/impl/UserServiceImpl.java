@@ -18,6 +18,7 @@ import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.DeptService;
 import com.adminplus.service.LogService;
 import com.adminplus.service.UserService;
+import com.adminplus.utils.AssociationDiffHelper;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
@@ -423,18 +424,17 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void assignRoles(String userId, List<String> roleIds) {
-        // 检查用户是否存在并获取用户信息（一次查询）
+        // 检查用户是否存在
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
-        // 查询角色信息（用于验证和日志记录）
-        List<RoleEntity> foundRoles = null;
-        if (roleIds != null && !roleIds.isEmpty()) {
-            foundRoles = roleRepository.findAllById(roleIds);
-            if (foundRoles.size() != roleIds.size()) {
-                // 找出缺失的角色ID
+        // 验证角色是否都存在
+        List<String> safeRoleIds = (roleIds != null) ? roleIds : List.of();
+        if (!safeRoleIds.isEmpty()) {
+            List<RoleEntity> foundRoles = roleRepository.findAllById(safeRoleIds);
+            if (foundRoles.size() != safeRoleIds.size()) {
                 List<String> foundIds = foundRoles.stream().map(RoleEntity::getId).toList();
-                String missingId = roleIds.stream()
+                String missingId = safeRoleIds.stream()
                         .filter(id -> !foundIds.contains(id))
                         .findFirst()
                         .orElse(null);
@@ -442,26 +442,34 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        // 删除原有的用户-角色关联
-        userRoleRepository.deleteByUserId(userId);
+        // diff 精准更新
+        var result = AssociationDiffHelper.diffUpdate(
+                userId,
+                safeRoleIds,
+                uid -> userRoleRepository.findByUserId(uid).stream()
+                        .map(UserRoleEntity::getRoleId)
+                        .collect(Collectors.toSet()),
+                userRoleRepository::deleteByUserIdAndRoleIdIn,
+                (uid, toAdd) -> {
+                    List<UserRoleEntity> list = toAdd.stream().map(roleId -> {
+                        var e = new UserRoleEntity();
+                        e.setUserId(uid);
+                        e.setRoleId(roleId);
+                        return e;
+                    }).toList();
+                    userRoleRepository.saveAll(list);
+                }
+        );
 
-        // 添加新的用户-角色关联
-        if (roleIds != null && !roleIds.isEmpty()) {
-            List<UserRoleEntity> userRoles = roleIds.stream().map(roleId -> {
-                var userRole = new UserRoleEntity();
-                userRole.setUserId(userId);
-                userRole.setRoleId(roleId);
-                return userRole;
-            }).toList();
-            userRoleRepository.saveAll(userRoles);
-        }
-
-        // 记录审计日志 - 复用已查询的角色信息
-        if (foundRoles != null && !foundRoles.isEmpty()) {
-            String roleNames = foundRoles.stream()
-                    .map(RoleEntity::getName)
-                    .collect(Collectors.joining(", "));
-            logService.log("用户管理", OperationType.UPDATE, "分配角色: " + user.getUsername() + " -> " + roleNames);
+        // 审计日志
+        if (result.hasChanges()) {
+            String roleNames = safeRoleIds.isEmpty() ? "" :
+                    roleRepository.findAllById(safeRoleIds).stream()
+                            .map(RoleEntity::getName)
+                            .collect(Collectors.joining(", "));
+            logService.log("用户管理", OperationType.UPDATE,
+                    "分配角色: " + user.getUsername() + " -> " + roleNames
+                    + " (新增" + result.added() + "个, 移除" + result.removed() + "个)");
         }
     }
 

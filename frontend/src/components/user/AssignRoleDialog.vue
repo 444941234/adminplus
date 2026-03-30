@@ -91,8 +91,8 @@ const handleOpenChange = (value: boolean) => {
             class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 transition-colors hover:bg-muted/50"
           >
             <Checkbox
-              :checked="selectedRoleIds.includes(role.id)"
-              @update:checked="toggleRoleSelection(role.id, Boolean($event))"
+              :model-value="selectedRoleIds.includes(role.id)"
+              @update:model-value="toggleRoleSelection(role.id, Boolean($event))"
             />
             <div>
               <p class="text-sm font-medium">{{ role.name }}</p>

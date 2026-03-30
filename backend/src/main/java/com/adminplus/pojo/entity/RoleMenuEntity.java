@@ -2,17 +2,16 @@ package com.adminplus.pojo.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 角色-菜单关联实体（中间表）
- * <p>
- * 注意：中间表不需要审计字段，因此不继承 BaseEntity
- * </p>
  *
  * @author AdminPlus
  * @since 2026-02-06
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
 @Table(name = "sys_role_menu",
        uniqueConstraints = {
@@ -22,10 +21,7 @@ import lombok.Data;
            @Index(name = "idx_role_menu_role_id", columnList = "role_id"),
            @Index(name = "idx_role_menu_menu_id", columnList = "menu_id")
        })
-public class RoleMenuEntity {
-
-    @Id
-    private String id;
+public class RoleMenuEntity extends BaseEntity {
 
     /**
      * 角色ID

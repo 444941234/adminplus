@@ -392,7 +392,7 @@ onMounted(async () => {
           <thead class="border-b bg-muted/50">
             <tr>
               <th class="p-4 text-left font-medium">
-                <Checkbox :checked="allSelected" @update:checked="toggleSelectAll(Boolean($event))" />
+                <Checkbox :model-value="allSelected" @update:model-value="toggleSelectAll(Boolean($event))" />
               </th>
               <th class="p-4 text-left font-medium">类型</th>
               <th class="p-4 text-left font-medium">操作人</th>
@@ -416,8 +416,8 @@ onMounted(async () => {
             <tr v-for="log in tableData.records" :key="log.id" class="hover:bg-muted/30">
               <td class="p-4">
                 <Checkbox
-                  :checked="selectedLogIds.includes(log.id)"
-                  @update:checked="toggleLogSelection(log.id, Boolean($event))"
+                  :model-value="selectedLogIds.includes(log.id)"
+                  @update:model-value="toggleLogSelection(log.id, Boolean($event))"
                 />
               </td>
               <td class="p-4">

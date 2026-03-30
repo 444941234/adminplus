@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -28,6 +29,11 @@ public interface RoleMenuRepository extends JpaRepository<RoleMenuEntity, String
      */
     @Query("SELECT rm.roleId FROM RoleMenuEntity rm WHERE rm.menuId = :menuId")
     List<String> findRoleIdByMenuId(@Param("menuId") String menuId);
+
+    /**
+     * 精准删除：删除指定角色的指定菜单
+     */
+    void deleteByRoleIdAndMenuIdIn(String roleId, Collection<String> menuIds);
 
     /**
      * 删除角色的所有菜单

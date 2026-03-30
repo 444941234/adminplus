@@ -113,11 +113,14 @@ public class AuthServiceImpl implements AuthService {
                     .claim("username", user.getUsername())
                     .claim("deptId", user.getDeptId());
 
-            // 添加角色到scope
-            if (!roleCodes.isEmpty()) {
-                claimsBuilder.claim("scope", roleCodes);
+            // 添加角色到scope（去掉 ROLE_ 前缀，JwtGrantedAuthoritiesConverter 会统一加 ROLE_ 前缀）
+            List<String> scopes = roleCodes.stream()
+                    .map(code -> code.startsWith("ROLE_") ? code.substring(5) : code)
+                    .collect(Collectors.toList());
+            if (!scopes.isEmpty()) {
+                claimsBuilder.claim("scope", scopes);
             } else {
-                claimsBuilder.claim("scope", "ROLE_USER");
+                claimsBuilder.claim("scope", "USER");
             }
 
             JwtClaimsSet claims = claimsBuilder.build();

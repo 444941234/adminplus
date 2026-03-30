@@ -241,7 +241,7 @@ const isSomeMenusSelected = computed(() =>
   menuOptions.value.some((item) => selectedMenuIds.value.includes(item.id)) && !isAllMenusSelected.value
 )
 
-const toggleAllMenus = (checked: boolean) => {
+const toggleAllMenus = (checked: boolean | string) => {
   selectedMenuIds.value = checked ? menuOptions.value.map((item) => item.id) : []
 }
 
@@ -435,9 +435,9 @@ onMounted(async () => {
           <div class="space-y-1 p-4">
             <label class="flex cursor-pointer items-center gap-3 rounded border-b px-3 py-2 mb-2 font-medium transition-colors hover:bg-muted/50">
               <Checkbox
-                :checked="isAllMenusSelected"
+                :model-value="isAllMenusSelected"
                 :indeterminate="isSomeMenusSelected"
-                @update:checked="toggleAllMenus"
+                @update:model-value="toggleAllMenus"
               />
               <span class="text-sm">全选</span>
             </label>
@@ -448,8 +448,8 @@ onMounted(async () => {
               :style="{ paddingLeft: `${item.level * 20 + 12}px` }"
             >
               <Checkbox
-                :checked="selectedMenuIds.includes(item.id)"
-                @update:checked="toggleMenuSelection(item.id, Boolean($event))"
+                :model-value="selectedMenuIds.includes(item.id)"
+                @update:model-value="toggleMenuSelection(item.id, Boolean($event))"
               />
               <span class="text-sm">{{ item.label }}</span>
             </label>

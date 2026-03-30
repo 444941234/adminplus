@@ -43,7 +43,7 @@ export function resetPassword(id: string, password: string) {
 
 // 分配角色
 export function assignRoles(id: string, roleIds: string[]) {
-  return put<void>(`/sys/users/${id}/roles`, roleIds)
+  return put<void>(`/sys/users/${id}/roles`, { roleIds })
 }
 
 // 获取用户角色
