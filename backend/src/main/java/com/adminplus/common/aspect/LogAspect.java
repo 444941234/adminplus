@@ -22,9 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,80 +46,105 @@ public class LogAspect {
         this.objectMapper = objectMapper;
     }
 
-    /**
-     * 定义切入点：拦截所有带 @OperationLog 注解的方法
-     */
     @Pointcut("@annotation(com.adminplus.common.annotation.OperationLog)")
     public void operationLogPointcut() {
     }
 
-    /**
-     * 定义切入点：拦截所有带 @LoginLog 注解的方法
-     */
     @Pointcut("@annotation(com.adminplus.common.annotation.LoginLog)")
     public void loginLogPointcut() {
     }
 
-    /**
-     * 拦截 @OperationLog 注解的方法
-     */
     @Around("operationLogPointcut()")
     public Object aroundOperationLog(ProceedingJoinPoint joinPoint) throws Throwable {
-        long startTime = System.currentTimeMillis();
-
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         OperationLog operationLog = method.getAnnotation(OperationLog.class);
 
-        // 获取请求信息
+        return executeWithLogging(joinPoint, new OperationLogContext(
+            operationLog.module(),
+            operationLog.operationType(),
+            parseDescription(operationLog.description(), joinPoint)
+        ));
+    }
+
+    @Around("loginLogPointcut()")
+    public Object aroundLoginLog(ProceedingJoinPoint joinPoint) throws Throwable {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Method method = signature.getMethod();
+        LoginLog loginLog = method.getAnnotation(LoginLog.class);
+
+        String description = loginLog.description();
+        if (description.isEmpty()) {
+            description = loginLog.type() == 1 ? "用户登录" : "用户登出";
+        }
+        String username = getUsernameFromArgs(joinPoint.getArgs(), method);
+
+        return executeWithLogging(joinPoint, new LoginLogContext(
+            loginLog.type(),
+            description,
+            username
+        ));
+    }
+
+    /**
+     * 日志执行模板方法
+     */
+    private Object executeWithLogging(ProceedingJoinPoint joinPoint, LogContext context) throws Throwable {
+        long startTime = System.currentTimeMillis();
+
         HttpServletRequest request = getRequest();
         String ip = getClientIp(request);
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         String methodName = request != null ? request.getMethod() + " " + request.getRequestURI() : signature.getName();
         String params = getParams(joinPoint);
 
-        // 获取操作描述
-        String description = parseDescription(operationLog.description(), joinPoint);
-
-        // 执行方法
-        Object result = null;
         Throwable error = null;
         try {
-            result = joinPoint.proceed();
-            return result;
+            return joinPoint.proceed();
         } catch (Throwable e) {
             error = e;
             throw e;
         } finally {
             long costTime = System.currentTimeMillis() - startTime;
+            context.recordLog(logService, methodName, params, ip, costTime, error);
+        }
+    }
 
-            // 记录日志
+    /**
+     * 日志上下文基类
+     */
+    private sealed abstract class LogContext permits OperationLogContext, LoginLogContext {
+        protected final String module;
+        protected final int operationType;
+        protected final String description;
+
+        protected LogContext(String module, int operationType, String description) {
+            this.module = module;
+            this.operationType = operationType;
+            this.description = description;
+        }
+
+        protected abstract void recordLog(LogService logService, String methodName, String params,
+                                         String ip, long costTime, Throwable error);
+    }
+
+    /**
+     * 操作日志上下文
+     */
+    private final class OperationLogContext extends LogContext {
+        private OperationLogContext(String module, int operationType, String description) {
+            super(module, operationType, description);
+        }
+
+        @Override
+        protected void recordLog(LogService logService, String methodName, String params,
+                                String ip, long costTime, Throwable error) {
             try {
                 if (error != null) {
-                    // 失败日志
-                    logService.log(
-                            operationLog.module(),
-                            operationLog.operationType(),
-                            description,
-                            methodName,
-                            params,
-                            ip
-                    );
-                    // 记录失败状态
-                    logService.log(
-                            operationLog.module(),
-                            operationLog.operationType(),
-                            description + " - 失败",
-                            0,
-                            error.getMessage()
-                    );
+                    logService.log(module, operationType, description, methodName, params, ip);
+                    logService.log(module, operationType, description + " - 失败", 0, error.getMessage());
                 } else {
-                    // 成功日志
-                    logService.log(
-                            operationLog.module(),
-                            operationLog.operationType(),
-                            description,
-                            costTime
-                    );
+                    logService.log(module, operationType, description, costTime);
                 }
             } catch (Exception e) {
                 log.error("记录操作日志失败", e);
@@ -130,78 +153,27 @@ public class LogAspect {
     }
 
     /**
-     * 拦截 @LoginLog 注解的方法
+     * 登录日志上下文
      */
-    @Around("loginLogPointcut()")
-    public Object aroundLoginLog(ProceedingJoinPoint joinPoint) throws Throwable {
-        long startTime = System.currentTimeMillis();
+    private final class LoginLogContext extends LogContext {
+        private final String username;
 
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        Method method = signature.getMethod();
-        LoginLog loginLog = method.getAnnotation(LoginLog.class);
-
-        // 获取请求信息
-        HttpServletRequest request = getRequest();
-        String ip = getClientIp(request);
-        String methodName = request != null ? request.getMethod() + " " + request.getRequestURI() : signature.getName();
-        String params = getParams(joinPoint);
-
-        // 获取操作描述
-        String description = loginLog.description();
-        if (description.isEmpty()) {
-            description = loginLog.type() == 1 ? "用户登录" : "用户登出";
+        private LoginLogContext(int operationType, String description, String username) {
+            super("系统登录", operationType, description);
+            this.username = username;
         }
 
-        // 获取登录用户名（从参数中获取）
-        String username = getUsernameFromArgs(joinPoint.getArgs(), method);
-
-        // 执行方法
-        Object result = null;
-        Throwable error = null;
-        try {
-            result = joinPoint.proceed();
-            return result;
-        } catch (Throwable e) {
-            error = e;
-            throw e;
-        } finally {
-            long costTime = System.currentTimeMillis() - startTime;
-
-            // 记录日志
+        @Override
+        protected void recordLog(LogService logService, String methodName, String params,
+                                String ip, long costTime, Throwable error) {
             try {
+                String user = username != null ? username : "未知用户";
                 if (error != null) {
-                    // 登录失败
-                    logService.log(
-                            "系统登录",
-                            loginLog.type(),
-                            description + " - 失败",
-                            methodName,
-                            params,
-                            ip
-                    );
-                    logService.log(
-                            "系统登录",
-                            loginLog.type(),
-                            (username != null ? username : "未知用户") + " 登录失败",
-                            0,
-                            error.getMessage()
-                    );
+                    logService.log(module, operationType, description + " - 失败", methodName, params, ip);
+                    logService.log(module, operationType, user + " 登录失败", 0, error.getMessage());
                 } else {
-                    // 登录成功
-                    logService.log(
-                            "系统登录",
-                            loginLog.type(),
-                            description + " - 成功",
-                            methodName,
-                            params,
-                            ip
-                    );
-                    logService.log(
-                            "系统登录",
-                            loginLog.type(),
-                            (username != null ? username : "未知用户") + " " + description,
-                            costTime
-                    );
+                    logService.log(module, operationType, description + " - 成功", methodName, params, ip);
+                    logService.log(module, operationType, user + " " + description, costTime);
                 }
             } catch (Exception e) {
                 log.error("记录登录日志失败", e);
@@ -209,17 +181,11 @@ public class LogAspect {
         }
     }
 
-    /**
-     * 获取 HttpServletRequest
-     */
     private HttpServletRequest getRequest() {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         return attributes != null ? attributes.getRequest() : null;
     }
 
-    /**
-     * 获取客户端IP
-     */
     private String getClientIp(HttpServletRequest request) {
         if (request == null) {
             return "unknown";
@@ -232,16 +198,12 @@ public class LogAspect {
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
-        // 如果有多个IP，取第一个
         if (ip != null && ip.contains(",")) {
             ip = ip.split(",")[0].trim();
         }
         return ip;
     }
 
-    /**
-     * 获取请求参数
-     */
     private String getParams(ProceedingJoinPoint joinPoint) {
         try {
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -257,20 +219,16 @@ public class LogAspect {
 
             for (int i = 0; i < parameters.length; i++) {
                 Parameter param = parameters[i];
-                // 跳过 HttpServletRequest 和 HttpServletResponse
                 if (param.getType().getName().contains("HttpServletRequest")
                         || param.getType().getName().contains("HttpServletResponse")) {
                     continue;
                 }
 
-                // 检查是否有 @RequestBody 注解
                 RequestBody requestBody = param.getAnnotation(RequestBody.class);
                 if (requestBody != null && args[i] != null) {
-                    // 如果有 @RequestBody，直接序列化整个对象
                     return objectMapper.writeValueAsString(args[i]);
                 }
 
-                // 检查是否有 @RequestParam 注解
                 RequestParam requestParam = param.getAnnotation(RequestParam.class);
                 if (requestParam != null) {
                     String paramName = requestParam.value().isEmpty() ? param.getName() : requestParam.value();
@@ -282,7 +240,6 @@ public class LogAspect {
                             "contentType", fileValue.getContentType()
                     ));
                 } else if (args[i] != null && !param.getType().getName().startsWith("java.lang")) {
-                    // 对于非基本类型，尝试序列化
                     paramsMap.put(param.getName(), args[i]);
                 } else {
                     paramsMap.put(param.getName(), args[i]);
@@ -300,16 +257,11 @@ public class LogAspect {
         }
     }
 
-    /**
-     * 解析描述，支持 SpEL 表达式（简化版）
-     * 目前只支持简单的 {#paramName} 格式
-     */
     private String parseDescription(String description, ProceedingJoinPoint joinPoint) {
         if (description == null || description.isEmpty()) {
             return "";
         }
 
-        // 简单的 SpEL 解析：{#paramName} -> 参数值
         try {
             if (description.contains("{#")) {
                 MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -326,7 +278,6 @@ public class LogAspect {
                 }
             }
 
-            // 尝试获取当前用户名
             if (description.contains("{#username}") || description.contains("{#currentUser}")) {
                 try {
                     String username = SecurityUtils.getCurrentUsername();
@@ -343,9 +294,6 @@ public class LogAspect {
         return description;
     }
 
-    /**
-     * 从方法参数中获取登录用户名
-     */
     private String getUsernameFromArgs(Object[] args, Method method) {
         if (args == null || args.length == 0) {
             return null;
@@ -354,13 +302,11 @@ public class LogAspect {
         Parameter[] parameters = method.getParameters();
         for (int i = 0; i < parameters.length; i++) {
             String paramName = parameters[i].getName();
-            // 常见的用户名参数名
             if ("username".equalsIgnoreCase(paramName) || "account".equalsIgnoreCase(paramName)) {
                 if (args[i] != null) {
                     return String.valueOf(args[i]);
                 }
             }
-            // 检查是否有 @RequestBody 且类型包含 username 字段
             RequestBody requestBody = parameters[i].getAnnotation(RequestBody.class);
             if (requestBody != null && args[i] != null) {
                 try {

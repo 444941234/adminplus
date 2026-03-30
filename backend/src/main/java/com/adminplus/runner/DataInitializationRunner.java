@@ -2,6 +2,8 @@ package com.adminplus.runner;
 
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
+import com.adminplus.runner.initializer.DataInitializer;
+import com.adminplus.runner.initializer.PermissionInitializer;
 import com.adminplus.utils.IdUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +40,7 @@ public class DataInitializationRunner implements CommandLineRunner {
     private final WorkflowDefinitionRepository workflowDefinitionRepository;
     private final WorkflowNodeRepository workflowNodeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final List<DataInitializer> dataInitializers;
 
     @Override
     @Transactional
@@ -57,8 +60,8 @@ public class DataInitializationRunner implements CommandLineRunner {
             // 初始化用户数据
             initializeUsers();
 
-            // 初始化权限关联
-            initializePermissions();
+            // 使用初始化器执行权限关联
+            executeInitializers();
 
             // 初始化字典数据
             initializeDicts();
@@ -72,6 +75,23 @@ public class DataInitializationRunner implements CommandLineRunner {
             log.error("数据初始化失败", e);
             throw e;
         }
+    }
+
+    /**
+     * 执行所有数据初始化器
+     */
+    private void executeInitializers() {
+        dataInitializers.stream()
+                .sorted(Comparator.comparingInt(DataInitializer::getOrder))
+                .forEach(initializer -> {
+                    try {
+                        log.info("执行初始化器: {}", initializer.getName());
+                        initializer.initialize();
+                    } catch (Exception e) {
+                        log.error("初始化器 {} 执行失败", initializer.getName(), e);
+                        throw new RuntimeException("初始化器 " + initializer.getName() + " 执行失败", e);
+                    }
+                });
     }
 
     /**
@@ -357,147 +377,6 @@ public class DataInitializationRunner implements CommandLineRunner {
         log.info("初始化用户数据完成，共 {} 个用户", users.size());
     }
 
-    /**
-     * 初始化权限关联
-     */
-    private void initializePermissions() {
-        // 先获取所有角色和菜单
-        List<RoleEntity> roles = roleRepository.findAll();
-        List<MenuEntity> menus = menuRepository.findAll();
-        List<UserEntity> users = userRepository.findAll();
-        Set<String> existingRoleMenuKeys = roleMenuRepository.findAll().stream()
-                .map(item -> item.getRoleId() + ":" + item.getMenuId())
-                .collect(Collectors.toSet());
-        Set<String> existingUserRoleKeys = userRoleRepository.findAll().stream()
-                .map(item -> item.getUserId() + ":" + item.getRoleId())
-                .collect(Collectors.toSet());
-
-        // 创建角色ID到角色的映射
-        java.util.Map<String, RoleEntity> roleMap = new java.util.HashMap<>();
-        for (RoleEntity role : roles) {
-            roleMap.put(role.getCode(), role);
-        }
-
-        // 创建菜单名称到菜单的映射
-        java.util.Map<String, MenuEntity> menuMap = new java.util.HashMap<>();
-        for (MenuEntity menu : menus) {
-            menuMap.put(menu.getName(), menu);
-        }
-
-        // 创建用户名到用户的映射
-        java.util.Map<String, UserEntity> userMap = new java.util.HashMap<>();
-        for (UserEntity user : users) {
-            userMap.put(user.getUsername(), user);
-        }
-
-        // 超级管理员拥有所有权限
-        RoleEntity adminRole = roleMap.get("ROLE_ADMIN");
-        if (adminRole != null) {
-            for (MenuEntity menu : menus) {
-                // 关联所有菜单，包括按钮权限
-                saveRoleMenuIfAbsent(adminRole, menu, existingRoleMenuKeys);
-            }
-        }
-
-        // 部门经理权限
-        RoleEntity managerRole = roleMap.get("ROLE_MANAGER");
-        if (managerRole != null) {
-            List<String> managerMenuNames = Arrays.asList("首页", "用户管理", "新增用户", "编辑用户", "删除用户", "分配角色", "重置密码",
-                    "部门管理", "新增部门", "编辑部门", "删除部门", "查询部门", "部门列表",
-                    "工作流管理", "流程模板", "我的流程", "待我审批", "抄送我的", "催办中心",
-                    "发起流程", "保存草稿", "催办流程", "撤回流程", "取消流程",
-                    "审批通过", "审批驳回", "回退流程", "加签转办", "抄送已读", "催办已读",
-                    "文件管理", "上传文件", "删除文件");
-            for (String menuName : managerMenuNames) {
-                MenuEntity menu = menuMap.get(menuName);
-                if (menu != null) {
-                    saveRoleMenuIfAbsent(managerRole, menu, existingRoleMenuKeys);
-                }
-            }
-        }
-
-        // 开发人员权限
-        RoleEntity developerRole = roleMap.get("ROLE_DEVELOPER");
-        if (developerRole != null) {
-            List<String> developerMenuNames = Arrays.asList("首页", "用户管理", "角色管理", "菜单管理", "字典管理", "参数配置",
-                    "字典项列表", "新增字典项", "编辑字典项", "删除字典项",
-                    "数据统计", "报表管理", "工作流管理", "流程模板", "流程设计", "我的流程", "抄送我的", "催办中心",
-                    "发起流程", "保存草稿", "新增流程定义", "更新流程定义", "删除流程定义",
-                    "催办流程", "撤回流程", "取消流程", "抄送已读", "催办已读",
-                    "文件管理", "上传文件", "删除文件");
-            for (String menuName : developerMenuNames) {
-                MenuEntity menu = menuMap.get(menuName);
-                if (menu != null) {
-                    saveRoleMenuIfAbsent(developerRole, menu, existingRoleMenuKeys);
-                }
-            }
-        }
-
-        // 运营人员权限
-        RoleEntity operatorRole = roleMap.get("ROLE_OPERATOR");
-        if (operatorRole != null) {
-            List<String> operatorMenuNames = Arrays.asList("首页", "数据统计", "报表管理",
-                    "工作流管理", "流程模板", "我的流程", "抄送我的", "催办中心",
-                    "发起流程", "保存草稿", "催办流程", "撤回流程", "取消流程", "抄送已读", "催办已读",
-                    "文件管理", "上传文件", "删除文件");
-            for (String menuName : operatorMenuNames) {
-                MenuEntity menu = menuMap.get(menuName);
-                if (menu != null) {
-                    saveRoleMenuIfAbsent(operatorRole, menu, existingRoleMenuKeys);
-                }
-            }
-        }
-
-        // 普通用户权限
-        RoleEntity userRole = roleMap.get("ROLE_USER");
-        if (userRole != null) {
-            List<String> userMenuNames = Arrays.asList("首页", "工作流管理", "流程模板", "我的流程", "抄送我的", "催办中心",
-                    "发起流程", "保存草稿", "催办流程", "撤回流程", "取消流程", "抄送已读", "催办已读",
-                    "文件管理", "上传文件", "删除文件");
-            for (String menuName : userMenuNames) {
-                MenuEntity menu = menuMap.get(menuName);
-                if (menu != null) {
-                    saveRoleMenuIfAbsent(userRole, menu, existingRoleMenuKeys);
-                }
-            }
-        }
-
-        // 用户角色关联
-        if (adminRole != null && userMap.get("admin") != null) {
-            saveUserRoleIfAbsent(userMap.get("admin"), adminRole, existingUserRoleKeys);
-        }
-        if (managerRole != null && userMap.get("manager") != null) {
-            saveUserRoleIfAbsent(userMap.get("manager"), managerRole, existingUserRoleKeys);
-        }
-        if (userRole != null) {
-            UserEntity user1 = userMap.get("user1");
-            UserEntity user2 = userMap.get("user2");
-            UserEntity cs1 = userMap.get("cs1");
-            UserEntity cs2 = userMap.get("cs2");
-
-            if (user1 != null) saveUserRoleIfAbsent(user1, userRole, existingUserRoleKeys);
-            if (user2 != null) saveUserRoleIfAbsent(user2, userRole, existingUserRoleKeys);
-            if (cs1 != null) saveUserRoleIfAbsent(cs1, userRole, existingUserRoleKeys);
-            if (cs2 != null) saveUserRoleIfAbsent(cs2, userRole, existingUserRoleKeys);
-        }
-        if (developerRole != null) {
-            UserEntity dev1 = userMap.get("dev1");
-            UserEntity dev2 = userMap.get("dev2");
-
-            if (dev1 != null) saveUserRoleIfAbsent(dev1, developerRole, existingUserRoleKeys);
-            if (dev2 != null) saveUserRoleIfAbsent(dev2, developerRole, existingUserRoleKeys);
-        }
-        if (operatorRole != null) {
-            UserEntity op1 = userMap.get("operator1");
-            UserEntity op2 = userMap.get("operator2");
-
-            if (op1 != null) saveUserRoleIfAbsent(op1, operatorRole, existingUserRoleKeys);
-            if (op2 != null) saveUserRoleIfAbsent(op2, operatorRole, existingUserRoleKeys);
-        }
-
-        log.info("初始化权限关联完成");
-    }
-
     private void ensureWorkflowMenus() {
         List<Object[]> workflowMenuData = Arrays.asList(
                 new Object[]{"M4", null, 0, "工作流管理", "/workflow", null, null, "Workflow", 3, 1, 1},
@@ -718,21 +597,7 @@ public class DataInitializationRunner implements CommandLineRunner {
         };
     }
 
-    private void saveRoleMenuIfAbsent(RoleEntity role, MenuEntity menu, Set<String> existingRoleMenuKeys) {
-        String key = role.getId() + ":" + menu.getId();
-        if (existingRoleMenuKeys.add(key)) {
-            roleMenuRepository.save(createRoleMenu(role.getId(), menu.getId()));
-        }
-    }
-
-    private void saveUserRoleIfAbsent(UserEntity user, RoleEntity role, Set<String> existingUserRoleKeys) {
-        String key = user.getId() + ":" + role.getId();
-        if (existingUserRoleKeys.add(key)) {
-            userRoleRepository.save(createUserRole(user.getId(), role.getId()));
-        }
-    }
-
-    // 创建实体的辅助方法 - 使用构造函数
+    // 创建实体的辅助方法
     private DeptEntity createDept(String tempId, String parentId, String name, String code, String leader, String phone, Integer status, Integer sortOrder) {
         DeptEntity dept = new DeptEntity();
         dept.setName(name);
@@ -743,13 +608,11 @@ public class DataInitializationRunner implements CommandLineRunner {
         dept.setSortOrder(sortOrder);
         dept.setCreateUser("system");
         dept.setUpdateUser("system");
-        // parent 关系在保存后设置
         return dept;
     }
 
     private RoleEntity createRole(String id, String code, String name, String description, Integer status, Integer sortOrder) {
         RoleEntity role = new RoleEntity();
-        // ID由BaseEntity的@PrePersist自动设置
         role.setCode(code);
         role.setName(name);
         role.setDescription(description);
@@ -773,13 +636,11 @@ public class DataInitializationRunner implements CommandLineRunner {
         menu.setStatus(status);
         menu.setCreateUser("system");
         menu.setUpdateUser("system");
-        // parent 关系在保存后设置
         return menu;
     }
 
     private UserEntity createUser(String id, String username, String password, String nickname, String email, String phone, String deptId, Integer status) {
         UserEntity user = new UserEntity();
-        // ID由BaseEntity的@PrePersist自动设置
         user.setUsername(username);
         user.setPassword(password);
         user.setNickname(nickname);
@@ -792,27 +653,6 @@ public class DataInitializationRunner implements CommandLineRunner {
         return user;
     }
 
-    private RoleMenuEntity createRoleMenu(String roleId, String menuId) {
-        RoleMenuEntity roleMenu = new RoleMenuEntity();
-        roleMenu.setId(IdUtils.nextIdStr()); // 使用雪花ID
-        roleMenu.setRoleId(roleId);
-        roleMenu.setMenuId(menuId);
-        return roleMenu;
-    }
-
-    private UserRoleEntity createUserRole(String userId, String roleId) {
-        UserRoleEntity userRole = new UserRoleEntity();
-        userRole.setId(IdUtils.nextIdStr()); // 使用雪花ID
-        userRole.setUserId(userId);
-        userRole.setRoleId(roleId);
-        return userRole;
-    }
-
-    // 已移除generateId方法，改用雪花ID
-
-    /**
-     * 确保中间表存在，不存在则创建
-     */
     /**
      * 初始化字典数据
      */
