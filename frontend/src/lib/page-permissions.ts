@@ -50,8 +50,8 @@ const dashboardQuickActions: DashboardQuickAction[] = [
   },
   {
     path: '/system/config',
-    label: '系统监控',
-    icon: 'Server',
+    label: '参数配置',
+    icon: 'Settings',
     color: 'text-slate-500',
     permissions: ['system:config:list']
   },
