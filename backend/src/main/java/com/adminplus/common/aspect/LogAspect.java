@@ -3,6 +3,7 @@ package com.adminplus.common.aspect;
 import com.adminplus.common.annotation.LoginLog;
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.service.LogService;
+import com.adminplus.utils.IpUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -187,21 +188,7 @@ public class LogAspect {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        if (request == null) {
-            return "unknown";
-        }
-
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        if (ip != null && ip.contains(",")) {
-            ip = ip.split(",")[0].trim();
-        }
-        return ip;
+        return IpUtils.getClientIp(request);
     }
 
     private String getParams(ProceedingJoinPoint joinPoint) {
