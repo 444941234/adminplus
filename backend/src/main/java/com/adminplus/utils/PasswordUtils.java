@@ -199,6 +199,18 @@ public class PasswordUtils {
      * @param errorCode 错误代码
      * @return 错误消息
      */
+    /**
+     * 验证密码强度，不符合则抛出描述性错误
+     *
+     * @param password 待验证密码
+     * @throws IllegalArgumentException 密码不符合强度要求时抛出
+     */
+    public static void validateOrThrow(String password) {
+        if (!isStrongPassword(password)) {
+            throw new IllegalArgumentException(getErrorMessage(getPasswordStrengthHint(password)));
+        }
+    }
+
     public static String getErrorMessage(int errorCode) {
         if (errorCode == 0) {
             return "密码强度符合要求";

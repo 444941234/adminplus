@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import {
   Button,
   Card,
@@ -21,13 +21,14 @@ import {
 } from '@/components/ui'
 import { Edit, KeyRound, Plus, Trash2 } from 'lucide-vue-next'
 import { ConfirmDialog, StatusBadge } from '@/components/common'
-import { assignMenus, createRole, deleteRole, getMenuTree, getRoleById, getRoleList, getRoleMenus, updateRole } from '@/api'
+import { assignMenus, getMenuTree, getRoleMenus } from '@/api'
 import { getRolePagePermissionState } from '@/lib/page-permissions'
 import { isValidRoleCode } from '@/lib/validators'
 import type { Menu, Role } from '@/types'
 import { useUserStore } from '@/stores/user'
-import { toast } from 'vue-sonner'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useCRUD } from '@/composables/useCRUD'
+import { createRole, deleteRole, getRoleById, getRoleList, updateRole } from '@/api'
 
 interface RoleFormState {
   name: string
@@ -45,53 +46,108 @@ interface MenuOption {
   disabled: boolean
 }
 
-const roles = ref<Role[]>([])
-const menus = ref<Menu[]>([])
-const searchQuery = ref('')
 const userStore = useUserStore()
+const searchQuery = ref('')
+const menus = ref<Menu[]>([])
 
-const { loading: listLoading, run: runList } = useAsyncAction('获取角色列表失败')
-const { loading: dialogLoading, run: runDialog } = useAsyncAction('操作失败')
-const { loading: deleteLoading, run: runDelete } = useAsyncAction('删除角色失败')
-const { loading: assignLoading, run: runAssign } = useAsyncAction('操作失败')
-
-const dialogOpen = ref(false)
-const isEdit = ref(false)
-const editId = ref('')
-
-const deleteDialogOpen = ref(false)
-const deleteRoleId = ref('')
-
+// Assign menus dialog state (additional feature, not handled by useCRUD)
 const assignDialogOpen = ref(false)
 const assignRole = ref<Role | null>(null)
 const selectedMenuIds = ref<string[]>([])
+const { loading: assignLoading, run: runAssign } = useAsyncAction('操作失败')
 
-const form = reactive<RoleFormState>({
-  name: '',
-  code: '',
-  description: '',
-  dataScope: '1',
-  status: '1',
-  sortOrder: 0
-})
-
-const permissionState = computed(() => getRolePagePermissionState(userStore.hasPermission))
-const canAddRole = computed(() => permissionState.value.canAddRole)
-const canEditRole = computed(() => permissionState.value.canEditRole)
-const canDeleteRole = computed(() => permissionState.value.canDeleteRole)
-const canAssignRole = computed(() => permissionState.value.canAssignRole)
-
-const resetForm = () => {
-  Object.assign(form, {
+// CRUD composable
+const {
+  list: roles,
+  loading: listLoading,
+  form,
+  dialogOpen,
+  isEdit,
+  dialogLoading,
+  deleteLoading,
+  deleteDialogOpen,
+  fetchList: fetchRoles,
+  openCreate: handleAdd,
+  openEdit: handleEdit,
+  handleSubmit,
+  openDeleteConfirm: handleDeleteConfirm,
+  handleDelete
+} = useCRUD<Role, RoleFormState>({
+  getList: async () => {
+    const res = await getRoleList()
+    return { data: res.data.records || [] }
+  },
+  getById: getRoleById,
+  create: async (data: RoleFormState) => {
+    return createRole({
+      name: data.name.trim(),
+      code: data.code.trim(),
+      description: data.description.trim() || undefined,
+      dataScope: Number(data.dataScope),
+      status: Number(data.status),
+      sortOrder: data.sortOrder
+    })
+  },
+  update: async (id: string, data: RoleFormState) => {
+    return updateRole(id, {
+      name: data.name.trim(),
+      description: data.description.trim() || undefined,
+      dataScope: Number(data.dataScope),
+      status: Number(data.status),
+      sortOrder: data.sortOrder
+    })
+  },
+  delete: deleteRole,
+  defaultForm: {
     name: '',
     code: '',
     description: '',
     dataScope: '1',
     status: '1',
     sortOrder: 0
-  })
-}
+  },
+  mapDataToForm: (role) => ({
+    name: role.name,
+    code: role.code,
+    description: role.description || '',
+    dataScope: String(role.dataScope),
+    status: String(role.status ?? 1),
+    sortOrder: role.sortOrder
+  }),
+  successMessages: {
+    create: '角色创建成功',
+    update: '角色更新成功',
+    delete: '角色删除成功'
+  },
+  errorMessages: {
+    list: '获取角色列表失败',
+    getById: '获取角色详情失败',
+    create: '保存角色失败',
+    update: '保存角色失败',
+    delete: '删除角色失败'
+  },
+  validate: (formData, isEditMode) => {
+    if (!formData.name.trim()) {
+      return '请输入角色名称'
+    }
+    if (!isEditMode && !formData.code.trim()) {
+      return '请输入角色编码'
+    }
+    if (!isEditMode && !isValidRoleCode(formData.code.trim())) {
+      return '角色编码需以字母开头，只能包含字母、数字、下划线、冒号或短横线'
+    }
+    return true
+  }
+})
 
+// Permission checks
+const permissionState = computed(() => getRolePagePermissionState(userStore.hasPermission))
+const canAddRole = computed(() => permissionState.value.canAddRole)
+const canEditRole = computed(() => permissionState.value.canEditRole)
+const canDeleteRole = computed(() => permissionState.value.canDeleteRole)
+const canAssignRole = computed(() => permissionState.value.canAssignRole)
+
+// Search/filter
 const filteredRoles = computed(() => {
   const keyword = searchQuery.value.trim().toLowerCase()
   if (!keyword) return roles.value
@@ -103,6 +159,7 @@ const filteredRoles = computed(() => {
   )
 })
 
+// Menu options for assign dialog
 const menuOptions = computed<MenuOption[]>(() => {
   const options: MenuOption[] = []
   const walk = (menuList: Menu[], level = 0) => {
@@ -125,104 +182,13 @@ const menuOptions = computed<MenuOption[]>(() => {
   return options
 })
 
-const fetchRoles = () => runList(async () => {
-  const res = await getRoleList()
-  roles.value = res.data.records || []
-})
-
-const fetchMenus = () => runList(
+// Fetch menus on mount
+const fetchMenus = () => runAssign(
   async () => { const res = await getMenuTree(); menus.value = res.data },
   { errorMessage: '获取菜单列表失败' }
 )
 
-const handleAdd = () => {
-  resetForm()
-  isEdit.value = false
-  editId.value = ''
-  dialogOpen.value = true
-}
-
-const handleEdit = (id: string) => {
-  isEdit.value = true
-  editId.value = id
-  dialogOpen.value = true
-  runDialog(async () => {
-    const res = await getRoleById(id)
-    const role = res.data
-    Object.assign(form, {
-      name: role.name,
-      code: role.code,
-      description: role.description || '',
-      dataScope: String(role.dataScope),
-      status: String(role.status ?? 1),
-      sortOrder: role.sortOrder
-    })
-  }, {
-    errorMessage: '获取角色详情失败',
-    onError: () => { dialogOpen.value = false }
-  })
-}
-
-const handleSubmit = () => {
-  if (!form.name.trim()) {
-    toast.warning('请输入角色名称')
-    return
-  }
-  if (!isEdit.value && !form.code.trim()) {
-    toast.warning('请输入角色编码')
-    return
-  }
-  if (!isEdit.value && !isValidRoleCode(form.code.trim())) {
-    toast.warning('角色编码需以字母开头，只能包含字母、数字、下划线、冒号或短横线')
-    return
-  }
-
-  runDialog(async () => {
-    if (isEdit.value) {
-      await updateRole(editId.value, {
-        name: form.name.trim(),
-        description: form.description.trim() || undefined,
-        dataScope: Number(form.dataScope),
-        status: Number(form.status),
-        sortOrder: Number(form.sortOrder) || 0
-      })
-    } else {
-      await createRole({
-        code: form.code.trim(),
-        name: form.name.trim(),
-        description: form.description.trim() || undefined,
-        dataScope: Number(form.dataScope),
-        status: Number(form.status),
-        sortOrder: Number(form.sortOrder) || 0
-      })
-    }
-  }, {
-    successMessage: isEdit.value ? '角色更新成功' : '角色创建成功',
-    errorMessage: '保存角色失败',
-    onSuccess: async () => {
-      dialogOpen.value = false
-      await fetchRoles()
-    }
-  })
-}
-
-const handleDeleteConfirm = (id: string) => {
-  deleteRoleId.value = id
-  deleteDialogOpen.value = true
-}
-
-const handleDelete = () => {
-  runDelete(async () => {
-    await deleteRole(deleteRoleId.value)
-    await fetchRoles()
-  }, {
-    successMessage: '角色删除成功',
-    errorMessage: '删除角色失败'
-  }).finally(() => {
-    deleteDialogOpen.value = false
-  })
-}
-
+// Menu selection helpers
 const toggleMenuSelection = (menuId: string, checked: boolean) => {
   const next = new Set(selectedMenuIds.value)
   if (checked) {
@@ -245,6 +211,7 @@ const toggleAllMenus = (checked: boolean | string) => {
   selectedMenuIds.value = checked ? menuOptions.value.map((item) => item.id) : []
 }
 
+// Assign menus handlers
 const handleOpenAssign = (role: Role) => {
   assignRole.value = role
   assignDialogOpen.value = true

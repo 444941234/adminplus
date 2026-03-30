@@ -19,6 +19,7 @@ import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.FileService;
 import com.adminplus.service.ProfileService;
 import com.adminplus.service.VirusScanService;
+import com.adminplus.utils.MaskingUtils;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
@@ -179,10 +180,7 @@ public class ProfileServiceImpl implements ProfileService {
         }
 
         // 验证新密码强度
-        if (!PasswordUtils.isStrongPassword(req.newPassword())) {
-            int errorCode = PasswordUtils.getPasswordStrengthHint(req.newPassword());
-            throw new BizException(PasswordUtils.getErrorMessage(errorCode));
-        }
+        if (!PasswordUtils.isStrongPassword(req.newPassword())) throw new BizException(PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(req.newPassword())));
 
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = profileRepository.findById(userId)
@@ -197,7 +195,7 @@ public class ProfileServiceImpl implements ProfileService {
         user.setPassword(passwordEncoder.encode(req.newPassword()));
         profileRepository.save(user);
 
-        log.info("用户 {} 修改密码成功", maskUsername(user.getUsername()));
+        log.info("用户 {} 修改密码成功", MaskingUtils.maskUsername(user.getUsername()));
     }
 
     @Override
@@ -319,16 +317,6 @@ public class ProfileServiceImpl implements ProfileService {
         if (file.getSize() > MAX_FILE_SIZE) {
             throw new BizException("图片大小不能超过 2MB");
         }
-    }
-
-    /**
-     * 隐藏用户名敏感信息
-     */
-    private String maskUsername(String username) {
-        if (username == null || username.length() <= 2) {
-            return "***";
-        }
-        return username.charAt(0) + "***" + username.charAt(username.length() - 1);
     }
 
     @Override

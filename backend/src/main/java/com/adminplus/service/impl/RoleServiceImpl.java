@@ -12,14 +12,15 @@ import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.LogService;
 import com.adminplus.service.RoleService;
+import com.adminplus.utils.AssociationDiffHelper;
+import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.adminplus.utils.AssociationDiffHelper;
-
+import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -51,36 +52,15 @@ public class RoleServiceImpl implements RoleService {
             roles = roleRepository.findByDeletedFalseAndCodeNot("ROLE_ADMIN");
         }
 
-        return roles.stream().map(role -> new RoleResp(
-                role.getId(),
-                role.getCode(),
-                role.getName(),
-                role.getDescription(),
-                role.getDataScope(),
-                role.getStatus(),
-                role.getSortOrder(),
-                role.getCreateTime(),
-                role.getUpdateTime()
-        )).toList();
+        return roles.stream().map(this::toResp).toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public RoleResp getRoleById(String id) {
-        var role = roleRepository.findById(id)
-                .orElseThrow(() -> new BizException("角色不存在"));
+        var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
-        return new RoleResp(
-                role.getId(),
-                role.getCode(),
-                role.getName(),
-                role.getDescription(),
-                role.getDataScope(),
-                role.getStatus(),
-                role.getSortOrder(),
-                role.getCreateTime(),
-                role.getUpdateTime()
-        );
+        return toResp(role);
     }
 
     @Override
@@ -104,24 +84,13 @@ public class RoleServiceImpl implements RoleService {
         // 记录审计日志
         logService.log("角色管理", OperationType.CREATE, "创建角色: " + role.getName() + " (" + role.getCode() + ")");
 
-        return new RoleResp(
-                role.getId(),
-                role.getCode(),
-                role.getName(),
-                role.getDescription(),
-                role.getDataScope(),
-                role.getStatus(),
-                role.getSortOrder(),
-                role.getCreateTime(),
-                role.getUpdateTime()
-        );
+        return toResp(role);
     }
 
     @Override
     @Transactional
     public RoleResp updateRole(String id, RoleUpdateReq req) {
-        var role = roleRepository.findById(id)
-                .orElseThrow(() -> new BizException("角色不存在"));
+        var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
         // 非超级管理员不能修改超级管理员角色
         if ("ROLE_ADMIN".equals(role.getCode()) && !SecurityUtils.isAdmin()) {
@@ -146,27 +115,15 @@ public class RoleServiceImpl implements RoleService {
 
         role = roleRepository.save(role);
 
-        // 记录审计日志
         logService.log("角色管理", OperationType.UPDATE, "更新角色: " + role.getName() + " (" + role.getCode() + ")");
 
-        return new RoleResp(
-                role.getId(),
-                role.getCode(),
-                role.getName(),
-                role.getDescription(),
-                role.getDataScope(),
-                role.getStatus(),
-                role.getSortOrder(),
-                role.getCreateTime(),
-                role.getUpdateTime()
-        );
+        return toResp(role);
     }
 
     @Override
     @Transactional
     public void deleteRole(String id) {
-        var role = roleRepository.findById(id)
-                .orElseThrow(() -> new BizException("角色不存在"));
+        var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
         // 非超级管理员不能删除超级管理员角色
         if ("ROLE_ADMIN".equals(role.getCode()) && !SecurityUtils.isAdmin()) {
@@ -197,8 +154,7 @@ public class RoleServiceImpl implements RoleService {
     @Transactional
     public void assignMenus(String roleId, List<String> menuIds) {
         // 检查角色是否存在并获取角色信息（一次查询）
-        var role = roleRepository.findById(roleId)
-                .orElseThrow(() -> new BizException("角色不存在"));
+        var role = EntityHelper.findByIdOrThrow(roleRepository::findById, roleId, "角色不存在");
 
         List<String> safeMenuIds = (menuIds != null) ? menuIds : List.of();
 
@@ -206,7 +162,7 @@ public class RoleServiceImpl implements RoleService {
         var result = AssociationDiffHelper.diffUpdate(
                 roleId,
                 safeMenuIds,
-                rid -> new java.util.HashSet<>(roleMenuRepository.findMenuIdByRoleId(rid)),
+                rid -> new HashSet<>(roleMenuRepository.findMenuIdByRoleId(rid)),
                 roleMenuRepository::deleteByRoleIdAndMenuIdIn,
                 (rid, toAdd) -> {
                     List<RoleMenuEntity> list = toAdd.stream().map(menuId -> {
@@ -223,7 +179,7 @@ public class RoleServiceImpl implements RoleService {
         if (result.hasChanges()) {
             logService.log("角色管理", OperationType.UPDATE,
                     "分配菜单权限: " + role.getName() + " -> " + safeMenuIds.size() + " 个菜单"
-                    + " (新增" + result.added() + "个, 移除" + result.removed() + "个)");
+                            + " (新增" + result.added() + "个, 移除" + result.removed() + "个)");
         }
     }
 
@@ -234,5 +190,19 @@ public class RoleServiceImpl implements RoleService {
             throw new BizException("角色不存在");
         }
         return roleMenuRepository.findMenuIdByRoleId(roleId);
+    }
+
+    private RoleResp toResp(RoleEntity role) {
+        return new RoleResp(
+                role.getId(),
+                role.getCode(),
+                role.getName(),
+                role.getDescription(),
+                role.getDataScope(),
+                role.getStatus(),
+                role.getSortOrder(),
+                role.getCreateTime(),
+                role.getUpdateTime()
+        );
     }
 }

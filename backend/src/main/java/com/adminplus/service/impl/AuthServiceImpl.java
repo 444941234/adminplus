@@ -12,6 +12,7 @@ import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.*;
+import com.adminplus.utils.MaskingUtils;
 import com.adminplus.utils.SecurityUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
     public LoginResp login(UserLoginReq req) {
         // 验证验证码
         if (!captchaService.validateCaptcha(req.captchaId(), req.captchaCode())) {
-            log.warn("验证码验证失败: username={}", maskUsername(req.username()));
+            log.warn("验证码验证失败: username={}", MaskingUtils.maskUsername(req.username()));
             // 优化验证码错误提示，区分不同错误类型
             String redisKey = "captcha:" + req.captchaId();
             String storedCode = redisTemplate.opsForValue().get(redisKey);
@@ -148,15 +149,15 @@ public class AuthServiceImpl implements AuthService {
             String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
             // 记录登录审计日志
-            logService.log("认证管理", OperationType.OTHER, "用户登录成功: " + maskUsername(req.username()));
+            logService.log("认证管理", OperationType.OTHER, "用户登录成功: " + MaskingUtils.maskUsername(req.username()));
 
             return new LoginResp(token, refreshToken, "Bearer", userResp, permissions);
 
         } catch (AuthenticationException e) {
-            log.error("登录失败: username={}", maskUsername(req.username()));
+            log.error("登录失败: username={}", MaskingUtils.maskUsername(req.username()));
 
             // 记录登录失败审计日志
-            logService.log("认证管理", OperationType.OTHER, "用户登录失败: " + maskUsername(req.username()),
+            logService.log("认证管理", OperationType.OTHER, "用户登录失败: " + MaskingUtils.maskUsername(req.username()),
                     LogStatus.FAILED, "用户名或密码错误");
 
             throw new BizException("用户名或密码错误");
@@ -236,7 +237,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 记录登出审计日志
-            logService.log("认证管理", OperationType.OTHER, "用户退出: " + maskUsername(username));
+            logService.log("认证管理", OperationType.OTHER, "用户退出: " + MaskingUtils.maskUsername(username));
 
         } catch (Exception e) {
             log.error("登出时处理 Token 黑名单失败", e);
@@ -247,15 +248,5 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public String refreshAccessToken(String refreshToken) {
         return refreshTokenService.refreshAccessToken(refreshToken);
-    }
-
-    /**
-     * 隐藏用户名敏感信息
-     */
-    private String maskUsername(String username) {
-        if (username == null || username.length() <= 2) {
-            return "***";
-        }
-        return username.charAt(0) + "***" + username.charAt(username.length() - 1);
     }
 }

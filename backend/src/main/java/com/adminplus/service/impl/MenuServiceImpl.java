@@ -14,6 +14,7 @@ import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.LogService;
 import com.adminplus.service.MenuService;
+import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.TreeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -79,8 +80,7 @@ public class MenuServiceImpl implements MenuService {
     @Override
     @Transactional(readOnly = true)
     public MenuResp getMenuById(String id) {
-        var menu = menuRepository.findById(id)
-                .orElseThrow(() -> new BizException("菜单不存在"));
+        var menu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
         return toResp(menu);
     }
@@ -102,8 +102,7 @@ public class MenuServiceImpl implements MenuService {
 
         // 设置父菜单关系
         if (req.parentId() != null && !req.parentId().equals("0")) {
-            MenuEntity parent = menuRepository.findById(req.parentId())
-                    .orElseThrow(() -> new BizException("父菜单不存在"));
+            MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, req.parentId(), "父菜单不存在");
             menu.setParent(parent);
             // 更新 ancestors
             String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
@@ -124,8 +123,7 @@ public class MenuServiceImpl implements MenuService {
     @Transactional
     @CacheEvict(value = "userMenus", allEntries = true)
     public MenuResp updateMenu(String id, MenuUpdateReq req) {
-        var menu = menuRepository.findById(id)
-                .orElseThrow(() -> new BizException("菜单不存在"));
+        var menu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
         req.parentId().ifPresent(parentId -> {
             // 不能将自己设置为父菜单
@@ -142,8 +140,7 @@ public class MenuServiceImpl implements MenuService {
             String oldAncestors = menu.getAncestors() != null ? menu.getAncestors() : "";
 
             if (parentId != null && !parentId.equals("0")) {
-                MenuEntity parent = menuRepository.findById(parentId)
-                        .orElseThrow(() -> new BizException("父菜单不存在"));
+                MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, parentId, "父菜单不存在");
                 menu.setParent(parent);
                 // 更新 ancestors
                 String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
@@ -180,8 +177,7 @@ public class MenuServiceImpl implements MenuService {
     @Transactional
     @CacheEvict(value = "userMenus", allEntries = true)
     public void deleteMenu(String id) {
-        var menu = menuRepository.findById(id)
-                .orElseThrow(() -> new BizException("菜单不存在"));
+        var menu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
         // 检查是否有子菜单
         if (!menu.getChildren().isEmpty()) {

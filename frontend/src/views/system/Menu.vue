@@ -26,6 +26,7 @@ import type { Menu } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useTreeData } from '@/composables/useTreeData'
 
 interface MenuFormState {
   parentId: string
@@ -54,8 +55,76 @@ const { loading: deleteLoading, run: runDelete } = useAsyncAction('删除菜单�
 
 const searchQuery = ref('')
 const menus = ref<Menu[]>([])
-const expandedKeys = ref<Set<string>>(new Set())
 const userStore = useUserStore()
+
+// Use tree data composable for expand/collapse management
+const {
+  expandedKeys,
+  toggleExpand,
+  expandAll,
+  getAllKeys,
+  buildParentOptions
+} = useTreeData<Menu>(menus)
+
+// Filter menus based on search query
+const matchesSearch = (menu: Menu, keyword: string) => {
+  const normalized = keyword.toLowerCase()
+  return [
+    menu.name,
+    menu.path ?? '',
+    menu.component ?? '',
+    menu.permKey
+  ].some((value) => value.toLowerCase().includes(normalized))
+}
+
+const filterMenus = (menuList: Menu[], keyword: string): Menu[] => {
+  if (!keyword) return menuList
+
+  return menuList.reduce<Menu[]>((result, menu) => {
+    const children = filterMenus(menu.children ?? [], keyword)
+    if (matchesSearch(menu, keyword) || children.length > 0) {
+      result.push({
+        ...menu,
+        children
+      })
+    }
+    return result
+  }, [])
+}
+
+const filteredMenus = computed(() => filterMenus(menus.value, searchQuery.value.trim()))
+
+// Flattened rows with search filtering applied
+const flattenedRows = computed<MenuTreeRow[]>(() => {
+  const rows: MenuTreeRow[] = []
+  const walk = (menuList: Menu[], level = 0) => {
+    menuList.forEach((menu) => {
+      const hasChildren = Boolean(menu.children?.length)
+      const expanded = expandedKeys.value.has(menu.id)
+      rows.push({
+        id: menu.id,
+        level,
+        hasChildren,
+        expanded,
+        menu
+      })
+      if (hasChildren && expanded) {
+        walk(menu.children ?? [], level + 1)
+      }
+    })
+  }
+  walk(filteredMenus.value)
+  return rows
+})
+
+// Parent options for dialog dropdown (excludes current item when editing)
+const parentOptions = computed(() => {
+  const excludeKey = isEdit.value ? editId.value : undefined
+  return [
+    { id: '0', label: '顶级菜单' },
+    ...buildParentOptions(menus.value, excludeKey)
+  ]
+})
 
 const dialogOpen = ref(false)
 const isEdit = ref(false)
@@ -101,87 +170,9 @@ const resetForm = () => {
   })
 }
 
-const expandAllMenus = (menuList: Menu[]) => {
-  const nextKeys = new Set<string>()
-  const walk = (items: Menu[]) => {
-    items.forEach((item) => {
-      if (item.children?.length) {
-        nextKeys.add(item.id)
-        walk(item.children)
-      }
-    })
-  }
-  walk(menuList)
-  expandedKeys.value = nextKeys
+const handleSearch = () => {
+  expandAll()
 }
-
-const matchesSearch = (menu: Menu, keyword: string) => {
-  const normalized = keyword.toLowerCase()
-  return [
-    menu.name,
-    menu.path ?? '',
-    menu.component ?? '',
-    menu.permKey
-  ].some((value) => value.toLowerCase().includes(normalized))
-}
-
-const filterMenus = (menuList: Menu[], keyword: string): Menu[] => {
-  if (!keyword) return menuList
-
-  return menuList.reduce<Menu[]>((result, menu) => {
-    const children = filterMenus(menu.children ?? [], keyword)
-    if (matchesSearch(menu, keyword) || children.length > 0) {
-      result.push({
-        ...menu,
-        children
-      })
-    }
-    return result
-  }, [])
-}
-
-const filteredMenus = computed(() => filterMenus(menus.value, searchQuery.value.trim()))
-
-const flattenedRows = computed<MenuTreeRow[]>(() => {
-  const rows: MenuTreeRow[] = []
-  const walk = (menuList: Menu[], level = 0) => {
-    menuList.forEach((menu) => {
-      const hasChildren = Boolean(menu.children?.length)
-      const expanded = expandedKeys.value.has(menu.id)
-      rows.push({
-        id: menu.id,
-        level,
-        hasChildren,
-        expanded,
-        menu
-      })
-      if (hasChildren && expanded) {
-        walk(menu.children ?? [], level + 1)
-      }
-    })
-  }
-  walk(filteredMenus.value)
-  return rows
-})
-
-const parentOptions = computed(() => {
-  const options: Array<{ id: string; label: string }> = [{ id: '0', label: '顶级菜单' }]
-  const walk = (menuList: Menu[], level = 0) => {
-    menuList.forEach((menu) => {
-      if (!isEdit.value || menu.id !== editId.value) {
-        options.push({
-          id: menu.id,
-          label: `${'　'.repeat(level)}${menu.name}`
-        })
-      }
-      if (menu.children?.length) {
-        walk(menu.children, level + 1)
-      }
-    })
-  }
-  walk(menus.value)
-  return options
-})
 
 const typeLabelMap: Record<number, string> = {
   0: '目录',
@@ -216,33 +207,11 @@ const validateForm = () => {
 const fetchData = () => runList(async () => {
   const res = await getMenuTree()
   menus.value = res.data
-  expandAllMenus(res.data)
-  selectedMenuIds.value = selectedMenuIds.value.filter((id) =>
-    flattenMenuIds(res.data).includes(id)
-  )
+  expandAll()
+  // Filter out selected IDs that no longer exist in the tree
+  const allKeys = getAllKeys(res.data)
+  selectedMenuIds.value = selectedMenuIds.value.filter((id) => allKeys.includes(id))
 })
-
-const flattenMenuIds = (menuList: Menu[]): string[] => {
-  return menuList.flatMap((menu) => [menu.id, ...flattenMenuIds(menu.children ?? [])])
-}
-
-const handleSearch = () => {
-  if (searchQuery.value.trim()) {
-    expandAllMenus(filteredMenus.value)
-  } else {
-    expandAllMenus(menus.value)
-  }
-}
-
-const toggleExpand = (id: string) => {
-  const nextKeys = new Set(expandedKeys.value)
-  if (nextKeys.has(id)) {
-    nextKeys.delete(id)
-  } else {
-    nextKeys.add(id)
-  }
-  expandedKeys.value = nextKeys
-}
 
 const toggleMenuSelection = (menuId: string, checked: boolean) => {
   const next = new Set(selectedMenuIds.value)

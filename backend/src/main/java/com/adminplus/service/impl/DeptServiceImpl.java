@@ -9,6 +9,7 @@ import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.repository.DeptRepository;
 import com.adminplus.service.DeptService;
 import com.adminplus.service.LogService;
+import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.TreeUtils;
 import lombok.RequiredArgsConstructor;
@@ -120,8 +121,7 @@ public class DeptServiceImpl implements DeptService {
     @Override
     @Transactional(readOnly = true)
     public DeptResp getDeptById(String id) {
-        var dept = deptRepository.findById(id)
-                .orElseThrow(() -> new BizException("部门不存在"));
+        var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
 
         return toResp(dept);
     }
@@ -151,8 +151,7 @@ public class DeptServiceImpl implements DeptService {
 
         // 设置父部门关系
         if (req.parentId() != null && !req.parentId().equals("0")) {
-            DeptEntity parent = deptRepository.findById(req.parentId())
-                    .orElseThrow(() -> new BizException("父部门不存在"));
+            DeptEntity parent = EntityHelper.findByIdOrThrow(deptRepository::findById, req.parentId(), "父部门不存在");
             dept.setParent(parent);
             // 更新 ancestors
             String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
@@ -172,8 +171,7 @@ public class DeptServiceImpl implements DeptService {
     @Override
     @Transactional
     public DeptResp updateDept(String id, DeptUpdateReq req) {
-        var dept = deptRepository.findById(id)
-                .orElseThrow(() -> new BizException("部门不存在"));
+        var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
 
         // 如果更新部门名称，检查是否与其他部门重复
         if (req.name().isPresent() && !req.name().get().equals(dept.getName())) {
@@ -203,8 +201,7 @@ public class DeptServiceImpl implements DeptService {
             String oldAncestors = dept.getAncestors() != null ? dept.getAncestors() : "";
 
             if (parentId != null && !parentId.equals("0")) {
-                DeptEntity parent = deptRepository.findById(parentId)
-                        .orElseThrow(() -> new BizException("父部门不存在"));
+                DeptEntity parent = EntityHelper.findByIdOrThrow(deptRepository::findById, parentId, "父部门不存在");
                 dept.setParent(parent);
                 String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
                 String newAncestors = parentAncestors + parent.getId() + ",";
@@ -247,8 +244,7 @@ public class DeptServiceImpl implements DeptService {
     @Override
     @Transactional
     public void deleteDept(String id) {
-        var dept = deptRepository.findById(id)
-                .orElseThrow(() -> new BizException("部门不存在"));
+        var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
 
         // 检查是否有子部门
         if (!dept.getChildren().isEmpty()) {

@@ -867,7 +867,7 @@ describe('Role Page', () => {
       await nextTick()
 
       expect(wrapper.vm.deleteDialogOpen).toBe(true)
-      expect(wrapper.vm.deleteRoleId).toBe('role-2')
+      expect(wrapper.vm.deleteId).toBe('role-2')
     })
 
     it('should call deleteRole API and refresh list on handleDelete', async () => {
@@ -886,8 +886,8 @@ describe('Role Page', () => {
       wrapper = mount(Role, { global: { plugins: [pinia] } })
       await flushAsync(wrapper)
 
-      wrapper.vm.deleteRoleId = 'role-2'
-      wrapper.vm.deleteDialogOpen = true
+      // Use openDeleteConfirm to properly set up delete state
+      wrapper.vm.handleDeleteConfirm('role-2')
 
       wrapper.vm.handleDelete()
       await flushAsync(wrapper)
@@ -906,7 +906,7 @@ describe('Role Page', () => {
       wrapper = mount(Role, { global: { plugins: [pinia] } })
       await flushAsync(wrapper)
 
-      wrapper.vm.deleteRoleId = 'role-2'
+      wrapper.vm.handleDeleteConfirm('role-2')
       wrapper.vm.handleDelete()
       await flushAsync(wrapper)
 
@@ -924,8 +924,7 @@ describe('Role Page', () => {
       wrapper = mount(Role, { global: { plugins: [pinia] } })
       await flushAsync(wrapper)
 
-      wrapper.vm.deleteRoleId = 'role-2'
-      wrapper.vm.deleteDialogOpen = true
+      wrapper.vm.handleDeleteConfirm('role-2')
 
       wrapper.vm.handleDelete()
       await flushAsync(wrapper)
@@ -939,8 +938,7 @@ describe('Role Page', () => {
       wrapper = mount(Role, { global: { plugins: [pinia] } })
       await flushAsync(wrapper)
 
-      wrapper.vm.deleteRoleId = 'role-2'
-      wrapper.vm.deleteDialogOpen = true
+      wrapper.vm.handleDeleteConfirm('role-2')
 
       wrapper.vm.handleDelete()
       await flushAsync(wrapper)
@@ -955,7 +953,7 @@ describe('Role Page', () => {
       wrapper = mount(Role, { global: { plugins: [pinia] } })
       await flushAsync(wrapper)
 
-      wrapper.vm.deleteRoleId = 'role-2'
+      wrapper.vm.handleDeleteConfirm('role-2')
       wrapper.vm.handleDelete()
       await flushAsync(wrapper)
 
@@ -1378,13 +1376,15 @@ describe('Role Page', () => {
   // 12. deleteLoading guard
   // =========================================================================
   describe('Delete Loading Guard', () => {
-    it('should set deleteLoading to true during deletion', () => {
+    it('should set deleteLoading to true during deletion', async () => {
       vi.mocked(deleteRole).mockReturnValue(new Promise(() => {}) as any)
 
       wrapper = mount(Role, { global: { plugins: [pinia] } })
+      await flushAsync(wrapper)
       // Manually trigger delete without waiting
-      wrapper.vm.deleteRoleId = 'role-2'
+      wrapper.vm.handleDeleteConfirm('role-2')
       wrapper.vm.handleDelete()
+      await nextTick()
 
       expect(wrapper.vm.deleteLoading).toBe(true)
     })
@@ -1399,7 +1399,7 @@ describe('Role Page', () => {
       wrapper = mount(Role, { global: { plugins: [pinia] } })
       await flushAsync(wrapper)
 
-      wrapper.vm.deleteRoleId = 'role-2'
+      wrapper.vm.handleDeleteConfirm('role-2')
       wrapper.vm.handleDelete()
       await flushAsync(wrapper)
 
@@ -1412,7 +1412,7 @@ describe('Role Page', () => {
       wrapper = mount(Role, { global: { plugins: [pinia] } })
       await flushAsync(wrapper)
 
-      wrapper.vm.deleteRoleId = 'role-2'
+      wrapper.vm.handleDeleteConfirm('role-2')
       wrapper.vm.handleDelete()
       await flushAsync(wrapper)
 

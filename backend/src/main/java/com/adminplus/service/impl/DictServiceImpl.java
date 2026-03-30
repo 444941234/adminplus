@@ -11,6 +11,7 @@ import com.adminplus.pojo.entity.DictEntity;
 import com.adminplus.pojo.entity.DictItemEntity;
 import com.adminplus.repository.DictItemRepository;
 import com.adminplus.repository.DictRepository;
+import com.adminplus.utils.EntityHelper;
 import com.adminplus.service.DictService;
 import com.adminplus.service.LogService;
 import jakarta.persistence.criteria.Predicate;
@@ -80,8 +81,7 @@ public class DictServiceImpl implements DictService {
     @Transactional(readOnly = true)
     @Cacheable(value = "dict", key = "'id:' + #id")
     public DictResp getDictById(String id) {
-        DictEntity dict = dictRepository.findById(id)
-                .orElseThrow(() -> new BizException("字典不存在"));
+        DictEntity dict = EntityHelper.findByIdOrThrow(dictRepository::findById, id, "字典不存在");
         return toVO(dict);
     }
 
@@ -120,8 +120,7 @@ public class DictServiceImpl implements DictService {
     @Transactional
     @CacheEvict(value = "dict", allEntries = true)
     public DictResp updateDict(String id, DictUpdateReq req) {
-        DictEntity dict = dictRepository.findById(id)
-                .orElseThrow(() -> new BizException("字典不存在"));
+        DictEntity dict = EntityHelper.findByIdOrThrow(dictRepository::findById, id, "字典不存在");
 
         dict.setDictName(req.dictName());
         if (req.status() != null) {
@@ -142,8 +141,7 @@ public class DictServiceImpl implements DictService {
     @Transactional
     @CacheEvict(value = "dict", allEntries = true)
     public void deleteDict(String id) {
-        DictEntity dict = dictRepository.findById(id)
-                .orElseThrow(() -> new BizException("字典不存在"));
+        DictEntity dict = EntityHelper.findByIdOrThrow(dictRepository::findById, id, "字典不存在");
 
         // 检查是否有字典项
         List<DictItemEntity> items = dictItemRepository.findByDictIdOrderBySortOrderAsc(id);
@@ -163,8 +161,7 @@ public class DictServiceImpl implements DictService {
     @Transactional
     @CacheEvict(value = "dict", allEntries = true)
     public void updateDictStatus(String id, Integer status) {
-        DictEntity dict = dictRepository.findById(id)
-                .orElseThrow(() -> new BizException("字典不存在"));
+        DictEntity dict = EntityHelper.findByIdOrThrow(dictRepository::findById, id, "字典不存在");
 
         dict.setStatus(status);
         dictRepository.save(dict);

@@ -19,6 +19,8 @@ import com.adminplus.service.DeptService;
 import com.adminplus.service.LogService;
 import com.adminplus.service.UserService;
 import com.adminplus.utils.AssociationDiffHelper;
+import com.adminplus.utils.EntityHelper;
+import com.adminplus.utils.MaskingUtils;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
@@ -171,8 +173,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public UserResp getUserById(String id) {
-        var user = userRepository.findById(id)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
 
         List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(id);
 
@@ -229,10 +230,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // 验证密码强度
-        if (!PasswordUtils.isStrongPassword(req.password())) {
-            int errorCode = PasswordUtils.getPasswordStrengthHint(req.password());
-            throw new BizException(PasswordUtils.getErrorMessage(errorCode));
-        }
+        if (!PasswordUtils.isStrongPassword(req.password())) throw new BizException(PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(req.password())));
 
         // 验证部门是否存在
         if (req.deptId() != null && !req.deptId().isEmpty()) {
@@ -283,8 +281,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResp updateUser(String id, UserUpdateReq req) {
-        var user = userRepository.findById(id)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
 
         if (req.nickname() != null) {
             user.setNickname(XssUtils.escape(req.nickname()));
@@ -359,8 +356,7 @@ public class UserServiceImpl implements UserService {
             throw new BizException("不能删除自己");
         }
 
-        var user = userRepository.findById(id)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
 
         // 逻辑删除（Entity 配置了 @SQLDelete，delete() 会触发 UPDATE SET deleted=true）
         userRepository.delete(user);
@@ -382,8 +378,7 @@ public class UserServiceImpl implements UserService {
             throw new BizException("状态值不合法，只能为 0 或 1");
         }
 
-        var user = userRepository.findById(id)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
 
         user.setStatus(status);
         userRepository.save(user);
@@ -395,30 +390,16 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void resetPassword(String id, String newPassword) {
-        var user = userRepository.findById(id)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
 
         // 验证新密码强度（确保所有密码修改操作都使用相同的密码强度规则）
-        if (!PasswordUtils.isStrongPassword(newPassword)) {
-            int errorCode = PasswordUtils.getPasswordStrengthHint(newPassword);
-            throw new BizException(PasswordUtils.getErrorMessage(errorCode));
-        }
+        if (!PasswordUtils.isStrongPassword(newPassword)) throw new BizException(PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(newPassword)));
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
 
         // 记录审计日志（使用掩码隐藏用户名）
-        logService.log("用户管理", OperationType.UPDATE, "重置密码: " + maskUsername(user.getUsername()));
-    }
-
-    /**
-     * 隐藏用户名敏感信息
-     */
-    private String maskUsername(String username) {
-        if (username == null || username.length() <= 2) {
-            return "***";
-        }
-        return username.charAt(0) + "***" + username.charAt(username.length() - 1);
+        logService.log("用户管理", OperationType.UPDATE, "重置密码: " + MaskingUtils.maskUsername(user.getUsername()));
     }
 
     @Override
