@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 菜单数据初始化器
@@ -35,15 +36,26 @@ public class MenuInitializer implements DataInitializer {
     @Override
     @Transactional
     public void initialize() {
-        if (menuRepository.count() > 0) {
-            log.info("菜单数据已存在，跳过初始化");
-            return;
+        // 获取现有菜单
+        List<MenuEntity> existingMenus = menuRepository.findAll();
+        Set<String> existingPaths = existingMenus.stream()
+                .map(MenuEntity::getPath)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        // 如果菜单数据为空，执行完整初始化
+        if (existingMenus.isEmpty()) {
+            log.info("菜单数据为空，执行完整初始化");
+            performFullInitialization();
+        } else {
+            // 增量添加缺失的菜单
+            log.info("菜单数据已存在，检查并添加缺失的菜单");
+            performIncrementalInitialization(existingPaths);
         }
+    }
 
-        // 菜单数据：[临时ID, 父临时ID, 类型, 名称, 路径, 组件, 权限, 图标, 排序, 可见, 状态]
+    private void performFullInitialization() {
         List<Object[]> menuData = buildMenuData();
-
-        // 创建所有菜单
         List<MenuEntity> menus = menuData.stream()
                 .map(d -> createMenu(
                         (String) d[0], (String) d[1], (Integer) d[2], (String) d[3], (String) d[4],
@@ -75,6 +87,30 @@ public class MenuInitializer implements DataInitializer {
 
         menuRepository.saveAll(menus);
         log.info("初始化菜单数据完成，共 {} 个菜单", menus.size());
+    }
+
+    private void performIncrementalInitialization(Set<String> existingPaths) {
+        List<Object[]> menuData = buildMenuData();
+        List<MenuEntity> newMenus = new ArrayList<>();
+
+        for (var d : menuData) {
+            String path = (String) d[4];
+            if (path != null && !existingPaths.contains(path)) {
+                MenuEntity menu = createMenu(
+                        (String) d[0], (String) d[1], (Integer) d[2], (String) d[3], (String) d[4],
+                        (String) d[5], (String) d[6], (String) d[7], (Integer) d[8], (Integer) d[9], (Integer) d[10]
+                );
+                newMenus.add(menu);
+                existingPaths.add(path);
+            }
+        }
+
+        if (!newMenus.isEmpty()) {
+            menuRepository.saveAll(newMenus);
+            log.info("增量添加菜单数据完成，新增 {} 个菜单", newMenus.size());
+        } else {
+            log.info("没有需要添加的新菜单");
+        }
     }
 
     private List<Object[]> buildMenuData() {
