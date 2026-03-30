@@ -1,6 +1,8 @@
 package com.adminplus.utils;
 
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -9,13 +11,14 @@ import java.util.function.Function;
  */
 public final class HierarchyHelper {
 
-    private HierarchyHelper() {}
+    private HierarchyHelper() {
+    }
 
     /**
      * 检查 targetId 是否是 parentId 的子孙（通过 ancestors 路径判断）
      */
     public static boolean isDescendant(String parentId, String targetId,
-                                        Function<String, java.util.Optional<String>> ancestorsLoader) {
+                                       Function<String, java.util.Optional<String>> ancestorsLoader) {
         if (targetId == null || targetId.equals("0")) {
             return false;
         }
@@ -31,8 +34,8 @@ public final class HierarchyHelper {
             String oldAncestors, String newAncestors, String nodeId,
             Function<String, List<T>> descendantsLoader,
             Function<T, String> ancestorsGetter,
-            java.util.function.BiConsumer<T, String> ancestorsSetter,
-            java.util.function.Consumer<List<T>> saver) {
+            BiConsumer<T, String> ancestorsSetter,
+            Consumer<List<T>> saver) {
         String descendantsPrefix = oldAncestors + nodeId + ",";
         List<T> descendants = descendantsLoader.apply(descendantsPrefix);
         String newPrefix = newAncestors + nodeId + ",";

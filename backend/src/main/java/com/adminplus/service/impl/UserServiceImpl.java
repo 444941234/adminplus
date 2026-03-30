@@ -20,7 +20,7 @@ import com.adminplus.service.LogService;
 import com.adminplus.service.UserService;
 import com.adminplus.utils.AssociationDiffHelper;
 import com.adminplus.utils.EntityHelper;
-import com.adminplus.utils.MaskingUtils;
+import com.adminplus.utils.LogMaskingUtils;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
@@ -347,7 +347,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         // 记录审计日志（使用掩码隐藏用户名）
-        logService.log("用户管理", OperationType.UPDATE, "重置密码: " + MaskingUtils.maskUsername(user.getUsername()));
+        logService.log("用户管理", OperationType.UPDATE, "重置密码: " + LogMaskingUtils.maskUsername(user.getUsername()));
     }
 
     @Override

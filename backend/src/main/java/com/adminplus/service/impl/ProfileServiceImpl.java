@@ -20,7 +20,7 @@ import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.FileService;
 import com.adminplus.service.ProfileService;
 import com.adminplus.service.VirusScanService;
-import com.adminplus.utils.MaskingUtils;
+import com.adminplus.utils.LogMaskingUtils;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
@@ -193,7 +193,7 @@ public class ProfileServiceImpl implements ProfileService {
         user.setPassword(passwordEncoder.encode(req.newPassword()));
         profileRepository.save(user);
 
-        log.info("用户 {} 修改密码成功", MaskingUtils.maskUsername(user.getUsername()));
+        log.info("用户 {} 修改密码成功", LogMaskingUtils.maskUsername(user.getUsername()));
     }
 
     @Override
