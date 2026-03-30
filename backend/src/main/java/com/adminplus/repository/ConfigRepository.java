@@ -57,4 +57,12 @@ public interface ConfigRepository extends JpaRepository<ConfigEntity, String>, J
      * @return 配置项列表
      */
     List<ConfigEntity> findByGroupIdAndStatusOrderBySortOrderAsc(String groupId, Integer status);
+
+    /**
+     * 统计分组下的配置项数量
+     *
+     * @param groupId 分组 ID
+     * @return 配置项数量
+     */
+    long countByGroupId(String groupId);
 }

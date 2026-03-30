@@ -1,0 +1,220 @@
+package com.adminplus.service.impl;
+
+import com.adminplus.common.exception.BizException;
+import com.adminplus.constants.OperationType;
+import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
+import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
+import com.adminplus.pojo.dto.resp.ConfigGroupResp;
+import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.entity.ConfigEntity;
+import com.adminplus.pojo.entity.ConfigGroupEntity;
+import com.adminplus.repository.ConfigGroupRepository;
+import com.adminplus.repository.ConfigRepository;
+import com.adminplus.service.ConfigGroupService;
+import com.adminplus.service.LogService;
+import com.adminplus.utils.EntityHelper;
+import jakarta.persistence.criteria.Predicate;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 配置组服务实现
+ *
+ * @author AdminPlus
+ * @since 2026-03-30
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ConfigGroupServiceImpl implements ConfigGroupService {
+
+    private final ConfigGroupRepository configGroupRepository;
+    private final ConfigRepository configRepository;
+    private final LogService logService;
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResultResp<ConfigGroupResp> getConfigGroupList(Integer page, Integer size, String keyword) {
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("sortOrder").ascending());
+
+        Specification<ConfigGroupEntity> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (keyword != null && !keyword.isEmpty()) {
+                predicates.add(cb.or(
+                        cb.like(root.get("name"), "%" + keyword + "%"),
+                        cb.like(root.get("code"), "%" + keyword + "%")
+                ));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        var pageResult = configGroupRepository.findAll(spec, pageable);
+        var records = pageResult.getContent().stream()
+                .map(this::toVO)
+                .toList();
+
+        return new PageResultResp<>(
+                records,
+                pageResult.getTotalElements(),
+                pageResult.getNumber() + 1,
+                pageResult.getSize()
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "configGroup", key = "'id:' + #id")
+    public ConfigGroupResp getConfigGroupById(String id) {
+        ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
+                configGroupRepository::findById, id, "配置组不存在"
+        );
+        return toVO(group);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "configGroup", key = "'code:' + #code")
+    public ConfigGroupResp getConfigGroupByCode(String code) {
+        ConfigGroupEntity group = configGroupRepository.findByCode(code)
+                .orElseThrow(() -> new BizException("配置组不存在"));
+        return toVO(group);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "configGroup", allEntries = true)
+    public ConfigGroupResp createConfigGroup(ConfigGroupCreateReq req) {
+        // 检查编码是否已存在
+        if (configGroupRepository.existsByCode(req.code())) {
+            throw new BizException("配置组编码已存在");
+        }
+
+        ConfigGroupEntity group = new ConfigGroupEntity();
+        group.setName(req.name());
+        group.setCode(req.code());
+        group.setIcon(req.icon());
+        group.setSortOrder(req.sortOrder() != null ? req.sortOrder() : 0);
+        group.setDescription(req.description());
+        group.setStatus(1); // 默认启用
+
+        group = configGroupRepository.save(group);
+        log.info("创建配置组成功: {}", group.getCode());
+
+        // 记录审计日志
+        logService.log("配置管理", OperationType.CREATE,
+                "创建配置组: " + group.getName() + " (" + group.getCode() + ")");
+
+        return toVO(group);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "configGroup", allEntries = true)
+    public ConfigGroupResp updateConfigGroup(String id, ConfigGroupUpdateReq req) {
+        ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
+                configGroupRepository::findById, id, "配置组不存在"
+        );
+
+        if (req.name() != null) {
+            group.setName(req.name());
+        }
+        if (req.icon() != null) {
+            group.setIcon(req.icon());
+        }
+        if (req.sortOrder() != null) {
+            group.setSortOrder(req.sortOrder());
+        }
+        if (req.description() != null) {
+            group.setDescription(req.description());
+        }
+
+        group = configGroupRepository.save(group);
+        log.info("更新配置组成功: {}", group.getCode());
+
+        // 记录审计日志
+        logService.log("配置管理", OperationType.UPDATE,
+                "更新配置组: " + group.getName() + " (" + group.getCode() + ")");
+
+        return toVO(group);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "configGroup", allEntries = true)
+    public void deleteConfigGroup(String id) {
+        ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
+                configGroupRepository::findById, id, "配置组不存在"
+        );
+
+        // 检查是否有配置项
+        long configCount = configRepository.countByGroupId(id);
+        if (configCount > 0) {
+            throw new BizException("该配置组下存在配置项，无法删除");
+        }
+
+        configGroupRepository.deleteById(id);
+        log.info("删除配置组成功: {}", group.getCode());
+
+        // 记录审计日志
+        logService.log("配置管理", OperationType.DELETE,
+                "删除配置组: " + group.getName() + " (" + group.getCode() + ")");
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "configGroup", allEntries = true)
+    public void updateConfigGroupStatus(String id, Integer status) {
+        ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
+                configGroupRepository::findById, id, "配置组不存在"
+        );
+
+        group.setStatus(status);
+        configGroupRepository.save(group);
+        log.info("更新配置组状态成功: {} -> {}", group.getCode(), status);
+
+        // 记录审计日志
+        logService.log("配置管理", OperationType.UPDATE,
+                "更新配置组状态: " + group.getName() + " (" + group.getCode() + ") -> " + status);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "configGroup", key = "'active'")
+    public List<ConfigGroupResp> getActiveConfigGroups() {
+        return configGroupRepository.findByStatusOrderBySortOrderAsc(1).stream()
+                .map(this::toVO)
+                .toList();
+    }
+
+    /**
+     * 实体转换为 VO
+     */
+    private ConfigGroupResp toVO(ConfigGroupEntity entity) {
+        long configCount = configRepository.countByGroupId(entity.getId());
+        return new ConfigGroupResp(
+                entity.getId(),
+                entity.getName(),
+                entity.getCode(),
+                entity.getIcon(),
+                entity.getSortOrder(),
+                entity.getDescription(),
+                entity.getStatus(),
+                configCount,
+                entity.getCreateTime(),
+                entity.getUpdateTime()
+        );
+    }
+}
