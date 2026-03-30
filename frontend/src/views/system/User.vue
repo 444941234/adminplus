@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { Edit, KeyRound, Plus, Search, Shield, Trash2 } from 'lucide-vue-next'
+import { Edit, KeyRound, LockKeyhole, Plus, Search, Trash2 } from 'lucide-vue-next'
 import { ConfirmDialog, Pagination, StatusBadge } from '@/components/common'
 import { getDeptTree, getRoleList, getUserList, updateUserStatus, deleteUser } from '@/api'
 import type { Dept, Role, User } from '@/types'
@@ -253,10 +253,10 @@ onMounted(async () => {
                     <Edit class="h-4 w-4" />
                   </Button>
                   <Button v-if="canAssignUser" size="sm" variant="ghost" @click="openAssignDialog(user)">
-                    <Shield class="h-4 w-4" />
+                    <KeyRound class="h-4 w-4" />
                   </Button>
                   <Button v-if="canEditUser" size="sm" variant="ghost" @click="openPasswordDialog(user)">
-                    <KeyRound class="h-4 w-4" />
+                    <LockKeyhole class="h-4 w-4" />
                   </Button>
                   <Button
                     v-if="canDeleteUser"
