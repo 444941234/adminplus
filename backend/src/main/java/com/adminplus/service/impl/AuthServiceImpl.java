@@ -14,6 +14,7 @@ import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.*;
 import com.adminplus.utils.LogMaskingUtils;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.WebUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +27,6 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -215,9 +214,8 @@ public class AuthServiceImpl implements AuthService {
             refreshTokenService.revokeAllUserTokens(userId);
 
             // 获取当前请求
-            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-            if (attributes != null) {
-                HttpServletRequest request = attributes.getRequest();
+            HttpServletRequest request = WebUtils.getRequest();
+            if (request != null) {
                 String authHeader = request.getHeader("Authorization");
 
                 // 将 Token 加入黑名单

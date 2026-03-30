@@ -5,6 +5,7 @@ import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.service.LogService;
 import com.adminplus.utils.IpUtils;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.WebUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -17,8 +18,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Method;
@@ -183,8 +182,7 @@ public class LogAspect {
     }
 
     private HttpServletRequest getRequest() {
-        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        return attributes != null ? attributes.getRequest() : null;
+        return WebUtils.getRequest();
     }
 
     private String getClientIp(HttpServletRequest request) {
