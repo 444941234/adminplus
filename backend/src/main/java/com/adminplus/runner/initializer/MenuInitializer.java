@@ -93,6 +93,7 @@ public class MenuInitializer implements DataInitializer {
         data.add(new Object[]{"M24", "M2", 1, "字典管理", "/system/dict", "system/Dict", "system:dict:list", "Document", 4, 1, 1});
         data.add(new Object[]{"M25", "M2", 1, "部门管理", "/system/dept", "system/Dept", "system:dept:list", "OfficeBuilding", 5, 1, 1});
         data.add(new Object[]{"M26", "M2", 1, "日志管理", "/system/log", "system/Log", "system:log:list", "DocumentCopy", 6, 1, 1});
+        data.add(new Object[]{"M27", "M2", 1, "参数配置", "/system/config", "system/Config", "system:config:list", "Settings", 7, 1, 1});
         data.add(new Object[]{"M28", "M2", 1, "文件管理", "/system/file", "system/File", "file:list", "FolderOpen", 8, 1, 1});
 
         // 用户管理按钮权限
@@ -115,6 +116,9 @@ public class MenuInitializer implements DataInitializer {
 
         // 文件管理按钮权限
         addButtonPermissions(data, "M28", "file", Arrays.asList("upload", "delete"));
+
+        // 参数配置按钮权限
+        addButtonPermissions(data, "M27", "config", Arrays.asList("add", "edit", "delete", "export", "import", "refresh"));
 
         // 数据分析子菜单
         data.add(new Object[]{"M31", "M3", 1, "数据统计", "/analysis/statistics", "analysis/Statistics", "analysis:statistics:view", "TrendCharts", 1, 1, 1});

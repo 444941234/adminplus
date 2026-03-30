@@ -94,6 +94,7 @@ public class PermissionInitializer implements DataInitializer {
         if (developerRole != null) {
             assignMenusToRole(developerRole, menuMap, existingKeys, Arrays.asList(
                 "首页", "用户管理", "角色管理", "菜单管理", "字典管理", "参数配置",
+                "新增配置", "编辑配置", "删除配置", "导出配置", "导入配置", "刷新缓存",
                 "字典项列表", "新增字典项", "编辑字典项", "删除字典项",
                 "数据统计", "报表管理", "工作流管理", "流程模板", "流程设计", "我的流程", "抄送我的", "催办中心",
                 "发起流程", "保存草稿", "新增流程定义", "更新流程定义", "删除流程定义",
