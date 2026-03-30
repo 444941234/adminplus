@@ -1,5 +1,6 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 import type { ApiResponse } from '@/types'
+import { setupRequestInterceptor, setupResponseInterceptor, clearPendingRequests } from '@/composables/useApiInterceptors'
 
 const instance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL + import.meta.env.VITE_API_VERSION,
@@ -9,41 +10,23 @@ const instance: AxiosInstance = axios.create({
   }
 })
 
-// 请求拦截器
-instance.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => Promise.reject(error)
-)
+// 配置请求拦截器（请求去复、自动添加 Token）
+setupRequestInterceptor(instance, {
+  enableDeduplication: true
+})
 
-// 响应拦截器
-instance.interceptors.response.use(
-  (response) => {
-    // 直接返回 response.data (ApiResponse)
-    const data = response.data as ApiResponse<unknown>
-    // 如果 code 不是 200，视为业务错误
-    if (data.code && data.code !== 200) {
-      return Promise.reject(new Error(data.message || '请求失败'))
-    }
-    return response.data
-  },
-  (error) => {
-    console.error('请求错误:', error)
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('refreshToken')
-      window.location.href = '/login'
-    }
-    // 返回更详细的错误信息
-    const message = error.response?.data?.message || error.message || '网络错误'
-    return Promise.reject(new Error(message))
-  }
-)
+// 配置响应拦截器（Token 刷新、重试、错误处理）
+setupResponseInterceptor(instance, {
+  enableTokenRefresh: true,
+  enableRetry: true,
+  maxRetries: 2,
+  retryDelay: 1000
+})
+
+// 页面卸载时清空待处理请求
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', clearPendingRequests)
+}
 
 // 封装请求方法
 async function request<T>(config: AxiosRequestConfig): Promise<T> {
