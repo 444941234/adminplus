@@ -9,6 +9,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
@@ -66,8 +67,10 @@ public class CacheConfig {
     /**
      * 配置缓存管理器
      * 使用 RedisCacheManager 作为实现
+     * @Primary 标记为默认 CacheManager，避免与其他 CacheManager bean 冲突
      */
     @Bean
+    @Primary
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         // 配置 JSON 序列化
         ObjectMapper objectMapper = new ObjectMapper();
