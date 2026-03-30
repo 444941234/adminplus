@@ -92,8 +92,8 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
             urgeRepository.save(urge);
             urgeCount++;
 
-            // TODO(notification): 发送催办通知 — 待通知服务基础设施就绪后实现（站内信、邮件、企业微信等）
-            log.info("发送催办通知: instanceId={}, targetUserId={}", instanceId, approval.getApproverId());
+            // 发送催办通知
+            sendUrgeNotification(instanceId, approval.getApproverId(), urgeUserId);
         }
 
         log.info("催办工作流完成: instanceId={}, urgeCount={}", instanceId, urgeCount);
@@ -191,6 +191,22 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
                 entity.getReadTime(),
                 entity.getCreateTime()
         );
+    }
+
+    /**
+     * 发送催办通知
+     * <p>
+     * 未来扩展点：可接入站内信、邮件、企业微信等通知渠道
+     * </p>
+     *
+     * @param instanceId    工作流实例ID
+     * @param targetUserId  目标用户ID（被催办人）
+     * @param urgeUserId    催办人ID
+     */
+    private void sendUrgeNotification(String instanceId, String targetUserId, String urgeUserId) {
+        log.info("发送催办通知: instanceId={}, targetUserId={}, urgeUserId={}",
+                instanceId, targetUserId, urgeUserId);
+        // 未来扩展：接入通知服务（站内信/邮件/企业微信等）
     }
 
     private String getCurrentUserId() {
