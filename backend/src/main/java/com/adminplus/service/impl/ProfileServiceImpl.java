@@ -1,6 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.utils.EntityHelper;
 import com.adminplus.pojo.dto.req.PasswordChangeReq;
 import com.adminplus.pojo.dto.req.ProfileUpdateReq;
 import com.adminplus.pojo.dto.req.SettingsUpdateReq;
@@ -74,8 +75,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Transactional(readOnly = true)
     public ProfileResp getCurrentUserProfile() {
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = profileRepository.findById(userId)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
         // 查询用户角色
         List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(userId);
@@ -113,8 +113,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Transactional
     public ProfileResp updateCurrentProfile(ProfileUpdateReq req) {
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = profileRepository.findById(userId)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
         // 权限检查：确保用户只能修改自己的信息
         // 这里已经通过 SecurityUtils.getCurrentUserId() 获取当前登录用户ID
@@ -183,8 +182,7 @@ public class ProfileServiceImpl implements ProfileService {
         if (!PasswordUtils.isStrongPassword(req.newPassword())) throw new BizException(PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(req.newPassword())));
 
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = profileRepository.findById(userId)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
         // 验证原密码
         if (!passwordEncoder.matches(req.oldPassword(), user.getPassword())) {
@@ -220,8 +218,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Transactional(readOnly = true)
     public SettingsResp getSettings() {
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = profileRepository.findById(userId)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
         // 获取用户设置，如果为 null 则使用默认值
         Map<String, Object> settings = user.getSettings();
@@ -241,8 +238,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Transactional
     public SettingsResp updateSettings(SettingsUpdateReq req) {
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = profileRepository.findById(userId)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
         // 获取当前设置
         Map<String, Object> currentSettings = user.getSettings();
@@ -323,8 +319,7 @@ public class ProfileServiceImpl implements ProfileService {
     @Transactional(readOnly = true)
     public ActivityStatsResp getActivityStats() {
         String userId = SecurityUtils.getCurrentUserId();
-        UserEntity user = profileRepository.findById(userId)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
         // 生成模拟数据（实际实现应从审计日志表查询）
         Instant now = Instant.now();

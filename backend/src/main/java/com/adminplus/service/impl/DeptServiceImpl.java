@@ -10,6 +10,7 @@ import com.adminplus.repository.DeptRepository;
 import com.adminplus.service.DeptService;
 import com.adminplus.service.LogService;
 import com.adminplus.utils.EntityHelper;
+import com.adminplus.utils.HierarchyHelper;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.TreeUtils;
 import lombok.RequiredArgsConstructor;
@@ -264,15 +265,8 @@ public class DeptServiceImpl implements DeptService {
      * </p>
      */
     private boolean isChildDept(String parentId, String targetId) {
-        if (targetId == null || targetId.equals("0")) {
-            return false;
-        }
-        return deptRepository.findById(targetId)
-                .map(dept -> {
-                    String ancestors = dept.getAncestors();
-                    return ancestors != null && ancestors.contains(parentId + ",");
-                })
-                .orElse(false);
+        return HierarchyHelper.isDescendant(parentId, targetId,
+                id -> deptRepository.findById(id).map(DeptEntity::getAncestors));
     }
 
     /**
@@ -286,21 +280,13 @@ public class DeptServiceImpl implements DeptService {
      * @param deptId       被移动的部门ID（排除自身）
      */
     private void cascadeUpdateAncestors(String oldAncestors, String newAncestors, String deptId) {
-        // 查找所有子孙（ancestors 包含 oldAncestors + deptId 的节点）
-        String descendantsPrefix = oldAncestors + deptId + ",";
-        List<DeptEntity> descendants = deptRepository.findByAncestorsStartingWith(descendantsPrefix);
-
-        // 构造替换后的前缀
-        String newPrefix = newAncestors + deptId + ",";
-
-        for (DeptEntity descendant : descendants) {
-            String currentAncestors = descendant.getAncestors();
-            if (currentAncestors != null && currentAncestors.startsWith(descendantsPrefix)) {
-                String updatedAncestors = newPrefix + currentAncestors.substring(descendantsPrefix.length());
-                descendant.setAncestors(updatedAncestors);
-            }
-        }
-        deptRepository.saveAll(descendants);
+        HierarchyHelper.cascadeUpdateAncestors(
+                oldAncestors, newAncestors, deptId,
+                deptRepository::findByAncestorsStartingWith,
+                DeptEntity::getAncestors,
+                DeptEntity::setAncestors,
+                deptRepository::saveAll
+        );
     }
 
     @Override

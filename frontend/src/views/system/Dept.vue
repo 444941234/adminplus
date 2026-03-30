@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import {
   Button,
   Card,
@@ -19,12 +19,22 @@ import {
 } from '@/components/ui'
 import { Edit, Plus, Search, Trash2 } from 'lucide-vue-next'
 import { ConfirmDialog } from '@/components/common'
-import { createDept, deleteDept, getDeptById, getDeptTree, updateDept } from '@/api'
 import { isValidChinaPhone, isValidEmail } from '@/lib/validators'
 import type { Dept } from '@/types'
 import { useUserStore } from '@/stores/user'
-import { toast } from 'vue-sonner'
-import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useCRUD } from '@/composables/useCRUD'
+import { createDept, deleteDept, getDeptById, getDeptTree, updateDept } from '@/api'
+
+interface DeptFormState {
+  parentId: string
+  name: string
+  code: string
+  leader: string
+  phone: string
+  email: string
+  sortOrder: number
+  status: string
+}
 
 interface DeptRow extends Dept {
   displayName: string
@@ -35,38 +45,56 @@ interface DeptRow extends Dept {
   isExpanded: boolean
 }
 
-const { loading, run: runList } = useAsyncAction('获取部门列表失败')
 const treeData = ref<Dept[]>([])
 const searchQuery = ref('')
 const expandedKeys = ref<Set<string>>(new Set())
 const userStore = useUserStore()
 
-const dialogOpen = ref(false)
-const { loading: dialogLoading, run: runDialog } = useAsyncAction('获取部门详情失败')
-const isEdit = ref(false)
-const editId = ref('')
-
-const deleteDialogOpen = ref(false)
-const deleteDeptId = ref('')
-const { loading: deleteLoading, run: runDelete } = useAsyncAction('删除部门失败')
-
-const form = reactive({
-  parentId: '0',
-  name: '',
-  code: '',
-  leader: '',
-  phone: '',
-  email: '',
-  sortOrder: 0,
-  status: '1'
-})
-
-const canAddDept = computed(() => userStore.hasPermission('dept:add'))
-const canEditDept = computed(() => userStore.hasPermission('dept:edit'))
-const canDeleteDept = computed(() => userStore.hasPermission('dept:delete'))
-
-const resetForm = () => {
-  Object.assign(form, {
+// CRUD composable
+const {
+  loading,
+  form,
+  dialogOpen,
+  isEdit,
+  editId,
+  dialogLoading,
+  deleteLoading,
+  deleteDialogOpen,
+  fetchList,
+  openCreate: handleAdd,
+  openEdit: handleEdit,
+  handleSubmit,
+  openDeleteConfirm: handleDeleteConfirm,
+  handleDelete
+} = useCRUD<Dept, DeptFormState>({
+  getList: getDeptTree,
+  getById: getDeptById,
+  create: async (data: DeptFormState) => {
+    return createDept({
+      parentId: data.parentId === '0' ? undefined : data.parentId,
+      name: data.name.trim(),
+      code: data.code.trim() || undefined,
+      leader: data.leader.trim() || undefined,
+      phone: data.phone.trim() || undefined,
+      email: data.email.trim() || undefined,
+      sortOrder: Number(data.sortOrder) || 0,
+      status: Number(data.status)
+    })
+  },
+  update: async (id: string, data: DeptFormState) => {
+    return updateDept(id, {
+      parentId: data.parentId === '0' ? undefined : data.parentId,
+      name: data.name.trim(),
+      code: data.code.trim() || undefined,
+      leader: data.leader.trim() || undefined,
+      phone: data.phone.trim() || undefined,
+      email: data.email.trim() || undefined,
+      sortOrder: Number(data.sortOrder) || 0,
+      status: Number(data.status)
+    })
+  },
+  delete: deleteDept,
+  defaultForm: {
     parentId: '0',
     name: '',
     code: '',
@@ -75,8 +103,50 @@ const resetForm = () => {
     email: '',
     sortOrder: 0,
     status: '1'
-  })
-}
+  },
+  mapDataToForm: (dept) => ({
+    parentId: dept.parentId || '0',
+    name: dept.name,
+    code: dept.code,
+    leader: dept.leader || '',
+    phone: dept.phone || '',
+    email: dept.email || '',
+    sortOrder: dept.sortOrder,
+    status: String(dept.status ?? 1)
+  }),
+  onListFetched: (data) => {
+    treeData.value = data
+    ensureExpandedForTree(data)
+  },
+  successMessages: {
+    create: '部门创建成功',
+    update: '部门更新成功',
+    delete: '部门删除成功'
+  },
+  errorMessages: {
+    list: '获取部门列表失败',
+    getById: '获取部门详情失败',
+    create: '保存部门失败',
+    update: '保存部门失败',
+    delete: '删除部门失败'
+  },
+  validate: (formData) => {
+    if (!formData.name.trim()) {
+      return '请输入部门名称'
+    }
+    if (formData.email.trim() && !isValidEmail(formData.email.trim())) {
+      return '邮箱格式不正确'
+    }
+    if (formData.phone.trim() && !isValidChinaPhone(formData.phone.trim())) {
+      return '手机号格式不正确'
+    }
+    return true
+  }
+})
+
+const canAddDept = computed(() => userStore.hasPermission('dept:add'))
+const canEditDept = computed(() => userStore.hasPermission('dept:edit'))
+const canDeleteDept = computed(() => userStore.hasPermission('dept:delete'))
 
 const ensureExpandedForTree = (deptList: Dept[]) => {
   const next = new Set(expandedKeys.value)
@@ -91,13 +161,6 @@ const ensureExpandedForTree = (deptList: Dept[]) => {
   visit(deptList)
   expandedKeys.value = next
 }
-
-const fetchData = () =>
-  runList(async () => {
-    const res = await getDeptTree()
-    treeData.value = res.data
-    ensureExpandedForTree(res.data)
-  })
 
 const toggleExpand = (id: string) => {
   const next = new Set(expandedKeys.value)
@@ -202,95 +265,7 @@ const parentOptions = computed(() => {
   return flattenDeptOptions(treeData.value).filter((item) => !blockedIds.has(item.id))
 })
 
-const handleAdd = () => {
-  resetForm()
-  isEdit.value = false
-  editId.value = ''
-  dialogOpen.value = true
-}
-
-const handleEdit = (id: string) => {
-  isEdit.value = true
-  editId.value = id
-  dialogOpen.value = true
-  runDialog(async () => {
-    const res = await getDeptById(id)
-    const dept = res.data
-    Object.assign(form, {
-      parentId: dept.parentId || '0',
-      name: dept.name,
-      code: dept.code,
-      leader: dept.leader || '',
-      phone: dept.phone || '',
-      email: dept.email || '',
-      sortOrder: dept.sortOrder,
-      status: String(dept.status ?? 1)
-    })
-  }, {
-    onError: () => {
-      dialogOpen.value = false
-    }
-  })
-}
-
-const handleSubmit = () => {
-  if (!form.name.trim()) {
-    toast.warning('请输入部门名称')
-    return
-  }
-  if (form.email.trim() && !isValidEmail(form.email.trim())) {
-    toast.warning('邮箱格式不正确')
-    return
-  }
-  if (form.phone.trim() && !isValidChinaPhone(form.phone.trim())) {
-    toast.warning('手机号格式不正确')
-    return
-  }
-
-  runDialog(async () => {
-    const payload = {
-      parentId: form.parentId === '0' ? undefined : form.parentId,
-      name: form.name.trim(),
-      code: form.code.trim() || undefined,
-      leader: form.leader.trim() || undefined,
-      phone: form.phone.trim() || undefined,
-      email: form.email.trim() || undefined,
-      sortOrder: Number(form.sortOrder) || 0,
-      status: Number(form.status)
-    }
-
-    if (isEdit.value) {
-      await updateDept(editId.value, payload)
-    } else {
-      await createDept(payload)
-    }
-  }, {
-    errorMessage: '保存部门失败',
-    successMessage: isEdit.value ? '部门更新成功' : '部门创建成功',
-    onSuccess: () => {
-      dialogOpen.value = false
-      fetchData()
-    }
-  })
-}
-
-const handleDeleteConfirm = (id: string) => {
-  deleteDeptId.value = id
-  deleteDialogOpen.value = true
-}
-
-const handleDelete = () =>
-  runDelete(async () => {
-    await deleteDept(deleteDeptId.value)
-    fetchData()
-  }, {
-    successMessage: '部门删除成功',
-    onSuccess: () => {
-      deleteDialogOpen.value = false
-    }
-  })
-
-onMounted(fetchData)
+onMounted(fetchList)
 </script>
 
 <template>

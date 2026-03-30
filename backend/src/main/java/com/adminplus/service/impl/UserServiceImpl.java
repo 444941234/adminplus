@@ -146,20 +146,7 @@ public class UserServiceImpl implements UserService {
             List<String> roleNames = userRoleMap.getOrDefault(user.getId(), List.of());
             String deptName = deptMap.getOrDefault(user.getDeptId(), null);
 
-            return new UserResp(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getNickname(),
-                    user.getEmail(),
-                    user.getPhone(),
-                    user.getAvatar(),
-                    user.getStatus(),
-                    user.getDeptId(),
-                    deptName,
-                    roleNames,
-                    user.getCreateTime(),
-                    user.getUpdateTime()
-            );
+            return toResp(user, deptName, roleNames);
         }).toList();
 
         return new PageResultResp<>(
@@ -198,20 +185,7 @@ public class UserServiceImpl implements UserService {
                     .orElse(null);
         }
 
-        return new UserResp(
-                user.getId(),
-                user.getUsername(),
-                user.getNickname(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAvatar(),
-                user.getStatus(),
-                user.getDeptId(),
-                deptName,
-                roleNames,
-                user.getCreateTime(),
-                user.getUpdateTime()
-        );
+        return toResp(user, deptName, roleNames);
     }
 
     @Override
@@ -262,20 +236,7 @@ public class UserServiceImpl implements UserService {
                     .orElse(null);
         }
 
-        return new UserResp(
-                user.getId(),
-                user.getUsername(),
-                user.getNickname(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAvatar(),
-                user.getStatus(),
-                user.getDeptId(),
-                deptName,
-                List.of(),
-                user.getCreateTime(),
-                user.getUpdateTime()
-        );
+        return toResp(user, deptName, List.of());
     }
 
     @Override
@@ -332,20 +293,7 @@ public class UserServiceImpl implements UserService {
                 .filter(Objects::nonNull)
                 .toList();
 
-        return new UserResp(
-                user.getId(),
-                user.getUsername(),
-                user.getNickname(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAvatar(),
-                user.getStatus(),
-                user.getDeptId(),
-                deptName,
-                roleNames,
-                user.getCreateTime(),
-                user.getUpdateTime()
-        );
+        return toResp(user, deptName, roleNames);
     }
 
     @Override
@@ -463,5 +411,14 @@ public class UserServiceImpl implements UserService {
         return userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
                 .toList();
+    }
+
+    private UserResp toResp(UserEntity user, String deptName, List<String> roleNames) {
+        return new UserResp(
+                user.getId(), user.getUsername(), user.getNickname(),
+                user.getEmail(), user.getPhone(), user.getAvatar(),
+                user.getStatus(), user.getDeptId(), deptName, roleNames,
+                user.getCreateTime(), user.getUpdateTime()
+        );
     }
 }

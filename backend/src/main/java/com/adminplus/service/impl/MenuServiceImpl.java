@@ -15,6 +15,7 @@ import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.LogService;
 import com.adminplus.service.MenuService;
 import com.adminplus.utils.EntityHelper;
+import com.adminplus.utils.HierarchyHelper;
 import com.adminplus.utils.TreeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -305,15 +306,8 @@ public class MenuServiceImpl implements MenuService {
      * 检查目标菜单是否是指定菜单的子孙（防止循环引用）
      */
     private boolean isChildMenu(String parentId, String targetId) {
-        if (targetId == null || targetId.equals("0")) {
-            return false;
-        }
-        return menuRepository.findById(targetId)
-                .map(menu -> {
-                    String ancestors = menu.getAncestors();
-                    return ancestors != null && ancestors.contains(parentId + ",");
-                })
-                .orElse(false);
+        return HierarchyHelper.isDescendant(parentId, targetId,
+                id -> menuRepository.findById(id).map(MenuEntity::getAncestors));
     }
 
     /**
@@ -323,19 +317,13 @@ public class MenuServiceImpl implements MenuService {
      * </p>
      */
     private void cascadeUpdateAncestors(String oldAncestors, String newAncestors, String menuId) {
-        String descendantsPrefix = oldAncestors + menuId + ",";
-        List<MenuEntity> descendants = menuRepository.findByAncestorsStartingWith(descendantsPrefix);
-
-        String newPrefix = newAncestors + menuId + ",";
-
-        for (MenuEntity descendant : descendants) {
-            String currentAncestors = descendant.getAncestors();
-            if (currentAncestors != null && currentAncestors.startsWith(descendantsPrefix)) {
-                String updatedAncestors = newPrefix + currentAncestors.substring(descendantsPrefix.length());
-                descendant.setAncestors(updatedAncestors);
-            }
-        }
-        menuRepository.saveAll(descendants);
+        HierarchyHelper.cascadeUpdateAncestors(
+                oldAncestors, newAncestors, menuId,
+                menuRepository::findByAncestorsStartingWith,
+                MenuEntity::getAncestors,
+                MenuEntity::setAncestors,
+                menuRepository::saveAll
+        );
     }
 
     /**
