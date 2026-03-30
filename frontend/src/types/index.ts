@@ -465,3 +465,101 @@ export interface WorkflowDraftDetail {
   formConfig: string | WorkflowFormConfig
   formData: WorkflowFormValues
 }
+
+// 配置分组
+export interface ConfigGroup {
+  id: string
+  name: string
+  code: string
+  icon: string
+  sortOrder: number
+  description: string
+  status: number
+  configCount: number
+  createTime: string
+  updateTime: string
+}
+
+// 配置项
+export interface Config {
+  id: string
+  groupId: string
+  groupName: string
+  name: string
+  key: string
+  value: string
+  valueType: 'STRING' | 'NUMBER' | 'BOOLEAN' | 'JSON' | 'ARRAY' | 'SECRET' | 'FILE'
+  effectType: 'IMMEDIATE' | 'MANUAL' | 'RESTART'
+  defaultValue: string
+  description: string
+  isRequired: boolean
+  validationRule: string
+  sortOrder: number
+  status: number
+  createTime: string
+  updateTime: string
+}
+
+// 配置历史
+export interface ConfigHistory {
+  id: string
+  configId: string
+  configKey: string
+  oldValue: string
+  newValue: string
+  remark: string
+  operatorName: string
+  createTime: string
+}
+
+// 配置导出
+export interface ConfigExport {
+  exportVersion: string
+  exportTime: string
+  groups: ConfigExportGroup[]
+}
+
+export interface ConfigExportGroup {
+  code: string
+  name: string
+  icon: string
+  configs: ConfigExportItem[]
+}
+
+export interface ConfigExportItem {
+  key: string
+  name: string
+  value: string
+  valueType: string
+  effectType: string
+  description: string
+}
+
+// 配置导入结果
+export interface ConfigImportResult {
+  total: number
+  success: number
+  skipped: number
+  failed: number
+  details: ConfigImportDetail[]
+}
+
+export interface ConfigImportDetail {
+  key: string
+  status: 'success' | 'skipped' | 'failed'
+  reason?: string
+}
+
+// 配置生效信息
+export interface ConfigEffectInfo {
+  pendingEffects: ConfigPendingEffect[]
+  restartRequiredConfigs: string[]
+}
+
+export interface ConfigPendingEffect {
+  key: string
+  name: string
+  newValue: string
+  effectType: string
+  updateTime: string
+}
