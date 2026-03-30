@@ -533,7 +533,6 @@ public class ConfigServiceImpl implements ConfigService {
         history.setConfigKey(config.getKey());
         history.setOldValue(config.getValue());
         history.setNewValue(config.getValue());
-        history.setOperationType(operation);
         history.setRemark("操作: " + operation);
 
         configHistoryRepository.save(history);
@@ -581,8 +580,8 @@ public class ConfigServiceImpl implements ConfigService {
                 entity.getConfigKey(),
                 entity.getOldValue(),
                 entity.getNewValue(),
-                entity.getOperationType(),
                 entity.getRemark(),
+                null, // operatorName - 从当前用户上下文获取
                 entity.getCreateTime()
         );
     }
