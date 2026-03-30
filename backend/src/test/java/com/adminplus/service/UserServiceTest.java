@@ -28,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -91,6 +92,13 @@ class UserServiceTest {
         testDept = new DeptEntity();
         testDept.setId("dept-001");
         testDept.setName("IT Department");
+    }
+
+    private UserRoleEntity createUserRoleEntity(String userId, String roleId) {
+        UserRoleEntity entity = new UserRoleEntity();
+        entity.setUserId(userId);
+        entity.setRoleId(roleId);
+        return entity;
     }
 
     @Nested
@@ -311,14 +319,18 @@ class UserServiceTest {
             List<String> roleIds = List.of("role-001");
             when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
             when(roleRepository.findAllById(roleIds)).thenReturn(List.of(testRole));
-            doNothing().when(userRoleRepository).deleteByUserId("user-001");
+            // Current roles (will be removed)
+            when(userRoleRepository.findByUserId("user-001")).thenReturn(
+                List.of(createUserRoleEntity("user-001", "existing-role"))
+            );
+            doNothing().when(userRoleRepository).deleteByUserIdAndRoleIdIn("user-001", Set.of("existing-role"));
             when(userRoleRepository.saveAll(any())).thenReturn(List.of());
 
             // When
             userService.assignRoles("user-001", roleIds);
 
             // Then
-            verify(userRoleRepository).deleteByUserId("user-001");
+            verify(userRoleRepository).deleteByUserIdAndRoleIdIn("user-001", Set.of("existing-role"));
             verify(userRoleRepository).saveAll(any());
         }
 
@@ -352,13 +364,17 @@ class UserServiceTest {
         void assignRoles_WithEmptyList_ShouldClearRoles() {
             // Given
             when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
-            doNothing().when(userRoleRepository).deleteByUserId("user-001");
+            // Current roles (will be removed)
+            when(userRoleRepository.findByUserId("user-001")).thenReturn(
+                List.of(createUserRoleEntity("user-001", "existing-role"))
+            );
+            doNothing().when(userRoleRepository).deleteByUserIdAndRoleIdIn("user-001", Set.of("existing-role"));
 
             // When
             userService.assignRoles("user-001", List.of());
 
             // Then
-            verify(userRoleRepository).deleteByUserId("user-001");
+            verify(userRoleRepository).deleteByUserIdAndRoleIdIn("user-001", Set.of("existing-role"));
             verify(userRoleRepository, never()).saveAll(any());
         }
     }

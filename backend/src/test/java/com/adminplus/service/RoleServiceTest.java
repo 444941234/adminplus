@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -274,14 +275,16 @@ class RoleServiceTest {
             // Given
             List<String> menuIds = List.of("menu-001", "menu-002");
             when(roleRepository.findById("role-001")).thenReturn(Optional.of(testRole));
-            doNothing().when(roleMenuRepository).deleteByRoleId("role-001");
+            // Current menu IDs (will be removed)
+            when(roleMenuRepository.findMenuIdByRoleId("role-001")).thenReturn(List.of("existing-menu"));
+            doNothing().when(roleMenuRepository).deleteByRoleIdAndMenuIdIn("role-001", Set.of("existing-menu"));
             when(roleMenuRepository.saveAll(any())).thenReturn(List.of());
 
             // When
             roleService.assignMenus("role-001", menuIds);
 
             // Then
-            verify(roleMenuRepository).deleteByRoleId("role-001");
+            verify(roleMenuRepository).deleteByRoleIdAndMenuIdIn("role-001", Set.of("existing-menu"));
             verify(roleMenuRepository).saveAll(any());
         }
 
