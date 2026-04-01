@@ -97,7 +97,21 @@ public class MenuInitializer implements DataInitializer {
         List<Object[]> menuData = buildMenuData();
         List<MenuEntity> newMenus = new ArrayList<>();
 
+        // 获取现有菜单用于建立父子关系
+        List<MenuEntity> existingMenuList = menuRepository.findAll();
+        Map<String, MenuEntity> existingMenuByPermKey = existingMenuList.stream()
+                .filter(m -> m.getPermKey() != null)
+                .collect(Collectors.toMap(MenuEntity::getPermKey, m -> m, (a, b) -> a));
+        Map<String, MenuEntity> existingMenuByPath = existingMenuList.stream()
+                .filter(m -> m.getPath() != null)
+                .collect(Collectors.toMap(MenuEntity::getPath, m -> m, (a, b) -> a));
+
+        // 先保存所有新增菜单
+        Map<String, MenuEntity> newMenuMap = new HashMap<>();
+
         for (var d : menuData) {
+            String tempId = (String) d[0];
+            String parentTempId = (String) d[1];
             String path = (String) d[4];
             String permKey = (String) d[6];
 
@@ -115,12 +129,53 @@ public class MenuInitializer implements DataInitializer {
                         (String) d[5], (String) d[6], (String) d[7], (Integer) d[8], (Integer) d[9], (Integer) d[10]
                 );
                 newMenus.add(menu);
+                newMenuMap.put(tempId, menu);
                 if (path != null) existingPaths.add(path);
                 if (permKey != null) existingPermKeys.add(permKey);
             }
         }
 
         if (!newMenus.isEmpty()) {
+            menuRepository.saveAll(newMenus);
+
+            // 建立父子关系
+            for (var d : menuData) {
+                String tempId = (String) d[0];
+                String parentTempId = (String) d[1];
+
+                MenuEntity child = newMenuMap.get(tempId);
+                if (child == null) continue;
+
+                if (parentTempId != null && !parentTempId.isEmpty()) {
+                    // 先从新菜单中找父菜单
+                    MenuEntity parent = newMenuMap.get(parentTempId);
+
+                    // 如果新菜单中没有，从现有菜单中找
+                    if (parent == null) {
+                        // 通过 permKey 或 path 查找父菜单
+                        // parentTempId 格式如 "M24", 需要查找对应的菜单
+                        for (Object[] md : buildMenuData()) {
+                            if (parentTempId.equals(md[0])) {
+                                String parentPath = (String) md[4];
+                                String parentPermKey = (String) md[6];
+                                if (parentPath != null) {
+                                    parent = existingMenuByPath.get(parentPath);
+                                } else if (parentPermKey != null) {
+                                    parent = existingMenuByPermKey.get(parentPermKey);
+                                }
+                                break;
+                            }
+                        }
+                    }
+
+                    if (parent != null) {
+                        child.setParent(parent);
+                        String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
+                        child.setAncestors(parentAncestors + parent.getId() + ",");
+                    }
+                }
+            }
+
             menuRepository.saveAll(newMenus);
             log.info("增量添加菜单数据完成，新增 {} 个菜单", newMenus.size());
         } else {
@@ -218,9 +273,11 @@ public class MenuInitializer implements DataInitializer {
 
     private void addButtonPermissions(List<Object[]> data, String parentId, String resource, List<String> actions) {
         int order = 1;
-        for (String action : actions) {
+        for (int i = 0; i < actions.size(); i++) {
+            String action = actions.get(i);
             String actionName = getActionDisplayName(action);
-            data.add(new Object[]{parentId + action.charAt(0), parentId, 2,
+            // 使用索引保证唯一性：parentId + "_" + index
+            data.add(new Object[]{parentId + "_" + i, parentId, 2,
                     actionName,
                     null, null, resource + ":" + action, null, order++, 0, 1});
         }
