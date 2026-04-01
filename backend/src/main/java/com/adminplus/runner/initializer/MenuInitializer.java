@@ -2,6 +2,7 @@ package com.adminplus.runner.initializer;
 
 import com.adminplus.pojo.entity.MenuEntity;
 import com.adminplus.repository.MenuRepository;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 public class MenuInitializer implements DataInitializer {
 
     private final MenuRepository menuRepository;
+    private final EntityManager entityManager;
 
     @Override
     public int getOrder() {
@@ -60,36 +62,48 @@ public class MenuInitializer implements DataInitializer {
 
     private void performFullInitialization() {
         List<Object[]> menuData = buildMenuData();
-        List<MenuEntity> menus = menuData.stream()
-                .map(d -> createMenu(
-                        (String) d[0], (String) d[1], (Integer) d[2], (String) d[3], (String) d[4],
-                        (String) d[5], (String) d[6], (String) d[7], (Integer) d[8], (Integer) d[9], (Integer) d[10]
-                ))
-                .toList();
 
-        menuRepository.saveAll(menus);
+        // 使用可变列表
+        List<MenuEntity> menus = new ArrayList<>();
+        for (Object[] d : menuData) {
+            menus.add(createMenu(
+                    (String) d[0], (String) d[1], (Integer) d[2], (String) d[3], (String) d[4],
+                    (String) d[5], (String) d[6], (String) d[7], (Integer) d[8], (Integer) d[9], (Integer) d[10]
+            ));
+        }
 
-        // 建立父子关系
+        // 第一次保存：生成 ID
+        menus = menuRepository.saveAll(menus);
+        entityManager.flush();
+        entityManager.clear(); // 清除持久化上下文，避免缓存问题
+
+        // 建立 tempId -> 实体映射
         Map<String, MenuEntity> menuMap = new HashMap<>();
         for (int i = 0; i < menus.size(); i++) {
             menuMap.put((String) menuData.get(i)[0], menus.get(i));
         }
 
-        for (var d : menuData) {
-            String tempId = (String) d[0];
-            String parentId = (String) d[1];
-            if (parentId != null && !parentId.isEmpty()) {
-                MenuEntity child = menuMap.get(tempId);
-                MenuEntity parent = menuMap.get(parentId);
+        // 建立父子关系并更新
+        List<MenuEntity> toUpdate = new ArrayList<>();
+        for (int i = 0; i < menuData.size(); i++) {
+            String parentTempId = (String) menuData.get(i)[1];
+            if (parentTempId != null && !parentTempId.isEmpty()) {
+                MenuEntity child = menus.get(i);
+                MenuEntity parent = menuMap.get(parentTempId);
                 if (child != null && parent != null) {
                     child.setParent(parent);
                     String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
                     child.setAncestors(parentAncestors + parent.getId() + ",");
+                    toUpdate.add(child);
                 }
             }
         }
 
-        menuRepository.saveAll(menus);
+        // 第二次保存：更新父子关系
+        if (!toUpdate.isEmpty()) {
+            menuRepository.saveAll(toUpdate);
+            entityManager.flush();
+        }
         log.info("初始化菜单数据完成，共 {} 个菜单", menus.size());
     }
 
@@ -136,24 +150,37 @@ public class MenuInitializer implements DataInitializer {
         }
 
         if (!newMenus.isEmpty()) {
-            menuRepository.saveAll(newMenus);
+            // 第一次保存：生成 ID
+            newMenus = menuRepository.saveAll(newMenus);
+            entityManager.flush();
+            entityManager.clear();
+
+            // 更新映射
+            Map<String, MenuEntity> savedMenuMap = new HashMap<>();
+            int idx = 0;
+            for (Object[] d : menuData) {
+                String tempId = (String) d[0];
+                if (newMenuMap.containsKey(tempId)) {
+                    savedMenuMap.put(tempId, newMenus.get(idx++));
+                }
+            }
 
             // 建立父子关系
-            for (var d : menuData) {
+            List<MenuEntity> toUpdate = new ArrayList<>();
+            for (Object[] d : menuData) {
                 String tempId = (String) d[0];
                 String parentTempId = (String) d[1];
 
-                MenuEntity child = newMenuMap.get(tempId);
+                MenuEntity child = savedMenuMap.get(tempId);
                 if (child == null) continue;
 
                 if (parentTempId != null && !parentTempId.isEmpty()) {
                     // 先从新菜单中找父菜单
-                    MenuEntity parent = newMenuMap.get(parentTempId);
+                    MenuEntity parent = savedMenuMap.get(parentTempId);
 
                     // 如果新菜单中没有，从现有菜单中找
                     if (parent == null) {
                         // 通过 permKey 或 path 查找父菜单
-                        // parentTempId 格式如 "M24", 需要查找对应的菜单
                         for (Object[] md : buildMenuData()) {
                             if (parentTempId.equals(md[0])) {
                                 String parentPath = (String) md[4];
@@ -172,11 +199,16 @@ public class MenuInitializer implements DataInitializer {
                         child.setParent(parent);
                         String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
                         child.setAncestors(parentAncestors + parent.getId() + ",");
+                        toUpdate.add(child);
                     }
                 }
             }
 
-            menuRepository.saveAll(newMenus);
+            // 第二次保存：更新父子关系
+            if (!toUpdate.isEmpty()) {
+                menuRepository.saveAll(toUpdate);
+                entityManager.flush();
+            }
             log.info("增量添加菜单数据完成，新增 {} 个菜单", newMenus.size());
         } else {
             log.info("没有需要添加的新菜单");

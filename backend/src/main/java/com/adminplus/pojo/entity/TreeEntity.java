@@ -43,6 +43,12 @@ public abstract class TreeEntity<E extends TreeEntity<E>> extends BaseEntity {
     }
 
     /**
+     * 父节点 ID（直接映射数据库列，用于批量更新）
+     */
+    @Column(name = "parent_id", insertable = false, updatable = false)
+    protected String parentId;
+
+    /**
      * 父节点
      * <p>
      * 规范1: fetch = LAZY (必须懒加载，防止级联全表查询)
