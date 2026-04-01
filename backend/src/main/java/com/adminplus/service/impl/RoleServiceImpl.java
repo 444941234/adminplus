@@ -192,6 +192,22 @@ public class RoleServiceImpl implements RoleService {
         return roleMenuRepository.findMenuIdByRoleId(roleId);
     }
 
+    @Override
+    @Transactional
+    public void updateRoleStatus(String id, Integer status) {
+        var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
+
+        // 非超级管理员不能修改超级管理员角色状态
+        if ("ROLE_ADMIN".equals(role.getCode()) && !SecurityUtils.isAdmin()) {
+            throw new BizException("无权修改超级管理员角色状态");
+        }
+
+        role.setStatus(status);
+        roleRepository.save(role);
+
+        logService.log("角色管理", OperationType.UPDATE, "更新角色状态: " + role.getName() + " -> " + (status == 1 ? "启用" : "禁用"));
+    }
+
     private RoleResp toResp(RoleEntity role) {
         return new RoleResp(
                 role.getId(),

@@ -43,4 +43,9 @@ public interface DeptService {
      * 获取部门及其所有子部门的ID列表
      */
     List<String> getDeptAndChildrenIds(String deptId);
+
+    /**
+     * 更新部门状态
+     */
+    void updateDeptStatus(String id, Integer status);
 }

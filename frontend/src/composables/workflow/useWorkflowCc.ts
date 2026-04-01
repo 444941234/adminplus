@@ -2,6 +2,7 @@ import { computed, ref } from 'vue'
 import { getMyCcRecords, getMyUnreadCcRecords, countMyUnreadCcRecords, markCcAsRead, markCcAsReadBatch } from '@/api'
 import type { WorkflowCc } from '@/types'
 import { toast } from 'vue-sonner'
+import { showErrorToast } from '@/composables/useApiInterceptors'
 
 /**
  * 工作流抄送中心数据管理
@@ -19,8 +20,7 @@ export const useWorkflowCc = () => {
       const res = await countMyUnreadCcRecords()
       unreadCount.value = res.data
     } catch (error) {
-      const message = error instanceof Error ? error.message : '获取抄送未读数失败'
-      toast.error(message)
+      showErrorToast(error, '获取抄送未读数失败')
     }
   }
 
@@ -31,8 +31,7 @@ export const useWorkflowCc = () => {
       const res = tab === 'unread' ? await getMyUnreadCcRecords() : await getMyCcRecords()
       records.value = res.data
     } catch (error) {
-      const message = error instanceof Error ? error.message : '获取抄送记录失败'
-      toast.error(message)
+      showErrorToast(error, '获取抄送记录失败')
     } finally {
       loading.value = false
     }
@@ -44,8 +43,7 @@ export const useWorkflowCc = () => {
       toast.success('已标记为已读')
       await Promise.all([fetchCcList(), fetchUnreadCount()])
     } catch (error) {
-      const message = error instanceof Error ? error.message : '标记已读失败'
-      toast.error(message)
+      showErrorToast(error, '标记已读失败')
     }
   }
 
@@ -60,8 +58,7 @@ export const useWorkflowCc = () => {
       toast.success('未读抄送已全部标记')
       await Promise.all([fetchCcList(), fetchUnreadCount()])
     } catch (error) {
-      const message = error instanceof Error ? error.message : '批量标记已读失败'
-      toast.error(message)
+      showErrorToast(error, '批量标记已读失败')
     }
   }
 

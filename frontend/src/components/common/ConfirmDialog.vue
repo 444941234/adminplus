@@ -15,6 +15,7 @@ defineProps<{
   title?: string
   description?: string
   loading?: boolean
+  confirmText?: string
 }>()
 
 const emit = defineEmits<{
@@ -32,7 +33,7 @@ const emit = defineEmits<{
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>取消</AlertDialogCancel>
-        <AlertDialogAction :disabled="loading" @click="emit('confirm')">确认删除</AlertDialogAction>
+        <AlertDialogAction :disabled="loading" @click="emit('confirm')">{{ confirmText || '确认' }}</AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

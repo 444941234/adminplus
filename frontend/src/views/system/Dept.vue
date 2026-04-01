@@ -18,12 +18,13 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Edit, Plus, Search, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog } from '@/components/common'
+import { ConfirmDialog, StatusBadge } from '@/components/common'
 import { isValidChinaPhone, isValidEmail } from '@/lib/validators'
 import type { Dept } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { useCRUD } from '@/composables/useCRUD'
-import { createDept, deleteDept, getDeptById, getDeptTree, updateDept } from '@/api'
+import { useAsyncAction } from '@/composables/useAsyncAction'
+import { createDept, deleteDept, getDeptById, getDeptTree, updateDept, updateDeptStatus } from '@/api'
 
 interface DeptFormState {
   parentId: string
@@ -49,6 +50,11 @@ const treeData = ref<Dept[]>([])
 const searchQuery = ref('')
 const expandedKeys = ref<Set<string>>(new Set())
 const userStore = useUserStore()
+
+// Status toggle confirmation
+const statusConfirmOpen = ref(false)
+const statusChangeDept = ref<Dept | null>(null)
+const { loading: statusLoading, run: runStatus } = useAsyncAction('状态更新失败')
 
 // CRUD composable
 const {
@@ -265,6 +271,27 @@ const parentOptions = computed(() => {
   return flattenDeptOptions(treeData.value).filter((item) => !blockedIds.has(item.id))
 })
 
+// Status toggle handlers
+const handleStatusClick = (dept: Dept) => {
+  statusChangeDept.value = dept
+  statusConfirmOpen.value = true
+}
+
+const handleStatusConfirm = () => {
+  if (!statusChangeDept.value) return
+  runStatus(async () => {
+    const newStatus = statusChangeDept.value!.status === 1 ? 0 : 1
+    await updateDeptStatus(statusChangeDept.value!.id, newStatus)
+  }, {
+    successMessage: '状态更新成功',
+    errorMessage: '更新状态失败',
+    onSuccess: () => fetchList()
+  }).finally(() => {
+    statusConfirmOpen.value = false
+    statusChangeDept.value = null
+  })
+}
+
 onMounted(fetchList)
 </script>
 
@@ -324,9 +351,7 @@ onMounted(fetchList)
               <td class="p-4">{{ dept.phone || '-' }}</td>
               <td class="p-4">{{ dept.displaySort }}</td>
               <td class="p-4">
-                <span :class="['px-2 py-1 rounded-full text-xs', dept.status === 1 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
-                  {{ dept.status === 1 ? '正常' : '禁用' }}
-                </span>
+                <StatusBadge :status="dept.status" :clickable="canEditDept" @toggle="handleStatusClick(dept)" />
               </td>
               <td class="p-4">
                 <div class="flex gap-2">
@@ -425,8 +450,20 @@ onMounted(fetchList)
       v-model:open="deleteDialogOpen"
       title="确认删除部门"
       description="删除后不可恢复，若存在下级部门或关联数据，后端会拒绝本次删除。"
+      confirm-text="确认删除"
       :loading="deleteLoading"
       @confirm="handleDelete"
+    />
+
+    <!-- 状态切换确认对话框 -->
+    <ConfirmDialog
+      v-if="canEditDept"
+      v-model:open="statusConfirmOpen"
+      :title="`确认${statusChangeDept?.status === 1 ? '禁用' : '启用'}部门`"
+      :description="`确定要${statusChangeDept?.status === 1 ? '禁用' : '启用'}部门「${statusChangeDept?.name}」吗？`"
+      :confirm-text="statusChangeDept?.status === 1 ? '确认禁用' : '确认启用'"
+      :loading="statusLoading"
+      @confirm="handleStatusConfirm"
     />
   </div>
 </template>

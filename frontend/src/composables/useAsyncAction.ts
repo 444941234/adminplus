@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { toast } from 'vue-sonner'
+import { showErrorToast } from './useApiInterceptors'
 
 /**
  * 异步操作 composable — 统一 try-catch + toast + loading
@@ -27,9 +28,8 @@ export function useAsyncAction(defaultErrorMessage = '操作失败') {
       options?.onSuccess?.(result)
       return result
     } catch (error) {
-      const message = error instanceof Error ? error.message : (options?.errorMessage ?? defaultErrorMessage)
-      toast.error(message)
-      options?.onError?.(error instanceof Error ? error : new Error(message))
+      showErrorToast(error, options?.errorMessage ?? defaultErrorMessage)
+      options?.onError?.(error instanceof Error ? error : new Error(String(error)))
       return undefined
     } finally {
       loading.value = false

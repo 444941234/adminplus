@@ -134,6 +134,10 @@ const deleteDialogOpen = ref(false)
 const deleteMenuId = ref('')
 const selectedMenuIds = ref<string[]>([])
 
+// Status toggle confirmation
+const statusConfirmOpen = ref(false)
+const statusChangeMenu = ref<Menu | null>(null)
+
 const form = reactive<MenuFormState>({
   parentId: '0',
   name: '',
@@ -339,6 +343,27 @@ const handleBatchStatusChange = (status: number) => {
   })
 }
 
+// Single menu status toggle
+const handleStatusClick = (menu: Menu) => {
+  statusChangeMenu.value = menu
+  statusConfirmOpen.value = true
+}
+
+const handleStatusConfirm = () => {
+  if (!statusChangeMenu.value) return
+  runList(async () => {
+    const newStatus = statusChangeMenu.value!.status === 1 ? 0 : 1
+    await batchUpdateStatus([statusChangeMenu.value!.id], newStatus)
+  }, {
+    successMessage: '状态更新成功',
+    errorMessage: '更新状态失败',
+    onSuccess: () => fetchData()
+  }).finally(() => {
+    statusConfirmOpen.value = false
+    statusChangeMenu.value = null
+  })
+}
+
 onMounted(fetchData)
 </script>
 
@@ -451,7 +476,7 @@ onMounted(fetchData)
                 </Badge>
               </td>
               <td class="p-4">
-                <StatusBadge :status="row.menu.status" />
+                <StatusBadge :status="row.menu.status" :clickable="canEditMenu" @toggle="handleStatusClick(row.menu)" />
               </td>
               <td class="p-4 text-muted-foreground">{{ row.menu.sortOrder }}</td>
               <td class="p-4">
@@ -605,8 +630,20 @@ onMounted(fetchData)
       v-model:open="deleteDialogOpen"
       :title="deleteMenuId ? '确认删除菜单' : '确认批量删除菜单'"
       :description="deleteMenuId ? '删除后不可恢复，如果存在子菜单或角色绑定，后端可能会拒绝删除。' : `将删除 ${selectedMenuIds.length} 个菜单，删除后不可恢复，且后端可能因层级或角色绑定拒绝部分删除。`"
+      confirm-text="确认删除"
       :loading="deleteLoading"
       @confirm="handleDelete"
+    />
+
+    <!-- 状态切换确认对话框 -->
+    <ConfirmDialog
+      v-if="canEditMenu"
+      v-model:open="statusConfirmOpen"
+      :title="`确认${statusChangeMenu?.status === 1 ? '禁用' : '启用'}菜单`"
+      :description="`确定要${statusChangeMenu?.status === 1 ? '禁用' : '启用'}菜单「${statusChangeMenu?.name}」吗？`"
+      :confirm-text="statusChangeMenu?.status === 1 ? '确认禁用' : '确认启用'"
+      :loading="loading"
+      @confirm="handleStatusConfirm"
     />
   </div>
 </template>

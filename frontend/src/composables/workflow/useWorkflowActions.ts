@@ -9,6 +9,7 @@ import {
   withdrawWorkflow
 } from '@/api'
 import { toast } from 'vue-sonner'
+import { showErrorToast } from '@/composables/useApiInterceptors'
 
 interface ApprovalPayload {
   comment: string
@@ -24,10 +25,6 @@ interface AddSignPayload {
 interface UrgePayload {
   content: string
   targetApproverId?: string
-}
-
-const getErrorMessage = (error: unknown, fallback: string) => {
-  return error instanceof Error ? error.message : fallback
 }
 
 /**
@@ -48,7 +45,7 @@ export const useWorkflowActions = () => {
       toast.success(successMessage)
       return result
     } catch (error) {
-      toast.error(getErrorMessage(error, errorMessage))
+      showErrorToast(error, errorMessage)
       return null
     } finally {
       actionLoading.value = false

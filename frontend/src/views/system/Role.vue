@@ -21,7 +21,7 @@ import {
 } from '@/components/ui'
 import { Edit, KeyRound, Plus, Trash2 } from 'lucide-vue-next'
 import { ConfirmDialog, StatusBadge } from '@/components/common'
-import { assignMenus, getMenuTree, getRoleMenus } from '@/api'
+import { assignMenus, getMenuTree, getRoleMenus, updateRoleStatus } from '@/api'
 import { getRolePagePermissionState } from '@/lib/page-permissions'
 import { isValidRoleCode } from '@/lib/validators'
 import type { Menu, Role } from '@/types'
@@ -55,6 +55,11 @@ const assignDialogOpen = ref(false)
 const assignRole = ref<Role | null>(null)
 const selectedMenuIds = ref<string[]>([])
 const { loading: assignLoading, run: runAssign } = useAsyncAction('操作失败')
+
+// Status toggle confirmation
+const statusConfirmOpen = ref(false)
+const statusChangeRole = ref<Role | null>(null)
+const { loading: statusLoading, run: runStatus } = useAsyncAction('状态更新失败')
 
 // CRUD composable
 const {
@@ -211,6 +216,27 @@ const toggleAllMenus = (checked: boolean | string) => {
   selectedMenuIds.value = checked ? menuOptions.value.map((item) => item.id) : []
 }
 
+// Status toggle handlers
+const handleStatusClick = (role: Role) => {
+  statusChangeRole.value = role
+  statusConfirmOpen.value = true
+}
+
+const handleStatusConfirm = () => {
+  if (!statusChangeRole.value) return
+  runStatus(async () => {
+    const newStatus = statusChangeRole.value!.status === 1 ? 0 : 1
+    await updateRoleStatus(statusChangeRole.value!.id, newStatus)
+  }, {
+    successMessage: '状态更新成功',
+    errorMessage: '更新状态失败',
+    onSuccess: () => fetchRoles()
+  }).finally(() => {
+    statusConfirmOpen.value = false
+    statusChangeRole.value = null
+  })
+}
+
 // Assign menus handlers
 const handleOpenAssign = (role: Role) => {
   assignRole.value = role
@@ -293,7 +319,7 @@ onMounted(async () => {
                 {{ role.dataScope === 1 ? '全部数据' : `范围 ${role.dataScope}` }}
               </td>
               <td class="p-4">
-                <StatusBadge :status="role.status" />
+                <StatusBadge :status="role.status" :clickable="canEditRole" @toggle="handleStatusClick(role)" />
               </td>
               <td class="p-4 text-muted-foreground">{{ role.sortOrder }}</td>
               <td class="p-4">
@@ -434,8 +460,20 @@ onMounted(async () => {
       v-model:open="deleteDialogOpen"
       title="确认删除角色"
       description="删除后不可恢复，如果角色已绑定用户，后端可能会拒绝删除。"
+      confirm-text="确认删除"
       :loading="deleteLoading"
       @confirm="handleDelete"
+    />
+
+    <!-- 状态切换确认对话框 -->
+    <ConfirmDialog
+      v-if="canEditRole"
+      v-model:open="statusConfirmOpen"
+      :title="`确认${statusChangeRole?.status === 1 ? '禁用' : '启用'}角色`"
+      :description="`确定要${statusChangeRole?.status === 1 ? '禁用' : '启用'}角色「${statusChangeRole?.name}」吗？`"
+      :confirm-text="statusChangeRole?.status === 1 ? '确认禁用' : '确认启用'"
+      :loading="statusLoading"
+      @confirm="handleStatusConfirm"
     />
   </div>
 </template>

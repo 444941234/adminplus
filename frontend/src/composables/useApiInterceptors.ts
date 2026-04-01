@@ -4,6 +4,21 @@ import { toast } from 'vue-sonner'
 // 请求去重 Map
 const pendingRequests = new Map<string, AbortController>()
 
+/**
+ * 判断是否是被取消的请求（请求去重的正常行为）
+ */
+export function isCanceledError(error: unknown): boolean {
+  if (!error) return false
+  if (error instanceof Error) {
+    return error.message === 'canceled' || error.name === 'CanceledError'
+  }
+  // Axios 错误
+  if (typeof error === 'object' && error !== null && 'code' in error) {
+    return (error as { code?: string }).code === 'ERR_CANCELED'
+  }
+  return false
+}
+
 // 是否正在刷新 Token
 let isRefreshing = false
 // 等待刷新完成的请求队列
@@ -254,17 +269,31 @@ function handleAuthError(): void {
 }
 
 /**
- * 显示错误提示
+ * 显示错误提示（自动过滤取消请求）
+ * 使用此函数替代 toast.error，避免显示 "canceled" 提示
  */
-function showErrorToast(error: AxiosError): void {
-  const message = (error.response?.data as { message?: string })?.message
-    || error.message
-    || '网络错误，请稍后重试'
-
-  // 只显示用户友好的错误信息
-  if (error.response?.status !== 401) {
-    toast.error(message)
+export function showErrorToast(error: unknown, fallbackMessage = '网络错误，请稍后重试'): void {
+  // 被取消的请求不显示错误提示（这是正常的请求去重行为）
+  if (isCanceledError(error)) {
+    return
   }
+
+  // Axios 错误处理
+  if (error && typeof error === 'object' && 'response' in error) {
+    const axiosError = error as AxiosError
+    const message = (axiosError.response?.data as { message?: string })?.message
+      || axiosError.message
+      || fallbackMessage
+    // 只显示用户友好的错误信息，401 由拦截器单独处理
+    if (axiosError.response?.status !== 401) {
+      toast.error(message)
+    }
+    return
+  }
+
+  // 通用错误处理
+  const message = error instanceof Error ? error.message : fallbackMessage
+  toast.error(message)
 }
 
 /**

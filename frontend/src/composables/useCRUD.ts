@@ -1,5 +1,6 @@
 import { ref, type Ref, reactive, type UnwrapNestedRefs } from 'vue'
 import { useAsyncAction } from './useAsyncAction'
+import { showErrorToast } from './useApiInterceptors'
 
 /**
  * CRUD composable - Eliminates repetitive CRUD page patterns
@@ -181,10 +182,7 @@ export function useCRUD<T, TForm extends object>(options: CRUDOptions<T, TForm>)
       list.value = res.data
       onListFetched?.(res.data)
     } catch (error) {
-      const message = error instanceof Error ? error.message : (errorMessages.list || '获取列表失败')
-      // Use toast directly since we're not using useAsyncAction here
-      const { toast } = await import('vue-sonner')
-      toast.error(message)
+      showErrorToast(error, errorMessages.list || '获取列表失败')
     } finally {
       loading.value = false
     }

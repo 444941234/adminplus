@@ -75,4 +75,16 @@ public class DeptController {
         deptService.deleteDept(id);
         return ApiResponse.ok();
     }
+
+    @PutMapping("/{id}/status")
+    @Operation(summary = "更新部门状态")
+    @OperationLog(module = "部门管理", operationType = 3, description = "修改部门状态 {#id}")
+    @PreAuthorize("hasAuthority('dept:edit')")
+    public ApiResponse<Void> updateDeptStatus(
+            @PathVariable String id,
+            @RequestParam Integer status
+    ) {
+        deptService.updateDeptStatus(id, status);
+        return ApiResponse.ok();
+    }
 }

@@ -315,6 +315,16 @@ public class DeptServiceImpl implements DeptService {
         return result;
     }
 
+    @Override
+    @Transactional
+    public void updateDeptStatus(String id, Integer status) {
+        var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
+        dept.setStatus(status);
+        deptRepository.save(dept);
+
+        logService.log("部门管理", OperationType.UPDATE, "更新部门状态: " + dept.getName() + " -> " + (status == 1 ? "启用" : "禁用"));
+    }
+
     /**
      * 转换为响应 VO
      */

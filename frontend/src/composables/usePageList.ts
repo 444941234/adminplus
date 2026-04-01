@@ -1,5 +1,5 @@
 import { reactive, ref } from 'vue'
-import { toast } from 'vue-sonner'
+import { showErrorToast } from './useApiInterceptors'
 
 export interface PageResult<T> {
   records: T[]
@@ -51,8 +51,7 @@ export function usePageList<T>(
         size: res.data.size
       })
     } catch (error) {
-      const message = error instanceof Error ? error.message : '获取列表失败'
-      toast.error(message)
+      showErrorToast(error, '获取列表失败')
     } finally {
       loading.value = false
     }

@@ -48,4 +48,9 @@ public interface RoleService {
      * 查询角色的菜单ID列表
      */
     List<String> getRoleMenuIds(String roleId);
+
+    /**
+     * 更新角色状态
+     */
+    void updateRoleStatus(String id, Integer status);
 }

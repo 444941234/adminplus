@@ -314,6 +314,7 @@ onMounted(async () => {
       v-model:open="deleteDialogOpen"
       title="确认删除用户"
       description="删除后不可恢复，如果用户仍有关联数据，后端可能会拒绝删除。"
+      confirm-text="确认删除"
       :loading="deleteLoading"
       @confirm="handleDelete"
     />
@@ -324,6 +325,7 @@ onMounted(async () => {
       v-model:open="statusConfirmOpen"
       :title="`确认${statusChangeUser?.status === 1 ? '禁用' : '启用'}用户`"
       :description="`确定要${statusChangeUser?.status === 1 ? '禁用' : '启用'}用户「${statusChangeUser?.username}」吗？`"
+      :confirm-text="statusChangeUser?.status === 1 ? '确认禁用' : '确认启用'"
       @confirm="handleStatusConfirm"
     />
   </div>

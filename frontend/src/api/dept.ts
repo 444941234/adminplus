@@ -25,3 +25,8 @@ export function updateDept(id: string, data: Partial<Dept>) {
 export function deleteDept(id: string) {
   return del<void>(`/sys/depts/${id}`)
 }
+
+// 更新部门状态
+export function updateDeptStatus(id: string, status: number) {
+  return put<void>(`/sys/depts/${id}/status?status=${status}`)
+}

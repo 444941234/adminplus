@@ -100,4 +100,16 @@ public class RoleController {
         List<String> menuIds = roleService.getRoleMenuIds(id);
         return ApiResponse.ok(menuIds);
     }
+
+    @PutMapping("/{id}/status")
+    @Operation(summary = "更新角色状态")
+    @OperationLog(module = "角色管理", operationType = 3, description = "修改角色状态 {#id}")
+    @PreAuthorize("hasAuthority('role:edit')")
+    public ApiResponse<Void> updateRoleStatus(
+            @PathVariable String id,
+            @RequestParam Integer status
+    ) {
+        roleService.updateRoleStatus(id, status);
+        return ApiResponse.ok();
+    }
 }

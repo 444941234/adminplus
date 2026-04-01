@@ -35,3 +35,8 @@ export function assignMenus(id: string, menuIds: string[]) {
 export function getRoleMenus(id: string) {
   return get<string[]>(`/sys/roles/${id}/menus`)
 }
+
+// 更新角色状态
+export function updateRoleStatus(id: string, status: number) {
+  return put<void>(`/sys/roles/${id}/status?status=${status}`)
+}

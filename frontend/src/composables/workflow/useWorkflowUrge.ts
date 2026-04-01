@@ -9,6 +9,7 @@ import {
 } from '@/api'
 import type { WorkflowUrge } from '@/types'
 import { toast } from 'vue-sonner'
+import { showErrorToast } from '@/composables/useApiInterceptors'
 
 /**
  * 工作流催办中心数据管理
@@ -26,8 +27,7 @@ export const useWorkflowUrge = () => {
       const res = await countUnreadUrgeRecords()
       unreadCount.value = res.data
     } catch (error) {
-      const message = error instanceof Error ? error.message : '获取催办未读数失败'
-      toast.error(message)
+      showErrorToast(error, '获取催办未读数失败')
     }
   }
 
@@ -45,8 +45,7 @@ export const useWorkflowUrge = () => {
       }
       records.value = res.data
     } catch (error) {
-      const message = error instanceof Error ? error.message : '获取催办记录失败'
-      toast.error(message)
+      showErrorToast(error, '获取催办记录失败')
     } finally {
       loading.value = false
     }
@@ -58,8 +57,7 @@ export const useWorkflowUrge = () => {
       toast.success('已标记为已读')
       await Promise.all([fetchUrgeList(), fetchUnreadCount()])
     } catch (error) {
-      const message = error instanceof Error ? error.message : '标记已读失败'
-      toast.error(message)
+      showErrorToast(error, '标记已读失败')
     }
   }
 
@@ -74,8 +72,7 @@ export const useWorkflowUrge = () => {
       toast.success('未读催办已全部标记')
       await Promise.all([fetchUrgeList(), fetchUnreadCount()])
     } catch (error) {
-      const message = error instanceof Error ? error.message : '批量标记已读失败'
-      toast.error(message)
+      showErrorToast(error, '批量标记已读失败')
     }
   }
 

@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { countMyUnreadCcRecords, countUnreadUrgeRecords, getPendingWorkflowCount } from '@/api'
-import { toast } from 'vue-sonner'
+import { showErrorToast } from '@/composables/useApiInterceptors'
 
 /**
  * 工作流头部计数
@@ -23,8 +23,7 @@ export const useWorkflowNoticeCounts = () => {
       ccUnreadCount.value = ccRes.data
       urgeUnreadCount.value = urgeRes.data
     } catch (error) {
-      const message = error instanceof Error ? error.message : '获取工作流提醒数失败'
-      toast.error(message)
+      showErrorToast(error, '获取工作流提醒数失败')
     } finally {
       loading.value = false
     }
