@@ -94,6 +94,73 @@ frontend/packages/ui-vue/src/components/bigmodel/
 - **Routes**: Dynamic routes loaded from backend menu API
 - **UI Library**: BigModel components (Bm*) from `@adminplus/ui-vue`
 
+### Vue 3 Component Development Best Practices
+
+#### ⚠️ Avoid Duplicate API Calls Pattern
+
+**DO NOT** use `watch(..., {immediate: true})` with `onMounted` for the same function:
+
+```vue
+<script setup>
+// ❌ WRONG - This causes duplicate requests and "canceled" errors
+watch(() => props.id, () => {
+  fetchData()
+}, { immediate: true })
+
+onMounted(() => {
+  fetchData()  // This runs AGAIN!
+})
+</script>
+```
+
+**CORRECT** - Use only `watch` with `immediate: true`:
+
+```vue
+<script setup>
+// ✅ CORRECT - Runs once on mount and when props.id changes
+watch(() => props.id, () => {
+  fetchData()
+}, { immediate: true })
+// No onMounted needed!
+</script>
+```
+
+**Why?** The `immediate: true` option executes the watcher callback immediately when the component is created, before the DOM is mounted. Adding `onMounted` causes the function to run twice, triggering the request deduplication logic and canceling the second request.
+
+#### Request Deduplication
+
+The project has automatic request deduplication enabled in `useApiInterceptors.ts`. When two identical requests are made simultaneously:
+- The first request proceeds normally
+- The second request is **automatically cancelled** and shows a "canceled" toast error
+
+**Common scenarios causing duplicate requests:**
+1. Multiple components fetching the same data simultaneously
+2. `watch` + `onMounted` pattern (see above)
+3. Parent and child components both fetching data on mount
+
+**Solutions:**
+- Use events to share data between components (e.g., `@loaded` event)
+- Use Pinia stores for shared state
+- Design components to receive data via props rather than fetching independently
+
+#### Dialog Accessibility
+
+All `DialogContent` components must include a `DialogDescription` for accessibility:
+
+```vue
+<Dialog v-model:open="dialogOpen">
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Title</DialogTitle>
+      <DialogDescription>
+        Brief description of what this dialog does
+      </DialogDescription>
+    </DialogHeader>
+    <!-- Content -->
+  </DialogContent>
+</Dialog>
+```
+
 ## BigModel Components
 
 The frontend uses a custom BigModel component library matching Zhipu AI design style. Import components from `@adminplus/ui-vue`:
@@ -134,6 +201,62 @@ toast.success('Operation successful');
 - Backend: `@PreAuthorize("hasAuthority('resource:action')")`
 - Frontend: `v-auth="'resource:action'"` directive
 - Permission format: `{resource}:{action}` (e.g., `user:add`, `role:edit`)
+
+## Workflow Module Special Considerations
+
+### Node List Data Flow
+
+The workflow designer has two components that need node data:
+- `WorkflowVisualizer` (flow diagram) - Fetches nodes independently
+- `WorkflowDesigner` (node list) - Should NOT fetch nodes independently
+
+**Correct pattern**: Share data via events
+
+```vue
+<!-- WorkflowVisualizer.vue -->
+<script setup>
+const emit = defineEmits<{
+  (e: 'loaded', definition: WorkflowDefinition): void
+}>()
+
+async function loadWorkflowDefinition() {
+  const [defRes, nodesRes] = await Promise.all([
+    getWorkflowDefinition(props.definitionId),
+    getWorkflowNodes(props.definitionId)
+  ])
+  definition.value = {
+    id: defRes.data.id,
+    name: defRes.data.definitionName,
+    nodes: mapWorkflowNodes(nodesRes.data)  // Keep original field names!
+  }
+  emit('loaded', definition.value)
+}
+</script>
+
+<!-- WorkflowDesigner.vue -->
+<template>
+  <WorkflowVisualizer
+    :definition-id="selectedDefinition.id"
+    @loaded="handleWorkflowLoaded"
+  />
+</template>
+
+<script setup>
+const handleWorkflowLoaded = (workflowDef) => {
+  nodes.value = workflowDef.nodes  // Reuse fetched data
+}
+</script>
+```
+
+**Important**: Keep field names consistent with backend API response (`nodeName`, `nodeCode`, `nodeOrder`, not `name`, `code`, `order`).
+
+### Workflow Permission Constants
+
+All workflow-related permissions are defined in `SecurityConstants.java`:
+- `WORKFLOW_CREATE`, `WORKFLOW_UPDATE`, `WORKFLOW_DELETE` - Workflow instance operations
+- `WORKFLOW_DEFINITION_CREATE`, `WORKFLOW_DEFINITION_UPDATE`, `WORKFLOW_DEFINITION_DELETE` - Definition operations
+- `WORKFLOW_CC_READ`, `WORKFLOW_CC_LIST` - CC (carbon copy) operations
+- `WORKFLOW_URGE_READ`, `WORKFLOW_URGE_LIST` - Urge (reminder) operations
 
 ## API Endpoints
 - Base URL: `http://localhost:8081/api`
