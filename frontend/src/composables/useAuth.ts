@@ -1,7 +1,13 @@
 import { ref, computed } from 'vue'
 import type { User, CaptchaResp } from '@/types'
 import { login as loginApi, logout as logoutApi, getCurrentUser, getCaptcha } from '@/api'
-import type { LoginResp, LoginRequest } from '@/api/auth'
+
+interface LoginRequest {
+  username: string
+  password: string
+  captchaId: string
+  captchaCode: string
+}
 
 /**
  * 认证相关 composable

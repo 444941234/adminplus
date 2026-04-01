@@ -1,8 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Button } from '@/components/ui'
-import { Edit, Eye, EyeOff, History, Trash2 } from 'lucide-vue-next'
+import { ref, computed } from 'vue'
+import { Button, Switch } from '@/components/ui'
+import { Edit, Eye, EyeOff, History, Trash2, Copy, Check } from 'lucide-vue-next'
 import type { Config } from '@/types'
+
+const copiedId = ref<string | null>(null)
+const copyTimeout = ref<number | null>(null)
+
+const copyValue = async (config: Config) => {
+  const valueToCopy = config.value || config.defaultValue || ''
+  try {
+    await navigator.clipboard.writeText(valueToCopy)
+    copiedId.value = config.id
+    if (copyTimeout.value) clearTimeout(copyTimeout.value)
+    copyTimeout.value = setTimeout(() => {
+      copiedId.value = null
+    }, 2000)
+  } catch {
+    // Fallback for older browsers
+    console.error('Copy failed')
+  }
+}
 
 interface Props {
   configs: Config[]
@@ -11,7 +29,7 @@ interface Props {
   canDelete?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   loading: false,
   canEdit: true,
   canDelete: true
@@ -21,6 +39,7 @@ const emit = defineEmits<{
   (e: 'edit', config: Config): void
   (e: 'delete', config: Config): void
   (e: 'history', config: Config): void
+  (e: 'toggleStatus', config: Config): void
 }>()
 
 // Secret value visibility toggle
@@ -86,15 +105,41 @@ const formatValue = (config: Config) => {
   if (config.valueType === 'JSON' || config.valueType === 'ARRAY') {
     try {
       const parsed = JSON.parse(config.value)
-      return JSON.stringify(parsed, null, 2)
+      const formatted = JSON.stringify(parsed, null, 2)
+      // Truncate long JSON values
+      if (formatted.length > 100) {
+        return formatted.slice(0, 100) + '...'
+      }
+      return formatted
     } catch {
-      return config.value
+      return config.value.length > 100 ? config.value.slice(0, 100) + '...' : config.value
     }
   }
   if (config.valueType === 'BOOLEAN') {
     return config.value === 'true' ? '是' : '否'
   }
+  // Truncate long string values
+  return config.value.length > 50 ? config.value.slice(0, 50) + '...' : config.value
+}
+
+const getFullValue = (config: Config) => {
+  if (config.valueType === 'SECRET' && !isSecretVisible(config.id)) {
+    return '****'
+  }
+  if (!config.value) return config.defaultValue || '-'
+  if (config.valueType === 'JSON' || config.valueType === 'ARRAY') {
+    try {
+      const parsed = JSON.parse(config.value)
+      return JSON.stringify(parsed, null, 2)
+    } catch {
+      return config.value
+    }
+  }
   return config.value
+}
+
+const shouldShowCopyButton = (config: Config) => {
+  return config.valueType !== 'SECRET' || isSecretVisible(config.id)
 }
 </script>
 
@@ -108,22 +153,26 @@ const formatValue = (config: Config) => {
           <th class="p-4 text-left font-medium">配置值</th>
           <th class="p-4 text-left font-medium">类型</th>
           <th class="p-4 text-left font-medium">生效方式</th>
+          <th class="p-4 text-left font-medium">状态</th>
           <th class="p-4 text-left font-medium">操作</th>
         </tr>
       </thead>
       <tbody class="divide-y">
         <tr v-if="loading">
-          <td colspan="6" class="h-32 text-center text-muted-foreground">加载中...</td>
+          <td colspan="7" class="h-32 text-center text-muted-foreground">加载中...</td>
         </tr>
         <tr v-else-if="configs.length === 0">
-          <td colspan="6" class="h-32 text-center text-muted-foreground">暂无配置项</td>
+          <td colspan="7" class="h-32 text-center text-muted-foreground">暂无配置项</td>
         </tr>
         <tr v-for="config in configs" :key="config.id" class="hover:bg-muted/30">
           <td class="p-4 font-medium">{{ config.name }}</td>
           <td class="p-4 font-mono text-sm text-muted-foreground">{{ config.key }}</td>
           <td class="max-w-md p-4">
             <div class="flex items-center gap-2">
-              <div class="flex-1 truncate text-sm">
+              <div
+                class="flex-1 truncate text-sm font-mono"
+                :title="getFullValue(config)"
+              >
                 {{ formatValue(config) }}
               </div>
               <Button
@@ -135,6 +184,17 @@ const formatValue = (config: Config) => {
               >
                 <Eye v-if="!isSecretVisible(config.id)" class="h-4 w-4" />
                 <EyeOff v-else class="h-4 w-4" />
+              </Button>
+              <Button
+                v-if="shouldShowCopyButton(config)"
+                size="sm"
+                variant="ghost"
+                class="h-6 w-6 p-0"
+                :title="copiedId === config.id ? '已复制' : '复制值'"
+                @click="copyValue(config)"
+              >
+                <Check v-if="copiedId === config.id" class="h-4 w-4 text-green-600" />
+                <Copy v-else class="h-4 w-4" />
               </Button>
             </div>
           </td>
@@ -148,6 +208,12 @@ const formatValue = (config: Config) => {
             >
               {{ getEffectTypeLabel(config.effectType) }}
             </span>
+          </td>
+          <td class="p-4">
+            <Switch
+              :checked="config.status === 1"
+              @update:checked="emit('toggleStatus', config)"
+            />
           </td>
           <td class="p-4">
             <div class="flex gap-2">

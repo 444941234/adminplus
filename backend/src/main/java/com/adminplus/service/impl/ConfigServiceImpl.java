@@ -127,6 +127,19 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "config", key = "'groupCode:' + #groupCode")
+    public List<ConfigResp> getConfigsByGroupCode(String groupCode) {
+        // 根据编码查找配置组
+        ConfigGroupEntity group = configGroupRepository.findByCode(groupCode)
+                .orElseThrow(() -> new BizException("配置组不存在"));
+
+        return configRepository.findByGroupIdOrderBySortOrderAsc(group.getId()).stream()
+                .map(this::toVO)
+                .toList();
+    }
+
+    @Override
     @Transactional
     @CacheEvict(value = "config", allEntries = true)
     public ConfigResp createConfig(ConfigCreateReq req) {
@@ -139,6 +152,9 @@ public class ConfigServiceImpl implements ConfigService {
         ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
                 configGroupRepository::findById, req.groupId(), "配置组不存在"
         );
+
+        // 验证配置值
+        validateConfigValue(req.valueType(), req.value(), req.validationRule());
 
         ConfigEntity config = new ConfigEntity();
         config.setGroupId(req.groupId());
@@ -182,6 +198,11 @@ public class ConfigServiceImpl implements ConfigService {
             config.setName(req.name());
         }
         if (req.value() != null) {
+            // 验证配置值
+            String valueType = req.valueType() != null ? req.valueType() : config.getValueType();
+            String validationRule = req.validationRule() != null ? req.validationRule() : config.getValidationRule();
+            validateConfigValue(valueType, req.value(), validationRule);
+
             config.setValue(req.value());
         }
         if (req.valueType() != null) {
@@ -524,6 +545,13 @@ public class ConfigServiceImpl implements ConfigService {
                 "手动生效配置: " + config.getName() + " (" + config.getKey() + ")");
     }
 
+    @Override
+    @CacheEvict(value = {"config", "configGroups", "configByKey"}, allEntries = true)
+    public void refreshConfigCache() {
+        log.info("刷新配置缓存成功");
+        logService.log("配置管理", OperationType.UPDATE, "刷新配置缓存");
+    }
+
     /**
      * 保存配置历史
      */
@@ -584,5 +612,47 @@ public class ConfigServiceImpl implements ConfigService {
                 null, // operatorName - 从当前用户上下文获取
                 entity.getCreateTime()
         );
+    }
+
+    /**
+     * 验证配置值
+     */
+    private void validateConfigValue(String valueType, String value, String validationRule) {
+        if (value == null || value.isEmpty()) {
+            return; // 空值跳过校验
+        }
+
+        switch (valueType) {
+            case "NUMBER" -> {
+                try {
+                    Double.parseDouble(value);
+                } catch (NumberFormatException e) {
+                    throw new BizException("配置值类型为数字时，值必须是有效的数字");
+                }
+            }
+            case "BOOLEAN" -> {
+                if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
+                    throw new BizException("配置值类型为布尔值时，值必须是 true 或 false");
+                }
+            }
+            case "JSON", "ARRAY" -> {
+                try {
+                    objectMapper.readTree(value);
+                } catch (Exception e) {
+                    throw new BizException("配置值格式不正确，必须是有效的JSON");
+                }
+            }
+        }
+
+        // 自定义校验规则
+        if (validationRule != null && !validationRule.isEmpty()) {
+            try {
+                if (!value.matches(validationRule)) {
+                    throw new BizException("配置值不符合校验规则: " + validationRule);
+                }
+            } catch (Exception e) {
+                log.warn("校验规则执行失败: {}", validationRule, e);
+            }
+        }
     }
 }

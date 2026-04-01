@@ -150,6 +150,26 @@ class ConfigControllerTest {
     }
 
     @Nested
+    @DisplayName("根据配置组编码查询配置")
+    class GetConfigsByGroupCodeTests {
+
+        @Test
+        @DisplayName("成功根据配置组编码查询配置列表")
+        void shouldReturnConfigsByGroupCode() throws Exception {
+            // Given
+            List<ConfigResp> configs = Collections.singletonList(createTestConfigResp());
+            when(configService.getConfigsByGroupCode("basic")).thenReturn(configs);
+
+            // When & Then
+            mockMvc.perform(get("/v1/sys/configs/group-code/basic"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.data[0].name").value("系统名称"));
+
+            verify(configService).getConfigsByGroupCode("basic");
+        }
+    }
+
+    @Nested
     @DisplayName("根据配置键查询")
     class GetConfigByKeyTests {
 

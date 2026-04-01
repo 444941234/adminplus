@@ -77,4 +77,11 @@ public interface ConfigGroupService {
      * @return 配置组列表
      */
     java.util.List<ConfigGroupResp> getActiveConfigGroups();
+
+    /**
+     * 查询所有配置组（包括禁用的）
+     *
+     * @return 配置组列表
+     */
+    java.util.List<ConfigGroupResp> getAllConfigGroups();
 }

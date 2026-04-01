@@ -45,30 +45,40 @@ public class DictInitializer implements DataInitializer {
         }
 
         List<DictEntity> dicts = new ArrayList<>();
-        List<DictItemEntity> items = new ArrayList<>();
 
         // 性别字典
         DictEntity genderDict = createDict("gender", "性别", "用户性别字典");
         dicts.add(genderDict);
-        items.add(createDictItem(genderDict, "男", "1", 1));
-        items.add(createDictItem(genderDict, "女", "2", 2));
 
         // 状态字典
         DictEntity statusDict = createDict("status", "状态", "通用状态字典");
         dicts.add(statusDict);
-        items.add(createDictItem(statusDict, "正常", "1", 1));
-        items.add(createDictItem(statusDict, "禁用", "0", 2));
 
         // 菜单类型字典
         DictEntity menuTypeDict = createDict("menu_type", "菜单类型", "菜单类型字典");
         dicts.add(menuTypeDict);
-        items.add(createDictItem(menuTypeDict, "目录", "0", 1));
-        items.add(createDictItem(menuTypeDict, "菜单", "1", 2));
-        items.add(createDictItem(menuTypeDict, "按钮", "2", 3));
 
-        dictRepository.saveAll(dicts);
+        // 先保存字典以生成 ID
+        List<DictEntity> savedDicts = dictRepository.saveAll(dicts);
+
+        // 用保存后的字典（有 ID）创建字典项
+        List<DictItemEntity> items = new ArrayList<>();
+        for (DictEntity dict : savedDicts) {
+            if ("gender".equals(dict.getDictType())) {
+                items.add(createDictItem(dict, "男", "1", 1));
+                items.add(createDictItem(dict, "女", "2", 2));
+            } else if ("status".equals(dict.getDictType())) {
+                items.add(createDictItem(dict, "正常", "1", 1));
+                items.add(createDictItem(dict, "禁用", "0", 2));
+            } else if ("menu_type".equals(dict.getDictType())) {
+                items.add(createDictItem(dict, "目录", "0", 1));
+                items.add(createDictItem(dict, "菜单", "1", 2));
+                items.add(createDictItem(dict, "按钮", "2", 3));
+            }
+        }
+
         dictItemRepository.saveAll(items);
-        log.info("初始化字典数据完成，共 {} 个字典，{} 个字典项", dicts.size(), items.size());
+        log.info("初始化字典数据完成，共 {} 个字典，{} 个字典项", savedDicts.size(), items.size());
     }
 
     private DictEntity createDict(String dictType, String dictName, String remark) {

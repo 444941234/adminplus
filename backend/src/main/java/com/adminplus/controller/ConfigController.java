@@ -55,6 +55,15 @@ public class ConfigController {
         return ApiResponse.ok(result);
     }
 
+    @GetMapping("/group-code/{groupCode}")
+    @Operation(summary = "根据配置组编码查询配置列表")
+    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置组配置 {#groupCode}")
+    @PreAuthorize("hasAuthority('config:query')")
+    public ApiResponse<List<ConfigResp>> getConfigsByGroupCode(@PathVariable String groupCode) {
+        List<ConfigResp> result = configService.getConfigsByGroupCode(groupCode);
+        return ApiResponse.ok(result);
+    }
+
     @GetMapping("/key/{key}")
     @Operation(summary = "根据配置键查询")
     @OperationLog(module = "配置管理", operationType = 1, description = "查询配置键 {#key}")
@@ -178,6 +187,15 @@ public class ConfigController {
     @PreAuthorize("hasAuthority('config:apply')")
     public ApiResponse<Void> applyConfig(@PathVariable String id) {
         configService.applyConfig(id);
+        return ApiResponse.ok();
+    }
+
+    @PostMapping("/refresh-cache")
+    @Operation(summary = "刷新配置缓存")
+    @OperationLog(module = "配置管理", operationType = 3, description = "刷新配置缓存")
+    @PreAuthorize("hasAuthority('config:edit')")
+    public ApiResponse<Void> refreshConfigCache() {
+        configService.refreshConfigCache();
         return ApiResponse.ok();
     }
 }

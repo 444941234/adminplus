@@ -54,13 +54,15 @@ public class PermissionInitializer implements DataInitializer {
 
         Map<String, RoleEntity> roleMap = roles.stream()
                 .collect(Collectors.toMap(RoleEntity::getCode, r -> r));
-        Map<String, MenuEntity> menuMap = menus.stream()
-                .collect(Collectors.toMap(MenuEntity::getName, m -> m));
+        Map<String, MenuEntity> menuById = menus.stream()
+                .collect(Collectors.toMap(MenuEntity::getId, m -> m));
+        Map<String, MenuEntity> menuByName = menus.stream()
+                .collect(Collectors.toMap(MenuEntity::getName, m -> m, (existing, replacement) -> existing));
         Map<String, UserEntity> userMap = users.stream()
                 .collect(Collectors.toMap(UserEntity::getUsername, u -> u));
 
         // 初始化角色-菜单权限
-        initializeRoleMenus(roleMap, menuMap, existingRoleMenuKeys);
+        initializeRoleMenus(roleMap, menuById, menuByName, existingRoleMenuKeys);
 
         // 初始化用户-角色关联
         initializeUserRoles(roleMap, userMap, existingUserRoleKeys);
@@ -68,18 +70,18 @@ public class PermissionInitializer implements DataInitializer {
         log.info("权限关联初始化完成");
     }
 
-    private void initializeRoleMenus(Map<String, RoleEntity> roleMap, Map<String, MenuEntity> menuMap,
-                                     Set<String> existingKeys) {
+    private void initializeRoleMenus(Map<String, RoleEntity> roleMap, Map<String, MenuEntity> menuById,
+                                     Map<String, MenuEntity> menuByName, Set<String> existingKeys) {
         // 超级管理员拥有所有权限
         RoleEntity adminRole = roleMap.get("ROLE_ADMIN");
         if (adminRole != null) {
-            menuMap.values().forEach(menu -> saveRoleMenuIfAbsent(adminRole, menu, existingKeys));
+            menuById.values().forEach(menu -> saveRoleMenuIfAbsent(adminRole, menu, existingKeys));
         }
 
         // 部门经理权限
         RoleEntity managerRole = roleMap.get("ROLE_MANAGER");
         if (managerRole != null) {
-            assignMenusToRole(managerRole, menuMap, existingKeys, Arrays.asList(
+            assignMenusToRole(managerRole, menuByName, existingKeys, Arrays.asList(
                 "首页", "用户管理", "新增用户", "编辑用户", "删除用户", "分配角色", "重置密码",
                 "部门管理", "新增部门", "编辑部门", "删除部门", "查询部门", "部门列表",
                 "工作流管理", "流程模板", "我的流程", "待我审批", "抄送我的", "催办中心",
@@ -92,7 +94,7 @@ public class PermissionInitializer implements DataInitializer {
         // 开发人员权限
         RoleEntity developerRole = roleMap.get("ROLE_DEVELOPER");
         if (developerRole != null) {
-            assignMenusToRole(developerRole, menuMap, existingKeys, Arrays.asList(
+            assignMenusToRole(developerRole, menuByName, existingKeys, Arrays.asList(
                 "首页", "用户管理", "角色管理", "菜单管理", "字典管理", "参数配置",
                 "新增配置", "编辑配置", "删除配置", "导出配置", "导入配置", "刷新缓存",
                 "字典项列表", "新增字典项", "编辑字典项", "删除字典项",
@@ -106,7 +108,7 @@ public class PermissionInitializer implements DataInitializer {
         // 运营人员权限
         RoleEntity operatorRole = roleMap.get("ROLE_OPERATOR");
         if (operatorRole != null) {
-            assignMenusToRole(operatorRole, menuMap, existingKeys, Arrays.asList(
+            assignMenusToRole(operatorRole, menuByName, existingKeys, Arrays.asList(
                 "首页", "数据统计", "报表管理",
                 "工作流管理", "流程模板", "我的流程", "抄送我的", "催办中心",
                 "发起流程", "保存草稿", "催办流程", "撤回流程", "取消流程", "抄送已读", "催办已读",
@@ -117,7 +119,7 @@ public class PermissionInitializer implements DataInitializer {
         // 普通用户权限
         RoleEntity userRole = roleMap.get("ROLE_USER");
         if (userRole != null) {
-            assignMenusToRole(userRole, menuMap, existingKeys, Arrays.asList(
+            assignMenusToRole(userRole, menuByName, existingKeys, Arrays.asList(
                 "首页", "工作流管理", "流程模板", "我的流程", "抄送我的", "催办中心",
                 "发起流程", "保存草稿", "催办流程", "撤回流程", "取消流程", "抄送已读", "催办已读",
                 "文件管理", "上传文件", "删除文件"
@@ -125,10 +127,10 @@ public class PermissionInitializer implements DataInitializer {
         }
     }
 
-    private void assignMenusToRole(RoleEntity role, Map<String, MenuEntity> menuMap,
+    private void assignMenusToRole(RoleEntity role, Map<String, MenuEntity> menuByName,
                                    Set<String> existingKeys, List<String> menuNames) {
         menuNames.stream()
-                .map(menuMap::get)
+                .map(menuByName::get)
                 .filter(Objects::nonNull)
                 .forEach(menu -> saveRoleMenuIfAbsent(role, menu, existingKeys));
     }
@@ -167,6 +169,11 @@ public class PermissionInitializer implements DataInitializer {
         String key = role.getId() + ":" + menu.getId();
         if (existingKeys.add(key)) {
             roleMenuRepository.save(createRoleMenu(role.getId(), menu.getId()));
+            // 记录新添加的权限关联（用于调试）
+            if (menu.getPermKey() != null && menu.getPermKey().startsWith("config")) {
+                log.info("✅ 新增权限关联: role={} <- menu={}, permKey={}",
+                        role.getCode(), menu.getName(), menu.getPermKey());
+            }
         }
     }
 

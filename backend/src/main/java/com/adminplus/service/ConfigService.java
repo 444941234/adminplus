@@ -51,6 +51,14 @@ public interface ConfigService {
     List<ConfigResp> getConfigsByGroupId(String groupId);
 
     /**
+     * 根据配置组编码查询配置列表
+     *
+     * @param groupCode 配置组编码
+     * @return 配置列表
+     */
+    List<ConfigResp> getConfigsByGroupCode(String groupCode);
+
+    /**
      * 创建配置
      *
      * @param req 创建请求
@@ -136,4 +144,9 @@ public interface ConfigService {
      * @param id 配置ID
      */
     void applyConfig(String id);
+
+    /**
+     * 刷新配置缓存
+     */
+    void refreshConfigCache();
 }

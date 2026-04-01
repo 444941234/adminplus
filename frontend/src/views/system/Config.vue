@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Button, Card, CardContent } from '@/components/ui'
 import { Plus, RefreshCw, Search } from 'lucide-vue-next'
 import { ConfirmDialog } from '@/components/common'
-import { getAllConfigGroups, getConfigsByGroupId, deleteConfigGroup, deleteConfig, refreshConfigCache } from '@/api'
+import { getAllConfigGroups, getConfigsByGroupId, getConfigsByGroupCode, deleteConfigGroup, deleteConfig, refreshConfigCache, updateConfigStatus } from '@/api'
 import type { ConfigGroup, Config } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { useAsyncAction } from '@/composables/useAsyncAction'
@@ -11,6 +11,9 @@ import ConfigGroupTabs from '@/components/config/ConfigGroupTabs.vue'
 import ConfigItemTable from '@/components/config/ConfigItemTable.vue'
 import ConfigGroupFormDialog from '@/components/config/ConfigGroupFormDialog.vue'
 import ConfigItemFormDialog from '@/components/config/ConfigItemFormDialog.vue'
+import ConfigHistoryDialog from '@/components/config/ConfigHistoryDialog.vue'
+import ConfigImportExportDialog from '@/components/config/ConfigImportExportDialog.vue'
+import ConfigBatchEditDialog from '@/components/config/ConfigBatchEditDialog.vue'
 
 const userStore = useUserStore()
 const { loading: groupsLoading, run: runFetchGroups } = useAsyncAction('获取配置分组失败')
@@ -31,6 +34,10 @@ const configDialogOpen = ref(false)
 const editConfig = ref<Config | undefined>(undefined)
 const deleteDialogOpen = ref(false)
 const deleteTarget = ref<{ type: 'group' | 'config'; id: string; name: string } | undefined>(undefined)
+const historyDialogOpen = ref(false)
+const historyConfig = ref<Config | undefined>(undefined)
+const importExportDialogOpen = ref(false)
+const batchEditDialogOpen = ref(false)
 
 // Permission checks
 const canManageConfig = computed(() => userStore.hasPermission('config:edit'))
@@ -48,7 +55,7 @@ const fetchGroups = () =>
 const fetchConfigs = () =>
   runFetchConfigs(async () => {
     if (!activeCode.value) return
-    const res = await getConfigsByGroupId(activeCode.value)
+    const res = await getConfigsByGroupCode(activeCode.value)
     configs.value = res.data || []
   })
 
@@ -56,16 +63,6 @@ const fetchConfigs = () =>
 const handleAddGroup = () => {
   editGroup.value = undefined
   groupDialogOpen.value = true
-}
-
-const handleEditGroup = (group: ConfigGroup) => {
-  editGroup.value = group
-  groupDialogOpen.value = true
-}
-
-const handleDeleteGroup = (group: ConfigGroup) => {
-  deleteTarget.value = { type: 'group', id: group.id, name: group.name }
-  deleteDialogOpen.value = true
 }
 
 const handleGroupSuccess = () => {
@@ -87,6 +84,35 @@ const handleEditConfig = (config: Config) => {
 const handleDeleteConfig = (config: Config) => {
   deleteTarget.value = { type: 'config', id: config.id, name: config.name }
   deleteDialogOpen.value = true
+}
+
+const handleHistory = (config: Config) => {
+  historyConfig.value = config
+  historyDialogOpen.value = true
+}
+
+const handleHistorySuccess = () => {
+  fetchConfigs()
+  historyDialogOpen.value = false
+}
+
+const handleImportExportSuccess = () => {
+  fetchGroups()
+  fetchConfigs()
+}
+
+const handleBatchEditSuccess = () => {
+  fetchConfigs()
+}
+
+const handleToggleStatus = (config: Config) => {
+  const newStatus = config.status === 1 ? 0 : 1
+  runRefresh(async () => {
+    await updateConfigStatus(config.id, newStatus)
+  }, {
+    successMessage: newStatus === 1 ? '配置已启用' : '配置已禁用',
+    onSuccess: () => fetchConfigs()
+  })
 }
 
 const handleConfigSuccess = () => {
@@ -158,6 +184,9 @@ onMounted(async () => {
           <RefreshCw class="mr-2 h-4 w-4" :class="{ 'animate-spin': refreshLoading }" />
           刷新缓存
         </Button>
+        <Button v-if="canManageConfig" variant="outline" @click="importExportDialogOpen = true">
+          上传 / 下载
+        </Button>
       </div>
     </div>
 
@@ -184,10 +213,15 @@ onMounted(async () => {
               class="w-full rounded-md border border-input bg-background pl-10 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
           </div>
-          <Button v-if="canManageConfig" @click="handleAddConfig">
-            <Plus class="mr-2 h-4 w-4" />
-            新增配置
-          </Button>
+          <div class="flex gap-2">
+            <Button v-if="canManageConfig" variant="outline" @click="batchEditDialogOpen = true">
+              批量编辑
+            </Button>
+            <Button v-if="canManageConfig" @click="handleAddConfig">
+              <Plus class="mr-2 h-4 w-4" />
+              新增配置
+            </Button>
+          </div>
         </div>
 
         <!-- Config Table -->
@@ -198,6 +232,8 @@ onMounted(async () => {
           :can-delete="canManageConfig"
           @edit="handleEditConfig"
           @delete="handleDeleteConfig"
+          @history="handleHistory"
+          @toggle-status="handleToggleStatus"
         />
       </CardContent>
     </Card>
@@ -227,6 +263,26 @@ onMounted(async () => {
       :description="`确定要删除「${deleteTarget?.name}」吗？${deleteTarget?.type === 'group' ? '删除分组将同时删除该分组下的所有配置项。' : ''}`"
       :loading="deleteLoading"
       @confirm="handleDeleteConfirm"
+    />
+
+    <!-- History Dialog -->
+    <ConfigHistoryDialog
+      v-model:open="historyDialogOpen"
+      :config="historyConfig"
+      @success="handleHistorySuccess"
+    />
+
+    <!-- Import/Export Dialog -->
+    <ConfigImportExportDialog
+      v-model:open="importExportDialogOpen"
+      @success="handleImportExportSuccess"
+    />
+
+    <!-- Batch Edit Dialog -->
+    <ConfigBatchEditDialog
+      v-model:open="batchEditDialogOpen"
+      :configs="configs"
+      @success="handleBatchEditSuccess"
     />
   </div>
 </template>

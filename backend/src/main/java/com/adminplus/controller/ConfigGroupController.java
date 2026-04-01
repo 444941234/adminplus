@@ -54,6 +54,15 @@ public class ConfigGroupController {
         return ApiResponse.ok(result);
     }
 
+    @GetMapping("/all")
+    @Operation(summary = "查询所有配置组（包括禁用的）")
+    @OperationLog(module = "配置管理", operationType = 1, description = "查询所有配置组")
+    @PreAuthorize("hasAuthority('config:group:query')")
+    public ApiResponse<List<ConfigGroupResp>> getAllConfigGroups() {
+        List<ConfigGroupResp> result = configGroupService.getAllConfigGroups();
+        return ApiResponse.ok(result);
+    }
+
     @GetMapping("/code/{code}")
     @Operation(summary = "根据编码查询配置组")
     @OperationLog(module = "配置管理", operationType = 1, description = "查询配置组编码 {#code}")

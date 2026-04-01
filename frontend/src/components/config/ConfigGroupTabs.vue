@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { Button } from '@/components/ui'
 import { Plus } from 'lucide-vue-next'
 import type { ConfigGroup } from '@/types'
@@ -10,7 +9,7 @@ interface Props {
   loading?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   loading: false
 })
 
@@ -18,24 +17,6 @@ const emit = defineEmits<{
   (e: 'update:activeCode', code: string): void
   (e: 'add'): void
 }>()
-
-// Icon mapping for Lucide icons
-const iconMap: Record<string, string> = {
-  Settings: 'settings',
-  Mail: 'mail',
-  Database: 'database',
-  Shield: 'shield',
-  Bell: 'bell',
-  Users: 'users',
-  Globe: 'globe',
-  Lock: 'lock',
-  Server: 'server',
-  Zap: 'zap'
-}
-
-const getIconComponent = (iconName: string) => {
-  return iconMap[iconName] || 'settings'
-}
 </script>
 
 <template>

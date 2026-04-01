@@ -199,6 +199,15 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
                 .toList();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "configGroup", key = "'all'")
+    public List<ConfigGroupResp> getAllConfigGroups() {
+        return configGroupRepository.findAll(Sort.by(Sort.Direction.ASC, "sortOrder")).stream()
+                .map(this::toVO)
+                .toList();
+    }
+
     /**
      * 实体转换为 VO
      */

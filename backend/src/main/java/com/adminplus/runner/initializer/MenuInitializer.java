@@ -42,15 +42,19 @@ public class MenuInitializer implements DataInitializer {
                 .map(MenuEntity::getPath)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
+        Set<String> existingPermKeys = existingMenus.stream()
+                .map(MenuEntity::getPermKey)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
         // 如果菜单数据为空，执行完整初始化
         if (existingMenus.isEmpty()) {
             log.info("菜单数据为空，执行完整初始化");
             performFullInitialization();
         } else {
-            // 增量添加缺失的菜单
+            // 增量添加缺失的菜单（包括按钮权限）
             log.info("菜单数据已存在，检查并添加缺失的菜单");
-            performIncrementalInitialization(existingPaths);
+            performIncrementalInitialization(existingPaths, existingPermKeys);
         }
     }
 
@@ -89,19 +93,30 @@ public class MenuInitializer implements DataInitializer {
         log.info("初始化菜单数据完成，共 {} 个菜单", menus.size());
     }
 
-    private void performIncrementalInitialization(Set<String> existingPaths) {
+    private void performIncrementalInitialization(Set<String> existingPaths, Set<String> existingPermKeys) {
         List<Object[]> menuData = buildMenuData();
         List<MenuEntity> newMenus = new ArrayList<>();
 
         for (var d : menuData) {
             String path = (String) d[4];
+            String permKey = (String) d[6];
+
+            // 检查是否需要添加：path不存在 或 permKey不存在（用于按钮权限）
+            boolean shouldAdd = false;
             if (path != null && !existingPaths.contains(path)) {
+                shouldAdd = true;
+            } else if (permKey != null && !existingPermKeys.contains(permKey)) {
+                shouldAdd = true;
+            }
+
+            if (shouldAdd) {
                 MenuEntity menu = createMenu(
                         (String) d[0], (String) d[1], (Integer) d[2], (String) d[3], (String) d[4],
                         (String) d[5], (String) d[6], (String) d[7], (Integer) d[8], (Integer) d[9], (Integer) d[10]
                 );
                 newMenus.add(menu);
-                existingPaths.add(path);
+                if (path != null) existingPaths.add(path);
+                if (permKey != null) existingPermKeys.add(permKey);
             }
         }
 
@@ -155,6 +170,12 @@ public class MenuInitializer implements DataInitializer {
 
         // 参数配置按钮权限
         addButtonPermissions(data, "M27", "config", Arrays.asList("add", "edit", "delete", "export", "import", "refresh"));
+
+        // 配置组管理按钮权限（config:group:* 系列权限）
+        addButtonPermissions(data, "M27", "config:group", Arrays.asList("query", "list", "add", "edit", "delete"));
+
+        // 配置项管理按钮权限（config:item/* 系列权限，与config:*对应）
+        addButtonPermissions(data, "M27", "config:item", Arrays.asList("query", "list", "add", "edit", "delete"));
 
         // 数据分析子菜单
         data.add(new Object[]{"M31", "M3", 1, "数据统计", "/analysis/statistics", "analysis/Statistics", "analysis:statistics:view", "TrendCharts", 1, 1, 1});
