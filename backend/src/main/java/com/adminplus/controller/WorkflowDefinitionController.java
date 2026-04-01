@@ -127,7 +127,9 @@ public class WorkflowDefinitionController {
     @Operation(summary = "查询工作流的所有节点")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<List<WorkflowNodeResp>> listNodes(@PathVariable String definitionId) {
+        log.info("查询工作流节点: definitionId={}", definitionId);
         List<WorkflowNodeResp> resp = definitionService.listNodes(definitionId);
+        log.info("查询工作流节点结果: definitionId={}, 节点数={}", definitionId, resp.size());
         return ApiResponse.ok(resp);
     }
 }

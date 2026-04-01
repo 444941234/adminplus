@@ -9,6 +9,7 @@ import {
   CardTitle,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -106,8 +107,12 @@ const fetchDefinitions = () => runList(async () => {
   definitions.value = res.data
 })
 
+// 保留 fetchNodes 用于节点 CRUD 操作后的刷新
 const fetchNodes = (definitionId: string) => runList(
-  async () => { const res = await getWorkflowNodes(definitionId); nodes.value = res.data },
+  async () => {
+    const res = await getWorkflowNodes(definitionId)
+    nodes.value = res.data
+  },
   {
     errorMessage: '获取节点列表失败',
     onError: () => { nodes.value = [] }
@@ -257,10 +262,16 @@ const handleDeleteNode = (node: WorkflowNode) => {
 }
 
 // View navigation
-const enterDesignMode = async (definition: WorkflowDefinition) => {
+const enterDesignMode = (definition: WorkflowDefinition) => {
   selectedDefinition.value = definition
   viewMode.value = 'design'
-  await fetchNodes(definition.id)
+  // WorkflowVisualizer 会自动加载数据并通过 @loaded 事件传递给节点列表
+}
+
+// 处理 WorkflowVisualizer 加载完成事件
+const handleWorkflowLoaded = (workflowDef: any) => {
+  // WorkflowVisualizer 中的 nodes 是 WorkflowNode[] 类型，直接使用
+  nodes.value = workflowDef.nodes
 }
 
 const exitDesignMode = () => {
@@ -387,6 +398,7 @@ onMounted(fetchDefinitions)
                 :definition-id="selectedDefinition.id"
                 :readonly="true"
                 class="rounded-lg"
+                @loaded="handleWorkflowLoaded"
               />
             </div>
 
@@ -455,6 +467,9 @@ onMounted(fetchDefinitions)
       <DialogContent class="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{{ isEditMode ? '编辑流程定义' : '新建流程定义' }}</DialogTitle>
+          <DialogDescription>
+            {{ isEditMode ? '修改流程定义的基本信息和配置' : '创建新的流程定义，设置流程的基本信息和配置' }}
+          </DialogDescription>
         </DialogHeader>
         <div class="space-y-4">
           <div class="space-y-2">
@@ -512,6 +527,9 @@ onMounted(fetchDefinitions)
       <DialogContent class="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{{ isEditMode ? '编辑节点' : '添加节点' }}</DialogTitle>
+          <DialogDescription>
+            {{ isEditMode ? '修改流程节点的配置信息' : '为流程添加新的审批节点' }}
+          </DialogDescription>
         </DialogHeader>
         <WorkflowNodeProperties v-model="nodeForm" />
         <DialogFooter>

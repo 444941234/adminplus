@@ -181,7 +181,10 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
 
     @Override
     public List<WorkflowNodeResp> listNodes(String definitionId) {
-        return nodeRepository.findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(definitionId).stream()
+        log.info("Service层查询工作流节点: definitionId={}", definitionId);
+        List<WorkflowNodeEntity> nodes = nodeRepository.findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(definitionId);
+        log.info("Service层查询结果: definitionId={}, 原始节点数={}", definitionId, nodes.size());
+        return nodes.stream()
                 .map(this::toNodeResponse)
                 .collect(Collectors.toList());
     }

@@ -186,6 +186,26 @@ public class MenuInitializer implements DataInitializer {
         data.add(new Object[]{"M42", "M4", 1, "我的流程", "/workflow/my", "workflow/MyWorkflow", "workflow:instance:list", "Workflow", 2, 1, 1});
         data.add(new Object[]{"M43", "M4", 1, "待我审批", "/workflow/pending", "workflow/PendingApproval", "workflow:pending:list", "Clock3", 3, 1, 1});
         data.add(new Object[]{"M44", "M4", 1, "流程设计", "/workflow/designer", "workflow/WorkflowDesigner", "workflow:design", "Settings", 4, 1, 1});
+        data.add(new Object[]{"M45", "M4", 1, "抄送我的", "/workflow/cc", "workflow/CopyToMe", "workflow:cc:list", "CopyDocument", 5, 1, 1});
+        data.add(new Object[]{"M46", "M4", 1, "催办中心", "/workflow/urge", "workflow/UrgeCenter", "workflow:urge:list", "Bell", 6, 1, 1});
+
+        // 流程模板按钮权限（具体权限 + 通用权限）
+        addButtonPermissions(data, "M41", "workflow:definition", Arrays.asList("create", "update", "delete"));
+        addButtonPermissions(data, "M41", "workflow", Arrays.asList("create", "update", "delete"));
+
+        // 流程实例按钮权限（我的流程、待我审批）
+        addButtonPermissions(data, "M42", "workflow", Arrays.asList("draft", "start", "create", "cancel", "withdraw"));
+        addButtonPermissions(data, "M43", "workflow", Arrays.asList("approve", "reject", "rollback", "add-sign"));
+
+        // 流程设计按钮权限
+        addButtonPermissions(data, "M44", "workflow:design", Arrays.asList("save", "publish", "delete"));
+
+        // 抄送按钮权限
+        addButtonPermissions(data, "M45", "workflow:cc", Arrays.asList("read"));
+
+        // 催办按钮权限（具体权限 + 通用权限）
+        addButtonPermissions(data, "M46", "workflow:urge", Arrays.asList("create", "read"));
+        addButtonPermissions(data, "M46", "workflow", Arrays.asList("urge"));
 
         return data;
     }
@@ -193,12 +213,43 @@ public class MenuInitializer implements DataInitializer {
     private void addButtonPermissions(List<Object[]> data, String parentId, String resource, List<String> actions) {
         int order = 1;
         for (String action : actions) {
+            String actionName = getActionDisplayName(action);
             data.add(new Object[]{parentId + action.charAt(0), parentId, 2,
-                    action.equals("add") ? "新增" : action.equals("edit") ? "编辑" : action.equals("delete") ? "删除" :
-                    action.equals("assign") ? "分配" : action.equals("reset") ? "重置" : action.equals("query") ? "查询" :
-                    action.equals("list") ? "列表" : action.equals("export") ? "导出" : action.equals("upload") ? "上传" : action,
+                    actionName,
                     null, null, resource + ":" + action, null, order++, 0, 1});
         }
+    }
+
+    private String getActionDisplayName(String action) {
+        return switch (action) {
+            case "add" -> "新增";
+            case "edit" -> "编辑";
+            case "delete" -> "删除";
+            case "assign" -> "分配";
+            case "reset" -> "重置";
+            case "query" -> "查询";
+            case "list" -> "列表";
+            case "export" -> "导出";
+            case "import" -> "导入";
+            case "upload" -> "上传";
+            case "refresh" -> "刷新";
+            // 工作流相关操作
+            case "draft" -> "保存草稿";
+            case "start" -> "发起流程";
+            case "create" -> "创建";
+            case "update" -> "更新";
+            case "cancel" -> "取消流程";
+            case "withdraw" -> "撤回流程";
+            case "approve" -> "审批通过";
+            case "reject" -> "审批驳回";
+            case "rollback" -> "回退流程";
+            case "add-sign" -> "加签转办";
+            case "save" -> "保存";
+            case "publish" -> "发布";
+            case "read" -> "查看";
+            case "urge" -> "催办";
+            default -> action;
+        };
     }
 
     private MenuEntity createMenu(String tempId, String parentTempId, Integer type, String name, String path,

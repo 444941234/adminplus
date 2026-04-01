@@ -140,5 +140,102 @@ public class SecurityConstants {
      */
     public static final String CONFIG_APPLY = "config:apply";
 
+    // ==================== 工作流权限 ====================
+
+    /**
+     * 工作流 - 创建流程权限
+     */
+    public static final String WORKFLOW_CREATE = "workflow:create";
+
+    /**
+     * 工作流 - 更新流程权限
+     */
+    public static final String WORKFLOW_UPDATE = "workflow:update";
+
+    /**
+     * 工作流 - 删除流程权限
+     */
+    public static final String WORKFLOW_DELETE = "workflow:delete";
+
+    /**
+     * 工作流 - 保存草稿权限
+     */
+    public static final String WORKFLOW_DRAFT = "workflow:draft";
+
+    /**
+     * 工作流 - 发起流程权限
+     */
+    public static final String WORKFLOW_START = "workflow:start";
+
+    /**
+     * 工作流 - 审批通过权限
+     */
+    public static final String WORKFLOW_APPROVE = "workflow:approve";
+
+    /**
+     * 工作流 - 审批驳回权限
+     */
+    public static final String WORKFLOW_REJECT = "workflow:reject";
+
+    /**
+     * 工作流 - 取消流程权限
+     */
+    public static final String WORKFLOW_CANCEL = "workflow:cancel";
+
+    /**
+     * 工作流 - 撤回流程权限
+     */
+    public static final String WORKFLOW_WITHDRAW = "workflow:withdraw";
+
+    /**
+     * 工作流 - 回退流程权限
+     */
+    public static final String WORKFLOW_ROLLBACK = "workflow:rollback";
+
+    /**
+     * 工作流 - 加签转办权限
+     */
+    public static final String WORKFLOW_ADD_SIGN = "workflow:add-sign";
+
+    /**
+     * 工作流 - 催办权限
+     */
+    public static final String WORKFLOW_URGE = "workflow:urge";
+
+    /**
+     * 工作流定义 - 创建权限
+     */
+    public static final String WORKFLOW_DEFINITION_CREATE = "workflow:definition:create";
+
+    /**
+     * 工作流定义 - 更新权限
+     */
+    public static final String WORKFLOW_DEFINITION_UPDATE = "workflow:definition:update";
+
+    /**
+     * 工作流定义 - 删除权限
+     */
+    public static final String WORKFLOW_DEFINITION_DELETE = "workflow:definition:delete";
+
+    /**
+     * 工作流抄送 - 查看权限
+     */
+    public static final String WORKFLOW_CC_READ = "workflow:cc:read";
+
+    /**
+     * 工作流抄送 - 列表权限
+     */
+    public static final String WORKFLOW_CC_LIST = "workflow:cc:list";
+
+    /**
+     * 工作流催办 - 查看权限
+     */
+    public static final String WORKFLOW_URGE_READ = "workflow:urge:read";
+
+    /**
+     * 工作流催办 - 列表权限
+     */
+    public static final String WORKFLOW_URGE_LIST = "workflow:urge:list";
+
     public SecurityConstants() {}
 }

@@ -24,6 +24,7 @@ const staticRoutes: RouteRecordRaw[] = [
     children: [
       {
         path: '',
+        name: 'RootRedirect',
         redirect: () => (localStorage.getItem('token') ? '/dashboard' : '/login')
       },
       {

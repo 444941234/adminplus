@@ -104,8 +104,6 @@ watch(
   },
   { immediate: true }
 )
-
-onMounted(loadOptions)
 </script>
 
 <template>

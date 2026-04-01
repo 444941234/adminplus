@@ -58,7 +58,7 @@ const nodes = computed<Node[]>(() => {
 
   return definition.value.nodes.map((node, index) => ({
     id: node.id,
-    label: node.name,
+    label: node.nodeName,
     position: { x: index * 250, y: 0 },
     style: {
       background: getNodeColor(node, index),
@@ -69,7 +69,7 @@ const nodes = computed<Node[]>(() => {
       fontSize: '14px'
     },
     data: {
-      label: node.name,
+      label: node.nodeName,
       node: node
     },
     type: 'default'
@@ -130,16 +130,18 @@ function mapWorkflowNodes(
   nodes: WorkflowNodeData[],
   currentNodeId?: string | null,
   completedNodeIds = new Set<string>()
-): WorkflowNode[] {
+): WorkflowNodeData[] {
   return nodes.map((node) => ({
     id: node.id,
-    name: node.nodeName,
-    code: node.nodeCode,
-    order: node.nodeOrder,
+    nodeName: node.nodeName,
+    nodeCode: node.nodeCode,
+    nodeOrder: node.nodeOrder,
     approverType: node.approverType,
     approverId: node.approverId,
     isCounterSign: node.isCounterSign,
     autoPassSameUser: node.autoPassSameUser,
+    description: node.description,
+    createTime: node.createTime,
     state: node.id === currentNodeId
       ? 'current'
       : completedNodeIds.has(node.id)
@@ -217,13 +219,10 @@ onNodesChange(() => {
   if (props.readonly) return
 })
 
+// watch with immediate: true 会自动在组件初始化时执行，不需要 onMounted
 watch(() => [props.definitionId, props.instanceId], () => {
   loadWorkflowDefinition()
 }, { immediate: true })
-
-onMounted(() => {
-  loadWorkflowDefinition()
-})
 </script>
 
 <template>
