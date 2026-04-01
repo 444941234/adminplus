@@ -59,7 +59,7 @@ public class RoleInitializer implements DataInitializer {
         role.setName(name);
         role.setDescription(description);
         role.setStatus(status);
-        // RoleEntity doesn't have sortOrder field
+        role.setSortOrder(sortOrder);
         return role;
     }
 }

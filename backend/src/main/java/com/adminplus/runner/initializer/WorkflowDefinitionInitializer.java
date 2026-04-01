@@ -4,6 +4,7 @@ import com.adminplus.pojo.entity.WorkflowDefinitionEntity;
 import com.adminplus.pojo.entity.WorkflowNodeEntity;
 import com.adminplus.repository.WorkflowDefinitionRepository;
 import com.adminplus.repository.WorkflowNodeRepository;
+import com.adminplus.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
 
     private final WorkflowDefinitionRepository definitionRepository;
     private final WorkflowNodeRepository nodeRepository;
+    private final UserRepository userRepository;
 
     @Override
     public int getOrder() {
@@ -56,19 +58,24 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         log.info("开始初始化工作流定义数据（当前: {} 个定义，{} 个节点）",
                 definitionCount, nodeCount);
 
+        // 获取 admin 用户 ID
+        String adminUserId = userRepository.findByUsername("admin")
+                .map(u -> u.getId())
+                .orElse("system");
+
         List<WorkflowDefinitionEntity> definitions = new ArrayList<>();
 
         // 1. 请假申请流程（简单流程）
-        definitions.add(createLeaveRequestWorkflow());
+        definitions.add(createLeaveRequestWorkflow(adminUserId));
 
         // 2. 报销申请流程（条件分支）
-        definitions.add(createExpenseClaimWorkflow());
+        definitions.add(createExpenseClaimWorkflow(adminUserId));
 
         // 3. 采购申请流程（多级审批）
-        definitions.add(createPurchaseRequestWorkflow());
+        definitions.add(createPurchaseRequestWorkflow(adminUserId));
 
         // 4. 合同审批流程（复杂流程 - 条件分支 + 会签 + 并行审批）
-        definitions.add(createContractApprovalWorkflow());
+        definitions.add(createContractApprovalWorkflow(adminUserId));
 
         // 保存工作流定义
         List<WorkflowDefinitionEntity> savedDefinitions = definitionRepository.saveAll(definitions);
@@ -77,13 +84,13 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         List<WorkflowNodeEntity> nodes = new ArrayList<>();
         for (WorkflowDefinitionEntity definition : savedDefinitions) {
             if ("leave_request".equals(definition.getDefinitionKey())) {
-                nodes.addAll(createLeaveRequestNodes(definition));
+                nodes.addAll(createLeaveRequestNodes(definition, adminUserId));
             } else if ("expense_claim".equals(definition.getDefinitionKey())) {
-                nodes.addAll(createExpenseClaimNodes(definition));
+                nodes.addAll(createExpenseClaimNodes(definition, adminUserId));
             } else if ("purchase_request".equals(definition.getDefinitionKey())) {
-                nodes.addAll(createPurchaseRequestNodes(definition));
+                nodes.addAll(createPurchaseRequestNodes(definition, adminUserId));
             } else if ("contract_approval".equals(definition.getDefinitionKey())) {
-                nodes.addAll(createContractApprovalNodes(definition));
+                nodes.addAll(createContractApprovalNodes(definition, adminUserId));
             }
         }
 
@@ -96,7 +103,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
     /**
      * 创建请假申请工作流定义
      */
-    private WorkflowDefinitionEntity createLeaveRequestWorkflow() {
+    private WorkflowDefinitionEntity createLeaveRequestWorkflow(String userId) {
         WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
         definition.setDefinitionName("请假申请");
         definition.setDefinitionKey("leave_request");
@@ -105,22 +112,24 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         definition.setStatus(1);
         definition.setVersion(1);
         definition.setFormConfig(buildLeaveRequestFormConfig());
+        definition.setCreateUser(userId);
+        definition.setUpdateUser(userId);
         return definition;
     }
 
     /**
      * 创建请假申请节点
      */
-    private List<WorkflowNodeEntity> createLeaveRequestNodes(WorkflowDefinitionEntity definition) {
+    private List<WorkflowNodeEntity> createLeaveRequestNodes(WorkflowDefinitionEntity definition, String userId) {
         List<WorkflowNodeEntity> nodes = new ArrayList<>();
 
         // 部门经理审批
         nodes.add(createNode(definition, "部门审批", "dept_approval",
-                1, "role", "ROLE_MANAGER", false, true, "部门经理审批"));
+                1, "role", "ROLE_MANAGER", false, true, "部门经理审批", userId));
 
         // 人事审批（请假天数>=3天）
         nodes.add(createNode(definition, "人事审批", "hr_approval",
-                2, "role", "ROLE_HR", false, true, "人事部门审批"));
+                2, "role", "ROLE_HR", false, true, "人事部门审批", userId));
 
         return nodes;
     }
@@ -128,7 +137,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
     /**
      * 创建报销申请工作流定义
      */
-    private WorkflowDefinitionEntity createExpenseClaimWorkflow() {
+    private WorkflowDefinitionEntity createExpenseClaimWorkflow(String userId) {
         WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
         definition.setDefinitionName("报销申请");
         definition.setDefinitionKey("expense_claim");
@@ -137,22 +146,24 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         definition.setStatus(1);
         definition.setVersion(1);
         definition.setFormConfig(buildExpenseClaimFormConfig());
+        definition.setCreateUser(userId);
+        definition.setUpdateUser(userId);
         return definition;
     }
 
     /**
      * 创建报销申请节点
      */
-    private List<WorkflowNodeEntity> createExpenseClaimNodes(WorkflowDefinitionEntity definition) {
+    private List<WorkflowNodeEntity> createExpenseClaimNodes(WorkflowDefinitionEntity definition, String userId) {
         List<WorkflowNodeEntity> nodes = new ArrayList<>();
 
         // 部门经理审批
         nodes.add(createNode(definition, "部门审批", "dept_approval",
-                1, "role", "ROLE_MANAGER", false, true, "部门经理审批"));
+                1, "role", "ROLE_MANAGER", false, true, "部门经理审批", userId));
 
         // 财务审批（金额>=5000）
         nodes.add(createNode(definition, "财务审批", "finance_approval",
-                2, "role", "ROLE_FINANCE", false, true, "财务部门审批"));
+                2, "role", "ROLE_FINANCE", false, true, "财务部门审批", userId));
 
         return nodes;
     }
@@ -160,7 +171,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
     /**
      * 创建采购申请工作流定义
      */
-    private WorkflowDefinitionEntity createPurchaseRequestWorkflow() {
+    private WorkflowDefinitionEntity createPurchaseRequestWorkflow(String userId) {
         WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
         definition.setDefinitionName("采购申请");
         definition.setDefinitionKey("purchase_request");
@@ -169,26 +180,28 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         definition.setStatus(1);
         definition.setVersion(1);
         definition.setFormConfig(buildPurchaseRequestFormConfig());
+        definition.setCreateUser(userId);
+        definition.setUpdateUser(userId);
         return definition;
     }
 
     /**
      * 创建采购申请节点
      */
-    private List<WorkflowNodeEntity> createPurchaseRequestNodes(WorkflowDefinitionEntity definition) {
+    private List<WorkflowNodeEntity> createPurchaseRequestNodes(WorkflowDefinitionEntity definition, String userId) {
         List<WorkflowNodeEntity> nodes = new ArrayList<>();
 
         // 部门经理审批
         nodes.add(createNode(definition, "部门审批", "dept_approval",
-                1, "role", "ROLE_MANAGER", false, true, "部门经理审批"));
+                1, "role", "ROLE_MANAGER", false, true, "部门经理审批", userId));
 
         // 采购部审批
         nodes.add(createNode(definition, "采购部审批", "purchase_approval",
-                2, "role", "ROLE_PURCHASE", false, true, "采购部门审批"));
+                2, "role", "ROLE_PURCHASE", false, true, "采购部门审批", userId));
 
         // 财务审批（金额>=10000）
         nodes.add(createNode(definition, "财务审批", "finance_approval",
-                3, "role", "ROLE_FINANCE", false, true, "财务部门审批"));
+                3, "role", "ROLE_FINANCE", false, true, "财务部门审批", userId));
 
         return nodes;
     }
@@ -200,7 +213,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
                                           String nodeName, String nodeCode,
                                           int nodeOrder, String approverType,
                                           String approverId, boolean isCounterSign,
-                                          boolean autoPassSameUser, String description) {
+                                          boolean autoPassSameUser, String description, String userId) {
         WorkflowNodeEntity node = new WorkflowNodeEntity();
         node.setDefinitionId(definition.getId());
         node.setNodeName(nodeName);
@@ -211,6 +224,8 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         node.setIsCounterSign(isCounterSign);
         node.setAutoPassSameUser(autoPassSameUser);
         node.setDescription(description);
+        node.setCreateUser(userId);
+        node.setUpdateUser(userId);
         return node;
     }
 
@@ -375,7 +390,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
      * - 抄送功能：关键节点抄送给相关人员
      * </p>
      */
-    private WorkflowDefinitionEntity createContractApprovalWorkflow() {
+    private WorkflowDefinitionEntity createContractApprovalWorkflow(String userId) {
         WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
         definition.setDefinitionName("合同审批");
         definition.setDefinitionKey("contract_approval");
@@ -384,25 +399,27 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         definition.setStatus(1);
         definition.setVersion(1);
         definition.setFormConfig(buildContractApprovalFormConfig());
+        definition.setCreateUser(userId);
+        definition.setUpdateUser(userId);
         return definition;
     }
 
     /**
      * 创建合同审批节点（复杂流程）
      */
-    private List<WorkflowNodeEntity> createContractApprovalNodes(WorkflowDefinitionEntity definition) {
+    private List<WorkflowNodeEntity> createContractApprovalNodes(WorkflowDefinitionEntity definition, String userId) {
         List<WorkflowNodeEntity> nodes = new ArrayList<>();
 
         // 节点1: 部门经理初审（所有合同必经）
         nodes.add(createNode(definition, "部门初审", "dept_review",
                 1, "role", "ROLE_MANAGER", false, true,
-                "部门经理对合同进行初步审核"));
+                "部门经理对合同进行初步审核", userId));
 
         // 节点2: 法务审核（合同金额>=10万或法务审查需求）
         // 条件: amount >= 100000 || needLegalReview == true
         WorkflowNodeEntity legalReview = createNode(definition, "法务审核", "legal_review",
                 2, "role", "ROLE_LEGAL", false, true,
-                "法务部门审核合同条款和风险");
+                "法务部门审核合同条款和风险", userId);
         legalReview.setConditionExpression("#amount >= 100000 or #needLegalReview == true");
         nodes.add(legalReview);
 
@@ -410,7 +427,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         // 条件: amount >= 50000
         WorkflowNodeEntity financeReview = createNode(definition, "财务审核", "finance_review",
                 3, "role", "ROLE_FINANCE", false, true,
-                "财务部门审核合同金额和付款条款");
+                "财务部门审核合同金额和付款条款", userId);
         financeReview.setConditionExpression("#amount >= 50000");
         nodes.add(financeReview);
 
@@ -418,7 +435,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         // 条件: amount >= 500000
         WorkflowNodeEntity jointReview = createNode(definition, "法务财务会签", "joint_review",
                 4, "role", "ROLE_LEGAL,ROLE_FINANCE", true, false,
-                "重大合同需要法务和财务部门同时审批");
+                "重大合同需要法务和财务部门同时审批", userId);
         jointReview.setConditionExpression("#amount >= 500000");
         nodes.add(jointReview);
 
@@ -426,7 +443,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         // 条件: amount >= 200000 and amount < 500000
         WorkflowNodeEntity directorApproval = createNode(definition, "总监审批", "director_approval",
                 5, "role", "ROLE_DIRECTOR", false, true,
-                "业务总监审批");
+                "业务总监审批", userId);
         directorApproval.setConditionExpression("#amount >= 200000 and #amount < 500000");
         nodes.add(directorApproval);
 
@@ -434,7 +451,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         // 条件: amount >= 500000 and amount < 1000000
         WorkflowNodeEntity vpApproval = createNode(definition, "副总经理审批", "vp_approval",
                 6, "role", "ROLE_VICE_PRESIDENT", false, true,
-                "副总经理审批");
+                "副总经理审批", userId);
         vpApproval.setConditionExpression("#amount >= 500000 and #amount < 1000000");
         nodes.add(vpApproval);
 
@@ -442,7 +459,7 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
         // 条件: amount >= 1000000
         WorkflowNodeEntity gmApproval = createNode(definition, "总经理审批", "gm_approval",
                 7, "role", "ROLE_PRESIDENT", false, false,
-                "总经理审批（重大合同）");
+                "总经理审批（重大合同）", userId);
         gmApproval.setConditionExpression("#amount >= 1000000");
         nodes.add(gmApproval);
 

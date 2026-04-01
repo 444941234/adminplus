@@ -2,6 +2,7 @@ package com.adminplus.runner.initializer;
 
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.pojo.entity.DeptEntity;
+import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class UserInitializer implements DataInitializer {
 
     private final UserRepository userRepository;
     private final DeptRepository deptRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -88,7 +90,38 @@ public class UserInitializer implements DataInitializer {
                 deptMap.get("HQ").getId(), encodedPassword));
 
         userRepository.saveAll(users);
-        log.info("初始化用户数据完成，共 {} 个用户", users.size());
+
+        // 获取 admin 用户 ID，更新所有用户的 createUser/updateUser
+        UserEntity adminUser = users.stream()
+                .filter(u -> "admin".equals(u.getUsername()))
+                .findFirst()
+                .orElse(null);
+
+        if (adminUser != null) {
+            String adminId = adminUser.getId();
+            for (UserEntity user : users) {
+                user.setCreateUser(adminId);
+                user.setUpdateUser(adminId);
+            }
+            userRepository.saveAll(users);
+
+            // 更新部门的 createUser/updateUser
+            for (DeptEntity dept : depts) {
+                dept.setCreateUser(adminId);
+                dept.setUpdateUser(adminId);
+            }
+            deptRepository.saveAll(depts);
+
+            // 更新角色的 createUser/updateUser
+            List<RoleEntity> roles = roleRepository.findAll();
+            for (RoleEntity role : roles) {
+                role.setCreateUser(adminId);
+                role.setUpdateUser(adminId);
+            }
+            roleRepository.saveAll(roles);
+        }
+
+        log.info("初始化用户数据完成，共 {} 个用户，已更新部门和角色的创建者", users.size());
     }
 
     private UserEntity createUser(String username, String nickname, String email, String phone,

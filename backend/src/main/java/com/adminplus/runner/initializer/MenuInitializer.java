@@ -159,6 +159,12 @@ public class MenuInitializer implements DataInitializer {
         // 字典管理按钮权限
         addButtonPermissions(data, "M24", "dict", Arrays.asList("add", "edit", "delete"));
 
+        // 字典项按钮权限（使用具体名称避免与其他菜单冲突）
+        data.add(new Object[]{"M24l", "M24", 2, "字典项列表", null, null, "dictitem:list", null, 1, 0, 1});
+        data.add(new Object[]{"M24a", "M24", 2, "新增字典项", null, null, "dictitem:add", null, 2, 0, 1});
+        data.add(new Object[]{"M24e", "M24", 2, "编辑字典项", null, null, "dictitem:edit", null, 3, 0, 1});
+        data.add(new Object[]{"M24d", "M24", 2, "删除字典项", null, null, "dictitem:delete", null, 4, 0, 1});
+
         // 部门管理按钮权限
         addButtonPermissions(data, "M25", "dept", Arrays.asList("add", "edit", "delete", "query", "list"));
 

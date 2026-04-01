@@ -61,21 +61,24 @@ public class PermissionInitializer implements DataInitializer {
         Map<String, UserEntity> userMap = users.stream()
                 .collect(Collectors.toMap(UserEntity::getUsername, u -> u));
 
+        // 获取 admin 用户 ID
+        String adminUserId = userMap.get("admin") != null ? userMap.get("admin").getId() : "system";
+
         // 初始化角色-菜单权限
-        initializeRoleMenus(roleMap, menuById, menuByName, existingRoleMenuKeys);
+        initializeRoleMenus(roleMap, menuById, menuByName, existingRoleMenuKeys, adminUserId);
 
         // 初始化用户-角色关联
-        initializeUserRoles(roleMap, userMap, existingUserRoleKeys);
+        initializeUserRoles(roleMap, userMap, existingUserRoleKeys, adminUserId);
 
         log.info("权限关联初始化完成");
     }
 
     private void initializeRoleMenus(Map<String, RoleEntity> roleMap, Map<String, MenuEntity> menuById,
-                                     Map<String, MenuEntity> menuByName, Set<String> existingKeys) {
+                                     Map<String, MenuEntity> menuByName, Set<String> existingKeys, String adminUserId) {
         // 超级管理员拥有所有权限
         RoleEntity adminRole = roleMap.get("ROLE_ADMIN");
         if (adminRole != null) {
-            menuById.values().forEach(menu -> saveRoleMenuIfAbsent(adminRole, menu, existingKeys));
+            menuById.values().forEach(menu -> saveRoleMenuIfAbsent(adminRole, menu, existingKeys, adminUserId));
         }
 
         // 部门经理权限
@@ -88,7 +91,7 @@ public class PermissionInitializer implements DataInitializer {
                 "发起流程", "保存草稿", "创建", "更新", "删除", "撤回流程", "取消流程",
                 "审批通过", "审批驳回", "回退流程", "加签转办", "查看", "查看", "催办",
                 "文件管理", "上传文件", "删除文件"
-            ));
+            ), adminUserId);
         }
 
         // 开发人员权限
@@ -103,7 +106,7 @@ public class PermissionInitializer implements DataInitializer {
                 "创建", "撤回流程", "取消流程", "查看", "查看", "催办",
                 "保存", "发布", "删除",
                 "文件管理", "上传文件", "删除文件"
-            ));
+            ), adminUserId);
         }
 
         // 运营人员权限
@@ -114,7 +117,7 @@ public class PermissionInitializer implements DataInitializer {
                 "工作流管理", "流程模板", "我的流程", "抄送我的", "催办中心",
                 "发起流程", "保存草稿", "创建", "撤回流程", "取消流程", "查看", "查看", "催办",
                 "文件管理", "上传文件", "删除文件"
-            ));
+            ), adminUserId);
         }
 
         // 普通用户权限
@@ -124,20 +127,20 @@ public class PermissionInitializer implements DataInitializer {
                 "首页", "工作流管理", "流程模板", "我的流程", "抄送我的", "催办中心",
                 "发起流程", "保存草稿", "创建", "撤回流程", "取消流程", "查看", "查看", "催办",
                 "文件管理", "上传文件", "删除文件"
-            ));
+            ), adminUserId);
         }
     }
 
     private void assignMenusToRole(RoleEntity role, Map<String, MenuEntity> menuByName,
-                                   Set<String> existingKeys, List<String> menuNames) {
+                                   Set<String> existingKeys, List<String> menuNames, String adminUserId) {
         menuNames.stream()
                 .map(menuByName::get)
                 .filter(Objects::nonNull)
-                .forEach(menu -> saveRoleMenuIfAbsent(role, menu, existingKeys));
+                .forEach(menu -> saveRoleMenuIfAbsent(role, menu, existingKeys, adminUserId));
     }
 
     private void initializeUserRoles(Map<String, RoleEntity> roleMap, Map<String, UserEntity> userMap,
-                                     Set<String> existingKeys) {
+                                     Set<String> existingKeys, String adminUserId) {
         RoleEntity adminRole = roleMap.get("ROLE_ADMIN");
         RoleEntity managerRole = roleMap.get("ROLE_MANAGER");
         RoleEntity userRole = roleMap.get("ROLE_USER");
@@ -145,31 +148,31 @@ public class PermissionInitializer implements DataInitializer {
         RoleEntity operatorRole = roleMap.get("ROLE_OPERATOR");
 
         if (adminRole != null) {
-            saveUserRoleIfAbsent(userMap.get("admin"), adminRole, existingKeys);
+            saveUserRoleIfAbsent(userMap.get("admin"), adminRole, existingKeys, adminUserId);
         }
         if (managerRole != null) {
-            saveUserRoleIfAbsent(userMap.get("manager"), managerRole, existingKeys);
+            saveUserRoleIfAbsent(userMap.get("manager"), managerRole, existingKeys, adminUserId);
         }
         if (userRole != null) {
-            saveUserRoleIfAbsent(userMap.get("user1"), userRole, existingKeys);
-            saveUserRoleIfAbsent(userMap.get("user2"), userRole, existingKeys);
-            saveUserRoleIfAbsent(userMap.get("cs1"), userRole, existingKeys);
-            saveUserRoleIfAbsent(userMap.get("cs2"), userRole, existingKeys);
+            saveUserRoleIfAbsent(userMap.get("user1"), userRole, existingKeys, adminUserId);
+            saveUserRoleIfAbsent(userMap.get("user2"), userRole, existingKeys, adminUserId);
+            saveUserRoleIfAbsent(userMap.get("cs1"), userRole, existingKeys, adminUserId);
+            saveUserRoleIfAbsent(userMap.get("cs2"), userRole, existingKeys, adminUserId);
         }
         if (developerRole != null) {
-            saveUserRoleIfAbsent(userMap.get("dev1"), developerRole, existingKeys);
-            saveUserRoleIfAbsent(userMap.get("dev2"), developerRole, existingKeys);
+            saveUserRoleIfAbsent(userMap.get("dev1"), developerRole, existingKeys, adminUserId);
+            saveUserRoleIfAbsent(userMap.get("dev2"), developerRole, existingKeys, adminUserId);
         }
         if (operatorRole != null) {
-            saveUserRoleIfAbsent(userMap.get("operator1"), operatorRole, existingKeys);
-            saveUserRoleIfAbsent(userMap.get("operator2"), operatorRole, existingKeys);
+            saveUserRoleIfAbsent(userMap.get("operator1"), operatorRole, existingKeys, adminUserId);
+            saveUserRoleIfAbsent(userMap.get("operator2"), operatorRole, existingKeys, adminUserId);
         }
     }
 
-    private void saveRoleMenuIfAbsent(RoleEntity role, MenuEntity menu, Set<String> existingKeys) {
+    private void saveRoleMenuIfAbsent(RoleEntity role, MenuEntity menu, Set<String> existingKeys, String adminUserId) {
         String key = role.getId() + ":" + menu.getId();
         if (existingKeys.add(key)) {
-            roleMenuRepository.save(createRoleMenu(role.getId(), menu.getId()));
+            roleMenuRepository.save(createRoleMenu(role.getId(), menu.getId(), adminUserId));
             // 记录新添加的权限关联（用于调试）
             if (menu.getPermKey() != null && menu.getPermKey().startsWith("config")) {
                 log.info("✅ 新增权限关联: role={} <- menu={}, permKey={}",
@@ -178,27 +181,31 @@ public class PermissionInitializer implements DataInitializer {
         }
     }
 
-    private void saveUserRoleIfAbsent(UserEntity user, RoleEntity role, Set<String> existingKeys) {
+    private void saveUserRoleIfAbsent(UserEntity user, RoleEntity role, Set<String> existingKeys, String adminUserId) {
         if (user == null) return;
         String key = user.getId() + ":" + role.getId();
         if (existingKeys.add(key)) {
-            userRoleRepository.save(createUserRole(user.getId(), role.getId()));
+            userRoleRepository.save(createUserRole(user.getId(), role.getId(), adminUserId));
         }
     }
 
-    private RoleMenuEntity createRoleMenu(String roleId, String menuId) {
+    private RoleMenuEntity createRoleMenu(String roleId, String menuId, String adminUserId) {
         RoleMenuEntity roleMenu = new RoleMenuEntity();
         roleMenu.setId(IdUtils.nextIdStr());
         roleMenu.setRoleId(roleId);
         roleMenu.setMenuId(menuId);
+        roleMenu.setCreateUser(adminUserId);
+        roleMenu.setUpdateUser(adminUserId);
         return roleMenu;
     }
 
-    private UserRoleEntity createUserRole(String userId, String roleId) {
+    private UserRoleEntity createUserRole(String userId, String roleId, String adminUserId) {
         UserRoleEntity userRole = new UserRoleEntity();
         userRole.setId(IdUtils.nextIdStr());
         userRole.setUserId(userId);
         userRole.setRoleId(roleId);
+        userRole.setCreateUser(adminUserId);
+        userRole.setUpdateUser(adminUserId);
         return userRole;
     }
 }
