@@ -11,7 +11,10 @@ import {
   Textarea,
   Button
 } from '@/components/ui'
-import { Upload, X, Paperclip } from 'lucide-vue-next'
+import { Upload, X, Loader2 } from 'lucide-vue-next'
+import { UserSelector, DeptSelector } from '@/components/common'
+import { uploadManagedFile } from '@/api'
+import { toast } from 'vue-sonner'
 import type { WorkflowFormField as WorkflowFormFieldType } from '@/types'
 
 const props = defineProps<{
@@ -58,20 +61,46 @@ const handleInput = (event: Event) => {
 
 // 文件上传相关
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const uploading = ref(false)
 const selectedFileName = ref<string>('')
 
-const handleFileSelect = (event: Event) => {
+// 初始化文件名显示
+if (props.modelValue && typeof props.modelValue === 'string') {
+  try {
+    const url = new URL(props.modelValue)
+    selectedFileName.value = url.pathname.split('/').pop() || props.modelValue
+  } catch {
+    selectedFileName.value = props.modelValue
+  }
+}
+
+const handleFileSelect = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
-  if (file) {
-    selectedFileName.value = file.name
-    // 这里暂时只存储文件名，实际项目需要上传到服务器获取 URL
-    emit('update:modelValue', file.name)
+  if (!file) return
+
+  uploading.value = true
+  selectedFileName.value = file.name
+
+  try {
+    const res = await uploadManagedFile(file, 'workflow')
+    emit('update:modelValue', res.data.fileUrl)
+    toast.success('文件上传成功')
+  } catch (error) {
+    selectedFileName.value = ''
+    toast.error('文件上传失败')
+    if (fileInputRef.value) {
+      fileInputRef.value.value = ''
+    }
+  } finally {
+    uploading.value = false
   }
 }
 
 const triggerFileSelect = () => {
-  fileInputRef.value?.click()
+  if (!uploading.value) {
+    fileInputRef.value?.click()
+  }
 }
 
 const clearFile = () => {
@@ -190,18 +219,21 @@ initDateRange()
           ref="fileInputRef"
           type="file"
           class="hidden"
+          :disabled="uploading"
           @change="handleFileSelect"
         />
         <Button
           variant="outline"
           class="flex-1 justify-start"
+          :disabled="uploading"
           @click="triggerFileSelect"
         >
-          <Upload class="mr-2 h-4 w-4" />
-          {{ selectedFileName || modelValue || field.placeholder || '选择文件' }}
+          <Loader2 v-if="uploading" class="mr-2 h-4 w-4 animate-spin" />
+          <Upload v-else class="mr-2 h-4 w-4" />
+          {{ uploading ? '上传中...' : (selectedFileName || field.placeholder || '选择文件') }}
         </Button>
         <Button
-          v-if="selectedFileName || modelValue"
+          v-if="selectedFileName && !uploading"
           variant="ghost"
           size="icon"
           @click="clearFile"
@@ -212,33 +244,19 @@ initDateRange()
     </template>
 
     <template v-else-if="field.component === 'user'">
-      <!-- 用户选择器 - 暂时用输入框，后续可替换为用户选择组件 -->
-      <div class="flex items-center gap-2">
-        <Input
-          :id="field.field"
-          :model-value="typeof modelValue === 'string' ? modelValue : ''"
-          :placeholder="field.placeholder || '请输入用户名或选择用户'"
-          @update:model-value="(value) => emit('update:modelValue', value)"
-        />
-        <Button variant="outline" size="icon" disabled title="用户选择功能开发中">
-          <Paperclip class="h-4 w-4" />
-        </Button>
-      </div>
+      <UserSelector
+        :model-value="typeof modelValue === 'string' ? modelValue : ''"
+        :placeholder="field.placeholder || '请选择用户'"
+        @update:model-value="(value) => emit('update:modelValue', value)"
+      />
     </template>
 
     <template v-else-if="field.component === 'dept'">
-      <!-- 部门选择器 - 暂时用输入框，后续可替换为部门选择组件 -->
-      <div class="flex items-center gap-2">
-        <Input
-          :id="field.field"
-          :model-value="typeof modelValue === 'string' ? modelValue : ''"
-          :placeholder="field.placeholder || '请输入部门名或选择部门'"
-          @update:model-value="(value) => emit('update:modelValue', value)"
-        />
-        <Button variant="outline" size="icon" disabled title="部门选择功能开发中">
-          <Paperclip class="h-4 w-4" />
-        </Button>
-      </div>
+      <DeptSelector
+        :model-value="typeof modelValue === 'string' ? modelValue : ''"
+        :placeholder="field.placeholder || '请选择部门'"
+        @update:model-value="(value) => emit('update:modelValue', value)"
+      />
     </template>
 
     <template v-else>
