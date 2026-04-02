@@ -576,27 +576,29 @@ onMounted(() => {
           <div class="space-y-2">
             <Label class="text-base font-medium">申请表单配置</Label>
 
-            <!-- Form template selector -->
-            <div class="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border mb-4">
-              <div class="flex-1 space-y-2">
-                <Label class="text-sm font-medium">从表单模板导入</Label>
-                <Select v-model="selectedFormTemplateId">
-                  <SelectTrigger>
-                    <SelectValue placeholder="选择表单模板（可选）" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem v-for="template in formTemplates" :key="template.id" :value="template.id">
-                      <div class="flex items-center justify-between w-full gap-2">
-                        <span class="flex-1">{{ template.templateName }}</span>
-                        <Badge variant="secondary" class="text-xs">{{ template.category || '未分类' }}</Badge>
-                      </div>
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+            <!-- Form template selector - 独占一行 -->
+            <div class="p-4 bg-muted/50 rounded-lg border">
+              <div class="flex items-end gap-3">
+                <div class="flex-1 space-y-2">
+                  <Label class="text-sm font-medium">从表单模板导入</Label>
+                  <Select v-model="selectedFormTemplateId">
+                    <SelectTrigger>
+                      <SelectValue placeholder="选择表单模板（可选）" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem v-for="template in formTemplates" :key="template.id" :value="template.id">
+                        <div class="flex items-center justify-between w-full gap-2">
+                          <span class="flex-1">{{ template.templateName }}</span>
+                          <Badge variant="secondary" class="text-xs">{{ template.category || '未分类' }}</Badge>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button size="default" @click="importFormTemplate" :disabled="!selectedFormTemplateId">
+                  导入模板
+                </Button>
               </div>
-              <Button size="sm" @click="importFormTemplate" :disabled="!selectedFormTemplateId">
-                导入模板
-              </Button>
             </div>
 
             <!-- 表单配置编辑器 -->
