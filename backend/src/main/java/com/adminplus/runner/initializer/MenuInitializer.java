@@ -275,30 +275,34 @@ public class MenuInitializer implements DataInitializer {
         data.add(new Object[]{"M32", "M3", 1, "报表管理", "/analysis/report", "analysis/Report", "analysis:report:view", "DataAnalysis", 2, 1, 1});
 
         // 工作流管理子菜单
-        data.add(new Object[]{"M41", "M4", 1, "流程模板", "/workflow/definitions", "workflow/WorkflowCenter", "workflow:definition:list", "GitBranch", 1, 1, 1});
-        data.add(new Object[]{"M42", "M4", 1, "我的流程", "/workflow/my", "workflow/MyWorkflow", "workflow:instance:list", "Workflow", 2, 1, 1});
-        data.add(new Object[]{"M43", "M4", 1, "待我审批", "/workflow/pending", "workflow/PendingApproval", "workflow:pending:list", "Clock3", 3, 1, 1});
-        data.add(new Object[]{"M44", "M4", 1, "流程设计", "/workflow/designer", "workflow/WorkflowDesigner", "workflow:design", "Settings", 4, 1, 1});
-        data.add(new Object[]{"M45", "M4", 1, "抄送我的", "/workflow/cc", "workflow/CopyToMe", "workflow:cc:list", "CopyDocument", 5, 1, 1});
-        data.add(new Object[]{"M46", "M4", 1, "催办中心", "/workflow/urge", "workflow/UrgeCenter", "workflow:urge:list", "Bell", 6, 1, 1});
+        data.add(new Object[]{"M41", "M4", 1, "表单管理", "/workflow/forms", "workflow/FormManager", "workflow:form:list", "FileText", 1, 1, 1});
+        data.add(new Object[]{"M42", "M4", 1, "流程模板", "/workflow/definitions", "workflow/WorkflowCenter", "workflow:definition:list", "GitBranch", 2, 1, 1});
+        data.add(new Object[]{"M43", "M4", 1, "我的流程", "/workflow/my", "workflow/MyWorkflow", "workflow:instance:list", "Workflow", 3, 1, 1});
+        data.add(new Object[]{"M44", "M4", 1, "待我审批", "/workflow/pending", "workflow/PendingApproval", "workflow:pending:list", "Clock3", 4, 1, 1});
+        data.add(new Object[]{"M45", "M4", 1, "流程设计", "/workflow/designer", "workflow/WorkflowDesigner", "workflow:design", "Settings", 5, 1, 1});
+        data.add(new Object[]{"M46", "M4", 1, "抄送我的", "/workflow/cc", "workflow/CopyToMe", "workflow:cc:list", "CopyDocument", 6, 1, 1});
+        data.add(new Object[]{"M47", "M4", 1, "催办中心", "/workflow/urge", "workflow/UrgeCenter", "workflow:urge:list", "Bell", 7, 1, 1});
+
+        // 表单管理按钮权限
+        addButtonPermissions(data, "M41", "workflow:form", Arrays.asList("create", "update", "delete", "view"));
 
         // 流程模板按钮权限（具体权限 + 通用权限）
-        addButtonPermissions(data, "M41", "workflow:definition", Arrays.asList("create", "update", "delete"));
-        addButtonPermissions(data, "M41", "workflow", Arrays.asList("create", "update", "delete"));
+        addButtonPermissions(data, "M42", "workflow:definition", Arrays.asList("create", "update", "delete"));
+        addButtonPermissions(data, "M42", "workflow", Arrays.asList("create", "update", "delete"));
 
         // 流程实例按钮权限（我的流程、待我审批）
-        addButtonPermissions(data, "M42", "workflow", Arrays.asList("draft", "start", "create", "cancel", "withdraw"));
-        addButtonPermissions(data, "M43", "workflow", Arrays.asList("approve", "reject", "rollback", "add-sign"));
+        addButtonPermissions(data, "M43", "workflow", Arrays.asList("draft", "start", "create", "cancel", "withdraw"));
+        addButtonPermissions(data, "M44", "workflow", Arrays.asList("approve", "reject", "rollback", "add-sign"));
 
         // 流程设计按钮权限
-        addButtonPermissions(data, "M44", "workflow:design", Arrays.asList("save", "publish", "delete"));
+        addButtonPermissions(data, "M45", "workflow:design", Arrays.asList("save", "publish", "delete"));
 
         // 抄送按钮权限
-        addButtonPermissions(data, "M45", "workflow:cc", Arrays.asList("read"));
+        addButtonPermissions(data, "M46", "workflow:cc", Arrays.asList("read"));
 
         // 催办按钮权限（具体权限 + 通用权限）
-        addButtonPermissions(data, "M46", "workflow:urge", Arrays.asList("create", "read"));
-        addButtonPermissions(data, "M46", "workflow", Arrays.asList("urge"));
+        addButtonPermissions(data, "M47", "workflow:urge", Arrays.asList("create", "read"));
+        addButtonPermissions(data, "M47", "workflow", Arrays.asList("urge"));
 
         return data;
     }

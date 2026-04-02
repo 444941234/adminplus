@@ -36,7 +36,9 @@ import {
   deleteWorkflowDefinition,
   createWorkflowNode,
   updateWorkflowNode,
-  deleteWorkflowNode
+  deleteWorkflowNode,
+  getEnabledFormTemplates,
+  type FormTemplate
 } from '@/api'
 import type { WorkflowDefinition, WorkflowNode, WorkflowDefinitionReq, WorkflowNodeReq } from '@/types'
 import { toast } from 'vue-sonner'
@@ -44,6 +46,7 @@ import { useAsyncAction } from '@/composables/useAsyncAction'
 import { Plus, Pencil, Trash2, Settings, ArrowLeft } from 'lucide-vue-next'
 import WorkflowVisualizer from './WorkflowVisualizer.vue'
 import WorkflowNodeProperties from '@/components/workflow/designer/WorkflowNodeProperties.vue'
+import WorkflowFormConfigEditor from '@/components/workflow/designer/WorkflowFormConfigEditor.vue'
 import { useUserStore } from '@/stores/user'
 import { getWorkflowPermissionState } from '@/lib/page-permissions'
 
@@ -57,6 +60,10 @@ const { loading, run: runList } = useAsyncAction('获取流程定义失败')
 const { loading: dialogLoading, run: runDialog } = useAsyncAction('操作失败')
 const definitions = ref<WorkflowDefinition[]>([])
 const nodes = ref<WorkflowNode[]>([])
+
+// Form templates state
+const formTemplates = ref<FormTemplate[]>([])
+const selectedFormTemplateId = ref<string | null>(null)
 
 // View state
 const selectedDefinition = ref<WorkflowDefinition | null>(null)
@@ -107,6 +114,16 @@ const fetchDefinitions = () => runList(async () => {
   definitions.value = res.data
 })
 
+// Fetch form templates
+const fetchFormTemplates = async () => {
+  try {
+    const res = await getEnabledFormTemplates()
+    formTemplates.value = res.data
+  } catch (error) {
+    console.error('Failed to load form templates:', error)
+  }
+}
+
 // 保留 fetchNodes 用于节点 CRUD 操作后的刷新
 const fetchNodes = (definitionId: string) => runList(
   async () => {
@@ -144,7 +161,26 @@ const openDefinitionDialog = (definition?: WorkflowDefinition) => {
       formConfig: ''
     }
   }
+  // 重置表单模板选择
+  selectedFormTemplateId.value = undefined
+  // 加载表单模板数据
+  fetchFormTemplates()
   definitionDialogOpen.value = true
+}
+
+// 关闭流程定义对话框
+const closeDefinitionDialog = () => {
+  definitionDialogOpen.value = false
+  // 清理表单数据
+  definitionForm.value = {
+    definitionName: '',
+    definitionKey: '',
+    category: '',
+    description: '',
+    status: 1,
+    formConfig: ''
+  }
+  selectedFormTemplateId.value = undefined
 }
 
 const handleSaveDefinition = () => {
@@ -171,6 +207,22 @@ const handleSaveDefinition = () => {
       fetchDefinitions()
     }
   })
+}
+
+// Import form config from template
+const importFormTemplate = () => {
+  if (!selectedFormTemplateId.value) {
+    toast.warning('请选择表单模板')
+    return
+  }
+
+  const template = formTemplates.value.find(t => t.id === selectedFormTemplateId.value)
+  if (template) {
+    definitionForm.value.formConfig = template.formConfig || JSON.stringify({ sections: [] })
+    toast.success(`已导入表单模板: ${template.templateName}`)
+    // 重置选择器
+    selectedFormTemplateId.value = undefined
+  }
 }
 
 const handleDeleteDefinition = (definition: WorkflowDefinition) => {
@@ -281,7 +333,10 @@ const exitDesignMode = () => {
 }
 
 // Lifecycle
-onMounted(fetchDefinitions)
+onMounted(() => {
+  fetchDefinitions()
+  fetchFormTemplates()
+})
 </script>
 
 <template>
@@ -464,57 +519,92 @@ onMounted(fetchDefinitions)
 
     <!-- Definition Dialog -->
     <Dialog v-model:open="definitionDialogOpen">
-      <DialogContent class="sm:max-w-lg">
+      <DialogContent class="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>{{ isEditMode ? '编辑流程定义' : '新建流程定义' }}</DialogTitle>
           <DialogDescription>
             {{ isEditMode ? '修改流程定义的基本信息和配置' : '创建新的流程定义，设置流程的基本信息和配置' }}
           </DialogDescription>
         </DialogHeader>
-        <div class="space-y-4">
-          <div class="space-y-2">
-            <Label>流程名称 <span class="text-destructive">*</span></Label>
-            <Input
-              v-model="definitionForm.definitionName"
-              placeholder="请输入流程名称"
-            />
+
+        <div class="max-h-[75vh] overflow-y-auto space-y-4 py-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>流程名称 <span class="text-destructive">*</span></Label>
+              <Input
+                v-model="definitionForm.definitionName"
+                placeholder="请输入流程名称"
+              />
+            </div>
+            <div class="space-y-2">
+              <Label>流程标识 <span class="text-destructive">*</span></Label>
+              <Input
+                v-model="definitionForm.definitionKey"
+                placeholder="请输入唯一标识，如：leave_approval"
+              />
+            </div>
           </div>
-          <div class="space-y-2">
-            <Label>流程标识 <span class="text-destructive">*</span></Label>
-            <Input
-              v-model="definitionForm.definitionKey"
-              placeholder="请输入唯一标识，如：leave_approval"
-            />
-          </div>
-          <div class="space-y-2">
-            <Label>分类</Label>
-            <Input
-              v-model="definitionForm.category"
-              placeholder="如：人事审批、财务审批"
-            />
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <Label>分类</Label>
+              <Input
+                v-model="definitionForm.category"
+                placeholder="如：人事审批、财务审批"
+              />
+            </div>
+            <div class="space-y-2">
+              <Label>状态</Label>
+              <Select v-model="definitionForm.status">
+                <SelectTrigger>
+                  <SelectValue placeholder="请选择状态" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">启用</SelectItem>
+                  <SelectItem value="0">停用</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div class="space-y-2">
             <Label>描述</Label>
             <Textarea
               v-model="definitionForm.description"
               placeholder="请输入流程描述"
+              rows="2"
             />
           </div>
           <div class="space-y-2">
-            <Label>状态</Label>
-            <Select v-model="definitionForm.status">
-              <SelectTrigger>
-                <SelectValue placeholder="请选择状态" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem :value="1">启用</SelectItem>
-                <SelectItem :value="0">停用</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label class="text-base font-medium">申请表单配置</Label>
+
+            <!-- Form template selector -->
+            <div class="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border mb-4">
+              <div class="flex-1 space-y-2">
+                <Label class="text-sm font-medium">从表单模板导入</Label>
+                <Select v-model="selectedFormTemplateId">
+                  <SelectTrigger>
+                    <SelectValue placeholder="选择表单模板（可选）" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem v-for="template in formTemplates" :key="template.id" :value="template.id">
+                      <div class="flex items-center justify-between w-full gap-2">
+                        <span class="flex-1">{{ template.templateName }}</span>
+                        <Badge variant="secondary" class="text-xs">{{ template.category || '未分类' }}</Badge>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button size="sm" @click="importFormTemplate" :disabled="!selectedFormTemplateId">
+                导入模板
+              </Button>
+            </div>
+
+            <!-- 表单配置编辑器 -->
+            <WorkflowFormConfigEditor v-model="definitionForm.formConfig" />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="definitionDialogOpen = false">取消</Button>
+          <Button variant="outline" @click="closeDefinitionDialog">取消</Button>
           <Button :disabled="dialogLoading" @click="handleSaveDefinition">
             {{ isEditMode ? '保存' : '创建' }}
           </Button>

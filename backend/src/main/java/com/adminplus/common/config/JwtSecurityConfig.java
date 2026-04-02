@@ -1,6 +1,7 @@
 package com.adminplus.common.config;
 
 import com.adminplus.common.properties.AppProperties;
+import com.adminplus.service.PermissionService;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -11,8 +12,11 @@ import com.nimbusds.jose.proc.SecurityContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
@@ -23,6 +27,10 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.authentication.AuthenticationManager;
 
 import java.time.Duration;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * JWT 安全配置
@@ -51,9 +59,11 @@ public class JwtSecurityConfig {
 
     private final AppProperties appProperties;
     private final boolean production;
+    private final PermissionService permissionService;
 
-    public JwtSecurityConfig(AppProperties appProperties) {
+    public JwtSecurityConfig(AppProperties appProperties, PermissionService permissionService) {
         this.appProperties = appProperties;
+        this.permissionService = permissionService;
         this.production = isProductionEnv(appProperties.getEnv());
     }
 
@@ -86,12 +96,36 @@ public class JwtSecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthorityPrefix(ROLE_PREFIX);
-        grantedAuthoritiesConverter.setAuthoritiesClaimName(AUTHORITIES_CLAIM_NAME);
+        // 默认转换器：从 scope claim 读取角色
+        JwtGrantedAuthoritiesConverter defaultConverter = new JwtGrantedAuthoritiesConverter();
+        defaultConverter.setAuthorityPrefix(ROLE_PREFIX);
+        defaultConverter.setAuthoritiesClaimName(AUTHORITIES_CLAIM_NAME);
 
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Set<GrantedAuthority> authorities = new HashSet<>();
+
+            // 1. 从 scope claim 读取角色（如 ADMIN, USER -> ROLE_ADMIN, ROLE_USER）
+            Collection<GrantedAuthority> roleAuthorities = defaultConverter.convert(jwt);
+            if (roleAuthorities != null) {
+                authorities.addAll(roleAuthorities);
+            }
+
+            // 2. 从数据库加载用户的具体权限（如 workflow:form:view）
+            String userId = jwt.getClaimAsString("userId");
+            if (userId != null) {
+                try {
+                    List<String> permissions = permissionService.getUserPermissions(userId);
+                    for (String permission : permissions) {
+                        authorities.add(new SimpleGrantedAuthority(permission));
+                    }
+                } catch (Exception e) {
+                    log.warn("加载用户权限失败: userId={}, error={}", userId, e.getMessage());
+                }
+            }
+
+            return authorities;
+        });
         return converter;
     }
 

@@ -237,5 +237,32 @@ public class SecurityConstants {
      */
     public static final String WORKFLOW_URGE_LIST = "workflow:urge:list";
 
+    // ==================== 表单模板权限 ====================
+
+    /**
+     * 表单模板 - 查看权限
+     */
+    public static final String WORKFLOW_FORM_VIEW = "workflow:form:view";
+
+    /**
+     * 表单模板 - 列表权限
+     */
+    public static final String WORKFLOW_FORM_LIST = "workflow:form:list";
+
+    /**
+     * 表单模板 - 创建权限
+     */
+    public static final String WORKFLOW_FORM_CREATE = "workflow:form:create";
+
+    /**
+     * 表单模板 - 更新权限
+     */
+    public static final String WORKFLOW_FORM_UPDATE = "workflow:form:update";
+
+    /**
+     * 表单模板 - 删除权限
+     */
+    public static final String WORKFLOW_FORM_DELETE = "workflow:form:delete";
+
     public SecurityConstants() {}
 }

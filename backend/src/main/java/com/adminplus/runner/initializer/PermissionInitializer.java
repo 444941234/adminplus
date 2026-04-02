@@ -87,7 +87,7 @@ public class PermissionInitializer implements DataInitializer {
             assignMenusToRole(managerRole, menuByName, existingKeys, Arrays.asList(
                 "首页", "用户管理", "新增用户", "编辑用户", "删除用户", "分配角色", "重置密码",
                 "部门管理", "新增部门", "编辑部门", "删除部门", "查询部门", "部门列表",
-                "工作流管理", "流程模板", "我的流程", "待我审批", "抄送我的", "催办中心",
+                "工作流管理", "表单管理", "流程模板", "我的流程", "待我审批", "抄送我的", "催办中心",
                 "发起流程", "保存草稿", "创建", "更新", "删除", "撤回流程", "取消流程",
                 "审批通过", "审批驳回", "回退流程", "加签转办", "查看", "查看", "催办",
                 "文件管理", "上传文件", "删除文件"
@@ -101,7 +101,7 @@ public class PermissionInitializer implements DataInitializer {
                 "首页", "用户管理", "角色管理", "菜单管理", "字典管理", "参数配置",
                 "新增配置", "编辑配置", "删除配置", "导出配置", "导入配置", "刷新缓存",
                 "字典项列表", "新增字典项", "编辑字典项", "删除字典项",
-                "数据统计", "报表管理", "工作流管理", "流程模板", "流程设计", "我的流程", "抄送我的", "催办中心",
+                "数据统计", "报表管理", "工作流管理", "表单管理", "流程模板", "流程设计", "我的流程", "抄送我的", "催办中心",
                 "发起流程", "保存草稿", "创建", "更新", "删除",
                 "创建", "撤回流程", "取消流程", "查看", "查看", "催办",
                 "保存", "发布", "删除",
@@ -114,7 +114,7 @@ public class PermissionInitializer implements DataInitializer {
         if (operatorRole != null) {
             assignMenusToRole(operatorRole, menuByName, existingKeys, Arrays.asList(
                 "首页", "数据统计", "报表管理",
-                "工作流管理", "流程模板", "我的流程", "抄送我的", "催办中心",
+                "工作流管理", "表单管理", "流程模板", "我的流程", "抄送我的", "催办中心",
                 "发起流程", "保存草稿", "创建", "撤回流程", "取消流程", "查看", "查看", "催办",
                 "文件管理", "上传文件", "删除文件"
             ), adminUserId);
@@ -124,7 +124,7 @@ public class PermissionInitializer implements DataInitializer {
         RoleEntity userRole = roleMap.get("ROLE_USER");
         if (userRole != null) {
             assignMenusToRole(userRole, menuByName, existingKeys, Arrays.asList(
-                "首页", "工作流管理", "流程模板", "我的流程", "抄送我的", "催办中心",
+                "首页", "工作流管理", "表单管理", "流程模板", "我的流程", "抄送我的", "催办中心",
                 "发起流程", "保存草稿", "创建", "撤回流程", "取消流程", "查看", "查看", "催办",
                 "文件管理", "上传文件", "删除文件"
             ), adminUserId);

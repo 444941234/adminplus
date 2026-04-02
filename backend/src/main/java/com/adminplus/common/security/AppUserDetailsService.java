@@ -4,6 +4,8 @@ import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;
+import com.adminplus.repository.MenuRepository;
+import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.repository.UserRoleRepository;
@@ -23,6 +25,8 @@ public class AppUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
+    private final RoleMenuRepository roleMenuRepository;
+    private final MenuRepository menuRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -44,7 +48,14 @@ public class AppUserDetailsService implements UserDetailsService {
                 .map(RoleEntity::getCode)
                 .collect(Collectors.toList());
 
+        // 加载用户权限：通过角色-菜单关联获取菜单权限
         List<String> permissions = List.of();
+        if (!roleIds.isEmpty()) {
+            // 获取角色关联的所有菜单ID
+            List<String> menuIds = roleMenuRepository.findMenuIdsByRoleIds(roleIds);
+            // 获取菜单的权限标识
+            permissions = menuIds.isEmpty() ? List.of() : menuRepository.findPermKeysByMenuIds(menuIds);
+        }
 
         return new AppUserDetails(
                 user.getId(),

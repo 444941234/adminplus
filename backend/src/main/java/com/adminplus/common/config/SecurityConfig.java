@@ -2,6 +2,7 @@ package com.adminplus.common.config;
 
 import com.adminplus.common.filter.TokenBlacklistFilter;
 import com.adminplus.common.properties.AppProperties;
+import com.adminplus.service.PermissionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,10 +40,11 @@ public class SecurityConfig {
 
     public SecurityConfig(TokenBlacklistFilter tokenBlacklistFilter,
                           Environment env,
-                          AppProperties appProperties) {
+                          AppProperties appProperties,
+                          PermissionService permissionService) {
         this.tokenBlacklistFilter = tokenBlacklistFilter;
         this.env = env;
-        this.jwtSecurityConfig = new JwtSecurityConfig(appProperties);
+        this.jwtSecurityConfig = new JwtSecurityConfig(appProperties, permissionService);
         this.corsSecurityConfig = new CorsSecurityConfig(appProperties, env);
         this.securityConstants = new SecurityConstants();
     }

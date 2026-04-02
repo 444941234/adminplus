@@ -283,6 +283,18 @@ export interface WorkflowDefinition {
   updateTime: string
 }
 
+export interface FormTemplate {
+  id: string
+  templateName: string
+  templateCode: string
+  category: string
+  description: string
+  formConfig: string
+  status: number
+  createTime: string
+  updateTime: string
+}
+
 export interface WorkflowInstance {
   id: string
   definitionId: string

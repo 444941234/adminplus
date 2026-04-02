@@ -208,3 +208,62 @@ export function addSignWorkflow(instanceId: string, data: { addUserId: string; a
 export function getAddSignRecords(instanceId: string) {
   return get<WorkflowAddSign[]>(`/workflow/instances/${instanceId}/add-sign-records`)
 }
+
+// ========== Form Template Management ==========
+
+export interface FormTemplate {
+  id: string
+  templateName: string
+  templateCode: string
+  category: string
+  description: string
+  formConfig: string
+  status: number
+  createTime: string
+  updateTime: string
+}
+
+export interface FormTemplateReq {
+  templateName: string
+  templateCode: string
+  category?: string
+  description?: string
+  status: number
+  formConfig?: string
+}
+
+export function getFormTemplates() {
+  return get<FormTemplate[]>('/form-templates')
+}
+
+export function getEnabledFormTemplates() {
+  return get<FormTemplate[]>('/form-templates/enabled')
+}
+
+export function getFormTemplatesByCategory(category: string) {
+  return get<FormTemplate[]>(`/form-templates/category/${category}`)
+}
+
+export function getFormTemplate(id: string) {
+  return get<FormTemplate>(`/form-templates/${id}`)
+}
+
+export function getFormTemplateByCode(code: string) {
+  return get<FormTemplate>(`/form-templates/code/${code}`)
+}
+
+export function createFormTemplate(data: FormTemplateReq) {
+  return post<FormTemplate>('/form-templates', data)
+}
+
+export function updateFormTemplate(id: string, data: FormTemplateReq) {
+  return put<FormTemplate>(`/form-templates/${id}`, data)
+}
+
+export function deleteFormTemplate(id: string) {
+  return del<void>(`/form-templates/${id}`)
+}
+
+export function checkFormTemplateCodeExists(code: string) {
+  return get<boolean>(`/form-templates/exists/${code}`)
+}

@@ -235,42 +235,60 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
     private String buildLeaveRequestFormConfig() {
         return """
                 {
-                  "fields": [
+                  "sections": [
                     {
-                      "field": "leaveType",
-                      "label": "请假类型",
-                      "type": "select",
-                      "required": true,
-                      "options": [
-                        {"label": "事假", "value": "personal"},
-                        {"label": "病假", "value": "sick"},
-                        {"label": "年假", "value": "annual"},
-                        {"label": "调休", "value": "comp"}
+                      "key": "basic",
+                      "title": "请假信息",
+                      "fields": [
+                        {
+                          "field": "leaveType",
+                          "label": "请假类型",
+                          "component": "select",
+                          "required": true,
+                          "options": [
+                            {"label": "事假", "value": "personal"},
+                            {"label": "病假", "value": "sick"},
+                            {"label": "年假", "value": "annual"},
+                            {"label": "调休", "value": "comp"}
+                          ]
+                        },
+                        {
+                          "field": "startDate",
+                          "label": "开始日期",
+                          "component": "date",
+                          "required": true,
+                          "placeholder": "请选择开始日期"
+                        },
+                        {
+                          "field": "endDate",
+                          "label": "结束日期",
+                          "component": "date",
+                          "required": true,
+                          "placeholder": "请选择结束日期"
+                        },
+                        {
+                          "field": "days",
+                          "label": "请假天数",
+                          "component": "number",
+                          "required": true,
+                          "placeholder": "请输入请假天数",
+                          "rules": {"min": 0.5, "max": 365}
+                        }
                       ]
                     },
                     {
-                      "field": "startDate",
-                      "label": "开始日期",
-                      "type": "date",
-                      "required": true
-                    },
-                    {
-                      "field": "endDate",
-                      "label": "结束日期",
-                      "type": "date",
-                      "required": true
-                    },
-                    {
-                      "field": "days",
-                      "label": "请假天数",
-                      "type": "number",
-                      "required": true
-                    },
-                    {
-                      "field": "reason",
-                      "label": "请假事由",
-                      "type": "textarea",
-                      "required": true
+                      "key": "reason",
+                      "title": "请假事由",
+                      "fields": [
+                        {
+                          "field": "reason",
+                          "label": "请假原因",
+                          "component": "textarea",
+                          "required": true,
+                          "placeholder": "请详细说明请假原因",
+                          "rules": {"max": 500}
+                        }
+                      ]
                     }
                   ]
                 }
@@ -283,43 +301,61 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
     private String buildExpenseClaimFormConfig() {
         return """
                 {
-                  "fields": [
+                  "sections": [
                     {
-                      "field": "expenseType",
-                      "label": "报销类型",
-                      "type": "select",
-                      "required": true,
-                      "options": [
-                        {"label": "交通费", "value": "transport"},
-                        {"label": "住宿费", "value": "accommodation"},
-                        {"label": "餐饮费", "value": "meal"},
-                        {"label": "办公用品", "value": "office"},
-                        {"label": "其他", "value": "other"}
+                      "key": "expense",
+                      "title": "报销信息",
+                      "fields": [
+                        {
+                          "field": "expenseType",
+                          "label": "报销类型",
+                          "component": "select",
+                          "required": true,
+                          "options": [
+                            {"label": "交通费", "value": "transport"},
+                            {"label": "住宿费", "value": "accommodation"},
+                            {"label": "餐饮费", "value": "meal"},
+                            {"label": "办公用品", "value": "office"},
+                            {"label": "其他", "value": "other"}
+                          ]
+                        },
+                        {
+                          "field": "amount",
+                          "label": "报销金额（元）",
+                          "component": "number",
+                          "required": true,
+                          "placeholder": "请输入报销金额",
+                          "rules": {"min": 0.01}
+                        },
+                        {
+                          "field": "expenseDate",
+                          "label": "费用发生日期",
+                          "component": "date",
+                          "required": true,
+                          "placeholder": "请选择费用发生日期"
+                        }
                       ]
                     },
                     {
-                      "field": "amount",
-                      "label": "报销金额",
-                      "type": "number",
-                      "required": true
-                    },
-                    {
-                      "field": "expenseDate",
-                      "label": "费用发生日期",
-                      "type": "date",
-                      "required": true
-                    },
-                    {
-                      "field": "description",
-                      "label": "费用说明",
-                      "type": "textarea",
-                      "required": true
-                    },
-                    {
-                      "field": "attachments",
-                      "label": "附件",
-                      "type": "file",
-                      "required": false
+                      "key": "detail",
+                      "title": "详细说明",
+                      "fields": [
+                        {
+                          "field": "description",
+                          "label": "费用说明",
+                          "component": "textarea",
+                          "required": true,
+                          "placeholder": "请详细说明费用用途",
+                          "rules": {"max": 500}
+                        },
+                        {
+                          "field": "attachments",
+                          "label": "发票附件",
+                          "component": "file",
+                          "required": false,
+                          "description": "请上传发票或收据扫描件"
+                        }
+                      ]
                     }
                   ]
                 }
@@ -332,48 +368,77 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
     private String buildPurchaseRequestFormConfig() {
         return """
                 {
-                  "fields": [
+                  "sections": [
                     {
-                      "field": "itemType",
-                      "label": "物品类型",
-                      "type": "select",
-                      "required": true,
-                      "options": [
-                        {"label": "办公设备", "value": "equipment"},
-                        {"label": "办公用品", "value": "supplies"},
-                        {"label": "软件服务", "value": "software"},
-                        {"label": "其他", "value": "other"}
+                      "key": "item",
+                      "title": "物品信息",
+                      "fields": [
+                        {
+                          "field": "itemType",
+                          "label": "物品类型",
+                          "component": "select",
+                          "required": true,
+                          "options": [
+                            {"label": "办公设备", "value": "equipment"},
+                            {"label": "办公用品", "value": "supplies"},
+                            {"label": "软件服务", "value": "software"},
+                            {"label": "其他", "value": "other"}
+                          ]
+                        },
+                        {
+                          "field": "itemName",
+                          "label": "物品名称",
+                          "component": "input",
+                          "required": true,
+                          "placeholder": "请输入物品名称"
+                        },
+                        {
+                          "field": "quantity",
+                          "label": "数量",
+                          "component": "number",
+                          "required": true,
+                          "placeholder": "请输入数量",
+                          "rules": {"min": 1}
+                        }
                       ]
                     },
                     {
-                      "field": "itemName",
-                      "label": "物品名称",
-                      "type": "text",
-                      "required": true
+                      "key": "amount",
+                      "title": "金额信息",
+                      "fields": [
+                        {
+                          "field": "unitPrice",
+                          "label": "单价（元）",
+                          "component": "number",
+                          "required": true,
+                          "placeholder": "请输入单价",
+                          "rules": {"min": 0.01}
+                        },
+                        {
+                          "field": "totalAmount",
+                          "label": "总金额（元）",
+                          "component": "number",
+                          "required": true,
+                          "placeholder": "请输入总金额",
+                          "rules": {"min": 0.01},
+                          "readonly": true,
+                          "description": "系统自动计算：单价 × 数量"
+                        }
+                      ]
                     },
                     {
-                      "field": "quantity",
-                      "label": "数量",
-                      "type": "number",
-                      "required": true
-                    },
-                    {
-                      "field": "unitPrice",
-                      "label": "单价",
-                      "type": "number",
-                      "required": true
-                    },
-                    {
-                      "field": "totalAmount",
-                      "label": "总金额",
-                      "type": "number",
-                      "required": true
-                    },
-                    {
-                      "field": "reason",
-                      "label": "申请理由",
-                      "type": "textarea",
-                      "required": true
+                      "key": "reason",
+                      "title": "申请说明",
+                      "fields": [
+                        {
+                          "field": "reason",
+                          "label": "申请理由",
+                          "component": "textarea",
+                          "required": true,
+                          "placeholder": "请说明采购理由和用途",
+                          "rules": {"max": 500}
+                        }
+                      ]
                     }
                   ]
                 }
@@ -472,125 +537,150 @@ public class WorkflowDefinitionInitializer implements DataInitializer {
     private String buildContractApprovalFormConfig() {
         return """
                 {
-                  "fields": [
+                  "sections": [
                     {
-                      "field": "contractType",
-                      "label": "合同类型",
-                      "type": "select",
-                      "required": true,
-                      "options": [
-                        {"label": "销售合同", "value": "sales"},
-                        {"label": "采购合同", "value": "purchase"},
-                        {"label": "服务合同", "value": "service"},
-                        {"label": "租赁合同", "value": "lease"},
-                        {"label": "战略合作协议", "value": "strategic"},
-                        {"label": "保密协议", "value": "nda"},
-                        {"label": "其他", "value": "other"}
+                      "key": "basic",
+                      "title": "基本信息",
+                      "fields": [
+                        {
+                          "field": "contractType",
+                          "label": "合同类型",
+                          "component": "select",
+                          "required": true,
+                          "options": [
+                            {"label": "销售合同", "value": "sales"},
+                            {"label": "采购合同", "value": "purchase"},
+                            {"label": "服务合同", "value": "service"},
+                            {"label": "租赁合同", "value": "lease"},
+                            {"label": "战略合作协议", "value": "strategic"},
+                            {"label": "保密协议", "value": "nda"},
+                            {"label": "其他", "value": "other"}
+                          ]
+                        },
+                        {
+                          "field": "contractTitle",
+                          "label": "合同标题",
+                          "component": "input",
+                          "required": true,
+                          "placeholder": "请输入合同名称"
+                        },
+                        {
+                          "field": "counterparty",
+                          "label": "对方单位",
+                          "component": "input",
+                          "required": true,
+                          "placeholder": "请输入合作方全称"
+                        }
                       ]
                     },
                     {
-                      "field": "contractTitle",
-                      "label": "合同标题",
-                      "type": "text",
-                      "required": true,
-                      "placeholder": "请输入合同名称"
-                    },
-                    {
-                      "field": "counterparty",
-                      "label": "对方单位",
-                      "type": "text",
-                      "required": true,
-                      "placeholder": "请输入合作方全称"
-                    },
-                    {
-                      "field": "contractAmount",
-                      "label": "合同金额（元）",
-                      "type": "number",
-                      "required": true,
-                      "min": 0,
-                      "placeholder": "请输入合同总金额"
-                    },
-                    {
-                      "field": "currency",
-                      "label": "币种",
-                      "type": "select",
-                      "required": true,
-                      "options": [
-                        {"label": "人民币", "value": "CNY"},
-                        {"label": "美元", "value": "USD"},
-                        {"label": "欧元", "value": "EUR"}
-                      ],
-                      "default": "CNY"
-                    },
-                    {
-                      "field": "startDate",
-                      "label": "合同开始日期",
-                      "type": "date",
-                      "required": true
-                    },
-                    {
-                      "field": "endDate",
-                      "label": "合同结束日期",
-                      "type": "date",
-                      "required": true
-                    },
-                    {
-                      "field": "paymentTerms",
-                      "label": "付款方式",
-                      "type": "select",
-                      "required": true,
-                      "options": [
-                        {"label": "一次性付款", "value": "onetime"},
-                        {"label": "分期付款", "value": "installment"},
-                        {"label": "按进度付款", "value": "milestone"},
-                        {"label": "账期付款", "value": "credit"}
+                      "key": "amount",
+                      "title": "金额信息",
+                      "fields": [
+                        {
+                          "field": "contractAmount",
+                          "label": "合同金额（元）",
+                          "component": "number",
+                          "required": true,
+                          "placeholder": "请输入合同总金额",
+                          "rules": {"min": 0},
+                          "description": "金额将影响审批流程路径"
+                        },
+                        {
+                          "field": "currency",
+                          "label": "币种",
+                          "component": "select",
+                          "required": true,
+                          "options": [
+                            {"label": "人民币", "value": "CNY"},
+                            {"label": "美元", "value": "USD"},
+                            {"label": "欧元", "value": "EUR"}
+                          ],
+                          "defaultValue": "CNY"
+                        },
+                        {
+                          "field": "paymentTerms",
+                          "label": "付款方式",
+                          "component": "select",
+                          "required": true,
+                          "options": [
+                            {"label": "一次性付款", "value": "onetime"},
+                            {"label": "分期付款", "value": "installment"},
+                            {"label": "按进度付款", "value": "milestone"},
+                            {"label": "账期付款", "value": "credit"}
+                          ]
+                        }
                       ]
                     },
                     {
-                      "field": "needLegalReview",
-                      "label": "是否需要法务审查",
-                      "type": "checkbox",
-                      "default": false
+                      "key": "period",
+                      "title": "合同期限",
+                      "fields": [
+                        {
+                          "field": "startDate",
+                          "label": "合同开始日期",
+                          "component": "date",
+                          "required": true
+                        },
+                        {
+                          "field": "endDate",
+                          "label": "合同结束日期",
+                          "component": "date",
+                          "required": true
+                        }
+                      ]
                     },
                     {
-                      "field": "urgency",
-                      "label": "紧急程度",
-                      "type": "select",
-                      "required": true,
-                      "options": [
-                        {"label": "普通", "value": "normal"},
-                        {"label": "紧急", "value": "urgent"},
-                        {"label": "非常紧急", "value": "critical"}
-                      ],
-                      "default": "normal"
+                      "key": "content",
+                      "title": "合同内容",
+                      "fields": [
+                        {
+                          "field": "contractContent",
+                          "label": "合同主要内容",
+                          "component": "textarea",
+                          "required": true,
+                          "placeholder": "请简要描述合同的主要条款和内容",
+                          "rules": {"max": 2000}
+                        },
+                        {
+                          "field": "specialTerms",
+                          "label": "特殊条款说明",
+                          "component": "textarea",
+                          "required": false,
+                          "placeholder": "如有特殊条款，请在此说明"
+                        }
+                      ]
                     },
                     {
-                      "field": "contractContent",
-                      "label": "合同主要内容",
-                      "type": "textarea",
-                      "required": true,
-                      "placeholder": "请简要描述合同的主要条款和内容"
-                    },
-                    {
-                      "field": "specialTerms",
-                      "label": "特殊条款说明",
-                      "type": "textarea",
-                      "required": false,
-                      "placeholder": "如有特殊条款，请在此说明"
-                    },
-                    {
-                      "field": "attachments",
-                      "label": "合同附件",
-                      "type": "file",
-                      "required": true,
-                      "multiple": true,
-                      "accept": ".pdf,.doc,.docx"
-                    },
-                    {
-                      "field": "remark",
-                      "label": "备注说明",
-                      "type": "textarea",
-                      "required": false
+                      "key": "settings",
+                      "title": "其他设置",
+                      "fields": [
+                        {
+                          "field": "urgency",
+                          "label": "紧急程度",
+                          "component": "select",
+                          "required": true,
+                          "options": [
+                            {"label": "普通", "value": "normal"},
+                            {"label": "紧急", "value": "urgent"},
+                            {"label": "非常紧急", "value": "critical"}
+                          ],
+                          "defaultValue": "normal"
+                        },
+                        {
+                          "field": "attachments",
+                          "label": "合同附件",
+                          "component": "file",
+                          "required": true,
+                          "description": "请上传合同正本（PDF格式）"
+                        },
+                        {
+                          "field": "remark",
+                          "label": "备注说明",
+                          "component": "textarea",
+                          "required": false
+                        }
+                      ]
                     }
                   ]
                 }

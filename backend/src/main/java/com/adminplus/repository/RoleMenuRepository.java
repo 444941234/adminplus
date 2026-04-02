@@ -44,4 +44,10 @@ public interface RoleMenuRepository extends JpaRepository<RoleMenuEntity, String
      * 删除菜单的所有角色
      */
     void deleteByMenuId(String menuId);
+
+    /**
+     * 根据多个角色ID查询所有菜单ID
+     */
+    @Query("SELECT rm.menuId FROM RoleMenuEntity rm WHERE rm.roleId IN :roleIds")
+    List<String> findMenuIdsByRoleIds(@Param("roleIds") Collection<String> roleIds);
 }

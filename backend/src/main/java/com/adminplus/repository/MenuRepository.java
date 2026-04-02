@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -49,4 +50,10 @@ public interface MenuRepository extends JpaRepository<MenuEntity, String> {
      */
     @Query("SELECT m FROM MenuEntity m WHERE m.type = :type AND m.status = :status ORDER BY m.sortOrder ASC")
     List<MenuEntity> findByTypeAndStatus(@Param("type") Integer type, @Param("status") Integer status);
+
+    /**
+     * 根据菜单ID列表查询所有权限标识
+     */
+    @Query("SELECT m.permKey FROM MenuEntity m WHERE m.id IN :menuIds AND m.permKey IS NOT NULL AND m.permKey != ''")
+    List<String> findPermKeysByMenuIds(@Param("menuIds") Collection<String> menuIds);
 }
