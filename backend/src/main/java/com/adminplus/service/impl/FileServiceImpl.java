@@ -31,9 +31,9 @@ public class FileServiceImpl implements FileService {
     @Override
     @Transactional
     public FileEntity uploadFile(MultipartFile file, String directory) {
-        // 验证文件内容类型（Magic Number）
-        if (!FileContentValidator.isAllowedImageType(file, file.getContentType())) {
-            throw new BizException("文件类型不匹配或文件内容无效");
+        // 验证文件内容类型（支持图片和常见文档类型）
+        if (!FileContentValidator.isAllowedFileType(file, file.getContentType())) {
+            throw new BizException("不支持的文件类型");
         }
 
         // 调用存储服务上传文件

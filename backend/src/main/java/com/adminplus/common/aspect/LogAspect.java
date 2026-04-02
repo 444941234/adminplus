@@ -217,7 +217,16 @@ public class LogAspect {
                 RequestParam requestParam = param.getAnnotation(RequestParam.class);
                 if (requestParam != null) {
                     String paramName = requestParam.value().isEmpty() ? param.getName() : requestParam.value();
-                    paramsMap.put(paramName, args[i]);
+                    // 处理 MultipartFile，避免序列化失败
+                    if (args[i] instanceof MultipartFile fileValue) {
+                        paramsMap.put(paramName, Map.of(
+                                "originalFilename", fileValue.getOriginalFilename(),
+                                "size", fileValue.getSize(),
+                                "contentType", fileValue.getContentType()
+                        ));
+                    } else {
+                        paramsMap.put(paramName, args[i]);
+                    }
                 } else if (args[i] instanceof MultipartFile fileValue) {
                     paramsMap.put(param.getName(), Map.of(
                             "originalFilename", fileValue.getOriginalFilename(),

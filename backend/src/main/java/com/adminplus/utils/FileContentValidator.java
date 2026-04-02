@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 文件内容验证工具类
@@ -18,6 +19,30 @@ public class FileContentValidator {
     // Magic Number 映射
     private static final Map<String, byte[]> MAGIC_NUMBERS = new HashMap<>();
 
+    // 允许的图片类型
+    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/gif", "image/webp"
+    );
+
+    // 允许的文档类型
+    private static final Set<String> ALLOWED_DOCUMENT_TYPES = Set.of(
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-powerpoint",
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            "text/plain",
+            "text/csv",
+            "application/zip",
+            "application/x-rar-compressed",
+            "application/json"
+    );
+
+    // 允许的所有类型（图片 + 文档）
+    private static final Set<String> ALLOWED_ALL_TYPES;
+
     static {
         // JPEG
         MAGIC_NUMBERS.put("image/jpeg", new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF});
@@ -27,6 +52,17 @@ public class FileContentValidator {
         MAGIC_NUMBERS.put("image/gif", new byte[]{'G', 'I', 'F', '8'});
         // WebP
         MAGIC_NUMBERS.put("image/webp", new byte[]{'R', 'I', 'F', 'F'});
+        // PDF
+        MAGIC_NUMBERS.put("application/pdf", new byte[]{'%', 'P', 'D', 'F'});
+        // ZIP (also used for DOCX, XLSX, PPTX)
+        MAGIC_NUMBERS.put("application/zip", new byte[]{0x50, 0x4B});
+        MAGIC_NUMBERS.put("application/vnd.openxmlformats-officedocument.wordprocessingml.document", new byte[]{0x50, 0x4B});
+        MAGIC_NUMBERS.put("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{0x50, 0x4B});
+        MAGIC_NUMBERS.put("application/vnd.openxmlformats-officedocument.presentationml.presentation", new byte[]{0x50, 0x4B});
+
+        ALLOWED_ALL_TYPES = new java.util.HashSet<>();
+        ALLOWED_ALL_TYPES.addAll(ALLOWED_IMAGE_TYPES);
+        ALLOWED_ALL_TYPES.addAll(ALLOWED_DOCUMENT_TYPES);
     }
 
     // 读取的字节数
@@ -46,7 +82,7 @@ public class FileContentValidator {
 
         byte[] magicBytes = MAGIC_NUMBERS.get(contentType);
         if (magicBytes == null) {
-            // 未知的 MIME 类型，跳过验证
+            // 未知的 MIME 类型，跳过 magic number 验证，只检查扩展名
             return true;
         }
 
@@ -78,25 +114,67 @@ public class FileContentValidator {
      */
     public static boolean isAllowedImageType(MultipartFile file, String contentType) {
         // 先检查 MIME 类型
-        if (contentType == null || !contentType.startsWith("image/")) {
-            return false;
-        }
-
-        // 检查是否为允许的图片类型
-        String[] allowedTypes = {"image/jpeg", "image/png", "image/gif", "image/webp"};
-        boolean isAllowedType = false;
-        for (String type : allowedTypes) {
-            if (type.equals(contentType)) {
-                isAllowedType = true;
-                break;
-            }
-        }
-
-        if (!isAllowedType) {
+        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType)) {
             return false;
         }
 
         // 验证文件内容
         return validateContentType(file, contentType);
+    }
+
+    /**
+     * 验证文件是否为允许的类型（图片 + 文档）
+     *
+     * @param file        上传的文件
+     * @param contentType 声明的 MIME 类型
+     * @return 是否为允许的类型
+     */
+    public static boolean isAllowedFileType(MultipartFile file, String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+
+        // 检查是否为允许的类型
+        if (!ALLOWED_ALL_TYPES.contains(contentType)) {
+            return false;
+        }
+
+        // 验证文件内容（magic number）
+        return validateContentType(file, contentType);
+    }
+
+    /**
+     * 验证文件扩展名是否与 MIME 类型匹配
+     *
+     * @param filename    文件名
+     * @param contentType MIME 类型
+     * @return 是否匹配
+     */
+    public static boolean validateExtension(String filename, String contentType) {
+        if (filename == null || contentType == null) {
+            return false;
+        }
+
+        String extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
+        Map<String, Set<String>> extensionMap = Map.of(
+                "image/jpeg", Set.of("jpg", "jpeg"),
+                "image/png", Set.of("png"),
+                "image/gif", Set.of("gif"),
+                "image/webp", Set.of("webp"),
+                "application/pdf", Set.of("pdf"),
+                "application/msword", Set.of("doc"),
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document", Set.of("docx"),
+                "application/vnd.ms-excel", Set.of("xls"),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Set.of("xlsx"),
+                "application/vnd.ms-powerpoint", Set.of("ppt"),
+                "application/vnd.openxmlformats-officedocument.presentationml.presentation", Set.of("pptx"),
+                "text/plain", Set.of("txt"),
+                "text/csv", Set.of("csv"),
+                "application/zip", Set.of("zip"),
+                "application/json", Set.of("json")
+        );
+
+        Set<String> allowedExtensions = extensionMap.get(contentType);
+        return allowedExtensions != null && allowedExtensions.contains(extension);
     }
 }
