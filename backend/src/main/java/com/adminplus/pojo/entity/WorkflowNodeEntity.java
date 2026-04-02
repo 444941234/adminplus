@@ -105,4 +105,90 @@ public class WorkflowNodeEntity extends BaseEntity {
      */
     @Column(name = "cc_role_ids", columnDefinition = "TEXT")
     private String ccRoleIds;
+
+    // ==================== 钩子字段（简单场景 - SpEL表达式） ====================
+
+    /**
+     * 提交前校验（SpEL表达式）
+     */
+    @Column(name = "pre_submit_validate", columnDefinition = "TEXT")
+    private String preSubmitValidate;
+
+    /**
+     * 同意前校验（SpEL表达式）
+     */
+    @Column(name = "pre_approve_validate", columnDefinition = "TEXT")
+    private String preApproveValidate;
+
+    /**
+     * 拒绝前校验（SpEL表达式）
+     */
+    @Column(name = "pre_reject_validate", columnDefinition = "TEXT")
+    private String preRejectValidate;
+
+    /**
+     * 退回前校验（SpEL表达式）
+     */
+    @Column(name = "pre_rollback_validate", columnDefinition = "TEXT")
+    private String preRollbackValidate;
+
+    /**
+     * 取消前校验（SpEL表达式）
+     */
+    @Column(name = "pre_cancel_validate", columnDefinition = "TEXT")
+    private String preCancelValidate;
+
+    /**
+     * 撤回前校验（SpEL表达式）
+     */
+    @Column(name = "pre_withdraw_validate", columnDefinition = "TEXT")
+    private String preWithdrawValidate;
+
+    /**
+     * 加签前校验（SpEL表达式）
+     */
+    @Column(name = "pre_add_sign_validate", columnDefinition = "TEXT")
+    private String preAddSignValidate;
+
+    /**
+     * 提交后执行（SpEL表达式）
+     */
+    @Column(name = "post_submit_action", columnDefinition = "TEXT")
+    private String postSubmitAction;
+
+    /**
+     * 同意后执行（SpEL表达式）
+     */
+    @Column(name = "post_approve_action", columnDefinition = "TEXT")
+    private String postApproveAction;
+
+    /**
+     * 拒绝后执行（SpEL表达式）
+     */
+    @Column(name = "post_reject_action", columnDefinition = "TEXT")
+    private String postRejectAction;
+
+    /**
+     * 退回后执行（SpEL表达式）
+     */
+    @Column(name = "post_rollback_action", columnDefinition = "TEXT")
+    private String postRollbackAction;
+
+    /**
+     * 取消后执行（SpEL表达式）
+     */
+    @Column(name = "post_cancel_action", columnDefinition = "TEXT")
+    private String postCancelAction;
+
+    /**
+     * 撤回后执行（SpEL表达式）
+     */
+    @Column(name = "post_withdraw_action", columnDefinition = "TEXT")
+    private String postWithdrawAction;
+
+    /**
+     * 加签后执行（SpEL表达式）
+     */
+    @Column(name = "post_add_sign_action", columnDefinition = "TEXT")
+    private String postAddSignAction;
 }

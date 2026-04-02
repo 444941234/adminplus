@@ -5,6 +5,7 @@ import WorkflowAddSignTable from '@/components/workflow/WorkflowAddSignTable.vue
 import WorkflowApprovalTable from '@/components/workflow/WorkflowApprovalTable.vue'
 import WorkflowCcTable from '@/components/workflow/WorkflowCcTable.vue'
 import WorkflowUrgeTable from '@/components/workflow/WorkflowUrgeTable.vue'
+import WorkflowHookLogs from '@/components/workflow/WorkflowHookLogs.vue'
 import type { WorkflowAddSign, WorkflowApproval, WorkflowCc, WorkflowUrge } from '@/types'
 
 const props = defineProps<{
@@ -12,6 +13,7 @@ const props = defineProps<{
   ccRecords: WorkflowCc[]
   urgeRecords: WorkflowUrge[]
   addSignRecords: WorkflowAddSign[]
+  instanceId: string
 }>()
 
 const defaultTab = computed(() => {
@@ -47,6 +49,7 @@ const hasAnyRecords = computed(() => {
           <TabsTrigger value="cc">抄送记录</TabsTrigger>
           <TabsTrigger value="urge">催办记录</TabsTrigger>
           <TabsTrigger value="add-sign">加签记录</TabsTrigger>
+          <TabsTrigger value="hooks">钩子日志</TabsTrigger>
         </TabsList>
         <TabsContent value="approvals">
           <WorkflowApprovalTable :approvals="approvals" />
@@ -59,6 +62,9 @@ const hasAnyRecords = computed(() => {
         </TabsContent>
         <TabsContent value="add-sign">
           <WorkflowAddSignTable :records="addSignRecords" />
+        </TabsContent>
+        <TabsContent value="hooks">
+          <WorkflowHookLogs :instance-id="instanceId" />
         </TabsContent>
       </Tabs>
     </CardContent>

@@ -94,6 +94,18 @@ public class PermissionInitializer implements DataInitializer {
             ), adminUserId);
         }
 
+        // 人事权限
+        RoleEntity hrRole = roleMap.get("ROLE_HR");
+        if (hrRole != null) {
+            assignMenusToRole(hrRole, menuByName, existingKeys, Arrays.asList(
+                "首页",
+                "工作流管理", "我的流程", "待我审批", "抄送我的", "催办中心",
+                "发起流程", "保存草稿", "撤回流程", "取消流程",
+                "审批通过", "审批驳回", "查看", "催办",
+                "文件管理", "上传文件", "删除文件"
+            ), adminUserId);
+        }
+
         // 开发人员权限
         RoleEntity developerRole = roleMap.get("ROLE_DEVELOPER");
         if (developerRole != null) {
@@ -143,15 +155,21 @@ public class PermissionInitializer implements DataInitializer {
                                      Set<String> existingKeys, String adminUserId) {
         RoleEntity adminRole = roleMap.get("ROLE_ADMIN");
         RoleEntity managerRole = roleMap.get("ROLE_MANAGER");
+        RoleEntity hrRole = roleMap.get("ROLE_HR");
         RoleEntity userRole = roleMap.get("ROLE_USER");
         RoleEntity developerRole = roleMap.get("ROLE_DEVELOPER");
         RoleEntity operatorRole = roleMap.get("ROLE_OPERATOR");
+        RoleEntity legalRole = roleMap.get("ROLE_LEGAL");
+        RoleEntity financeRole = roleMap.get("ROLE_FINANCE");
 
         if (adminRole != null) {
             saveUserRoleIfAbsent(userMap.get("admin"), adminRole, existingKeys, adminUserId);
         }
         if (managerRole != null) {
             saveUserRoleIfAbsent(userMap.get("manager"), managerRole, existingKeys, adminUserId);
+        }
+        if (hrRole != null) {
+            saveUserRoleIfAbsent(userMap.get("hr"), hrRole, existingKeys, adminUserId);
         }
         if (userRole != null) {
             saveUserRoleIfAbsent(userMap.get("user1"), userRole, existingKeys, adminUserId);
@@ -166,6 +184,12 @@ public class PermissionInitializer implements DataInitializer {
         if (operatorRole != null) {
             saveUserRoleIfAbsent(userMap.get("operator1"), operatorRole, existingKeys, adminUserId);
             saveUserRoleIfAbsent(userMap.get("operator2"), operatorRole, existingKeys, adminUserId);
+        }
+        if (legalRole != null) {
+            saveUserRoleIfAbsent(userMap.get("legal"), legalRole, existingKeys, adminUserId);
+        }
+        if (financeRole != null) {
+            saveUserRoleIfAbsent(userMap.get("finance"), financeRole, existingKeys, adminUserId);
         }
     }
 

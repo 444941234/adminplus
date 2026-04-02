@@ -333,6 +333,63 @@ export interface WorkflowNode {
   autoPassSameUser: boolean
   description: string
   createTime: string
+  // 钩子字段（简单钩子 - SpEL表达式）
+  preSubmitValidate?: string
+  preApproveValidate?: string
+  preRejectValidate?: string
+  preRollbackValidate?: string
+  preCancelValidate?: string
+  preWithdrawValidate?: string
+  preAddSignValidate?: string
+  postSubmitAction?: string
+  postApproveAction?: string
+  postRejectAction?: string
+  postRollbackAction?: string
+  postCancelAction?: string
+  postWithdrawAction?: string
+  postAddSignAction?: string
+}
+
+// 工作流钩子
+export interface WorkflowNodeHook {
+  id: string
+  nodeId: string
+  hookPoint: string
+  hookType: 'validate' | 'execute'
+  executorType: 'spel' | 'bean' | 'http'
+  executorConfig: string
+  asyncExecution: boolean
+  blockOnFailure: boolean
+  failureMessage?: string
+  priority: number
+  conditionExpression?: string
+  retryCount: number
+  retryInterval: number
+  hookName?: string
+  description?: string
+  createTime: string
+  updateTime: string
+}
+
+// 工作流钩子日志
+export interface WorkflowHookLog {
+  id: string
+  instanceId: string
+  nodeId?: string
+  hookId?: string
+  hookSource: 'node_field' | 'hook_table'
+  hookPoint: string
+  executorType: string
+  executorConfig: string
+  success: boolean
+  resultCode: string
+  resultMessage: string
+  executionTime?: number
+  retryAttempts?: number
+  async: boolean
+  operatorId?: string
+  operatorName?: string
+  createTime: string
 }
 
 export interface WorkflowDefinitionReq {

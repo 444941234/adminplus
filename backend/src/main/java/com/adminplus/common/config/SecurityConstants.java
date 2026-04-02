@@ -264,5 +264,32 @@ public class SecurityConstants {
      */
     public static final String WORKFLOW_FORM_DELETE = "workflow:form:delete";
 
+    // ==================== 工作流钩子权限 ====================
+
+    /**
+     * 工作流钩子 - 查看权限
+     */
+    public static final String WORKFLOW_HOOK_VIEW = "workflow:hook:view";
+
+    /**
+     * 工作流钩子 - 创建权限
+     */
+    public static final String WORKFLOW_HOOK_CREATE = "workflow:hook:create";
+
+    /**
+     * 工作流钩子 - 更新权限
+     */
+    public static final String WORKFLOW_HOOK_UPDATE = "workflow:hook:update";
+
+    /**
+     * 工作流钩子 - 删除权限
+     */
+    public static final String WORKFLOW_HOOK_DELETE = "workflow:hook:delete";
+
+    /**
+     * 工作流钩子日志 - 查看权限
+     */
+    public static final String WORKFLOW_HOOK_LOG_VIEW = "workflow:hook:log:view";
+
     public SecurityConstants() {}
 }

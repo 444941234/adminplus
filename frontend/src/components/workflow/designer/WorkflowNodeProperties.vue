@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import {
   Checkbox,
   Input,
@@ -8,9 +9,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Textarea
+  Textarea,
+  Button
 } from '@/components/ui'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import WorkflowAssigneeSelector from '@/components/workflow/WorkflowAssigneeSelector.vue'
+import WorkflowHookDialog from '@/components/workflow/designer/WorkflowHookDialog.vue'
 
 type WorkflowNodeForm = {
   nodeName: string
@@ -21,21 +25,44 @@ type WorkflowNodeForm = {
   isCounterSign: boolean
   autoPassSameUser: boolean
   description: string
+  // 钩子字段
+  preSubmitValidate?: string
+  preApproveValidate?: string
+  preRejectValidate?: string
+  preRollbackValidate?: string
+  preCancelValidate?: string
+  preWithdrawValidate?: string
+  preAddSignValidate?: string
+  postSubmitAction?: string
+  postApproveAction?: string
+  postRejectAction?: string
+  postRollbackAction?: string
+  postCancelAction?: string
+  postWithdrawAction?: string
+  postAddSignAction?: string
 }
 
 const props = defineProps<{
   modelValue: WorkflowNodeForm
+  nodeId?: string
 }>()
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: WorkflowNodeForm): void
+  (e: 'refresh'): void
 }>()
+
+const hookDialogOpen = ref(false)
 
 const updateField = <K extends keyof WorkflowNodeForm>(key: K, value: WorkflowNodeForm[K]) => {
   emit('update:modelValue', {
     ...props.modelValue,
     [key]: value
   })
+}
+
+const handleHooksRefresh = () => {
+  emit('refresh')
 }
 </script>
 
@@ -125,6 +152,62 @@ const updateField = <K extends keyof WorkflowNodeForm>(key: K, value: WorkflowNo
         placeholder="节点描述信息"
         @update:model-value="(value: string | number) => updateField('description', String(value))"
       />
+    </div>
+
+    <!-- 钩子配置区域 -->
+    <div class="border-t pt-4 space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <h4 class="text-sm font-medium">节点钩子</h4>
+          <p class="text-xs text-muted-foreground">配置节点级别的钩子逻辑</p>
+        </div>
+        <Dialog v-model:open="hookDialogOpen">
+          <DialogTrigger as-child>
+            <Button variant="outline" size="sm" :disabled="!nodeId">
+              高级钩子配置
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>高级钩子配置</DialogTitle>
+            </DialogHeader>
+            <WorkflowHookDialog
+              :open="hookDialogOpen"
+              :node-id="nodeId || ''"
+              @update:open="hookDialogOpen = $event"
+              @refresh="handleHooksRefresh"
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <!-- 简单钩子配置（SpEL表达式） -->
+      <div class="space-y-2 text-sm">
+        <div class="space-y-1">
+          <Label class="text-xs">提交前校验（SpEL）</Label>
+          <Input
+            :model-value="modelValue.preSubmitValidate"
+            placeholder='#formData.amount > 0'
+            @update:model-value="(value) => updateField('preSubmitValidate', String(value))"
+          />
+        </div>
+        <div class="space-y-1">
+          <Label class="text-xs">同意前校验（SpEL）</Label>
+          <Input
+            :model-value="modelValue.preApproveValidate"
+            placeholder='#extraParams.req.comment != null && !#extraParams.req.comment.isEmpty()'
+            @update:model-value="(value) => updateField('preApproveValidate', String(value))"
+          />
+        </div>
+        <div class="space-y-1">
+          <Label class="text-xs">同意后执行（SpEL）</Label>
+          <Input
+            :model-value="modelValue.postApproveAction"
+            placeholder='@myService.updateStatus(#instance.id, "approved")'
+            @update:model-value="(value) => updateField('postApproveAction', String(value))"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>

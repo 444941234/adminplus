@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   Button,
   Card,
@@ -38,6 +38,7 @@ import { useWorkflowActions } from '@/composables/workflow/useWorkflowActions'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 
 const route = useRoute()
+const router = useRouter()
 const { loading, run: runFetchDetail } = useAsyncAction('获取流程详情失败')
 const { run: runRollbackNodes } = useAsyncAction('获取可回退节点失败')
 const approvalComment = ref('')
@@ -67,6 +68,27 @@ const workflowId = computed(() => String(route.params.id || ''))
 const workflowPermissionState = computed(() =>
   getWorkflowPermissionState(userStore.hasPermission, detail.value?.canApprove ?? false)
 )
+
+const currentNodeId = computed(() => detail.value?.currentNode?.id || detail.value?.instance?.currentNodeId)
+
+const completedNodeIds = computed(() => {
+  if (!detail.value?.approvals) return new Set<string>()
+  return new Set(
+    detail.value.approvals
+      .filter((approval) => ['approved', 'APPROVED'].includes(approval.approvalStatus))
+      .map((approval) => approval.nodeId)
+  )
+})
+
+const getApproverTypeLabel = (type?: string) => {
+  const map: Record<string, string> = {
+    user: '指定用户',
+    role: '角色',
+    dept: '部门',
+    leader: '部门领导'
+  }
+  return map[type || ''] || type || '-'
+}
 
 const fetchDetail = () => {
   if (!workflowId.value) return
@@ -179,6 +201,15 @@ onMounted(fetchDetail)
 
 <template>
   <div class="space-y-6">
+    <div class="sticky top-0 z-10 -mx-6 px-6 py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <Button variant="ghost" size="sm" @click="router.back()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        返回
+      </Button>
+    </div>
+
     <WorkflowOverviewCard :instance="detail?.instance ?? null" :loading="loading" />
 
     <WorkflowBusinessCard :config="detail?.formConfig" :form-data="detail?.formData" />
@@ -216,43 +247,47 @@ onMounted(fetchDetail)
       </CardContent>
     </Card>
 
-    <div class="grid gap-6 xl:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>节点流转</CardTitle>
-        </CardHeader>
-        <CardContent class="space-y-4">
-          <WorkflowVisualizer :instance-id="workflowId" readonly />
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>顺序</TableHead>
-                <TableHead>节点名称</TableHead>
-                <TableHead>审批类型</TableHead>
-                <TableHead>说明</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              <TableRow v-if="!detail?.nodes?.length">
-                <TableCell colspan="4" class="h-24 text-center text-muted-foreground">暂无节点数据</TableCell>
-              </TableRow>
-              <TableRow v-for="node in detail?.nodes || []" :key="node.id">
-                <TableCell>{{ node.nodeOrder }}</TableCell>
-                <TableCell class="font-medium">{{ node.nodeName }}</TableCell>
-                <TableCell>{{ node.approverType || '-' }}</TableCell>
-                <TableCell>{{ node.description || '-' }}</TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>节点流转</CardTitle>
+      </CardHeader>
+      <CardContent class="space-y-4">
+        <WorkflowVisualizer
+          :nodes="detail?.nodes"
+          :current-node-id="currentNodeId"
+          :completed-node-ids="completedNodeIds"
+          readonly
+        />
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>顺序</TableHead>
+              <TableHead>节点名称</TableHead>
+              <TableHead>审批类型</TableHead>
+              <TableHead>说明</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-if="!detail?.nodes?.length">
+              <TableCell colspan="4" class="h-24 text-center text-muted-foreground">暂无节点数据</TableCell>
+            </TableRow>
+            <TableRow v-for="node in detail?.nodes || []" :key="node.id">
+              <TableCell>{{ node.nodeOrder }}</TableCell>
+              <TableCell class="font-medium">{{ node.nodeName }}</TableCell>
+              <TableCell>{{ getApproverTypeLabel(node.approverType) }}</TableCell>
+              <TableCell>{{ node.description || '-' }}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
 
     <WorkflowTimelineTabs
       :approvals="detail?.approvals || []"
       :cc-records="ccRecords"
       :urge-records="urgeRecords"
       :add-sign-records="addSignRecords"
+      :instance-id="workflowId"
     />
 
     <!-- 加签/转办对话框 -->

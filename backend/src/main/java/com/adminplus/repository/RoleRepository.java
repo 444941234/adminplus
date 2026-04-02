@@ -22,6 +22,11 @@ public interface RoleRepository extends JpaRepository<RoleEntity, String> {
     Optional<RoleEntity> findByCode(String code);
 
     /**
+     * 根据角色名称查询角色
+     */
+    Optional<RoleEntity> findByName(String name);
+
+    /**
      * 检查角色编码是否存在
      */
     boolean existsByCode(String code);

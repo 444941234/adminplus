@@ -21,6 +21,24 @@ const formatDateTime = (value?: string | null) => {
   if (!value) return '-'
   return new Date(value).toLocaleString('zh-CN', { hour12: false })
 }
+
+const getStatusLabel = (status?: string) => {
+  switch (status) {
+    case 'pending': return '待审批'
+    case 'approved': return '已通过'
+    case 'rejected': return '已驳回'
+    default: return status || '-'
+  }
+}
+
+const getStatusClass = (status?: string) => {
+  switch (status) {
+    case 'pending': return 'text-yellow-600'
+    case 'approved': return 'text-green-600'
+    case 'rejected': return 'text-red-600'
+    default: return ''
+  }
+}
 </script>
 
 <template>
@@ -46,7 +64,9 @@ const formatDateTime = (value?: string | null) => {
           <TableRow v-for="approval in approvals" :key="approval.id">
             <TableCell>{{ approval.nodeName || '-' }}</TableCell>
             <TableCell>{{ approval.approverName || '-' }}</TableCell>
-            <TableCell>{{ approval.approvalStatus || '-' }}</TableCell>
+            <TableCell :class="getStatusClass(approval.approvalStatus)">
+              {{ getStatusLabel(approval.approvalStatus) }}
+            </TableCell>
             <TableCell>{{ approval.comment || '-' }}</TableCell>
             <TableCell>{{ formatDateTime(approval.approvalTime || approval.createTime) }}</TableCell>
           </TableRow>

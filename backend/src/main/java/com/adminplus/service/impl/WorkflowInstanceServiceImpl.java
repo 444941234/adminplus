@@ -19,6 +19,8 @@ import com.adminplus.pojo.dto.resp.WorkflowOperationPermissionsResp;
 import com.adminplus.repository.*;
 import com.adminplus.service.WorkflowDefinitionService;
 import com.adminplus.service.WorkflowInstanceService;
+import com.adminplus.service.workflow.hook.WorkflowHookService;
+import com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +55,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     private final WorkflowCcRepository ccRepository;
     private final WorkflowAddSignRepository addSignRepository;
     private final ObjectMapper objectMapper;
+    private final WorkflowHookService hookService;
 
     @Override
     @Transactional
@@ -117,6 +120,19 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         }
 
         WorkflowNodeEntity firstNode = nodes.get(0);
+
+        // 提交前钩子校验
+        HookExecutionSummary preResult = hookService.executeAllHooks(
+            "PRE_SUBMIT", instance, firstNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of("req", req != null ? req : WorkflowStartReq.builder().definitionId("").title("").formData(Map.of()).build())
+        );
+
+        if (!preResult.allPassed()) {
+            throw new BizException(400,
+                preResult.blockingMessages().isEmpty() ? "提交前校验失败" : preResult.blockingMessages().get(0));
+        }
+
         instance.setCurrentNodeId(firstNode.getId());
         instance.setCurrentNodeName(firstNode.getNodeName());
 
@@ -127,6 +143,16 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         // 创建抄送记录（流程发起时抄送）
         createCcRecords(instance, firstNode, "start", instance.getRemark());
+
+        // 提交后钩子执行
+        HookExecutionSummary postResult = hookService.executeAllHooks(
+            "POST_SUBMIT", instance, firstNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of()
+        );
+        if (!postResult.warningMessages().isEmpty()) {
+            log.warn("提交后钩子警告: {}", postResult.warningMessages());
+        }
 
         log.info("工作流提交成功: id={}, currentNode={}", instance.getId(), firstNode.getNodeName());
         return toInstanceResponse(instance, false, false);
@@ -333,9 +359,36 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             throw new IllegalArgumentException("只有发起人可以取消工作流");
         }
 
+        // 取消前钩子校验
+        WorkflowNodeEntity currentNode = null;
+        if (instance.getCurrentNodeId() != null) {
+            currentNode = nodeRepository.findById(instance.getCurrentNodeId()).orElse(null);
+        }
+
+        HookExecutionSummary preResult = hookService.executeAllHooks(
+            "PRE_CANCEL", instance, currentNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of()
+        );
+
+        if (!preResult.allPassed()) {
+            throw new BizException(400,
+                preResult.blockingMessages().isEmpty() ? "取消前校验失败" : preResult.blockingMessages().get(0));
+        }
+
         instance.setStatus("cancelled");
         instance.setFinishTime(Instant.now());
         instanceRepository.save(instance);
+
+        // 取消后钩子执行
+        HookExecutionSummary postResult = hookService.executeAllHooks(
+            "POST_CANCEL", instance, currentNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of()
+        );
+        if (!postResult.warningMessages().isEmpty()) {
+            log.warn("取消后钩子警告: {}", postResult.warningMessages());
+        }
 
         log.info("工作流已取消: id={}", instanceId);
     }
@@ -357,6 +410,23 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             throw new IllegalArgumentException("只有草稿或被拒绝的流程可以撤回");
         }
 
+        // 撤回前钩子校验
+        WorkflowNodeEntity currentNode = null;
+        if (instance.getCurrentNodeId() != null) {
+            currentNode = nodeRepository.findById(instance.getCurrentNodeId()).orElse(null);
+        }
+
+        HookExecutionSummary preResult = hookService.executeAllHooks(
+            "PRE_WITHDRAW", instance, currentNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of()
+        );
+
+        if (!preResult.allPassed()) {
+            throw new BizException(400,
+                preResult.blockingMessages().isEmpty() ? "撤回前校验失败" : preResult.blockingMessages().get(0));
+        }
+
         // 删除所有审批记录
         List<WorkflowApprovalEntity> approvals = approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId);
         approvals.forEach(a -> {
@@ -370,6 +440,16 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         instance.setCurrentNodeName(null);
         instance.setSubmitTime(null);
         instanceRepository.save(instance);
+
+        // 撤回后钩子执行
+        HookExecutionSummary postResult = hookService.executeAllHooks(
+            "POST_WITHDRAW", instance, currentNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of()
+        );
+        if (!postResult.warningMessages().isEmpty()) {
+            log.warn("撤回后钩子警告: {}", postResult.warningMessages());
+        }
 
         log.info("工作流已撤回: id={}", instanceId);
     }
@@ -412,6 +492,23 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("您没有权限审批此工作流"));
 
+        // 查询当前节点
+        WorkflowNodeEntity currentNode = nodeRepository.findById(instance.getCurrentNodeId())
+                .orElseThrow(() -> new IllegalArgumentException("当前节点不存在"));
+
+        // 审批前钩子校验
+        String hookPoint = action.equals("approved") ? "PRE_APPROVE" : "PRE_REJECT";
+        HookExecutionSummary preResult = hookService.executeAllHooks(
+            hookPoint, instance, currentNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of("req", req, "action", action)
+        );
+
+        if (!preResult.allPassed()) {
+            throw new BizException(400,
+                preResult.blockingMessages().isEmpty() ? "审批前校验失败" : preResult.blockingMessages().get(0));
+        }
+
         // 更新审批记录
         myApproval.setApprovalStatus(action);
         myApproval.setComment(req.comment());
@@ -421,9 +518,6 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         approvalRepository.save(myApproval);
 
         // 判断是否需要继续流转
-        WorkflowNodeEntity currentNode = nodeRepository.findById(instance.getCurrentNodeId())
-                .orElseThrow(() -> new IllegalArgumentException("当前节点不存在"));
-
         if (action.equals("rejected")) {
             // 拒绝则直接结束
             instance.setStatus("rejected");
@@ -432,6 +526,16 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
             // 创建抄送记录（拒绝时抄送）
             createCcRecords(instance, currentNode, "reject", req.comment());
+
+            // 拒绝后钩子执行
+            HookExecutionSummary postResult = hookService.executeAllHooks(
+                "POST_REJECT", instance, currentNode,
+                deserializeFormData(instance.getBusinessData()),
+                Map.of("req", req)
+            );
+            if (!postResult.warningMessages().isEmpty()) {
+                log.warn("拒绝后钩子警告: {}", postResult.warningMessages());
+            }
         } else {
             // 同意，检查是否所有人都已审批
             boolean allApproved = pendingApprovals.stream()
@@ -443,6 +547,16 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
                 // 创建抄送记录（审批通过时抄送）
                 createCcRecords(instance, currentNode, "approve", req.comment());
+
+                // 同意后钩子执行
+                HookExecutionSummary postResult = hookService.executeAllHooks(
+                    "POST_APPROVE", instance, currentNode,
+                    deserializeFormData(instance.getBusinessData()),
+                    Map.of("req", req)
+                );
+                if (!postResult.warningMessages().isEmpty()) {
+                    log.warn("同意后钩子警告: {}", postResult.warningMessages());
+                }
             } else {
                 log.info("等待其他审批人审批: instanceId={}", instanceId);
             }
@@ -538,22 +652,33 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             case "role":
                 // 角色 - 查找具有该角色的所有用户
                 if (node.getApproverId() != null) {
-                    // approverId 可能是角色ID或角色编码
+                    // approverId 可能是角色ID、角色编码或角色名称
                     String roleId = node.getApproverId();
+                    RoleEntity role = null;
 
-                    // 如果是角色编码（以 ROLE_ 开头），先查找角色ID
+                    // 如果是角色编码（以 ROLE_ 开头），先查找角色
                     if (roleId.startsWith("ROLE_")) {
-                        RoleEntity role = roleRepository.findByCode(roleId).orElse(null);
-                        if (role != null) {
-                            roleId = role.getId();
-                        } else {
+                        role = roleRepository.findByCode(roleId).orElse(null);
+                        if (role == null) {
+                            log.warn("找不到角色编码: {}", node.getApproverId());
+                        }
+                    } else {
+                        // 尝试按名称查找角色
+                        role = roleRepository.findByName(roleId).orElse(null);
+                        if (role == null) {
+                            // 尝试按ID查找角色
+                            role = roleRepository.findById(roleId).orElse(null);
+                        }
+                        if (role == null) {
                             log.warn("找不到角色: {}", node.getApproverId());
-                            break;
                         }
                     }
 
-                    List<UserRoleEntity> userRoles = userRoleRepository.findByRoleId(roleId);
-                    approvers.addAll(userRoles.stream().map(UserRoleEntity::getUserId).toList());
+                    if (role != null) {
+                        roleId = role.getId();
+                        List<UserRoleEntity> userRoles = userRoleRepository.findByRoleId(roleId);
+                        approvers.addAll(userRoles.stream().map(UserRoleEntity::getUserId).toList());
+                    }
                 }
                 break;
 
@@ -699,6 +824,22 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         WorkflowNodeEntity targetNode = nodeRepository.findById(finalTargetNodeId)
                 .orElseThrow(() -> new IllegalArgumentException("目标节点不存在"));
 
+        // 获取当前节点
+        WorkflowNodeEntity currentNode = nodeRepository.findById(instance.getCurrentNodeId())
+                .orElseThrow(() -> new IllegalArgumentException("当前节点不存在"));
+
+        // 回退前钩子校验
+        HookExecutionSummary preResult = hookService.executeAllHooks(
+            "PRE_ROLLBACK", instance, currentNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of("req", req, "targetNodeId", finalTargetNodeId)
+        );
+
+        if (!preResult.allPassed()) {
+            throw new BizException(400,
+                preResult.blockingMessages().isEmpty() ? "回退前校验失败" : preResult.blockingMessages().get(0));
+        }
+
         // 获取当前节点信息
         String currentNodeId = instance.getCurrentNodeId();
         String currentNodeName = instance.getCurrentNodeName();
@@ -719,6 +860,16 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         // 清理目标节点的旧审批记录，重新创建
         cleanupAndCreateApprovals(instance, targetNode);
+
+        // 回退后钩子执行
+        HookExecutionSummary postResult = hookService.executeAllHooks(
+            "POST_ROLLBACK", instance, currentNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of("req", req, "targetNodeId", finalTargetNodeId)
+        );
+        if (!postResult.warningMessages().isEmpty()) {
+            log.warn("回退后钩子警告: {}", postResult.warningMessages());
+        }
 
         log.info("工作流已回退: instanceId={}, fromNode={}, toNode={}",
                 instanceId, currentNodeName, targetNode.getNodeName());
@@ -921,13 +1072,49 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         UserEntity initiator = userRepository.findById(initiatorId)
                 .orElseThrow(() -> new IllegalArgumentException("加签发起人不存在"));
 
+        // 加签前钩子校验
+        HookExecutionSummary preResult = hookService.executeAllHooks(
+            "PRE_ADD_SIGN", instance, currentNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of("req", req)
+        );
+
+        if (!preResult.allPassed()) {
+            throw new BizException(400,
+                preResult.blockingMessages().isEmpty() ? "加签前校验失败" : preResult.blockingMessages().get(0));
+        }
+
         // 处理转办
         if (req.addType() == AddSignReq.AddSignType.TRANSFER) {
-            return handleTransfer(instance, currentNode, myApproval, addUser, initiator, req);
+            WorkflowAddSignResp result = handleTransfer(instance, currentNode, myApproval, addUser, initiator, req);
+
+            // 加签后钩子执行
+            HookExecutionSummary postResult = hookService.executeAllHooks(
+                "POST_ADD_SIGN", instance, currentNode,
+                deserializeFormData(instance.getBusinessData()),
+                Map.of("req", req, "result", result)
+            );
+            if (!postResult.warningMessages().isEmpty()) {
+                log.warn("加签后钩子警告: {}", postResult.warningMessages());
+            }
+
+            return result;
         }
 
         // 处理加签（前加签、后加签）
-        return handleAddSign(instance, currentNode, myApproval, addUser, initiator, req);
+        WorkflowAddSignResp result = handleAddSign(instance, currentNode, myApproval, addUser, initiator, req);
+
+        // 加签后钩子执行
+        HookExecutionSummary postResult = hookService.executeAllHooks(
+            "POST_ADD_SIGN", instance, currentNode,
+            deserializeFormData(instance.getBusinessData()),
+            Map.of("req", req, "result", result)
+        );
+        if (!postResult.warningMessages().isEmpty()) {
+            log.warn("加签后钩子警告: {}", postResult.warningMessages());
+        }
+
+        return result;
     }
 
     /**

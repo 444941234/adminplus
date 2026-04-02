@@ -86,6 +86,9 @@ class WorkflowSecurityTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    @Mock
+    private com.adminplus.service.workflow.hook.WorkflowHookService mockHookService;
+
     private WorkflowInstanceService instanceService;
 
     // Test users
@@ -111,7 +114,8 @@ class WorkflowSecurityTest {
         instanceService = new WorkflowInstanceServiceImpl(
                 instanceRepository, approvalRepository, definitionRepository,
                 nodeRepository, userRepository, deptRepository, userRoleRepository, roleRepository,
-                mockDefinitionService, ccRepository, addSignRepository, objectMapper
+                mockDefinitionService, ccRepository, addSignRepository, objectMapper,
+                mockHookService
         );
 
         mockDefinitionService = new WorkflowDefinitionServiceImpl(
@@ -192,6 +196,24 @@ class WorkflowSecurityTest {
         previousApproval.setApproverName("Approver User");
         previousApproval.setApprovalStatus("approved");
         previousApproval.setApprovalTime(Instant.now());
+
+        // Mock hookService to return passing results by default
+        com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary passingResult =
+                new com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary(
+                        true, List.of(), List.of(), List.of(), List.of()
+                );
+        lenient().when(mockHookService.executeAllHooks(
+                anyString(), any(WorkflowInstanceEntity.class), any(WorkflowNodeEntity.class),
+                anyMap(), anyMap()
+        )).thenReturn(passingResult);
+
+        // Mock objectMapper for deserializeFormData
+        try {
+            lenient().when(objectMapper.readValue(any(String.class), any(com.fasterxml.jackson.core.type.TypeReference.class)))
+                    .thenReturn(java.util.Map.of());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void authenticateAs(String userId) {
@@ -431,6 +453,15 @@ class WorkflowSecurityTest {
                     .thenReturn(Optional.of(testInstance));
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
+            // Mock hook calls for cancel operation
+            com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary passingResult =
+                    new com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary(
+                            true, List.of(), List.of(), List.of(), List.of()
+                    );
+            when(mockHookService.executeAllHooks(eq("PRE_CANCEL"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
+            when(mockHookService.executeAllHooks(eq("POST_CANCEL"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
 
             // When/Then - Should not throw
             assertThatCode(() -> instanceService.cancel("inst-001"))
@@ -492,6 +523,15 @@ class WorkflowSecurityTest {
                     .thenReturn(testInstance);
             when(approvalRepository.save(any(WorkflowApprovalEntity.class)))
                     .thenReturn(pendingApproval);
+            // Mock hook calls for withdraw operation
+            com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary passingResult =
+                    new com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary(
+                            true, List.of(), List.of(), List.of(), List.of()
+                    );
+            when(mockHookService.executeAllHooks(eq("PRE_WITHDRAW"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
+            when(mockHookService.executeAllHooks(eq("POST_WITHDRAW"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
 
             // When/Then - Should not throw
             assertThatCode(() -> instanceService.withdraw("inst-001"))

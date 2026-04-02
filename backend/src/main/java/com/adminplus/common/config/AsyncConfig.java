@@ -58,4 +58,31 @@ public class AsyncConfig {
         executor.initialize();
         return executor;
     }
+
+    /**
+     * 钩子异步执行器
+     * 用于异步执行钩子逻辑
+     */
+    @Bean(name = "taskExecutor")
+    public ThreadPoolTaskExecutor taskExecutor() {
+        log.info("初始化钩子异步执行器");
+
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+
+        // 核心配置
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(10);
+        executor.setQueueCapacity(100);
+        executor.setThreadNamePrefix("async-hook-");
+
+        // 拒绝策略：调用者运行（防止任务丢失）
+        executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
+
+        // 等待任务完成后关闭
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(60);
+
+        executor.initialize();
+        return executor;
+    }
 }

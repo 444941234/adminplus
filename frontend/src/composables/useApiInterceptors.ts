@@ -172,10 +172,12 @@ export function setupResponseInterceptor(
         pendingRequests.delete(key)
       }
 
-      // 业务错误处理
+      // 业务错误处理 - 后端返回 HTTP 200 但 code 非 200
       const data = response.data
-      if (data.code && data.code !== 200) {
-        return Promise.reject(new Error(data.message || '请求失败'))
+      if (data && data.code && data.code !== 200) {
+        const message = data.message || '请求失败'
+        toast.error(message)
+        return Promise.reject(new Error(message))
       }
 
       return response.data
@@ -245,10 +247,12 @@ export function setupResponseInterceptor(
 
 /**
  * 判断是否应该重试
+ * 注意：500 错误通常是业务错误，不应重试
  */
 function shouldRetry(error: AxiosError): boolean {
   const status = error.response?.status
-  const retryableStatuses = [408, 429, 500, 502, 503, 504]
+  // 只重试网络相关错误，不重试业务错误
+  const retryableStatuses = [408, 429, 502, 503, 504]
   return status !== undefined && retryableStatuses.includes(status)
 }
 

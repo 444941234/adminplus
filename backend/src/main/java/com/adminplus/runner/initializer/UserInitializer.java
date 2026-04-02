@@ -83,6 +83,18 @@ public class UserInitializer implements DataInitializer {
         users.add(createUser("cs2", "客服人员2", "cs2@adminplus.com", "13800000008",
                 deptMap.get("CS").getId(), encodedPassword));
 
+        // 人事专员（总部）
+        users.add(createUser("hr", "人事专员", "hr@adminplus.com", "13800000011",
+                deptMap.get("HQ").getId(), encodedPassword));
+
+        // 法务专员（总部）
+        users.add(createUser("legal", "法务专员", "legal@adminplus.com", "13800000012",
+                deptMap.get("HQ").getId(), encodedPassword));
+
+        // 财务专员（总部）
+        users.add(createUser("finance", "财务专员", "finance@adminplus.com", "13800000013",
+                deptMap.get("HQ").getId(), encodedPassword));
+
         // 普通用户
         users.add(createUser("user1", "普通用户1", "user1@adminplus.com", "13800000009",
                 deptMap.get("HQ").getId(), encodedPassword));

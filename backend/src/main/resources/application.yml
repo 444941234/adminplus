@@ -50,6 +50,14 @@ spring:
       encoding: UTF-8
       continue-on-error: false
 
+  # Flyway 数据库迁移配置
+  flyway:
+    enabled: false
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    baseline-version: 0
+    validate-on-migrate: true
+
   # JPA 配置
   jpa:
     hibernate:

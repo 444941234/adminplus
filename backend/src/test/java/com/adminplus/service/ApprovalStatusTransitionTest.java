@@ -23,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -80,6 +81,9 @@ class ApprovalStatusTransitionTest {
 
     @Mock
     private com.adminplus.repository.WorkflowAddSignRepository addSignRepository;
+
+    @Mock
+    private com.adminplus.service.workflow.hook.WorkflowHookService hookService;
 
     @Mock
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
@@ -158,6 +162,19 @@ class ApprovalStatusTransitionTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        // Mock hookService to return passing results by default
+        com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary passingResult =
+                new com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary(
+                        true, java.util.List.of(), java.util.List.of(), java.util.List.of(), java.util.List.of()
+                );
+        lenient().when(hookService.executeAllHooks(
+                anyString(), any(WorkflowInstanceEntity.class), any(WorkflowNodeEntity.class),
+                anyMap(), anyMap()
+        )).thenReturn(passingResult);
+
+        // Mock nodeRepository.findById to return empty for any input (handles null case for drafts)
+        lenient().when(nodeRepository.findById(any())).thenReturn(java.util.Optional.empty());
     }
 
     private void mockSecurityContext(String userId) {
@@ -221,6 +238,15 @@ class ApprovalStatusTransitionTest {
                     .thenReturn(Optional.of(testInstance));
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
+            // Mock hook calls
+            com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary passingResult =
+                    new com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary(
+                            true, List.of(), List.of(), List.of(), List.of()
+                    );
+            when(hookService.executeAllHooks(eq("PRE_CANCEL"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
+            when(hookService.executeAllHooks(eq("POST_CANCEL"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
 
             // When
             service.cancel("inst-001");
@@ -243,6 +269,15 @@ class ApprovalStatusTransitionTest {
                     .thenReturn(List.of());
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
+            // Mock hook calls
+            com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary passingResult =
+                    new com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary(
+                            true, List.of(), List.of(), List.of(), List.of()
+                    );
+            when(hookService.executeAllHooks(eq("PRE_WITHDRAW"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
+            when(hookService.executeAllHooks(eq("POST_WITHDRAW"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
 
             // When
             service.withdraw("inst-001");
@@ -349,6 +384,15 @@ class ApprovalStatusTransitionTest {
                     .thenReturn(Optional.of(testInstance));
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
+            // Mock hook calls
+            com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary passingResult =
+                    new com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary(
+                            true, List.of(), List.of(), List.of(), List.of()
+                    );
+            when(hookService.executeAllHooks(eq("PRE_CANCEL"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
+            when(hookService.executeAllHooks(eq("POST_CANCEL"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
 
             // When
             service.cancel("inst-001");
@@ -428,6 +472,15 @@ class ApprovalStatusTransitionTest {
                     .thenReturn(testInstance);
             when(approvalRepository.save(any(WorkflowApprovalEntity.class)))
                     .thenReturn(pendingApproval);
+            // Mock hook calls
+            com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary passingResult =
+                    new com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary(
+                            true, List.of(), List.of(), List.of(), List.of()
+                    );
+            when(hookService.executeAllHooks(eq("PRE_WITHDRAW"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
+            when(hookService.executeAllHooks(eq("POST_WITHDRAW"), any(), any(), anyMap(), anyMap()))
+                    .thenReturn(passingResult);
 
             // When
             service.withdraw("inst-001");

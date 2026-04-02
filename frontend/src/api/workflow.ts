@@ -267,3 +267,98 @@ export function deleteFormTemplate(id: string) {
 export function checkFormTemplateCodeExists(code: string) {
   return get<boolean>(`/form-templates/exists/${code}`)
 }
+
+// ========== Workflow Hook Management ==========
+
+export interface WorkflowNodeHook {
+  id: string
+  nodeId: string
+  hookPoint: string
+  hookType: 'validate' | 'execute'
+  executorType: 'spel' | 'bean' | 'http'
+  executorConfig: string
+  asyncExecution: boolean
+  blockOnFailure: boolean
+  failureMessage?: string
+  priority: number
+  conditionExpression?: string
+  retryCount: number
+  retryInterval: number
+  hookName?: string
+  description?: string
+  createTime: string
+  updateTime: string
+}
+
+export interface WorkflowHookLog {
+  id: string
+  instanceId: string
+  nodeId?: string
+  hookId?: string
+  hookSource: 'node_field' | 'hook_table'
+  hookPoint: string
+  executorType: string
+  executorConfig: string
+  success: boolean
+  resultCode: string
+  resultMessage: string
+  executionTime?: number
+  retryAttempts?: number
+  async: boolean
+  operatorId?: string
+  operatorName?: string
+  createTime: string
+}
+
+export interface WorkflowHookReq {
+  nodeId: string
+  hookPoint: string
+  hookType: 'validate' | 'execute'
+  executorType: 'spel' | 'bean' | 'http'
+  executorConfig: string
+  asyncExecution?: boolean
+  blockOnFailure?: boolean
+  failureMessage?: string
+  priority?: number
+  conditionExpression?: string
+  retryCount?: number
+  retryInterval?: number
+  hookName?: string
+  description?: string
+}
+
+export function getNodeHooks(nodeId: string) {
+  return get<WorkflowNodeHook[]>(`/workflow/hooks/node/${nodeId}`)
+}
+
+export function getNodeHookByPoint(nodeId: string, hookPoint: string) {
+  return get<WorkflowNodeHook[]>(`/workflow/hooks/node/${nodeId}/${hookPoint}`)
+}
+
+export function createHook(data: WorkflowHookReq) {
+  return post<WorkflowNodeHook>('/workflow/hooks', data)
+}
+
+export function updateHook(id: string, data: WorkflowHookReq) {
+  return put<WorkflowNodeHook>(`/workflow/hooks/${id}`, data)
+}
+
+export function deleteHook(id: string) {
+  return del<void>(`/workflow/hooks/${id}`)
+}
+
+export function getHook(id: string) {
+  return get<WorkflowNodeHook>(`/workflow/hooks/${id}`)
+}
+
+export function getInstanceHookLogs(instanceId: string) {
+  return get<WorkflowHookLog[]>(`/workflow/hook-logs/instance/${instanceId}`)
+}
+
+export function getInstanceHookLogsByPoint(instanceId: string, hookPoint: string) {
+  return get<WorkflowHookLog[]>(`/workflow/hook-logs/instance/${instanceId}/${hookPoint}`)
+}
+
+export function getHookLog(id: string) {
+  return get<WorkflowHookLog>(`/workflow/hook-logs/${id}`)
+}
