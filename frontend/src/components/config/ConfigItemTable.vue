@@ -211,8 +211,8 @@ const shouldShowCopyButton = (config: Config) => {
           </td>
           <td class="p-4">
             <Switch
-              :checked="config.status === 1"
-              @update:checked="emit('toggleStatus', config)"
+              :model-value="config.status === 1"
+              @update:model-value="emit('toggleStatus', config)"
             />
           </td>
           <td class="p-4">

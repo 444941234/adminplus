@@ -313,7 +313,7 @@ const handleCancel = () => {
         <!-- Required Switch -->
         <div class="flex items-center justify-between">
           <Label for="isRequired">是否必填</Label>
-          <Switch id="isRequired" v-model:checked="formData.isRequired" :disabled="loading" />
+          <Switch id="isRequired" v-model="formData.isRequired" :disabled="loading" />
         </div>
 
         <!-- Validation Rule -->
