@@ -64,11 +64,11 @@ const handleFormValuesChange = (value: WorkflowFormValues) => {
 
 <template>
   <Dialog :open="open" @update:open="(value) => emit('update:open', value)">
-    <DialogContent class="sm:max-w-2xl">
+    <DialogContent class="sm:max-w-2xl max-h-[90vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>{{ titleText }}</DialogTitle>
       </DialogHeader>
-      <div class="space-y-4">
+      <div class="flex-1 overflow-y-auto space-y-4 pr-2 -mr-2">
         <div class="space-y-2">
           <Label>流程类型 <span class="text-muted-foreground text-xs">(必填)</span></Label>
           <Select :model-value="definitionId" @update:model-value="handleDefinitionChange">
@@ -108,7 +108,7 @@ const handleFormValuesChange = (value: WorkflowFormValues) => {
           <Textarea :model-value="remark" placeholder="补充说明" @update:model-value="handleRemarkChange" />
         </div>
       </div>
-      <DialogFooter>
+      <DialogFooter class="mt-4 pt-4 border-t">
         <Button variant="outline" @click="emit('update:open', false)">取消</Button>
         <Button variant="secondary" :disabled="loading || definitionLoading" @click="emit('save-draft')">保存草稿</Button>
         <Button :disabled="loading || definitionLoading" @click="emit('submit')">提交</Button>
