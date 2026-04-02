@@ -48,6 +48,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     private final UserRepository userRepository;
     private final DeptRepository deptRepository;
     private final UserRoleRepository userRoleRepository;
+    private final RoleRepository roleRepository;
     private final WorkflowDefinitionService definitionService;
     private final WorkflowCcRepository ccRepository;
     private final WorkflowAddSignRepository addSignRepository;
@@ -537,7 +538,21 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             case "role":
                 // 角色 - 查找具有该角色的所有用户
                 if (node.getApproverId() != null) {
-                    List<UserRoleEntity> userRoles = userRoleRepository.findByRoleId(node.getApproverId());
+                    // approverId 可能是角色ID或角色编码
+                    String roleId = node.getApproverId();
+
+                    // 如果是角色编码（以 ROLE_ 开头），先查找角色ID
+                    if (roleId.startsWith("ROLE_")) {
+                        RoleEntity role = roleRepository.findByCode(roleId).orElse(null);
+                        if (role != null) {
+                            roleId = role.getId();
+                        } else {
+                            log.warn("找不到角色: {}", node.getApproverId());
+                            break;
+                        }
+                    }
+
+                    List<UserRoleEntity> userRoles = userRoleRepository.findByRoleId(roleId);
                     approvers.addAll(userRoles.stream().map(UserRoleEntity::getUserId).toList());
                 }
                 break;
