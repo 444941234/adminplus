@@ -554,13 +554,13 @@ onMounted(() => {
             </div>
             <div class="space-y-2">
               <Label>状态</Label>
-              <Select v-model="definitionForm.status">
+              <Select v-model.number="definitionForm.status">
                 <SelectTrigger>
                   <SelectValue placeholder="请选择状态" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">启用</SelectItem>
-                  <SelectItem value="0">停用</SelectItem>
+                  <SelectItem :value="1">启用</SelectItem>
+                  <SelectItem :value="0">停用</SelectItem>
                 </SelectContent>
               </Select>
             </div>
