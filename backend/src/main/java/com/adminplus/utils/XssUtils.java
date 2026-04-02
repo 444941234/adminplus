@@ -94,21 +94,29 @@ public class XssUtils {
             return filename;
         }
 
-        // 移除路径遍历字符
+        // 移除路径遍历字符和危险字符
         String sanitized = filename.replaceAll("\\.\\./", "")
                 .replaceAll("\\.\\\\", "")
                 .replaceAll("/", "")
                 .replaceAll("\\\\", "")
                 .replaceAll("\\x00", "")
                 .replaceAll("\\r", "")
-                .replaceAll("\\n", "");
+                .replaceAll("\\n", "")
+                .replaceAll("[<>:\"|?*]", ""); // Windows 不允许的字符
 
-        // 只保留字母、数字、下划线、点和连字符
-        sanitized = sanitized.replaceAll("[^a-zA-Z0-9._-]", "");
+        // 移除控制字符，但保留 Unicode 字符（支持中文等）
+        sanitized = sanitized.replaceAll("[\\x00-\\x1f]", "");
 
         // 限制文件名长度
         if (sanitized.length() > 255) {
-            sanitized = sanitized.substring(0, 255);
+            // 保留扩展名
+            int lastDot = sanitized.lastIndexOf('.');
+            if (lastDot > 0) {
+                String ext = sanitized.substring(lastDot);
+                sanitized = sanitized.substring(0, 255 - ext.length()) + ext;
+            } else {
+                sanitized = sanitized.substring(0, 255);
+            }
         }
 
         return sanitized;

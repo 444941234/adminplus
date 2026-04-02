@@ -3,6 +3,7 @@ package com.adminplus.service.impl;
 import com.adminplus.common.config.FileStorageConfig;
 import com.adminplus.constants.StorageType;
 import com.adminplus.service.FileStorageService;
+import com.adminplus.utils.FileContentValidator;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -30,15 +30,6 @@ import java.util.UUID;
 public class LocalFileStorageServiceImpl implements FileStorageService {
 
     private final FileStorageConfig config;
-
-    // 允许的文件扩展名
-    private static final String[] ALLOWED_EXTENSIONS = {
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".gif",
-            ".webp"
-    };
 
     @Override
     public String uploadFile(MultipartFile file, String directory) {
@@ -56,7 +47,7 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
             }
 
             // 验证文件扩展名
-            if (!XssUtils.isAllowedExtension(originalFilename, ALLOWED_EXTENSIONS)) {
+            if (!XssUtils.isAllowedExtension(originalFilename, FileContentValidator.ALLOWED_EXTENSIONS)) {
                 throw new IllegalArgumentException("不支持的文件格式");
             }
 

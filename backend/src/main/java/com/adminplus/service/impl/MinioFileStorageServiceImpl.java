@@ -3,6 +3,7 @@ package com.adminplus.service.impl;
 import com.adminplus.common.config.FileStorageConfig;
 import com.adminplus.constants.StorageType;
 import com.adminplus.service.FileStorageService;
+import com.adminplus.utils.FileContentValidator;
 import com.adminplus.utils.XssUtils;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -32,15 +33,6 @@ public class MinioFileStorageServiceImpl implements FileStorageService {
     private final MinioClient minioClient;
     private final FileStorageConfig config;
 
-    // 允许的文件扩展名
-    private static final String[] ALLOWED_EXTENSIONS = {
-            ".jpg",
-            ".jpeg",
-            ".png",
-            ".gif",
-            ".webp"
-    };
-
     @Override
     public String uploadFile(MultipartFile file, String directory) {
         try {
@@ -57,7 +49,7 @@ public class MinioFileStorageServiceImpl implements FileStorageService {
             }
 
             // 验证文件扩展名
-            if (!XssUtils.isAllowedExtension(originalFilename, ALLOWED_EXTENSIONS)) {
+            if (!XssUtils.isAllowedExtension(originalFilename, FileContentValidator.ALLOWED_EXTENSIONS)) {
                 throw new IllegalArgumentException("不支持的文件格式");
             }
 

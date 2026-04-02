@@ -40,6 +40,18 @@ public class FileContentValidator {
             "application/json"
     );
 
+    // 允许的文件扩展名（用于存储服务验证）
+    public static final String[] ALLOWED_EXTENSIONS = {
+            // 图片
+            ".jpg", ".jpeg", ".png", ".gif", ".webp",
+            // 文档
+            ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+            // 文本
+            ".txt", ".csv", ".json",
+            // 压缩
+            ".zip", ".rar"
+    };
+
     // 允许的所有类型（图片 + 文档）
     private static final Set<String> ALLOWED_ALL_TYPES;
 
