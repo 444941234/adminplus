@@ -156,22 +156,22 @@ public class FileContentValidator {
         }
 
         String extension = filename.substring(filename.lastIndexOf(".") + 1).toLowerCase();
-        Map<String, Set<String>> extensionMap = Map.of(
-                "image/jpeg", Set.of("jpg", "jpeg"),
-                "image/png", Set.of("png"),
-                "image/gif", Set.of("gif"),
-                "image/webp", Set.of("webp"),
-                "application/pdf", Set.of("pdf"),
-                "application/msword", Set.of("doc"),
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document", Set.of("docx"),
-                "application/vnd.ms-excel", Set.of("xls"),
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Set.of("xlsx"),
-                "application/vnd.ms-powerpoint", Set.of("ppt"),
-                "application/vnd.openxmlformats-officedocument.presentationml.presentation", Set.of("pptx"),
-                "text/plain", Set.of("txt"),
-                "text/csv", Set.of("csv"),
-                "application/zip", Set.of("zip"),
-                "application/json", Set.of("json")
+        Map<String, Set<String>> extensionMap = Map.ofEntries(
+                Map.entry("image/jpeg", Set.of("jpg", "jpeg")),
+                Map.entry("image/png", Set.of("png")),
+                Map.entry("image/gif", Set.of("gif")),
+                Map.entry("image/webp", Set.of("webp")),
+                Map.entry("application/pdf", Set.of("pdf")),
+                Map.entry("application/msword", Set.of("doc")),
+                Map.entry("application/vnd.openxmlformats-officedocument.wordprocessingml.document", Set.of("docx")),
+                Map.entry("application/vnd.ms-excel", Set.of("xls")),
+                Map.entry("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Set.of("xlsx")),
+                Map.entry("application/vnd.ms-powerpoint", Set.of("ppt")),
+                Map.entry("application/vnd.openxmlformats-officedocument.presentationml.presentation", Set.of("pptx")),
+                Map.entry("text/plain", Set.of("txt")),
+                Map.entry("text/csv", Set.of("csv")),
+                Map.entry("application/zip", Set.of("zip")),
+                Map.entry("application/json", Set.of("json"))
         );
 
         Set<String> allowedExtensions = extensionMap.get(contentType);
