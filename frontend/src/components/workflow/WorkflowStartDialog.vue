@@ -68,7 +68,7 @@ const handleFormValuesChange = (value: WorkflowFormValues) => {
       <DialogHeader>
         <DialogTitle>{{ titleText }}</DialogTitle>
       </DialogHeader>
-      <div class="flex-1 overflow-y-auto space-y-4 pr-2 -mr-2">
+      <div class="flex-1 overflow-y-auto space-y-4 py-1 pl-1 -ml-1">
         <div class="space-y-2">
           <Label>流程类型 <span class="text-muted-foreground text-xs">(必填)</span></Label>
           <Select :model-value="definitionId" @update:model-value="handleDefinitionChange">
