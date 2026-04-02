@@ -75,6 +75,9 @@ class WorkflowSecurityTest {
     private UserRoleRepository userRoleRepository;
 
     @Mock
+    private RoleRepository roleRepository;
+
+    @Mock
     private WorkflowCcRepository ccRepository;
 
     @Mock
@@ -107,8 +110,8 @@ class WorkflowSecurityTest {
         // Initialize services
         instanceService = new WorkflowInstanceServiceImpl(
                 instanceRepository, approvalRepository, definitionRepository,
-                nodeRepository, userRepository, deptRepository, userRoleRepository, mockDefinitionService,
-                ccRepository, addSignRepository, objectMapper
+                nodeRepository, userRepository, deptRepository, userRoleRepository, roleRepository,
+                mockDefinitionService, ccRepository, addSignRepository, objectMapper
         );
 
         mockDefinitionService = new WorkflowDefinitionServiceImpl(
