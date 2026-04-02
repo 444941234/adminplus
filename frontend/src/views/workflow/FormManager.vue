@@ -74,6 +74,17 @@ const categories = computed(() => {
   return Array.from(cats)
 })
 
+// 当前选中的分类
+const selectedCategory = ref<string>('all')
+
+// 根据分类过滤后的模板
+const filteredTemplates = computed(() => {
+  if (selectedCategory.value === 'all') {
+    return templates.value
+  }
+  return templates.value.filter(t => t.category === selectedCategory.value)
+})
+
 // 获取表单模板列表
 const fetchTemplates = () => runList(async () => {
   const res = await getFormTemplates()
@@ -215,7 +226,7 @@ onMounted(fetchTemplates)
 
       <!-- 分类筛选 -->
       <div v-if="categories.length > 0" class="mb-4">
-        <Tabs default-value="all">
+        <Tabs v-model="selectedCategory">
           <TabsList>
             <TabsTrigger value="all">全部 ({{ templates.length }})</TabsTrigger>
             <TabsTrigger v-for="cat in categories" :key="cat" :value="cat">
@@ -228,7 +239,7 @@ onMounted(fetchTemplates)
       <!-- 表单模板列表 -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card
-          v-for="template in templates"
+          v-for="template in filteredTemplates"
           :key="template.id"
           class="hover:shadow-lg transition-shadow cursor-pointer"
           @click="openEditForm(template)"
@@ -293,10 +304,14 @@ onMounted(fetchTemplates)
       </div>
 
       <!-- 空状态 -->
-      <div v-if="templates.length === 0 && !loading" class="text-center py-16">
+      <div v-if="filteredTemplates.length === 0 && !loading" class="text-center py-16">
         <FileText class="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-        <h3 class="text-lg font-medium mb-2">暂无表单模板</h3>
-        <p class="text-muted-foreground mb-4">创建你的第一个表单模板</p>
+        <h3 class="text-lg font-medium mb-2">
+          {{ selectedCategory === 'all' ? '暂无表单模板' : '该分类下暂无表单模板' }}
+        </h3>
+        <p class="text-muted-foreground mb-4">
+          {{ selectedCategory === 'all' ? '创建你的第一个表单模板' : '请选择其他分类或新建表单' }}
+        </p>
         <Button v-if="canCreate" @click="openCreateForm">
           <Plus class="mr-2 h-4 w-4" />
           新建表单
