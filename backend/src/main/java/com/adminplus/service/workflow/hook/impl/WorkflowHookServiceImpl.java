@@ -9,6 +9,7 @@ import com.adminplus.repository.WorkflowHookLogRepository;
 import com.adminplus.repository.WorkflowNodeHookRepository;
 import com.adminplus.service.workflow.hook.HookExecutor;
 import com.adminplus.service.workflow.hook.WorkflowHookService;
+import com.adminplus.utils.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -404,20 +405,10 @@ public class WorkflowHookServiceImpl implements WorkflowHookService {
     }
 
     private String getCurrentUserId() {
-        try {
-            // TODO: 从 SecurityContext 获取当前用户ID
-            return "system";
-        } catch (Exception e) {
-            return "system";
-        }
+        return SecurityUtils.getCurrentUserIdOrDefault();
     }
 
     private String getCurrentUserName() {
-        try {
-            // TODO: 从 SecurityContext 获取当前用户名
-            return "System";
-        } catch (Exception e) {
-            return "System";
-        }
+        return SecurityUtils.getCurrentUsernameOrDefault();
     }
 }
