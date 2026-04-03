@@ -12,6 +12,7 @@ import com.adminplus.pojo.dto.resp.WorkflowDraftDetailResp;
 import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
 import com.adminplus.service.WorkflowInstanceService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -70,6 +71,11 @@ public class WorkflowInstanceController {
 
     @GetMapping("/{instanceId}")
     @Operation(summary = "查询工作流详情")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "查询成功"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "无权限查看该工作流"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "工作流实例不存在")
+    })
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<WorkflowDetailResp> getDetail(@PathVariable String instanceId) {
         WorkflowDetailResp resp = instanceService.getDetail(instanceId);
@@ -131,6 +137,12 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/approve")
     @Operation(summary = "同意审批")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "审批成功"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "工作流不在运行状态或已审批"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "无审批权限"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "工作流实例不存在")
+    })
     @OperationLog(module = "工作流管理", operationType = 3, description = "同意审批 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:approve')")
     public ApiResponse<WorkflowInstanceResp> approve(
@@ -143,6 +155,12 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/reject")
     @Operation(summary = "拒绝审批")
+    @ApiResponses({
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "拒绝成功"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "工作流不在运行状态或已审批"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "无审批权限"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "工作流实例不存在")
+    })
     @OperationLog(module = "工作流管理", operationType = 3, description = "拒绝审批 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:reject', 'workflow:approve')")
     public ApiResponse<WorkflowInstanceResp> reject(
