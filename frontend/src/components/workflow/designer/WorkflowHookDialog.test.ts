@@ -28,7 +28,7 @@ vi.mock('vue-sonner', () => ({
 }))
 
 vi.mock('@/composables/useApiInterceptors', () => ({
-  showErrorToast: vi.fn((error: Error, message: string) => {
+  showErrorToast: vi.fn((_error: Error, message: string) => {
     toastMocks.error(message)
   })
 }))
@@ -115,7 +115,7 @@ describe('WorkflowHookDialog.vue', () => {
     apiMocks.deleteHook.mockResolvedValue(mockApiResponse({}))
   })
 
-  const mountComponent = async (props = {}) => {
+  const mountComponent = async (props: Record<string, unknown> = {}) => {
     const wrapper = mount(WorkflowHookDialog, {
       props: {
         open: false,
@@ -145,8 +145,9 @@ describe('WorkflowHookDialog.vue', () => {
     })
 
     // Set open to true to trigger the watcher
-    if (props.open !== false) {
-      await wrapper.setProps({ open: true })
+    const shouldOpen = props.open !== false
+    if (shouldOpen) {
+      ;(wrapper as any).setProps({ open: true })
       await flushPromises()
     }
 

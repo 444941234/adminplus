@@ -37,7 +37,7 @@ vi.mock('vue-sonner', () => ({
 }))
 
 vi.mock('@/composables/useApiInterceptors', () => ({
-  showErrorToast: vi.fn((error: Error, message: string) => {
+  showErrorToast: vi.fn((_error: Error, message: string) => {
     toastMocks.error(message)
   })
 }))

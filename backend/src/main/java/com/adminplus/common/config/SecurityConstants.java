@@ -291,5 +291,17 @@ public class SecurityConstants {
      */
     public static final String WORKFLOW_HOOK_LOG_VIEW = "workflow:hook:log:view";
 
+    // ==================== 缓存管理权限 ====================
+
+    /**
+     * 缓存 - 清除权限
+     */
+    public static final String CACHE_CLEAR = "cache:clear";
+
+    /**
+     * 缓存 - 列表权限
+     */
+    public static final String CACHE_LIST = "cache:list";
+
     public SecurityConstants() {}
 }

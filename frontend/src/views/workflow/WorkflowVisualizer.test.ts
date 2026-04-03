@@ -26,7 +26,7 @@ vi.mock('@vue-flow/core', () => ({
       fitViewOnInit: { type: Boolean, default: false }
     },
     emits: ['node-click'],
-    setup(props, { emit, slots }) {
+    setup(props, { emit: _emit, slots }) {
       return () =>
         h('div', { class: 'vue-flow-stub', 'data-node-count': String(props.nodes?.length || 0) }, [
           h('span', { class: 'nodes-count' }, `Nodes: ${props.nodes?.length || 0}`),
@@ -147,10 +147,12 @@ describe('WorkflowVisualizer.vue', () => {
       const wrapper = await mountComponent({ definitionId: 'def-001' })
 
       expect(wrapper.emitted('loaded')).toBeTruthy()
-      const emittedDef = wrapper.emitted('loaded')[0][0]
-      expect(emittedDef.id).toBe('def-001')
-      expect(emittedDef.name).toBe('请假审批')
-      expect(emittedDef.nodes.length).toBe(2)
+      const emittedEvents = wrapper.emitted('loaded') as unknown[][]
+      expect(emittedEvents).toBeDefined()
+      const emittedDef = emittedEvents[0]?.[0] as { id: string; name: string; nodes: unknown[] }
+      expect(emittedDef?.id).toBe('def-001')
+      expect(emittedDef?.name).toBe('请假审批')
+      expect(emittedDef?.nodes?.length).toBe(2)
     })
 
     it('shows loading state initially when fetching', async () => {
@@ -272,7 +274,7 @@ describe('WorkflowVisualizer.vue', () => {
       const vm = wrapper.vm as any
 
       const edges = vm.edges || []
-      expect(edges.find(e => e.source === 'start' && e.target === 'node-001')).toBeDefined()
+      expect(edges.find((e: { source: string; target: string }) => e.source === 'start' && e.target === 'node-001')).toBeDefined()
     })
 
     it('creates edge from last node to end', async () => {
@@ -281,7 +283,7 @@ describe('WorkflowVisualizer.vue', () => {
       const vm = wrapper.vm as any
 
       const edges = vm.edges || []
-      expect(edges.find(e => e.source === 'node-001' && e.target === 'end')).toBeDefined()
+      expect(edges.find((e: { source: string; target: string }) => e.source === 'node-001' && e.target === 'end')).toBeDefined()
     })
   })
 
@@ -349,7 +351,8 @@ describe('WorkflowVisualizer.vue', () => {
       vm.onNodeClick({ node: { id: 'node-001', data: { node: workflowNode } } })
 
       expect(wrapper.emitted('node-click')).toBeTruthy()
-      expect(wrapper.emitted('node-click')[0][0]).toEqual(workflowNode)
+      const emittedEvents = wrapper.emitted('node-click') as unknown[][]
+      expect(emittedEvents?.[0]?.[0]).toEqual(workflowNode)
     })
 
     it('does not emit for start/end nodes', async () => {

@@ -304,6 +304,9 @@ public class MenuInitializer implements DataInitializer {
         addButtonPermissions(data, "M47", "workflow:urge", Arrays.asList("create", "read"));
         addButtonPermissions(data, "M47", "workflow", Arrays.asList("urge"));
 
+        // 系统管理 - 缓存管理按钮权限
+        addButtonPermissions(data, "M2", "cache", Arrays.asList("clear", "list"));
+
         return data;
     }
 
@@ -347,6 +350,7 @@ public class MenuInitializer implements DataInitializer {
             case "publish" -> "发布";
             case "read" -> "查看";
             case "urge" -> "催办";
+            case "clear" -> "清除";
             default -> action;
         };
     }
