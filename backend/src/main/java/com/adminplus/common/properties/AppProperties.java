@@ -55,7 +55,7 @@ public class AppProperties {
 
     @Data
     public static class WorkflowHook {
-        private boolean allowInternalUrls = true;   // 是否允许内网URL（localhost, 127.0.0.1, 10.x, 172.16-31.x, 192.168.x）
+        private boolean allowInternalUrls = false;  // 是否允许内网URL（默认禁用以防止SSRF）
         private String allowedUrlPatterns = "";     // 允许的URL模式（逗号分隔，如：https://api.example.com/*,https://hooks.example.com/*）
     }
 }

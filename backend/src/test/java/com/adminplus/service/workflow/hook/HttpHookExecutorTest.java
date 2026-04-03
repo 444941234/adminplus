@@ -217,10 +217,9 @@ class HttpHookExecutorTest {
     }
 
     @Test
-    @DisplayName("Should reject internal URLs when configured")
-    void shouldRejectInternalUrlsWhenConfigured() {
-        // Given
-        appProperties.getWorkflowHook().setAllowInternalUrls(false);
+    @DisplayName("Should reject internal URLs by default")
+    void shouldRejectInternalUrlsByDefault() {
+        // Given - allowInternalUrls defaults to false
         HttpConfig config = new HttpConfig("http://localhost/api", "GET", null, null);
         HookContext context = new HookContext(
             testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
@@ -233,6 +232,31 @@ class HttpHookExecutorTest {
         assertThat(result.success()).isFalse();
         assertThat(result.code()).isEqualTo("INVALID_URL");
         assertThat(result.message()).contains("不允许访问内网地址");
+    }
+
+    @Test
+    @DisplayName("Should allow internal URLs when explicitly enabled")
+    void shouldAllowInternalUrlsWhenEnabled() {
+        // Given
+        appProperties.getWorkflowHook().setAllowInternalUrls(true);
+        HttpConfig config = new HttpConfig("http://localhost/api", "GET", null, null);
+        HookContext context = new HookContext(
+            testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
+        );
+
+        ResponseEntity<Map> response = new ResponseEntity<>(Map.of("success", true), HttpStatus.OK);
+        when(restTemplate.exchange(
+            anyString(),
+            eq(HttpMethod.GET),
+            any(HttpEntity.class),
+            eq(Map.class)
+        )).thenReturn(response);
+
+        // When
+        HookResult result = executor.execute(config, context);
+
+        // Then
+        assertThat(result.success()).isTrue();
     }
 
     @Test
