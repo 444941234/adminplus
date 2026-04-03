@@ -3,6 +3,7 @@ package com.adminplus.controller;
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.config.SecurityConstants;
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.workflow.hook.WorkflowNodeHookReq;
 import com.adminplus.pojo.entity.WorkflowNodeHookEntity;
 import com.adminplus.repository.WorkflowNodeHookRepository;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,9 +35,10 @@ public class WorkflowNodeHookController {
     @Operation(summary = "创建钩子配置")
     @OperationLog(module = "工作流管理", operationType = 2, description = "创建钩子配置 {#req.hookName}")
     @PreAuthorize("hasAuthority('" + SecurityConstants.WORKFLOW_HOOK_CREATE + "')")
-    public ApiResponse<WorkflowNodeHookEntity> create(@Valid @RequestBody WorkflowNodeHookEntity req) {
-        log.info("创建钩子配置: nodeId={}, hookPoint={}", req.getNodeId(), req.getHookPoint());
-        WorkflowNodeHookEntity saved = hookRepository.save(req);
+    public ApiResponse<WorkflowNodeHookEntity> create(@Valid @RequestBody WorkflowNodeHookReq req) {
+        log.info("创建钩子配置: nodeId={}, hookPoint={}", req.nodeId(), req.hookPoint());
+        WorkflowNodeHookEntity entity = toEntity(req);
+        WorkflowNodeHookEntity saved = hookRepository.save(entity);
         return ApiResponse.ok(saved);
     }
 
@@ -46,10 +48,11 @@ public class WorkflowNodeHookController {
     @PreAuthorize("hasAuthority('" + SecurityConstants.WORKFLOW_HOOK_UPDATE + "')")
     public ApiResponse<WorkflowNodeHookEntity> update(
             @PathVariable String id,
-            @Valid @RequestBody WorkflowNodeHookEntity req) {
+            @Valid @RequestBody WorkflowNodeHookReq req) {
         log.info("更新钩子配置: id={}", id);
-        req.setId(id);
-        WorkflowNodeHookEntity saved = hookRepository.save(req);
+        WorkflowNodeHookEntity entity = toEntity(req);
+        entity.setId(id);
+        WorkflowNodeHookEntity saved = hookRepository.save(entity);
         return ApiResponse.ok(saved);
     }
 
@@ -90,5 +93,27 @@ public class WorkflowNodeHookController {
         List<WorkflowNodeHookEntity> hooks = hookRepository
                 .findByNodeIdAndHookPointAndDeletedFalseOrderByPriorityAsc(nodeId, hookPoint);
         return ApiResponse.ok(hooks);
+    }
+
+    /**
+     * Convert DTO to entity
+     */
+    private WorkflowNodeHookEntity toEntity(WorkflowNodeHookReq req) {
+        WorkflowNodeHookEntity entity = new WorkflowNodeHookEntity();
+        entity.setNodeId(req.nodeId());
+        entity.setHookPoint(req.hookPoint());
+        entity.setHookType(req.hookType());
+        entity.setExecutorType(req.executorType());
+        entity.setExecutorConfig(req.executorConfig());
+        entity.setAsyncExecution(req.asyncExecution());
+        entity.setBlockOnFailure(req.blockOnFailure());
+        entity.setFailureMessage(req.failureMessage());
+        entity.setPriority(req.priority());
+        entity.setConditionExpression(req.conditionExpression());
+        entity.setRetryCount(req.retryCount());
+        entity.setRetryInterval(req.retryInterval() != null ? req.retryInterval() : 1000);
+        entity.setHookName(req.hookName());
+        entity.setDescription(req.description());
+        return entity;
     }
 }

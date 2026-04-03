@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.pojo.dto.workflow.hook.WorkflowNodeHookReq;
 import com.adminplus.pojo.entity.WorkflowNodeHookEntity;
 import com.adminplus.repository.WorkflowNodeHookRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -88,7 +89,8 @@ class WorkflowNodeHookControllerTest {
                             "executorConfig": "{\\"expression\\":\\"#formData.amount > 100\\"}",
                             "asyncExecution": false,
                             "blockOnFailure": true,
-                            "priority": 0
+                            "priority": 0,
+                            "retryCount": 0
                         }
                         """))
                 .andExpect(status().isOk())
@@ -171,7 +173,8 @@ class WorkflowNodeHookControllerTest {
                             "executorConfig": "{\\"expression\\":\\"#formData.amount > 200\\"}",
                             "asyncExecution": false,
                             "blockOnFailure": true,
-                            "priority": 0
+                            "priority": 0,
+                            "retryCount": 0
                         }
                         """))
                 .andExpect(status().isOk());
