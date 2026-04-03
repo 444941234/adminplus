@@ -173,7 +173,7 @@ class FileServiceTest {
             // When & Then
             assertThatThrownBy(() -> fileService.uploadFile(file, "uploads"))
                     .isInstanceOf(BizException.class)
-                    .hasMessageContaining("文件类型不匹配");
+                    .hasMessageContaining("不支持的文件类型");
         }
     }
 }
