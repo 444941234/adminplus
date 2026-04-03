@@ -1012,9 +1012,15 @@ class WorkflowInstanceServiceTest {
         @DisplayName("Should get approvals successfully")
         void shouldGetApprovalsSuccessfully() {
             // Given
+            mockSecurityContext(CURRENT_USER_ID);
+
             WorkflowApprovalEntity approval = new WorkflowApprovalEntity();
             approval.setId("appr-001");
             approval.setInstanceId("inst-001");
+
+            // Mock for access check - user is initiator (CURRENT_USER_ID matches testInstance.userId)
+            when(instanceRepository.findById("inst-001"))
+                    .thenReturn(Optional.of(testInstance));
 
             when(approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc("inst-001"))
                     .thenReturn(Arrays.asList(approval));

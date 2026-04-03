@@ -239,6 +239,9 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
 
+        // 权限检查：发起人、审批人、抄送人才可查看
+        checkViewAccess(instance, userId);
+
         // 查询审批记录
         List<WorkflowApprovalResp> approvals = approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
                 .stream()
@@ -486,7 +489,14 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     @Override
     @Transactional(readOnly = true)
     public List<WorkflowApprovalResp> getApprovals(String instanceId) {
+        String userId = getCurrentUserId();
         log.info("查询审批记录: instanceId={}", instanceId);
+
+        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+
+        // 权限检查：发起人、审批人、抄送人才可查看
+        checkViewAccess(instance, userId);
 
         return approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
                 .stream()
@@ -755,6 +765,43 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 .anyMatch(a -> a.getApproverId().equals(userId));
     }
 
+    /**
+     * 检查用户是否有权限查看工作流实例详情
+     * <p>
+     * 用户可查看的条件：
+     * 1. 用户是发起人
+     * 2. 用户是审批人（当前或历史）
+     * 3. 用户是抄送人
+     * </p>
+     */
+    private void checkViewAccess(WorkflowInstanceEntity instance, String userId) {
+        // 1. 检查是否是发起人
+        if (instance.getUserId().equals(userId)) {
+            return;
+        }
+
+        // 2. 检查是否是审批人（当前或历史）
+        boolean isApprover = approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instance.getId())
+                .stream()
+                .anyMatch(a -> a.getApproverId().equals(userId));
+
+        if (isApprover) {
+            return;
+        }
+
+        // 3. 检查是否是抄送人
+        boolean isCcReceiver = ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instance.getId())
+                .stream()
+                .anyMatch(cc -> cc.getUserId().equals(userId));
+
+        if (isCcReceiver) {
+            return;
+        }
+
+        // 无权限访问
+        throw new BizException("您无权查看该工作流实例");
+    }
+
     private String getCurrentUserId() {
         return SecurityUtils.getCurrentUserId();
     }
@@ -919,8 +966,12 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     @Override
     @Transactional(readOnly = true)
     public List<WorkflowNodeResp> getRollbackableNodes(String instanceId) {
+        String userId = getCurrentUserId();
         WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+
+        // 权限检查：发起人、审批人、抄送人才可查看
+        checkViewAccess(instance, userId);
 
         // 获取所有节点
         List<WorkflowNodeEntity> allNodes = nodeRepository
@@ -1259,7 +1310,15 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     @Override
     @Transactional(readOnly = true)
     public List<WorkflowAddSignResp> getAddSignRecords(String instanceId) {
+        String userId = getCurrentUserId();
         log.info("查询加签记录: instanceId={}", instanceId);
+
+        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
+                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+
+        // 权限检查：发起人、审批人、抄送人才可查看
+        checkViewAccess(instance, userId);
+
         return addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId)
                 .stream()
                 .map(this::toAddSignResponse)
