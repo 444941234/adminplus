@@ -16,6 +16,7 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -69,6 +70,9 @@ public class CacheConfig {
      * 配置缓存管理器
      * 使用 RedisCacheManager 作为实现
      * @Primary 标记为默认 CacheManager，避免与其他 CacheManager bean 冲突
+     *
+     * 注意：使用 Jackson2JsonRedisSerializer 而不是 GenericJackson2JsonRedisSerializer
+     * 这样可以避免类型信息的兼容性问题，但要求缓存的对象必须是可正确序列化的
      */
     @Bean
     @Primary
@@ -77,14 +81,11 @@ public class CacheConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         objectMapper.registerModule(new JavaTimeModule()); // 注册 JavaTimeModule 支持 Instant 等时间类型
-        // 使用 NON_FINAL 类型策略，避免安全漏洞（EVERYTHING 允许任意类实例化）
-        objectMapper.activateDefaultTypingAsProperty(
-                LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.NON_FINAL,
-                "@class"
-        );
+        // 不启用类型信息，避免反序列化兼容性问题
+        // 对于缓存场景，我们通常缓存的是简单的 DTO 对象，不需要多态支持
 
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        // 使用 Jackson2JsonRedisSerializer，明确指定类型为 Object
+        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
 
         // 配置 Redis 缓存
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
