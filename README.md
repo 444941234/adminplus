@@ -124,6 +124,9 @@ npm run dev
   - 响应式布局（桌面/平板/移动端）
 - 分析统计与报表
 - 工作流定义、我的流程、待审批、流程详情
+  - 支持 14 个钩子点（PRE/POST × submit/approve/reject/rollback/cancel/withdraw/add-sign）
+  - 支持 SpEL 表达式、Bean 方法、HTTP 接口三种钩子执行器
+  - 支持异步执行、重试机制、条件表达式
 - 用户管理
 - 角色管理
 - 菜单管理
