@@ -5,7 +5,7 @@
 | 项目 | 测试文件数 | 测试用例数 | 状态 |
 |------|-----------|-----------|------|
 | 后端 | 78 | 857 | ✅ 全部通过 |
-| 前端 | 50 | 886 | ✅ 全部通过 |
+| 前端 | 52 | 938 | ✅ 全部通过 |
 
 ## 后端测试覆盖
 
@@ -62,6 +62,8 @@
 | `MyWorkflow.test.ts` | 我的流程列表、草稿管理、催办 |
 | `WorkflowDesigner.test.ts` | 流程设计器、节点配置 |
 | `WorkflowCenter.test.ts` | 流程中心、待办列表 |
+| `WorkflowVisualizer.test.ts` | 流程图可视化、节点状态、边缘连接 |
+| `FormManager.test.ts` | 表单模板管理、分类过滤、权限校验 |
 | `UrgeCenter.test.ts` | 催办中心 |
 | `MyCc.test.ts` | 抄送列表 |
 
