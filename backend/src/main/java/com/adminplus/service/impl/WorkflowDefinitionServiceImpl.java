@@ -15,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.function.Function;
 
 /**
  * 工作流定义服务实现
@@ -112,17 +114,46 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @Override
     @Transactional(readOnly = true)
     public List<WorkflowDefinitionResp> listAll() {
-        return definitionRepository.findAll().stream()
-                .map(this::toResponse)
+        List<WorkflowDefinitionEntity> definitions = definitionRepository.findAll();
+
+        // 批量查询节点数量，避免 N+1
+        Map<String, Long> nodeCountMap = batchGetNodeCounts(definitions);
+
+        return definitions.stream()
+                .map(entity -> toResponse(entity, nodeCountMap.getOrDefault(entity.getId(), 0L)))
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<WorkflowDefinitionResp> listEnabled() {
-        return definitionRepository.findByStatusAndDeletedFalseOrderByCreateTimeDesc(1).stream()
-                .map(this::toResponse)
+        List<WorkflowDefinitionEntity> definitions = definitionRepository.findByStatusAndDeletedFalseOrderByCreateTimeDesc(1);
+
+        // 批量查询节点数量，避免 N+1
+        Map<String, Long> nodeCountMap = batchGetNodeCounts(definitions);
+
+        return definitions.stream()
+                .map(entity -> toResponse(entity, nodeCountMap.getOrDefault(entity.getId(), 0L)))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 批量获取节点数量
+     */
+    private Map<String, Long> batchGetNodeCounts(List<WorkflowDefinitionEntity> definitions) {
+        if (definitions.isEmpty()) {
+            return Map.of();
+        }
+
+        List<String> definitionIds = definitions.stream()
+                .map(WorkflowDefinitionEntity::getId)
+                .toList();
+
+        return nodeRepository.countByDefinitionIdsIn(definitionIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (String) row[0],
+                        row -> (Long) row[1]
+                ));
     }
 
     @Override
@@ -193,7 +224,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
                 .collect(Collectors.toList());
     }
 
-    private WorkflowDefinitionResp toResponse(WorkflowDefinitionEntity entity) {
+    private WorkflowDefinitionResp toResponse(WorkflowDefinitionEntity entity, long nodeCount) {
         return new WorkflowDefinitionResp(
                 entity.getId(),
                 entity.getDefinitionName(),
@@ -203,10 +234,14 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
                 entity.getStatus(),
                 entity.getVersion(),
                 entity.getFormConfig(),
-                nodeRepository.countByDefinitionIdAndDeletedFalse(entity.getId()),
+                (int) nodeCount,
                 entity.getCreateTime(),
                 entity.getUpdateTime()
         );
+    }
+
+    private WorkflowDefinitionResp toResponse(WorkflowDefinitionEntity entity) {
+        return toResponse(entity, nodeRepository.countByDefinitionIdAndDeletedFalse(entity.getId()));
     }
 
     private WorkflowNodeResp toNodeResponse(WorkflowNodeEntity entity) {
