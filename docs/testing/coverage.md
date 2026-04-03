@@ -5,7 +5,7 @@
 | 项目 | 测试文件数 | 测试用例数 | 状态 |
 |------|-----------|-----------|------|
 | 后端 | 78 | 857 | ✅ 全部通过 |
-| 前端 | 59 | 1125 | ✅ 全部通过 |
+| 前端 | 61 | 1169 | ✅ 全部通过 |
 
 ## 后端测试覆盖
 
@@ -85,6 +85,8 @@
 | `useAsyncAction.test.ts` | 异步操作统一处理、loading状态、错误处理、toast提示 |
 | `useApiInterceptors.test.ts` | API拦截器、请求去重、取消错误检测、错误toast显示 |
 | `useAuth.test.ts` | 登录登出、token管理、用户信息获取、验证码、token刷新、状态恢复 |
+| `useSelection.test.ts` | 批量选择状态管理、全选/取消全选、单项切换、计算属性 |
+| `usePageList.test.ts` | 分页列表数据管理、搜索重置、页码跳转、loading状态 |
 | `useWorkflowForm.test.ts` | 表单数据管理、验证、提交 |
 
 ### API测试
