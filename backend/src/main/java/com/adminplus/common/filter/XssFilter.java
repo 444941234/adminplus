@@ -19,10 +19,17 @@ public class XssFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
 
-        // 对 GET 请求和 POST 请求都进行 XSS 过滤
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        XssRequestWrapper wrappedRequest = new XssRequestWrapper(httpRequest);
 
+        // 跳过 multipart 请求（文件上传），避免破坏文件内容
+        String contentType = httpRequest.getContentType();
+        if (contentType != null && contentType.startsWith("multipart/")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // 对普通请求进行 XSS 过滤
+        XssRequestWrapper wrappedRequest = new XssRequestWrapper(httpRequest);
         chain.doFilter(wrappedRequest, response);
     }
 }

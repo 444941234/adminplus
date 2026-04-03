@@ -89,6 +89,7 @@ public class SecurityConfig {
     private void configureAuthorization(org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
         auth
                 .requestMatchers(securityConstants.PUBLIC_ENDPOINTS).permitAll()
+                .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/**").denyAll()
                 .anyRequest().authenticated();
     }

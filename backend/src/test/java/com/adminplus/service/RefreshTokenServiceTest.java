@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -41,6 +42,9 @@ class RefreshTokenServiceTest {
     @Mock
     private JwtEncoder jwtEncoder;
 
+    @Mock
+    private PermissionService permissionService;
+
     @InjectMocks
     private RefreshTokenServiceImpl refreshTokenService;
 
@@ -57,6 +61,7 @@ class RefreshTokenServiceTest {
 
         mockJwt = mock(Jwt.class);
         lenient().when(mockJwt.getTokenValue()).thenReturn("new-access-token");
+        lenient().when(permissionService.getUserRoles("user-001")).thenReturn(List.of("ROLE_USER"));
     }
 
     @Nested

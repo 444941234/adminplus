@@ -25,7 +25,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册限流拦截器 - 认证接口
         registry.addInterceptor(rateLimitInterceptor)
-                .addPathPatterns("/auth/**")
+                .addPathPatterns("/v1/auth/**")
                 .order(1);
 
         // 限流拦截器 - 敏感操作接口

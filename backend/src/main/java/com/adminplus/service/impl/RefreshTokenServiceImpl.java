@@ -3,6 +3,7 @@ package com.adminplus.service.impl;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.entity.RefreshTokenEntity;
 import com.adminplus.repository.RefreshTokenRepository;
+import com.adminplus.service.PermissionService;
 import com.adminplus.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -29,6 +31,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final JwtEncoder jwtEncoder;
+    private final PermissionService permissionService;
 
     // Refresh Token 有效期：7 天
     private static final long REFRESH_TOKEN_EXPIRY_DAYS = 7;
@@ -75,19 +78,28 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
             throw new BizException("Refresh Token 已过期");
         }
 
+        String userId = tokenEntity.getUserId();
+
+        // 获取用户的实际角色
+        List<String> roles = permissionService.getUserRoles(userId);
+        if (roles.isEmpty()) {
+            roles = List.of("ROLE_USER");
+        }
+        String scope = String.join(" ", roles);
+
         // 生成新的 Access Token
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("adminplus")
                 .issuedAt(now)
                 .expiresAt(now.plus(ACCESS_TOKEN_EXPIRY_HOURS, ChronoUnit.HOURS))
-                .subject(String.valueOf(tokenEntity.getUserId()))
-                .claim("userId", tokenEntity.getUserId())
-                .claim("scope", "ROLE_USER")
+                .subject(userId)
+                .claim("userId", userId)
+                .claim("scope", scope)
                 .build();
 
         String newAccessToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        log.info("刷新 Access Token: userId={}", tokenEntity.getUserId());
+        log.info("刷新 Access Token: userId={}, roles={}", userId, roles);
 
         return newAccessToken;
     }
