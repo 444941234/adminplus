@@ -7,6 +7,7 @@ import {
   Checkbox,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -351,6 +352,7 @@ onMounted(async () => {
       <DialogContent class="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑角色' : '新增角色' }}</DialogTitle>
+          <DialogDescription>配置角色名称、编码和描述信息</DialogDescription>
         </DialogHeader>
         <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
         <div v-else class="space-y-4 py-2">
@@ -422,6 +424,7 @@ onMounted(async () => {
       <DialogContent class="sm:max-w-[680px]">
         <DialogHeader>
           <DialogTitle>分配菜单权限{{ assignRole ? ` - ${assignRole.name}` : '' }}</DialogTitle>
+          <DialogDescription>勾选菜单项为角色分配访问权限</DialogDescription>
         </DialogHeader>
         <div v-if="assignLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
         <ScrollArea v-else class="max-h-[420px] rounded-md border">

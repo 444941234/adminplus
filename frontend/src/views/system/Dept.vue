@@ -6,6 +6,7 @@ import {
   CardContent,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -373,6 +374,7 @@ onMounted(fetchList)
       <DialogContent class="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑部门' : '新增部门' }}</DialogTitle>
+          <DialogDescription>配置部门基本信息和上级关系</DialogDescription>
         </DialogHeader>
         <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
         <div v-else class="space-y-4 py-2">

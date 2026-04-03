@@ -8,6 +8,7 @@ import {
   Checkbox,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -513,6 +514,7 @@ onMounted(fetchData)
       <DialogContent class="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑菜单' : '新增菜单' }}</DialogTitle>
+          <DialogDescription>配置菜单名称、路径和权限标识</DialogDescription>
         </DialogHeader>
         <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
         <div v-else class="space-y-4 py-2">
