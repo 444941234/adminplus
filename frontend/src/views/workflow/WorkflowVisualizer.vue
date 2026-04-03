@@ -296,8 +296,8 @@ async function loadWorkflowDefinition() {
 
     emit('loaded', definition.value!)
     setTimeout(() => fitView({ padding: 0.2 }), 100)
-  } catch (error) {
-    console.error('WorkflowVisualizer: 加载失败', error)
+  } catch {
+    // Silent failure - visualizer will show empty state
   } finally {
     loading.value = false
   }

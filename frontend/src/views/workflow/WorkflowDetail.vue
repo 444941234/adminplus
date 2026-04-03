@@ -104,8 +104,8 @@ const fetchDetail = () => {
     try {
       const urgeRes = await getInstanceUrgeRecords(workflowId.value)
       urgeRecords.value = urgeRes.data
-    } catch (urgeError) {
-      console.error('获取催办记录失败:', urgeError)
+    } catch {
+      // Silent failure - urge records are optional
     }
   })
 }

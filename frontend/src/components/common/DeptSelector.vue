@@ -55,8 +55,8 @@ const loadDepts = async () => {
   try {
     const res = await getDeptTree()
     deptOptions.value = flattenDeptTree(res.data)
-  } catch (error) {
-    console.error('Failed to load departments:', error)
+  } catch {
+    // Silent failure - selector will show empty list
   } finally {
     loading.value = false
   }

@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Checkbox } from '@/components/ui'
 import { getNodeHooks, createHook, updateHook, deleteHook, type WorkflowNodeHook, type WorkflowHookReq } from '@/api/workflow'
+import { showErrorToast } from '@/composables/useApiInterceptors'
 
 const HOOK_POINTS = [
   { value: 'PRE_SUBMIT', label: '提交前校验', type: 'validate' },
@@ -171,7 +172,7 @@ const saveHook = async () => {
     closeForm()
     emit('refresh')
   } catch (error) {
-    console.error('保存钩子失败:', error)
+    showErrorToast(error, '保存钩子失败')
   }
 }
 
@@ -182,7 +183,7 @@ const handleDeleteHook = async (hookId: string) => {
     await loadHooks()
     emit('refresh')
   } catch (error) {
-    console.error('删除钩子失败:', error)
+    showErrorToast(error, '删除钩子失败')
   }
 }
 

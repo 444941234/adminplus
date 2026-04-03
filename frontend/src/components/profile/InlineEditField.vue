@@ -78,8 +78,8 @@ const { isEditing, value, isSaving, startEditing, cancelEdit, save } = useInline
     onSave: async (newValue: string) => {
       emit('save', newValue.trim())
     },
-    onError: (err) => {
-      console.error('Inline edit error:', err)
+    onError: () => {
+      // Error is handled by parent component via save event
     }
   }
 )

@@ -78,7 +78,6 @@ export const useUserStore = defineStore('user', () => {
       permissions.value = permRes.data
       menus.value = menuRes.data
     } catch (error) {
-      console.error('获取用户信息失败', error)
       throw error
     }
   }

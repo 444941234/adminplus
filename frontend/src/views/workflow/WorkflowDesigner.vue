@@ -119,8 +119,8 @@ const fetchFormTemplates = async () => {
   try {
     const res = await getEnabledFormTemplates()
     formTemplates.value = res.data
-  } catch (error) {
-    console.error('Failed to load form templates:', error)
+  } catch {
+    // Silent failure - form templates are optional
   }
 }
 

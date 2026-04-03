@@ -17,8 +17,7 @@ const copyValue = async (config: Config) => {
       copiedId.value = null
     }, 2000)
   } catch {
-    // Fallback for older browsers
-    console.error('Copy failed')
+    // Fallback failed - user can manually copy
   }
 }
 

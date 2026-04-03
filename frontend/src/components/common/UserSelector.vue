@@ -43,8 +43,8 @@ const loadUsers = async () => {
   try {
     const res = await getUserList({ page: 1, size: 200 })
     users.value = res.data.records
-  } catch (error) {
-    console.error('Failed to load users:', error)
+  } catch {
+    // Silent failure - selector will show empty list
   } finally {
     loading.value = false
   }
