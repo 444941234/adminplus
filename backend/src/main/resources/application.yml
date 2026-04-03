@@ -133,6 +133,10 @@ app:
     dev-secret: ${JWT_DEV_SECRET:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  # 初始化配置
+  initializer:
+    # 默认用户密码（生产环境必须修改）
+    default-password: ${INIT_DEFAULT_PASSWORD:admin123}
   virus:
     scan:
       enabled: ${VIRUS_SCAN_ENABLED:true}

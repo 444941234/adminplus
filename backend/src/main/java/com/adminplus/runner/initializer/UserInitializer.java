@@ -1,5 +1,6 @@
 package com.adminplus.runner.initializer;
 
+import com.adminplus.common.properties.InitializerProperties;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
@@ -28,6 +29,7 @@ public class UserInitializer implements DataInitializer {
     private final DeptRepository deptRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final InitializerProperties initializerProperties;
 
     @Override
     public int getOrder() {
@@ -53,7 +55,9 @@ public class UserInitializer implements DataInitializer {
                 .collect(Collectors.toMap(DeptEntity::getCode, d -> d));
 
         // 创建用户数据
-        String encodedPassword = passwordEncoder.encode("admin123");
+        String defaultPassword = initializerProperties.getDefaultPassword();
+        log.info("使用配置的默认密码初始化用户");
+        String encodedPassword = passwordEncoder.encode(defaultPassword);
 
         List<UserEntity> users = new ArrayList<>();
 
