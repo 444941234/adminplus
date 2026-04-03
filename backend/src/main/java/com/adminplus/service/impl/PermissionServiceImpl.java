@@ -15,6 +15,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,10 +49,8 @@ public class PermissionServiceImpl implements PermissionService {
             return List.of();
         }
 
-        // 2. 查询这些角色的菜单ID列表（去重）
-        Set<String> menuIds = roleIds.stream()
-                .flatMap(roleId -> roleMenuRepository.findMenuIdByRoleId(roleId).stream())
-                .collect(Collectors.toSet());
+        // 2. 批量查询这些角色的菜单ID列表（去重）
+        Set<String> menuIds = new HashSet<>(roleMenuRepository.findMenuIdsByRoleIds(roleIds));
 
         if (menuIds.isEmpty()) {
             return List.of();

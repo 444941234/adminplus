@@ -12,7 +12,7 @@ public class BizException extends RuntimeException {
 
     public BizException(String message) {
         super(message);
-        this.code = 500;
+        this.code = 400;  // 业务校验异常默认返回 400
     }
 
     public BizException(Integer code, String message) {

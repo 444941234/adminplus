@@ -18,6 +18,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -80,7 +81,7 @@ class PermissionServiceTest {
         void getUserPermissions_WithRoles_ShouldReturnPermissions() {
             // Given
             when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(testUserRole));
-            when(roleMenuRepository.findMenuIdByRoleId("role-001")).thenReturn(List.of("menu-001"));
+            when(roleMenuRepository.findMenuIdsByRoleIds(any(Collection.class))).thenReturn(List.of("menu-001"));
             when(menuRepository.findAllById(any(Set.class))).thenReturn(List.of(testMenu));
 
             // When
@@ -108,7 +109,7 @@ class PermissionServiceTest {
         void getUserPermissions_WithNoMenus_ShouldReturnEmptyList() {
             // Given
             when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(testUserRole));
-            when(roleMenuRepository.findMenuIdByRoleId("role-001")).thenReturn(List.of());
+            when(roleMenuRepository.findMenuIdsByRoleIds(any(Collection.class))).thenReturn(List.of());
 
             // When
             List<String> result = permissionService.getUserPermissions("user-001");
@@ -127,7 +128,7 @@ class PermissionServiceTest {
             menuWithoutPerm.setPermKey(null);
 
             when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(testUserRole));
-            when(roleMenuRepository.findMenuIdByRoleId("role-001")).thenReturn(List.of("menu-001", "menu-002"));
+            when(roleMenuRepository.findMenuIdsByRoleIds(any(Collection.class))).thenReturn(List.of("menu-001", "menu-002"));
             when(menuRepository.findAllById(any(Set.class))).thenReturn(List.of(testMenu, menuWithoutPerm));
 
             // When
