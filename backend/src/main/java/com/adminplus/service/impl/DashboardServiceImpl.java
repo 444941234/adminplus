@@ -9,6 +9,7 @@ import com.adminplus.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -39,6 +40,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final UserRoleRepository userRoleRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public DashboardStatsResp getStats() {
         log.debug("获取 Dashboard 统计数据");
 
@@ -58,6 +60,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ChartDataResp getUserGrowthData() {
         log.debug("获取用户增长趋势数据 - 开始");
 
@@ -151,6 +154,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ChartDataResp getRoleDistributionData() {
         log.debug("获取角色分布数据 - 开始");
 
@@ -179,6 +183,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ChartDataResp getMenuDistributionData() {
         log.debug("获取菜单类型分布数据 - 开始");
 
@@ -200,6 +205,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OperationLogResp> getRecentOperationLogs() {
         log.debug("获取最近操作日志");
 
@@ -225,6 +231,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SystemInfoResp getSystemInfo() {
         log.debug("获取系统信息");
 
@@ -259,6 +266,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OnlineUserResp> getOnlineUsers() {
         log.debug("获取在线用户列表");
 
@@ -283,6 +291,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public StatisticsResp getStatistics() {
         log.debug("获取 Statistics 页面统计数据");
 
@@ -336,6 +345,7 @@ public class DashboardServiceImpl implements DashboardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ChartDataResp getVisitTrendData() {
         log.debug("获取访问量趋势数据 - 开始");
 
