@@ -14,6 +14,7 @@ import {
   TableRow,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -316,6 +317,7 @@ onMounted(async () => {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>催办</DialogTitle>
+          <DialogDescription>发送催办提醒给审批人</DialogDescription>
         </DialogHeader>
         <div class="space-y-4 py-4">
           <div>

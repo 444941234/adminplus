@@ -12,7 +12,7 @@ import {
   Textarea,
   Button
 } from '@/components/ui'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import WorkflowAssigneeSelector from '@/components/workflow/WorkflowAssigneeSelector.vue'
 import WorkflowHookDialog from '@/components/workflow/designer/WorkflowHookDialog.vue'
 
@@ -170,6 +170,7 @@ const handleHooksRefresh = () => {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>高级钩子配置</DialogTitle>
+              <DialogDescription>配置节点的高级钩子，支持SpEL、Bean和HTTP执行器</DialogDescription>
             </DialogHeader>
             <WorkflowHookDialog
               :open="hookDialogOpen"

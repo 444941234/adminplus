@@ -8,6 +8,7 @@ import {
   CardTitle,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -130,6 +131,7 @@ onMounted(fetchData)
       <DialogContent class="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{{ actionType === 'approve' ? '通过审批' : '驳回流程' }}</DialogTitle>
+          <DialogDescription>填写审批意见并确认操作</DialogDescription>
         </DialogHeader>
         <div class="space-y-2">
           <div class="text-sm text-muted-foreground">

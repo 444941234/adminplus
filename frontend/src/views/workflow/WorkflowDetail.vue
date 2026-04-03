@@ -21,6 +21,7 @@ import {
   SelectValue,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter
@@ -295,6 +296,7 @@ onMounted(fetchDetail)
       <DialogContent>
         <DialogHeader>
           <DialogTitle>加签/转办</DialogTitle>
+          <DialogDescription>添加加签人员或转办给其他人处理</DialogDescription>
         </DialogHeader>
         <div class="space-y-4">
           <div>
