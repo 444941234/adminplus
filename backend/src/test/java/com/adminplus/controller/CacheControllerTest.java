@@ -61,8 +61,8 @@ class CacheControllerTest {
         @WithMockUser(authorities = "cache:clear")
         void clearAllCache_ShouldSucceed() throws Exception {
             // Given
-            Set<String> keys = Set.of("adminplus:roles:all", "adminplus:userPermissions:user-001");
-            when(redisTemplate.keys("adminplus:*")).thenReturn(keys);
+            Set<String> keys = Set.of("roles::all", "userPermissions::user-001");
+            when(redisTemplate.keys("*")).thenReturn(keys);
             when(redisTemplate.delete((java.util.Collection<String>) keys)).thenReturn(2L);
 
             // When & Then
@@ -72,7 +72,7 @@ class CacheControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(redisTemplate).keys("adminplus:*");
+            verify(redisTemplate).keys("*");
             verify(redisTemplate).delete(keys);
         }
 
@@ -81,7 +81,7 @@ class CacheControllerTest {
         @WithMockUser(authorities = "cache:clear")
         void clearAllCache_WhenEmpty_ShouldSucceed() throws Exception {
             // Given
-            when(redisTemplate.keys("adminplus:*")).thenReturn(null);
+            when(redisTemplate.keys("*")).thenReturn(null);
 
             // When & Then
             mockMvc.perform(delete("/v1/sys/cache/clear-all")
@@ -89,7 +89,7 @@ class CacheControllerTest {
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
 
-            verify(redisTemplate).keys("adminplus:*");
+            verify(redisTemplate).keys("*");
             verify(redisTemplate, never()).delete(any(java.util.Collection.class));
         }
     }
@@ -103,8 +103,8 @@ class CacheControllerTest {
         @WithMockUser(authorities = "cache:clear")
         void clearCache_ShouldSucceed() throws Exception {
             // Given
-            Set<String> keys = Set.of("adminplus:roles:all", "adminplus:roles:nonAdmin");
-            when(redisTemplate.keys("adminplus:roles*")).thenReturn(keys);
+            Set<String> keys = Set.of("roles::all", "roles::nonAdmin");
+            when(redisTemplate.keys("roles*")).thenReturn(keys);
             when(redisTemplate.delete((java.util.Collection<String>) keys)).thenReturn(2L);
 
             // When & Then
@@ -113,7 +113,7 @@ class CacheControllerTest {
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
 
-            verify(redisTemplate).keys("adminplus:roles*");
+            verify(redisTemplate).keys("roles*");
             verify(redisTemplate).delete(keys);
         }
     }
@@ -127,8 +127,8 @@ class CacheControllerTest {
         @WithMockUser(authorities = "cache:clear")
         void clearRolesCache_ShouldSucceed() throws Exception {
             // Given
-            Set<String> keys = Set.of("adminplus:roles:all");
-            when(redisTemplate.keys("adminplus:roles*")).thenReturn(keys);
+            Set<String> keys = Set.of("roles::all");
+            when(redisTemplate.keys("roles*")).thenReturn(keys);
             when(redisTemplate.delete((java.util.Collection<String>) keys)).thenReturn(1L);
 
             // When & Then
@@ -137,7 +137,7 @@ class CacheControllerTest {
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
 
-            verify(redisTemplate).keys("adminplus:roles*");
+            verify(redisTemplate).keys("roles*");
             verify(redisTemplate).delete(keys);
         }
     }
@@ -151,8 +151,8 @@ class CacheControllerTest {
         @WithMockUser(authorities = "cache:list")
         void getCacheKeys_ShouldReturnKeys() throws Exception {
             // Given
-            Set<String> keys = Set.of("adminplus:roles:all", "adminplus:userPermissions:user-001");
-            when(redisTemplate.keys("adminplus:*")).thenReturn(keys);
+            Set<String> keys = Set.of("roles::all", "userPermissions::user-001");
+            when(redisTemplate.keys("*")).thenReturn(keys);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/cache/keys")
@@ -161,7 +161,7 @@ class CacheControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data").isArray());
 
-            verify(redisTemplate).keys("adminplus:*");
+            verify(redisTemplate).keys("*");
         }
 
         @Test
@@ -169,7 +169,7 @@ class CacheControllerTest {
         @WithMockUser(authorities = "cache:list")
         void getCacheKeys_WhenEmpty_ShouldReturnEmptyArray() throws Exception {
             // Given
-            when(redisTemplate.keys("adminplus:*")).thenReturn(null);
+            when(redisTemplate.keys("*")).thenReturn(null);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/cache/keys")
