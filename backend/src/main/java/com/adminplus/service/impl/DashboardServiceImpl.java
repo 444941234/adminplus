@@ -6,11 +6,14 @@ import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.*;
 import com.adminplus.service.DashboardService;
+import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.sql.DataSource;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -39,6 +42,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final MenuRepository menuRepository;
     private final LogRepository logRepository;
     private final UserRoleRepository userRoleRepository;
+    private final DataSource dataSource;
 
     @Override
     @Transactional(readOnly = true)
@@ -252,6 +256,12 @@ public class DashboardServiceImpl implements DashboardService {
         // 获取JDK版本
         String jdkVersion = System.getProperty("java.version");
 
+        // 获取连接池大小
+        int poolSize = 10;  // 默认值
+        if (dataSource instanceof HikariDataSource hikari) {
+            poolSize = hikari.getMaximumPoolSize();
+        }
+
         return new SystemInfoResp(
                 "AdminPlus",
                 "1.0.0",
@@ -262,7 +272,7 @@ public class DashboardServiceImpl implements DashboardService {
                 freeMemory,
                 "PostgreSQL",
                 "16+",
-                10, // 默认连接池大小
+                poolSize,
                 uptime
         );
     }
