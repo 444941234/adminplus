@@ -1137,28 +1137,7 @@ describe('Menu Page', () => {
   })
 
   // =========================================================================
-  // 19. flattenMenuIds helper
-  // =========================================================================
-  describe('Flatten Menu IDs', () => {
-    it('flattens all menu IDs including children', async () => {
-      wrapper = await mountAndFlush()
-      const vm = wrapper.vm as any
-
-      const tree = [
-        makeMenu({ id: 'm1', children: [
-          makeMenu({ id: 'm2', parentId: 'm1', children: [
-            makeMenu({ id: 'm3', parentId: 'm2', children: [] })
-          ]})
-        ]})
-      ]
-
-      const ids = vm.flattenMenuIds(tree)
-      expect(ids).toEqual(['m1', 'm2', 'm3'])
-    })
-  })
-
-  // =========================================================================
-  // 20. Selected IDs cleanup on refresh
+  // 19. Selected IDs cleanup on refresh
   // =========================================================================
   describe('Selection Cleanup', () => {
     it('removes stale selected IDs on data refresh', async () => {

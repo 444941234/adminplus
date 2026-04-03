@@ -25,7 +25,8 @@ const toastMocks = vi.hoisted(() => ({
 }))
 
 vi.mock('vue-router', () => ({
-  useRoute: () => ({ params: { id: 'inst-001' } })
+  useRoute: () => ({ params: { id: 'inst-001' } }),
+  useRouter: () => ({ push: vi.fn(), back: vi.fn() })
 }))
 
 vi.mock('@/api', () => ({
@@ -96,13 +97,25 @@ const WorkflowBusinessCardStub = defineComponent({
 const WorkflowVisualizerStub = defineComponent({
   name: 'WorkflowVisualizer',
   props: {
-    instanceId: {
+    nodes: {
+      type: Array,
+      default: () => []
+    },
+    currentNodeId: {
       type: String,
       default: ''
+    },
+    completedNodeIds: {
+      type: Set,
+      default: () => new Set()
+    },
+    readonly: {
+      type: Boolean,
+      default: false
     }
   },
   setup(props) {
-    return () => h('div', { class: 'visualizer-stub', 'data-instance-id': props.instanceId }, props.instanceId)
+    return () => h('div', { class: 'visualizer-stub', 'data-node-count': String(props.nodes?.length || 0) }, `Nodes: ${props.nodes?.length || 0}`)
   }
 })
 
@@ -316,7 +329,7 @@ describe('WorkflowDetail.vue', () => {
     actionMocks.addSignWorkflowAction.mockResolvedValue({ data: { id: 'add-sign-001' } })
   })
 
-  it('loads detail data and passes instanceId to workflow visualizer', async () => {
+  it('loads detail data and passes nodes to workflow visualizer', async () => {
     const wrapper = mount(WorkflowDetailView, {
       global: {
         stubs: {
@@ -324,7 +337,13 @@ describe('WorkflowDetail.vue', () => {
           WorkflowBusinessCard: WorkflowBusinessCardStub,
           WorkflowVisualizer: WorkflowVisualizerStub,
           WorkflowTimelineTabs: WorkflowTimelineTabsStub,
-          Textarea: TextareaStub
+          Textarea: TextareaStub,
+          Dialog: true,
+          DialogContent: true,
+          DialogHeader: true,
+          DialogTitle: true,
+          DialogDescription: true,
+          DialogFooter: true
         }
       }
     })
@@ -334,7 +353,8 @@ describe('WorkflowDetail.vue', () => {
     expect(apiMocks.getWorkflowDetail).toHaveBeenCalledWith('inst-001')
     expect(wrapper.find('.overview-card-stub').text()).toContain('年假申请')
     expect(wrapper.find('.business-card-stub').text()).toContain('年假申请')
-    expect(wrapper.find('.visualizer-stub').attributes('data-instance-id')).toBe('inst-001')
+    // Verify nodes are passed to visualizer (2 nodes in the mock data)
+    expect(wrapper.find('.visualizer-stub').attributes('data-node-count')).toBe('2')
   })
 
   it('passes aggregated record counts to timeline tabs', async () => {
@@ -345,7 +365,13 @@ describe('WorkflowDetail.vue', () => {
           WorkflowBusinessCard: WorkflowBusinessCardStub,
           WorkflowVisualizer: WorkflowVisualizerStub,
           WorkflowTimelineTabs: WorkflowTimelineTabsStub,
-          Textarea: TextareaStub
+          Textarea: TextareaStub,
+          Dialog: true,
+          DialogContent: true,
+          DialogHeader: true,
+          DialogTitle: true,
+          DialogDescription: true,
+          DialogFooter: true
         }
       }
     })
@@ -373,7 +399,13 @@ describe('WorkflowDetail.vue', () => {
           WorkflowBusinessCard: WorkflowBusinessCardStub,
           WorkflowVisualizer: WorkflowVisualizerStub,
           WorkflowTimelineTabs: WorkflowTimelineTabsStub,
-          Textarea: TextareaStub
+          Textarea: TextareaStub,
+          Dialog: true,
+          DialogContent: true,
+          DialogHeader: true,
+          DialogTitle: true,
+          DialogDescription: true,
+          DialogFooter: true
         }
       }
     })
@@ -397,6 +429,7 @@ describe('WorkflowDetail.vue', () => {
           DialogContent: true,
           DialogHeader: true,
           DialogTitle: true,
+          DialogDescription: true,
           DialogFooter: true,
           Select: true,
           SelectContent: true,

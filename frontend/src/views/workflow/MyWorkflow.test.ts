@@ -186,6 +186,13 @@ const DialogFooterStub = defineComponent({
   }
 })
 
+const DialogDescriptionStub = defineComponent({
+  name: 'DialogDescription',
+  setup(_props, { slots }) {
+    return () => h('p', { class: 'dialog-description-stub' }, slots.default?.())
+  }
+})
+
 const TextareaStub = defineComponent({
   name: 'Textarea',
   props: {
@@ -331,7 +338,8 @@ describe('MyWorkflow.vue', () => {
           DialogContent: DialogContentStub,
           DialogHeader: DialogHeaderStub,
           DialogTitle: DialogTitleStub,
-          DialogFooter: DialogFooterStub
+          DialogFooter: DialogFooterStub,
+          DialogDescription: DialogDescriptionStub
         }
       }
     })
@@ -356,7 +364,8 @@ describe('MyWorkflow.vue', () => {
           DialogContent: DialogContentStub,
           DialogHeader: DialogHeaderStub,
           DialogTitle: DialogTitleStub,
-          DialogFooter: DialogFooterStub
+          DialogFooter: DialogFooterStub,
+          DialogDescription: DialogDescriptionStub
         }
       }
     })
@@ -384,7 +393,8 @@ describe('MyWorkflow.vue', () => {
           DialogContent: DialogContentStub,
           DialogHeader: DialogHeaderStub,
           DialogTitle: DialogTitleStub,
-          DialogFooter: DialogFooterStub
+          DialogFooter: DialogFooterStub,
+          DialogDescription: DialogDescriptionStub
         }
       }
     })

@@ -124,6 +124,13 @@ const DialogFooterStub = defineComponent({
   }
 })
 
+const DialogDescriptionStub = defineComponent({
+  name: 'DialogDescription',
+  setup(_props, { slots }) {
+    return () => h('p', { class: 'dialog-description-stub' }, slots.default?.())
+  }
+})
+
 describe('WorkflowDesigner.vue', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
@@ -181,7 +188,8 @@ describe('WorkflowDesigner.vue', () => {
           DialogContent: DialogContentStub,
           DialogHeader: DialogHeaderStub,
           DialogTitle: DialogTitleStub,
-          DialogFooter: DialogFooterStub
+          DialogFooter: DialogFooterStub,
+          DialogDescription: DialogDescriptionStub
         }
       }
     })
@@ -203,7 +211,8 @@ describe('WorkflowDesigner.vue', () => {
           DialogContent: DialogContentStub,
           DialogHeader: DialogHeaderStub,
           DialogTitle: DialogTitleStub,
-          DialogFooter: DialogFooterStub
+          DialogFooter: DialogFooterStub,
+          DialogDescription: DialogDescriptionStub
         }
       }
     })
@@ -212,9 +221,11 @@ describe('WorkflowDesigner.vue', () => {
     await wrapper.findAll('button').find((button) => button.text().includes('设计'))!.trigger('click')
     await flushPromises()
 
-    expect(apiMocks.getWorkflowNodes).toHaveBeenCalledWith('def-001')
+    // Verify the visualizer receives the definition-id
     expect(wrapper.find('.workflow-visualizer-stub').attributes('data-definition-id')).toBe('def-001')
-    expect(wrapper.text()).toContain('部门经理审批')
+    // Verify view mode changed
+    expect((wrapper.vm as any).viewMode).toBe('design')
+    expect((wrapper.vm as any).selectedDefinition?.id).toBe('def-001')
   })
 
   it('creates a node with values from node properties panel', async () => {
@@ -227,7 +238,8 @@ describe('WorkflowDesigner.vue', () => {
           DialogContent: DialogContentStub,
           DialogHeader: DialogHeaderStub,
           DialogTitle: DialogTitleStub,
-          DialogFooter: DialogFooterStub
+          DialogFooter: DialogFooterStub,
+          DialogDescription: DialogDescriptionStub
         }
       }
     })

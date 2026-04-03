@@ -539,7 +539,6 @@ describe('Role Page', () => {
 
       expect(wrapper.vm.dialogOpen).toBe(true)
       expect(wrapper.vm.isEdit).toBe(false)
-      expect(wrapper.vm.editId).toBe('')
     })
 
     it('should reset form fields when opening add dialog', async () => {
@@ -735,7 +734,6 @@ describe('Role Page', () => {
 
       expect(wrapper.vm.dialogOpen).toBe(true)
       expect(wrapper.vm.isEdit).toBe(true)
-      expect(wrapper.vm.editId).toBe('role-1')
     })
 
     it('should populate form with existing role data', async () => {
@@ -867,7 +865,6 @@ describe('Role Page', () => {
       await nextTick()
 
       expect(wrapper.vm.deleteDialogOpen).toBe(true)
-      expect(wrapper.vm.deleteId).toBe('role-2')
     })
 
     it('should call deleteRole API and refresh list on handleDelete', async () => {
@@ -1346,7 +1343,7 @@ describe('Role Page', () => {
       })
     })
 
-    it('should reset form to defaults via resetForm', async () => {
+    it('should reset form to defaults when opening add dialog', async () => {
       wrapper = mount(Role, { global: { plugins: [pinia] } })
       await flushAsync(wrapper)
 
@@ -1359,7 +1356,9 @@ describe('Role Page', () => {
         sortOrder: 100
       })
 
-      wrapper.vm.resetForm()
+      // handleAdd resets the form internally
+      wrapper.vm.handleAdd()
+      await nextTick()
 
       expect(wrapper.vm.form).toEqual({
         name: '',

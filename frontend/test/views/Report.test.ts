@@ -129,9 +129,11 @@ describe('Report Page', () => {
 
     it('renders three navigation items', async () => {
       wrapper = await mountAndFlush()
-      // RouterLink is mocked as <a>
-      const links = wrapper.findAll('a')
-      expect(links.length).toBeGreaterThanOrEqual(3)
+      // Check for RouterLink components by their rendered content
+      const text = wrapper.text()
+      expect(text).toContain('数据统计')
+      expect(text).toContain('流程模板')
+      expect(text).toContain('待我审批')
     })
 
     it('renders description for statistics', async () => {

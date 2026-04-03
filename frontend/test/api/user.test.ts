@@ -148,7 +148,7 @@ describe('User API', () => {
 
       const result = await assignRoles('1', roleIds)
 
-      expect(put).toHaveBeenCalledWith('/sys/users/1/roles', roleIds)
+      expect(put).toHaveBeenCalledWith('/sys/users/1/roles', { roleIds })
       expect(result.code).toBe(200)
     })
   })
