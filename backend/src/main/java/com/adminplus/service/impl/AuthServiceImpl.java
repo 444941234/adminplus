@@ -27,6 +27,7 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -164,6 +165,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public UserResp getCurrentUser(String username) {
         UserEntity user = userService.getUserByUsername(username);
 
@@ -198,6 +200,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<String> getCurrentUserPermissions(String username) {
         UserEntity user = userService.getUserByUsername(username);
         return permissionService.getUserPermissions(user.getId());
