@@ -1,12 +1,9 @@
 package com.adminplus.pojo.entity;
 
 import com.adminplus.constants.StorageType;
-import com.adminplus.utils.IdUtils;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.time.Instant;
 
 /**
  * 文件元数据实体
@@ -14,7 +11,7 @@ import java.time.Instant;
  * @author AdminPlus
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "sys_file")
 public class FileEntity extends BaseEntity {

@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
@@ -17,6 +18,7 @@ import org.hibernate.annotations.Where;
  */
 @Getter
 @Setter
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "sys_config_history",
         indexes = {
