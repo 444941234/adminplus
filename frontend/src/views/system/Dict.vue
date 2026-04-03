@@ -7,6 +7,7 @@ import {
   CardContent,
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -413,6 +414,7 @@ onMounted(fetchData)
       <DialogContent class="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑字典' : '新增字典' }}</DialogTitle>
+          <DialogDescription>配置字典类型和名称</DialogDescription>
         </DialogHeader>
         <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
         <div v-else class="space-y-4 py-2">
@@ -456,6 +458,7 @@ onMounted(fetchData)
       <DialogContent class="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>字典项管理{{ activeDict ? ` - ${activeDict.dictName}` : '' }}</DialogTitle>
+          <DialogDescription>管理字典项列表</DialogDescription>
         </DialogHeader>
         <div class="space-y-4">
           <div class="flex justify-end">
@@ -519,6 +522,7 @@ onMounted(fetchData)
       <DialogContent class="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{{ isEditItem ? '编辑字典项' : '新增字典项' }}</DialogTitle>
+          <DialogDescription>配置字典项的标签、值和排序</DialogDescription>
         </DialogHeader>
         <div v-if="itemFormLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
         <div v-else class="space-y-4 py-2">
