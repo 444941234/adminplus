@@ -47,6 +47,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "menuTree", key = "'all'", unless = "#result == null || #result.isEmpty()")
     public List<MenuResp> getMenuTree() {
         List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
 
@@ -89,7 +90,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "userMenus", allEntries = true)
+    @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
     public MenuResp createMenu(MenuCreateReq req) {
         var menu = new MenuEntity();
         menu.setType(req.type());
@@ -123,7 +124,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "userMenus", allEntries = true)
+    @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
     public MenuResp updateMenu(String id, MenuUpdateReq req) {
         var menu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
@@ -177,7 +178,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "userMenus", allEntries = true)
+    @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
     public void deleteMenu(String id) {
         var menu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
@@ -194,7 +195,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "userMenus", allEntries = true)
+    @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
     public void batchUpdateStatus(MenuBatchStatusReq req) {
         List<MenuEntity> menus = menuRepository.findAllById(req.ids());
 
@@ -214,7 +215,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "userMenus", allEntries = true)
+    @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
     public void batchDelete(MenuBatchDeleteReq req) {
         List<MenuEntity> menus = menuRepository.findAllById(req.ids());
 

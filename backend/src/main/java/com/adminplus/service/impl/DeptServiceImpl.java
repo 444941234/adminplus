@@ -16,6 +16,8 @@ import com.adminplus.utils.TreeUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,6 +40,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "deptTree", key = "T(com.adminplus.utils.SecurityUtils).getCurrentUserDeptId() ?: 'admin'", unless = "#result == null || #result.isEmpty()")
     public List<DeptResp> getDeptTree() {
         List<DeptEntity> allDepts;
 
@@ -130,6 +133,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "deptTree", allEntries = true)
     public DeptResp createDept(DeptCreateReq req) {
         // 检查部门名称是否已存在
         if (deptRepository.existsByNameAndDeletedFalse(req.name())) {
@@ -172,6 +176,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "deptTree", allEntries = true)
     public DeptResp updateDept(String id, DeptUpdateReq req) {
         var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
 
@@ -245,6 +250,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "deptTree", allEntries = true)
     public void deleteDept(String id) {
         var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
 
@@ -318,6 +324,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "deptTree", allEntries = true)
     public void updateDeptStatus(String id, Integer status) {
         var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
         dept.setStatus(status);

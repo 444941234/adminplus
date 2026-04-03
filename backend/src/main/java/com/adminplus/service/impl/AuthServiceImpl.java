@@ -62,6 +62,7 @@ public class AuthServiceImpl implements AuthService {
     private final AppProperties appProperties;
 
     @Override
+    @Transactional
     public LoginResp login(UserLoginReq req) {
         // 验证验证码
         if (!captchaService.validateCaptcha(req.captchaId(), req.captchaCode())) {

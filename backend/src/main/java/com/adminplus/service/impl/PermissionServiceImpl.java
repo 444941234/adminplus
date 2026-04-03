@@ -113,6 +113,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "allPermissions", key = "'list'", unless = "#result == null || #result.isEmpty()")
     public List<PermissionResp> getAllPermissions() {
         List<MenuEntity> menus = menuRepository.findAllByOrderBySortOrderAsc();
 
