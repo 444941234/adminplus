@@ -41,6 +41,7 @@ export default [
 
       // Vue
       'vue/multi-word-component-names': 'off',
+      'vue/no-reserved-component-names': 'off', // shadcn-vue uses HTML reserved names (Dialog, Input, etc.)
       'vue/no-v-html': 'error',
       'vue/require-default-prop': 'off',
       'vue/require-explicit-emits': 'warn',

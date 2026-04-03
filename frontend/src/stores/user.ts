@@ -68,18 +68,14 @@ export const useUserStore = defineStore('user', () => {
       }
     }
 
-    try {
-      const [userRes, permRes, menuRes] = await Promise.all([
-        getCurrentUser(),
-        getPermissions(),
-        getUserMenuTree()
-      ])
-      userInfo.value = userRes.data
-      permissions.value = permRes.data
-      menus.value = menuRes.data
-    } catch (error) {
-      throw error
-    }
+    const [userRes, permRes, menuRes] = await Promise.all([
+      getCurrentUser(),
+      getPermissions(),
+      getUserMenuTree()
+    ])
+    userInfo.value = userRes.data
+    permissions.value = permRes.data
+    menus.value = menuRes.data
   }
 
   // 获取验证码
