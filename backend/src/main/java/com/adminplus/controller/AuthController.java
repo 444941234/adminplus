@@ -86,14 +86,4 @@ public class AuthController {
      */
     public record RefreshTokenReq(@NotBlank String refreshToken) {
     }
-
-    /**
-     * 隐藏用户名敏感信息
-     */
-    private String maskUsername(String username) {
-        if (username == null || username.length() <= 2) {
-            return "***";
-        }
-        return username.charAt(0) + "***" + username.charAt(username.length() - 1);
-    }
 }

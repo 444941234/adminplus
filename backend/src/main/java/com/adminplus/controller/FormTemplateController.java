@@ -1,13 +1,15 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.req.FormTemplateReq;
 import com.adminplus.pojo.dto.resp.FormTemplateResp;
 import com.adminplus.service.FormTemplateService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/v1/form-templates")
 @RequiredArgsConstructor
+@Tag(name = "表单模板管理", description = "表单模板增删改查")
 public class FormTemplateController {
 
     private final FormTemplateService formTemplateService;
@@ -31,6 +34,8 @@ public class FormTemplateController {
      * 获取所有表单模板
      */
     @GetMapping
+    @Operation(summary = "获取所有表单模板")
+    @OperationLog(module = "表单模板管理", operationType = 4, description = "查询所有表单模板")
     @PreAuthorize("hasAuthority('workflow:form:list')")
     public ApiResponse<List<FormTemplateResp>> getAllTemplates() {
         List<FormTemplateResp> templates = formTemplateService.getAllTemplates();
@@ -87,6 +92,8 @@ public class FormTemplateController {
      * 创建表单模板
      */
     @PostMapping
+    @Operation(summary = "创建表单模板")
+    @OperationLog(module = "表单模板管理", operationType = 1, description = "创建表单模板 {#req.templateCode()}")
     @PreAuthorize("hasAuthority('workflow:form:create')")
     public ApiResponse<FormTemplateResp> createTemplate(@Valid @RequestBody FormTemplateReq req) {
         try {
@@ -101,6 +108,8 @@ public class FormTemplateController {
      * 更新表单模板
      */
     @PutMapping("/{id}")
+    @Operation(summary = "更新表单模板")
+    @OperationLog(module = "表单模板管理", operationType = 2, description = "更新表单模板 {#id}")
     @PreAuthorize("hasAuthority('workflow:form:update')")
     public ApiResponse<FormTemplateResp> updateTemplate(
             @PathVariable String id,
@@ -117,6 +126,8 @@ public class FormTemplateController {
      * 删除表单模板
      */
     @DeleteMapping("/{id}")
+    @Operation(summary = "删除表单模板")
+    @OperationLog(module = "表单模板管理", operationType = 3, description = "删除表单模板 {#id}")
     @PreAuthorize("hasAuthority('workflow:form:delete')")
     public ApiResponse<Void> deleteTemplate(@PathVariable String id) {
         try {
