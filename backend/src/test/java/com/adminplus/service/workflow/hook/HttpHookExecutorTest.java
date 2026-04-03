@@ -1,5 +1,6 @@
 package com.adminplus.service.workflow.hook;
 
+import com.adminplus.common.properties.AppProperties;
 import com.adminplus.pojo.dto.workflow.hook.HookContext;
 import com.adminplus.pojo.dto.workflow.hook.HookResult;
 import com.adminplus.pojo.dto.workflow.hook.HttpConfig;
@@ -35,13 +36,15 @@ class HttpHookExecutorTest {
 
     private HttpHookExecutor executor;
     private ObjectMapper objectMapper;
+    private AppProperties appProperties;
     private WorkflowInstanceEntity testInstance;
     private WorkflowNodeEntity testNode;
 
     @BeforeEach
     void setUp() {
         objectMapper = new ObjectMapper();
-        executor = new HttpHookExecutor(restTemplate, objectMapper);
+        appProperties = new AppProperties();
+        executor = new HttpHookExecutor(restTemplate, objectMapper, appProperties);
 
         testInstance = new WorkflowInstanceEntity();
         testInstance.setId("inst-001");
@@ -193,5 +196,61 @@ class HttpHookExecutorTest {
             argThat(entity -> entity.getHeaders().containsKey("X-Custom-Header")),
             eq(Map.class)
         );
+    }
+
+    @Test
+    @DisplayName("Should reject invalid URL schemes")
+    void shouldRejectInvalidScheme() {
+        // Given
+        HttpConfig config = new HttpConfig("ftp://example.com/file", "GET", null, null);
+        HookContext context = new HookContext(
+            testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
+        );
+
+        // When
+        HookResult result = executor.execute(config, context);
+
+        // Then
+        assertThat(result.success()).isFalse();
+        assertThat(result.code()).isEqualTo("INVALID_URL");
+        assertThat(result.message()).contains("只支持HTTP/HTTPS");
+    }
+
+    @Test
+    @DisplayName("Should reject internal URLs when configured")
+    void shouldRejectInternalUrlsWhenConfigured() {
+        // Given
+        appProperties.getWorkflowHook().setAllowInternalUrls(false);
+        HttpConfig config = new HttpConfig("http://localhost/api", "GET", null, null);
+        HookContext context = new HookContext(
+            testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
+        );
+
+        // When
+        HookResult result = executor.execute(config, context);
+
+        // Then
+        assertThat(result.success()).isFalse();
+        assertThat(result.code()).isEqualTo("INVALID_URL");
+        assertThat(result.message()).contains("不允许访问内网地址");
+    }
+
+    @Test
+    @DisplayName("Should enforce URL whitelist when configured")
+    void shouldEnforceUrlWhitelist() {
+        // Given
+        appProperties.getWorkflowHook().setAllowedUrlPatterns("https://api.example.com/*");
+        HttpConfig config = new HttpConfig("https://other.com/api", "GET", null, null);
+        HookContext context = new HookContext(
+            testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
+        );
+
+        // When
+        HookResult result = executor.execute(config, context);
+
+        // Then
+        assertThat(result.success()).isFalse();
+        assertThat(result.code()).isEqualTo("INVALID_URL");
+        assertThat(result.message()).contains("URL不在允许列表中");
     }
 }

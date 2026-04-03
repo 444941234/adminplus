@@ -1,5 +1,6 @@
 package com.adminplus.service.workflow.hook.impl;
 
+import com.adminplus.common.properties.AppProperties;
 import com.adminplus.pojo.dto.workflow.hook.HookContext;
 import com.adminplus.pojo.dto.workflow.hook.HookExecutorConfig;
 import com.adminplus.pojo.dto.workflow.hook.HookResult;
@@ -14,6 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.util.Map;
 
 /**
@@ -32,10 +34,18 @@ public class HttpHookExecutor implements HookExecutor {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final AppProperties appProperties;
 
     @Override
     public HookResult execute(HookExecutorConfig config, HookContext context) {
         HttpConfig httpConfig = (HttpConfig) config;
+
+        // URL 安全验证
+        String url = httpConfig.url();
+        HookResult validationResult = validateUrl(url);
+        if (validationResult != null) {
+            return validationResult;
+        }
 
         try {
             String body = buildRequestBody(httpConfig.bodyTemplate(), context);
@@ -108,5 +118,79 @@ public class HttpHookExecutor implements HookExecutor {
             log.warn("构建请求体失败: template={}", template, e);
             return "{}";
         }
+    }
+
+    /**
+     * 验证URL安全性，防止SSRF攻击
+     */
+    private HookResult validateUrl(String url) {
+        if (url == null || url.isBlank()) {
+            return new HookResult(false, "INVALID_URL", "URL不能为空");
+        }
+
+        try {
+            URI uri = URI.create(url);
+            String host = uri.getHost();
+            String scheme = uri.getScheme();
+
+            // 只允许 http/https
+            if (scheme == null || (!scheme.equals("http") && !scheme.equals("https"))) {
+                return new HookResult(false, "INVALID_URL", "只支持HTTP/HTTPS协议");
+            }
+
+            AppProperties.WorkflowHook hookConfig = appProperties.getWorkflowHook();
+
+            // 检查是否允许内网URL
+            if (!hookConfig.isAllowInternalUrls() && isInternalHost(host)) {
+                return new HookResult(false, "INVALID_URL", "不允许访问内网地址");
+            }
+
+            // 检查URL模式白名单
+            String allowedPatterns = hookConfig.getAllowedUrlPatterns();
+            if (allowedPatterns != null && !allowedPatterns.isBlank()) {
+                if (!matchesAllowedPattern(url, allowedPatterns)) {
+                    return new HookResult(false, "INVALID_URL", "URL不在允许列表中");
+                }
+            }
+
+            return null; // 验证通过
+        } catch (Exception e) {
+            return new HookResult(false, "INVALID_URL", "URL格式无效: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 检查是否为内网地址
+     */
+    private boolean isInternalHost(String host) {
+        if (host == null) return false;
+        String lowerHost = host.toLowerCase();
+        return lowerHost.equals("localhost")
+                || lowerHost.equals("127.0.0.1")
+                || lowerHost.startsWith("10.")
+                || lowerHost.startsWith("192.168.")
+                || lowerHost.matches("^172\\.(1[6-9]|2[0-9]|3[0-1])\\..*")
+                || lowerHost.equals("0.0.0.0")
+                || lowerHost.endsWith(".local")
+                || lowerHost.endsWith(".internal");
+    }
+
+    /**
+     * 检查URL是否匹配允许的模式
+     */
+    private boolean matchesAllowedPattern(String url, String allowedPatterns) {
+        String[] patterns = allowedPatterns.split(",");
+        for (String pattern : patterns) {
+            String trimmedPattern = pattern.trim();
+            if (trimmedPattern.endsWith("*")) {
+                String prefix = trimmedPattern.substring(0, trimmedPattern.length() - 1);
+                if (url.startsWith(prefix)) {
+                    return true;
+                }
+            } else if (url.equals(trimmedPattern)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
