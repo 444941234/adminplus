@@ -58,6 +58,7 @@ public class SecurityConstants {
             "/v1/auth/login",
             "/v1/captcha/**",
             "/v1/verify/**",
+            "/v1/sys/cache/emergency-clear",  // 紧急缓存清理端点（用于解决序列化兼容问题）
             "/actuator/health"
     };
 
