@@ -265,8 +265,8 @@ class WorkflowSecurityTest {
                     .thenReturn(testInstance);
             when(approvalRepository.save(any(WorkflowApprovalEntity.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
-            when(userRepository.findById(APPROVER_ID))
-                    .thenReturn(Optional.of(approver));
+            when(userRepository.findAllById(any(List.class)))
+                    .thenReturn(Arrays.asList(approver));
 
             // When/Then - Should not throw
             assertThatCode(() -> instanceService.submit("inst-001", null))

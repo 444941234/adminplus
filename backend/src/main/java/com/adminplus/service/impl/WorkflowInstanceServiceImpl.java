@@ -648,17 +648,16 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     private void createApprovalRecords(WorkflowInstanceEntity instance, WorkflowNodeEntity node) {
         List<String> approverIds = resolveApprovers(instance, node);
 
+        // Batch fetch approver names to avoid N+1 queries
+        Map<String, String> approverNames = batchGetApproverNames(approverIds);
+
         for (String approverId : approverIds) {
             WorkflowApprovalEntity approval = new WorkflowApprovalEntity();
             approval.setInstanceId(instance.getId());
             approval.setNodeId(node.getId());
             approval.setNodeName(node.getNodeName());
             approval.setApproverId(approverId);
-
-            // 查询审批人姓名
-            userRepository.findById(approverId).ifPresent(user -> {
-                approval.setApproverName(user.getNickname());
-            });
+            approval.setApproverName(approverNames.get(approverId));
 
             approval.setApprovalStatus("pending");
 
@@ -673,6 +672,27 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         }
 
         log.info("创建审批记录: instanceId={}, nodeId={}, approverCount={}", instance.getId(), node.getId(), approverIds.size());
+    }
+
+    /**
+     * Batch fetch approver names to avoid N+1 queries
+     */
+    private Map<String, String> batchGetApproverNames(List<String> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<String> distinctIds = userIds.stream()
+                .filter(id -> id != null && !id.isEmpty())
+                .distinct()
+                .toList();
+
+        if (distinctIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return userRepository.findAllById(distinctIds).stream()
+                .collect(Collectors.toMap(UserEntity::getId, UserEntity::getNickname));
     }
 
     /**
@@ -1100,6 +1120,9 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             }
 
             // 创建抄送记录
+            // Batch fetch user names to avoid N+1 queries
+            Map<String, String> userNames = batchGetApproverNames(new ArrayList<>(ccUserIds));
+
             for (String ccUserId : ccUserIds) {
                 WorkflowCcEntity cc = new WorkflowCcEntity();
                 cc.setInstanceId(instance.getId());
@@ -1109,11 +1132,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 cc.setCcType(ccType);
                 cc.setCcContent(ccContent);
                 cc.setIsRead(false);
-
-                // 查询用户姓名
-                userRepository.findById(ccUserId).ifPresent(user -> {
-                    cc.setUserName(user.getNickname());
-                });
+                cc.setUserName(userNames.get(ccUserId));
 
                 ccRepository.save(cc);
             }

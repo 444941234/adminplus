@@ -338,8 +338,8 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(testInstance);
             when(approvalRepository.save(any(WorkflowApprovalEntity.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
-            when(userRepository.findById(APPROVER_ID))
-                    .thenReturn(Optional.of(testApprover));
+            when(userRepository.findAllById(any(List.class)))
+                    .thenReturn(Arrays.asList(testApprover));
 
             // When
             service.submit("inst-001", null);
@@ -1051,8 +1051,8 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(testInstance);
             when(approvalRepository.save(any(WorkflowApprovalEntity.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
-            when(userRepository.findById(APPROVER_ID))
-                    .thenReturn(Optional.of(testApprover));
+            when(userRepository.findAllById(any(List.class)))
+                    .thenReturn(Arrays.asList(testApprover));
 
             // When
             WorkflowInstanceResp result = service.submit("inst-001", null);
