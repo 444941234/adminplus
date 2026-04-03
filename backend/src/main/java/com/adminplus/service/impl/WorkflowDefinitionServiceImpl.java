@@ -11,6 +11,8 @@ import com.adminplus.repository.WorkflowNodeRepository;
 import com.adminplus.service.WorkflowDefinitionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +36,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     private final WorkflowNodeRepository nodeRepository;
 
     @Override
+    @CacheEvict(value = "workflowEnabledDefinitions", allEntries = true)
     @Transactional
     public WorkflowDefinitionResp create(WorkflowDefinitionReq req) {
         log.info("创建工作流定义: {}", req.definitionName());
@@ -59,6 +62,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     }
 
     @Override
+    @CacheEvict(value = {"workflowEnabledDefinitions", "workflowNodes"}, allEntries = true)
     @Transactional
     public WorkflowDefinitionResp update(String id, WorkflowDefinitionReq req) {
         log.info("更新工作流定义: id={}", id);
@@ -88,6 +92,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     }
 
     @Override
+    @CacheEvict(value = {"workflowEnabledDefinitions", "workflowNodes"}, allEntries = true)
     @Transactional
     public void delete(String id) {
         log.info("删除工作流定义: id={}", id);
@@ -125,6 +130,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     }
 
     @Override
+    @Cacheable(value = "workflowEnabledDefinitions", unless = "#result == null || #result.isEmpty()")
     @Transactional(readOnly = true)
     public List<WorkflowDefinitionResp> listEnabled() {
         List<WorkflowDefinitionEntity> definitions = definitionRepository.findByStatusAndDeletedFalseOrderByCreateTimeDesc(1);
@@ -157,6 +163,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     }
 
     @Override
+    @CacheEvict(value = "workflowNodes", key = "#definitionId")
     @Transactional
     public WorkflowNodeResp addNode(String definitionId, WorkflowNodeReq req) {
         log.info("添加工作流节点: definitionId={}, nodeName={}", definitionId, req.nodeName());
@@ -214,6 +221,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     }
 
     @Override
+    @Cacheable(value = "workflowNodes", key = "#definitionId", unless = "#result == null || #result.isEmpty()")
     @Transactional(readOnly = true)
     public List<WorkflowNodeResp> listNodes(String definitionId) {
         log.info("Service层查询工作流节点: definitionId={}", definitionId);

@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import type { User, CaptchaResp } from '@/types'
-import { login as loginApi, logout as logoutApi, getCurrentUser, getCaptcha } from '@/api'
+import { login as loginApi, logout as logoutApi, getCurrentUser, getCaptcha, refreshToken as refreshTokenApi } from '@/api'
 
 interface LoginRequest {
   username: string
@@ -114,11 +114,14 @@ export function useAuth() {
       throw new Error('无 refresh token')
     }
 
-    // 这里需要导入 refreshToken API
-    // const res = await refreshTokenApi(refreshToken.value)
-    // token.value = res.data.token
-    // return res.data
-    throw new Error('待实现')
+    const res = await refreshTokenApi(refreshToken.value)
+    if (!res || !res.data) {
+      throw new Error(res?.message || '刷新token失败')
+    }
+
+    token.value = res.data
+    localStorage.setItem('token', res.data)
+    return res.data
   }
 
   /**
