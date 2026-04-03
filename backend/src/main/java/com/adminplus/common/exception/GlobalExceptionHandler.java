@@ -79,6 +79,15 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * 非法参数异常（业务校验失败）
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ApiResponse<?> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.warn("业务校验失败: {}", e.getMessage());
+        return ApiResponse.fail(400, e.getMessage());
+    }
+
+    /**
      * 未知异常
      */
     @ExceptionHandler(Exception.class)
