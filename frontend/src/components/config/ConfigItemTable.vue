@@ -35,10 +35,10 @@ withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'edit', config: Config): void
-  (e: 'delete', config: Config): void
-  (e: 'history', config: Config): void
-  (e: 'toggleStatus', config: Config): void
+  (_e: 'edit', _config: Config): void
+  (_e: 'delete', _config: Config): void
+  (_e: 'history', _config: Config): void
+  (_e: 'toggleStatus', _config: Config): void
 }>()
 
 // Secret value visibility toggle

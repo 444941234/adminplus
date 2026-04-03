@@ -17,7 +17,7 @@ withDefaults(defineProps<{
 })
 
 defineEmits<{
-  (e: 'toggle'): void
+  (_e: 'toggle'): void
 }>()
 </script>
 

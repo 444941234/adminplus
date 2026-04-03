@@ -14,9 +14,9 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:search', value: string): void
-  (e: 'search'): void
-  (e: 'reset'): void
+  (_e: 'update:search', _value: string): void
+  (_e: 'search'): void
+  (_e: 'reset'): void
 }>()
 
 const handleKeyup = (event: KeyboardEvent) => {

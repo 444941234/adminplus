@@ -10,7 +10,7 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'updateField', field: keyof Profile, value: string): void
+  (_e: 'updateField', _field: keyof Profile, _value: string): void
 }
 
 const props = withDefaults(defineProps<Props>(), {

@@ -48,13 +48,13 @@ interface Props {
  */
 interface Emits {
   /** Updates v-model value */
-  (e: 'update:modelValue', value: string): void
+  (_e: 'update:modelValue', _value: string): void
   /** Triggered when user saves changes */
-  (e: 'save', value: string): void
+  (_e: 'save', _value: string): void
   /** Triggered when user cancels editing */
-  (e: 'cancel'): void
+  (_e: 'cancel'): void
   /** Triggered when user enters edit mode */
-  (e: 'startEdit'): void
+  (_e: 'startEdit'): void
 }
 
 const props = withDefaults(defineProps<Props>(), {

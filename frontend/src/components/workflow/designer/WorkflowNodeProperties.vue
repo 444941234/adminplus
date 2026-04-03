@@ -48,8 +48,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: WorkflowNodeForm): void
-  (e: 'refresh'): void
+  (_e: 'update:modelValue', _value: WorkflowNodeForm): void
+  (_e: 'refresh'): void
 }>()
 
 const hookDialogOpen = ref(false)

@@ -10,7 +10,7 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: WorkflowFormValues): void
+  (_e: 'update:modelValue', _value: WorkflowFormValues): void
 }>()
 
 const updateFieldValue = (field: string, value: unknown, modelValue: WorkflowFormValues) => {

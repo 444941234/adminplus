@@ -16,7 +16,7 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (e: 'change', page: number): void
+  (_e: 'change', _page: number): void
 }>()
 
 const totalPages = computed(() => Math.ceil(props.total / props.pageSize) || 1)

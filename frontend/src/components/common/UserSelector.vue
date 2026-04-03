@@ -11,8 +11,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-  (e: 'change', user: User | null): void
+  (_e: 'update:modelValue', _value: string): void
+  (_e: 'change', _user: User | null): void
 }>()
 
 const loading = ref(false)

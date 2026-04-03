@@ -48,8 +48,8 @@ const props = withDefaults(defineProps<WorkflowVisualizerProps>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'node-click', node: WorkflowNode): void
-  (e: 'loaded', definition: WorkflowDefinition): void
+  (_e: 'node-click', _node: WorkflowNode): void
+  (_e: 'loaded', _definition: WorkflowDefinition): void
 }>()
 
 const loading = ref(false)
@@ -73,7 +73,7 @@ const containerHeight = computed(() => {
   return Math.max(300, calculatedHeight)
 })
 
-const nodes = computed<Node[]>(() => {
+const flowNodes = computed<Node[]>(() => {
   if (!definition.value?.nodes) return []
 
   const workflowNodes = definition.value.nodes
@@ -334,7 +334,7 @@ watch(
 
     <VueFlow
       v-else
-      :nodes="nodes"
+      :nodes="flowNodes"
       :edges="edges"
       :default-viewport="{ zoom: 1, x: 0, y: 0 }"
       :min-zoom="0.5"

@@ -34,13 +34,13 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'update:definitionId', value: string): void
-  (e: 'update:title', value: string): void
-  (e: 'update:remark', value: string): void
-  (e: 'update:formValues', value: WorkflowFormValues): void
-  (e: 'save-draft'): void
-  (e: 'submit'): void
+  (_e: 'update:open', _value: boolean): void
+  (_e: 'update:definitionId', _value: string): void
+  (_e: 'update:title', _value: string): void
+  (_e: 'update:remark', _value: string): void
+  (_e: 'update:formValues', _value: WorkflowFormValues): void
+  (_e: 'save-draft'): void
+  (_e: 'submit'): void
 }>()
 
 const titleText = computed(() => props.mode === 'draft' ? '编辑草稿' : '新建流程')

@@ -40,7 +40,7 @@ const props = defineProps<{
 
 // Emits
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
+  (_e: 'update:modelValue', _value: string): void
 }>()
 
 // State

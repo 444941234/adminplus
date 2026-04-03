@@ -14,8 +14,8 @@ withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'update:activeCode', code: string): void
-  (e: 'add'): void
+  (_e: 'update:activeCode', _code: string): void
+  (_e: 'add'): void
 }>()
 </script>
 

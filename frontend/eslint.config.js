@@ -30,6 +30,9 @@ export default [
       '@typescript-eslint': typescript
     },
     rules: {
+      // Disable JS no-unused-vars in favor of TypeScript version
+      'no-unused-vars': 'off',
+
       // TypeScript
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',

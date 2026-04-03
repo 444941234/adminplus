@@ -25,7 +25,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: unknown): void
+  (_e: 'update:modelValue', _value: unknown): void
 }>()
 
 const isReadonly = () => props.readonly || props.field.readonly

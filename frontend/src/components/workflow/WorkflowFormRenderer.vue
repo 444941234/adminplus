@@ -13,7 +13,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: WorkflowFormValues): void
+  (_e: 'update:modelValue', _value: WorkflowFormValues): void
 }>()
 
 const normalizedConfig = computed(() => parseWorkflowFormConfig(props.config))

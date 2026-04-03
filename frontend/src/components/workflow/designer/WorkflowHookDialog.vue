@@ -43,8 +43,8 @@ interface Props {
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'refresh'): void
+  (_e: 'update:open', _value: boolean): void
+  (_e: 'refresh'): void
 }>()
 
 const hooks = ref<WorkflowNodeHook[]>([])

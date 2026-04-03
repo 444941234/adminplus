@@ -15,14 +15,14 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'urge', workflow: WorkflowInstance): void
-  (e: 'withdraw', workflow: WorkflowInstance): void
-  (e: 'cancel', workflow: WorkflowInstance): void
-  (e: 'edit-draft', workflow: WorkflowInstance): void
-  (e: 'submit-draft', workflow: WorkflowInstance): void
-  (e: 'delete-draft', workflow: WorkflowInstance): void
-  (e: 'approve', workflow: WorkflowInstance): void
-  (e: 'reject', workflow: WorkflowInstance): void
+  (_e: 'urge', _workflow: WorkflowInstance): void
+  (_e: 'withdraw', _workflow: WorkflowInstance): void
+  (_e: 'cancel', _workflow: WorkflowInstance): void
+  (_e: 'edit-draft', _workflow: WorkflowInstance): void
+  (_e: 'submit-draft', _workflow: WorkflowInstance): void
+  (_e: 'delete-draft', _workflow: WorkflowInstance): void
+  (_e: 'approve', _workflow: WorkflowInstance): void
+  (_e: 'reject', _workflow: WorkflowInstance): void
 }>()
 </script>
 

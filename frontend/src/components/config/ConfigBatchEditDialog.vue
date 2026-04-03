@@ -24,8 +24,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  (e: 'update:open', value: boolean): void
-  (e: 'success'): void
+  (_e: 'update:open', _value: boolean): void
+  (_e: 'success'): void
 }>()
 
 const { loading, run } = useAsyncAction('批量更新失败')
