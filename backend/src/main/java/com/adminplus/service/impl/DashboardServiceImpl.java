@@ -8,6 +8,7 @@ import com.adminplus.repository.*;
 import com.adminplus.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "dashboardStats", key = "'stats'")
     public DashboardStatsResp getStats() {
         log.debug("获取 Dashboard 统计数据");
 
