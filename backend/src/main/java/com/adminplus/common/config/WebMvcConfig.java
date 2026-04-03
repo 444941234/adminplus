@@ -23,10 +23,21 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 注册限流拦截器
+        // 注册限流拦截器 - 认证接口
         registry.addInterceptor(rateLimitInterceptor)
-                .addPathPatterns("/auth/**")  // 只对认证接口限流
+                .addPathPatterns("/auth/**")
                 .order(1);
+
+        // 限流拦截器 - 敏感操作接口
+        registry.addInterceptor(rateLimitInterceptor)
+                .addPathPatterns(
+                        "/v1/sys/users/*/password",    // 密码重置
+                        "/v1/files/upload",            // 文件上传
+                        "/v1/workflow/**/approve",     // 工作流审批
+                        "/v1/workflow/**/reject",      // 工作流驳回
+                        "/v1/workflow/**/submit"       // 工作流提交
+                )
+                .order(2);
     }
 
     /**
