@@ -44,9 +44,10 @@ public class CacheConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         objectMapper.registerModule(new JavaTimeModule()); // 注册 JavaTimeModule 支持 Instant 等时间类型
+        // 使用 NON_FINAL 类型策略，避免安全漏洞（EVERYTHING 允许任意类实例化）
         objectMapper.activateDefaultTypingAsProperty(
                 LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.EVERYTHING,
+                ObjectMapper.DefaultTyping.NON_FINAL,
                 "@class"
         );
 
@@ -76,10 +77,10 @@ public class CacheConfig {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         objectMapper.registerModule(new JavaTimeModule()); // 注册 JavaTimeModule 支持 Instant 等时间类型
-        // 使用 EVERYTHING 类型策略，确保所有对象都包含类型信息
+        // 使用 NON_FINAL 类型策略，避免安全漏洞（EVERYTHING 允许任意类实例化）
         objectMapper.activateDefaultTypingAsProperty(
                 LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.EVERYTHING,
+                ObjectMapper.DefaultTyping.NON_FINAL,
                 "@class"
         );
 

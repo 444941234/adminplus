@@ -196,7 +196,7 @@ class UserControllerTest {
         @DisplayName("should reset password")
         void resetPassword_ShouldResetPassword() throws Exception {
             // Given
-            PasswordResetReq req = new PasswordResetReq("newpassword");
+            PasswordResetReq req = new PasswordResetReq("newpassword123");
 
             // When & Then
             mockMvc.perform(put("/v1/sys/users/user-001/password")
@@ -205,7 +205,7 @@ class UserControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(userService).resetPassword("user-001", "newpassword");
+            verify(userService).resetPassword("user-001", "newpassword123");
         }
     }
 
