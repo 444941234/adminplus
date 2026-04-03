@@ -162,7 +162,7 @@ const openDefinitionDialog = (definition?: WorkflowDefinition) => {
     }
   }
   // 重置表单模板选择
-  selectedFormTemplateId.value = undefined
+  selectedFormTemplateId.value = null
   // 加载表单模板数据
   fetchFormTemplates()
   definitionDialogOpen.value = true
@@ -180,7 +180,7 @@ const closeDefinitionDialog = () => {
     status: 1,
     formConfig: ''
   }
-  selectedFormTemplateId.value = undefined
+  selectedFormTemplateId.value = null
 }
 
 const handleSaveDefinition = () => {
@@ -221,7 +221,7 @@ const importFormTemplate = () => {
     definitionForm.value.formConfig = template.formConfig || JSON.stringify({ sections: [] })
     toast.success(`已导入表单模板: ${template.templateName}`)
     // 重置选择器
-    selectedFormTemplateId.value = undefined
+    selectedFormTemplateId.value = null
   }
 }
 

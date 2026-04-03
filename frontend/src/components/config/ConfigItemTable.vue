@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { Button, Switch } from '@/components/ui'
 import { Edit, Eye, EyeOff, History, Trash2, Copy, Check } from 'lucide-vue-next'
 import type { Config } from '@/types'
 
 const copiedId = ref<string | null>(null)
-const copyTimeout = ref<number | null>(null)
+const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
 
 const copyValue = async (config: Config) => {
   const valueToCopy = config.value || config.defaultValue || ''

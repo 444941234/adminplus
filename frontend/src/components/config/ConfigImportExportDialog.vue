@@ -101,14 +101,15 @@ const handleImport = () => {
       mode: importMode.value
     })
 
-    importResult.value = {
+    const result = {
       success: res.data.success,
       failed: res.data.failed,
       skipped: res.data.skipped,
-      details: res.data.details.map(d => `${d.key}: ${d.status}${d.reason ? ` (${d.reason})` : ''}`)
+      details: res.data.details.map((d: { key: string; status: string; reason?: string }) => `${d.key}: ${d.status}${d.reason ? ` (${d.reason})` : ''}`)
     }
+    importResult.value = result
   }, {
-    successMessage: `导入完成：成功 ${importResult.value?.success || 0}，失败 ${importResult.value?.failed || 0}`,
+    successMessage: '导入完成',
     onSuccess: () => {
       if (importResult.value && importResult.value.success > 0) {
         emit('success')

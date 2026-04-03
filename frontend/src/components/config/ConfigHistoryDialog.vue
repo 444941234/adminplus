@@ -93,19 +93,6 @@ const formatTime = (time: string) => {
     second: '2-digit'
   })
 }
-
-const getValueTypeLabel = (valueType: string) => {
-  const labels: Record<string, string> = {
-    STRING: '字符串',
-    NUMBER: '数字',
-    BOOLEAN: '布尔值',
-    JSON: 'JSON',
-    ARRAY: '数组',
-    SECRET: '密文',
-    FILE: '文件'
-  }
-  return labels[valueType] || valueType
-}
 </script>
 
 <template>

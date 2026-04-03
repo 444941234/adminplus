@@ -15,18 +15,16 @@ import {
   SelectValue,
   Badge,
   Tabs,
-  TabsContent,
   TabsList,
   TabsTrigger
 } from '@/components/ui'
-import { Plus, Pencil, Trash2, Eye, Save, FileText, Copy, Check } from 'lucide-vue-next'
+import { Plus, Trash2, Eye, Save, FileText, Copy } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import WorkflowFormConfigEditor from '@/components/workflow/designer/WorkflowFormConfigEditor.vue'
 import WorkflowFormRenderer from '@/components/workflow/WorkflowFormRenderer.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import {
   getFormTemplates,
-  getFormTemplate,
   createFormTemplate,
   updateFormTemplate,
   deleteFormTemplate,
@@ -35,7 +33,6 @@ import {
   type FormTemplateReq
 } from '@/api'
 import { useUserStore } from '@/stores/user'
-import { getWorkflowPermissionState } from '@/lib/page-permissions'
 
 // State
 const { loading, run: runList } = useAsyncAction('获取表单模板失败')
@@ -61,7 +58,6 @@ const copiedToClipboard = ref(false)
 
 // 用户权限
 const userStore = useUserStore()
-const permissionState = computed(() => getWorkflowPermissionState(userStore.hasPermission))
 
 // 权限检查
 const canCreate = computed(() => userStore.hasPermission('workflow:form:create'))

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { getUserList } from '@/api'
 import type { User } from '@/types'
@@ -50,9 +50,10 @@ const loadUsers = async () => {
   }
 }
 
-const handleSelect = (value: string) => {
-  emit('update:modelValue', value)
-  const user = users.value.find(u => u.id === value)
+const handleSelect = (value: any) => {
+  const strValue = value as string
+  emit('update:modelValue', strValue)
+  const user = users.value.find(u => u.id === strValue)
   emit('change', user || null)
 }
 

@@ -3,12 +3,10 @@ import { computed, ref, watch } from 'vue'
 import { VueFlow, useVueFlow } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls } from '@vue-flow/controls'
-import { MiniMap } from '@vue-flow/minimap'
 import type { Node, Edge } from '@vue-flow/core'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import '@vue-flow/controls/dist/style.css'
-import '@vue-flow/minimap/dist/style.css'
 import { getWorkflowDefinition, getWorkflowNodes } from '@/api'
 import type { WorkflowNode as WorkflowNodeData } from '@/types'
 
@@ -205,7 +203,7 @@ const edges = computed<Edge[]>(() => {
   return result
 })
 
-function getNodeColor(node: WorkflowNode, index: number): string {
+function getNodeColor(node: WorkflowNode, _index: number): string {
   if (node.state === 'current') {
     return '#3b82f6' // Blue for current processing
   }
@@ -254,14 +252,6 @@ function mapWorkflowNodes(
         ? 'completed'
         : 'pending'
   }))
-}
-
-function getCompletedNodeIdsFromApprovals(approvals: { nodeId: string; approvalStatus: string }[]) {
-  return new Set(
-    approvals
-      .filter((approval) => ['approved', 'APPROVED', 'finish', 'FINISH', 'passed', 'PASS'].includes(approval.approvalStatus))
-      .map((approval) => approval.nodeId)
-  )
 }
 
 function onNodeClick(event: any) {

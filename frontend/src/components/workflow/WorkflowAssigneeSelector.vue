@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { getDeptTree, getRoleList, getUserList } from '@/api'
 import type { Dept, Role, User } from '@/types'

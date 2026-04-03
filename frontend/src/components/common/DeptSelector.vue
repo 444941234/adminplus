@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { getDeptTree } from '@/api'
 import type { Dept } from '@/types'
@@ -62,8 +62,8 @@ const loadDepts = async () => {
   }
 }
 
-const handleSelect = (value: string) => {
-  emit('update:modelValue', value)
+const handleSelect = (value: any) => {
+  emit('update:modelValue', value as string)
   emit('change', null) // 由于 flatten 后丢失原始 Dept 对象，这里暂不传递
 }
 
