@@ -1,9 +1,11 @@
 package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
+import com.adminplus.common.exception.BizException;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.entity.FileEntity;
 import com.adminplus.service.FileService;
+import com.adminplus.utils.XssUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,10 @@ public class FileController {
     public ApiResponse<FileEntity> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "directory", defaultValue = "files") String directory) {
+        // 验证目录名称安全性，防止路径遍历攻击
+        if (!XssUtils.isSafePath(directory)) {
+            throw new BizException(400, "目录名称不合法，不能包含特殊字符或路径遍历符");
+        }
         FileEntity fileEntity = fileService.uploadFile(file, directory);
         return ApiResponse.ok(fileEntity);
     }

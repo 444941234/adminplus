@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.common.config.FileStorageConfig;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.StorageType;
 import com.adminplus.pojo.entity.FileEntity;
@@ -38,6 +39,9 @@ class FileServiceTest {
 
     @Mock
     private FileStorageService fileStorageService;
+
+    @Mock
+    private FileStorageConfig fileStorageConfig;
 
     @InjectMocks
     private FileServiceImpl fileService;
@@ -167,6 +171,10 @@ class FileServiceTest {
         @DisplayName("should throw exception for invalid file type")
         void uploadFile_WithInvalidFileType_ShouldThrowException() {
             // Given
+            FileStorageConfig.LocalConfig localConfig = new FileStorageConfig.LocalConfig();
+            localConfig.setMaxSize(10);
+            when(fileStorageConfig.getLocal()).thenReturn(localConfig);
+
             MockMultipartFile file = new MockMultipartFile(
                     "file", "test.exe", "application/octet-stream", "content".getBytes());
 
@@ -174,6 +182,25 @@ class FileServiceTest {
             assertThatThrownBy(() -> fileService.uploadFile(file, "uploads"))
                     .isInstanceOf(BizException.class)
                     .hasMessageContaining("不支持的文件类型");
+        }
+
+        @Test
+        @DisplayName("should throw exception for file size exceeding limit")
+        void uploadFile_WithExceededSize_ShouldThrowException() {
+            // Given
+            FileStorageConfig.LocalConfig localConfig = new FileStorageConfig.LocalConfig();
+            localConfig.setMaxSize(1);  // 1MB limit
+            when(fileStorageConfig.getLocal()).thenReturn(localConfig);
+
+            // Create a file larger than 1MB
+            byte[] largeContent = new byte[2 * 1024 * 1024];  // 2MB
+            MockMultipartFile file = new MockMultipartFile(
+                    "file", "test.jpg", "image/jpeg", largeContent);
+
+            // When & Then
+            assertThatThrownBy(() -> fileService.uploadFile(file, "uploads"))
+                    .isInstanceOf(BizException.class)
+                    .hasMessageContaining("文件大小超过限制");
         }
     }
 }

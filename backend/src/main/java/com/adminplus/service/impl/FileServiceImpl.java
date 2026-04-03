@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.common.config.FileStorageConfig;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.entity.FileEntity;
 import com.adminplus.repository.FileRepository;
@@ -27,10 +28,18 @@ public class FileServiceImpl implements FileService {
 
     private final FileRepository fileRepository;
     private final FileStorageService fileStorageService;
+    private final FileStorageConfig fileStorageConfig;
 
     @Override
     @Transactional
     public FileEntity uploadFile(MultipartFile file, String directory) {
+        // 验证文件大小
+        int maxSizeMB = fileStorageConfig.getLocal().getMaxSize();
+        long maxSizeBytes = maxSizeMB * 1024L * 1024L;
+        if (file.getSize() > maxSizeBytes) {
+            throw new BizException(400, "文件大小超过限制，最大允许 " + maxSizeMB + "MB");
+        }
+
         // 验证文件内容类型（支持图片和常见文档类型）
         if (!FileContentValidator.isAllowedFileType(file, file.getContentType())) {
             throw new BizException("不支持的文件类型");
