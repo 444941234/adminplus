@@ -24,7 +24,9 @@ import org.hibernate.annotations.Where;
            @Index(name = "idx_wf_appr_node_id", columnList = "node_id"),
            @Index(name = "idx_wf_appr_user_id", columnList = "approver_id"),
            @Index(name = "idx_wf_appr_status", columnList = "approval_status"),
-           @Index(name = "idx_wf_appr_deleted", columnList = "deleted")
+           @Index(name = "idx_wf_appr_deleted", columnList = "deleted"),
+           // 复合索引：用于查询用户待审批记录（最常用的查询场景）
+           @Index(name = "idx_wf_appr_pending", columnList = "approver_id, approval_status, instance_id")
        })
 @SQLDelete(sql = "UPDATE sys_workflow_approval SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
