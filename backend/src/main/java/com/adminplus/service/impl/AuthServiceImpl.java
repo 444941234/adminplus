@@ -1,6 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.common.properties.AppProperties;
 import com.adminplus.constants.LogStatus;
 import com.adminplus.constants.OperationType;
 import com.adminplus.pojo.dto.req.UserLoginReq;
@@ -58,6 +59,7 @@ public class AuthServiceImpl implements AuthService {
     private final RefreshTokenService refreshTokenService;
     private final LogService logService;
     private final StringRedisTemplate redisTemplate;
+    private final AppProperties appProperties;
 
     @Override
     public LoginResp login(UserLoginReq req) {
@@ -103,12 +105,13 @@ public class AuthServiceImpl implements AuthService {
                     .map(RoleEntity::getName)
                     .collect(Collectors.toList());
 
-            // 生成 JWT Token（过期时间改为 2 小时）
+            // 生成 JWT Token
             Instant now = Instant.now();
+            int expirationHours = appProperties.getJwt().getExpirationHours();
             JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
                     .issuer("adminplus")
                     .issuedAt(now)
-                    .expiresAt(now.plus(2, ChronoUnit.HOURS))  // 从 24 小时改为 2 小时
+                    .expiresAt(now.plus(expirationHours, ChronoUnit.HOURS))
                     .subject(authentication.getName())
                     .claim("userId", user.getId())
                     .claim("username", user.getUsername())

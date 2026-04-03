@@ -42,6 +42,14 @@ spring:
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
+    # HikariCP 连接池配置
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX:20}
+      minimum-idle: ${DB_POOL_MIN:5}
+      connection-timeout: 30000  # 连接超时时间（毫秒）
+      idle-timeout: 600000       # 空闲连接超时时间（毫秒）
+      max-lifetime: 1800000      # 连接最大存活时间（毫秒）
+      leak-detection-threshold: 60000  # 连接泄漏检测阈值
 
   # SQL 初始化配置
   sql:

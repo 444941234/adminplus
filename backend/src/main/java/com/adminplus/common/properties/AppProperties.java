@@ -17,6 +17,7 @@ public class AppProperties {
     public static class Jwt {
         private String secret = "";
         private String devSecret = "";
+        private int expirationHours = 2;  // JWT token expiration time in hours
     }
 
     @Data
