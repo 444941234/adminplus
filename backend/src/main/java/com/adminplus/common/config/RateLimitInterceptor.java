@@ -1,5 +1,6 @@
 package com.adminplus.common.config;
 
+import com.adminplus.common.properties.AppProperties;
 import com.adminplus.utils.IpUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,27 +25,28 @@ import java.util.concurrent.TimeUnit;
 public class RateLimitInterceptor implements HandlerInterceptor {
 
     private final StringRedisTemplate redisTemplate;
-
-    // 登录接口限流：5次/分钟
-    private static final int LOGIN_MAX_REQUESTS = 5;
-    private static final int LOGIN_TIME_WINDOW = 60; // 60秒
-
-    // 通用接口限流：100次/分钟
-    private static final int GENERAL_MAX_REQUESTS = 100;
-    private static final int GENERAL_TIME_WINDOW = 60; // 60秒
+    private final AppProperties appProperties;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         String uri = request.getRequestURI();
         String clientIp = IpUtils.getClientIp(request);
 
+        AppProperties.RateLimit rateLimit = appProperties.getRateLimit();
+
         // 登录接口限流
         if ("/v1/auth/login".equals(uri)) {
-            return checkRateLimit(clientIp, "login", LOGIN_MAX_REQUESTS, LOGIN_TIME_WINDOW, response);
+            return checkRateLimit(clientIp, "login",
+                    rateLimit.getLoginMaxRequests(),
+                    rateLimit.getLoginTimeWindow(),
+                    response);
         }
 
         // 通用接口限流
-        return checkRateLimit(clientIp, "general", GENERAL_MAX_REQUESTS, GENERAL_TIME_WINDOW, response);
+        return checkRateLimit(clientIp, "general",
+                rateLimit.getGeneralMaxRequests(),
+                rateLimit.getGeneralTimeWindow(),
+                response);
     }
 
     /**

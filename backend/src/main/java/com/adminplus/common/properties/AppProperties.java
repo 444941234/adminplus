@@ -12,6 +12,7 @@ public class AppProperties {
     private Jwt jwt = new Jwt();
     private Cors cors = new Cors();
     private Virus virus = new Virus();
+    private RateLimit rateLimit = new RateLimit();
 
     @Data
     public static class Jwt {
@@ -41,5 +42,13 @@ public class AppProperties {
                 private int port = 3310;
             }
         }
+    }
+
+    @Data
+    public static class RateLimit {
+        private int loginMaxRequests = 5;      // 登录接口最大请求数/分钟
+        private int loginTimeWindow = 60;      // 登录限流时间窗口（秒）
+        private int generalMaxRequests = 100;  // 通用接口最大请求数/分钟
+        private int generalTimeWindow = 60;    // 通用限流时间窗口（秒）
     }
 }

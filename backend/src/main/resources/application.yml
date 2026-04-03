@@ -90,8 +90,8 @@ spring:
   # Redis 配置
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
       timeout: 2000ms
       lettuce:
         pool:
