@@ -17,6 +17,7 @@ import com.adminplus.service.MenuService;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.HierarchyHelper;
 import com.adminplus.utils.TreeUtils;
+import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -92,11 +93,11 @@ public class MenuServiceImpl implements MenuService {
     public MenuResp createMenu(MenuCreateReq req) {
         var menu = new MenuEntity();
         menu.setType(req.type());
-        menu.setName(req.name());
-        menu.setPath(req.path());
-        menu.setComponent(req.component());
-        menu.setPermKey(req.permKey());
-        menu.setIcon(req.icon());
+        menu.setName(XssUtils.escape(req.name()));
+        menu.setPath(XssUtils.escape(req.path()));
+        menu.setComponent(XssUtils.escape(req.component()));
+        menu.setPermKey(XssUtils.escape(req.permKey()));
+        menu.setIcon(XssUtils.escape(req.icon()));
         menu.setSortOrder(req.sortOrder());
         menu.setVisible(req.visible());
         menu.setStatus(req.status());
@@ -157,11 +158,11 @@ public class MenuServiceImpl implements MenuService {
         });
 
         req.type().ifPresent(menu::setType);
-        req.name().ifPresent(menu::setName);
-        req.path().ifPresent(menu::setPath);
-        req.component().ifPresent(menu::setComponent);
-        req.permKey().ifPresent(menu::setPermKey);
-        req.icon().ifPresent(menu::setIcon);
+        req.name().ifPresent(name -> menu.setName(XssUtils.escape(name)));
+        req.path().ifPresent(path -> menu.setPath(XssUtils.escape(path)));
+        req.component().ifPresent(component -> menu.setComponent(XssUtils.escape(component)));
+        req.permKey().ifPresent(permKey -> menu.setPermKey(XssUtils.escape(permKey)));
+        req.icon().ifPresent(icon -> menu.setIcon(XssUtils.escape(icon)));
         req.sortOrder().ifPresent(menu::setSortOrder);
         req.visible().ifPresent(menu::setVisible);
         req.status().ifPresent(menu::setStatus);

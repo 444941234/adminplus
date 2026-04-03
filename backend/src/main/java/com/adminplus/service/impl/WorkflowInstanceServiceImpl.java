@@ -23,6 +23,7 @@ import com.adminplus.service.workflow.hook.WorkflowHookService;
 import com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -75,10 +76,10 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         instance.setUserId(userId);
         instance.setUserName(user.getNickname());
         instance.setDeptId(user.getDeptId());
-        instance.setTitle(req.title());
+        instance.setTitle(XssUtils.escape(req.title()));
         instance.setBusinessData(serializeFormData(req.formData()));
         instance.setStatus("draft");
-        instance.setRemark(req.remark());
+        instance.setRemark(XssUtils.escape(req.remark()));
 
         instance = instanceRepository.save(instance);
 
@@ -1385,9 +1386,9 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             instance.setDefinitionName(definition.getDefinitionName());
         }
 
-        instance.setTitle(req.title());
+        instance.setTitle(XssUtils.escape(req.title()));
         instance.setBusinessData(serializeFormData(req.formData()));
-        instance.setRemark(req.remark());
+        instance.setRemark(XssUtils.escape(req.remark()));
     }
 
     private String serializeFormData(Map<String, Object> formData) {

@@ -15,6 +15,7 @@ import com.adminplus.service.RoleService;
 import com.adminplus.utils.AssociationDiffHelper;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -74,9 +75,9 @@ public class RoleServiceImpl implements RoleService {
         }
 
         var role = new RoleEntity();
-        role.setCode(req.code());
-        role.setName(req.name());
-        role.setDescription(req.description());
+        role.setCode(XssUtils.escape(req.code()));
+        role.setName(XssUtils.escape(req.name()));
+        role.setDescription(XssUtils.escape(req.description()));
         role.setDataScope(req.dataScope() != null ? req.dataScope() : 1);
         role.setStatus(req.status() != null ? req.status() : 1);
         role.setSortOrder(req.sortOrder());
@@ -101,10 +102,10 @@ public class RoleServiceImpl implements RoleService {
         }
 
         if (req.name() != null) {
-            role.setName(req.name());
+            role.setName(XssUtils.escape(req.name()));
         }
         if (req.description() != null) {
-            role.setDescription(req.description());
+            role.setDescription(XssUtils.escape(req.description()));
         }
         if (req.dataScope() != null) {
             role.setDataScope(req.dataScope());

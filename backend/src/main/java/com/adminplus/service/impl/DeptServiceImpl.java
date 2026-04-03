@@ -13,6 +13,7 @@ import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.HierarchyHelper;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.TreeUtils;
+import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -142,9 +143,9 @@ public class DeptServiceImpl implements DeptService {
         }
 
         var dept = new DeptEntity();
-        dept.setName(req.name());
-        dept.setCode(req.code());
-        dept.setLeader(req.leader());
+        dept.setName(XssUtils.escape(req.name()));
+        dept.setCode(XssUtils.escape(req.code()));
+        dept.setLeader(XssUtils.escape(req.leader()));
         dept.setPhone(req.phone());
         dept.setEmail(req.email());
         dept.setSortOrder(req.sortOrder());
@@ -216,9 +217,9 @@ public class DeptServiceImpl implements DeptService {
             }
         });
 
-        req.name().ifPresent(dept::setName);
-        req.code().ifPresent(dept::setCode);
-        req.leader().ifPresent(dept::setLeader);
+        req.name().ifPresent(name -> dept.setName(XssUtils.escape(name)));
+        req.code().ifPresent(code -> dept.setCode(XssUtils.escape(code)));
+        req.leader().ifPresent(leader -> dept.setLeader(XssUtils.escape(leader)));
         req.phone().ifPresent(phone -> {
             if (!phone.isBlank() && !phone.matches("^1[3-9]\\d{9}$")) {
                 throw new BizException("手机号格式不正确");
