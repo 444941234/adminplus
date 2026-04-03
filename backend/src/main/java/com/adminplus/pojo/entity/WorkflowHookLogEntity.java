@@ -23,7 +23,8 @@ import org.hibernate.annotations.Where;
            @Index(name = "idx_wf_hook_log_instance", columnList = "instance_id"),
            @Index(name = "idx_wf_hook_log_node", columnList = "node_id"),
            @Index(name = "idx_wf_hook_log_point", columnList = "hook_point"),
-           @Index(name = "idx_wf_hook_log_time", columnList = "create_time")
+           @Index(name = "idx_wf_hook_log_time", columnList = "create_time"),
+           @Index(name = "idx_wf_hook_log_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_workflow_hook_log SET deleted = true WHERE id = ?")
 @Where(clause = "deleted = false")
