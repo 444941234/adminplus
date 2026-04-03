@@ -2,8 +2,12 @@ package com.adminplus.repository;
 
 import com.adminplus.pojo.entity.WorkflowHookLogEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -39,4 +43,14 @@ public interface WorkflowHookLogRepository extends JpaRepository<WorkflowHookLog
      * 统计实例的日志数量
      */
     long countByInstanceIdAndDeletedFalse(String instanceId);
+
+    /**
+     * 批量软删除指定时间之前的日志
+     *
+     * @param beforeTime 截止时间
+     * @return 删除数量
+     */
+    @Modifying
+    @Query("UPDATE WorkflowHookLogEntity l SET l.deleted = true WHERE l.createTime < :beforeTime AND l.deleted = false")
+    int deleteByCreateTimeBeforeAndDeletedFalse(@Param("beforeTime") Instant beforeTime);
 }
