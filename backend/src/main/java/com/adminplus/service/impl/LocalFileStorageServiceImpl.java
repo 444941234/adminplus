@@ -34,6 +34,11 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
     @Override
     public String uploadFile(MultipartFile file, String directory) {
         try {
+            // 验证目录参数安全性（防止路径遍历）
+            if (!XssUtils.isSafePath(directory)) {
+                throw new IllegalArgumentException("目录参数包含非法字符");
+            }
+
             // 获取并验证原始文件名
             String originalFilename = file.getOriginalFilename();
             if (originalFilename == null || originalFilename.isEmpty()) {
