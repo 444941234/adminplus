@@ -1,5 +1,6 @@
 package com.adminplus.health;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
  * @author AdminPlus
  * @since 2026-02-07
  */
+@Slf4j
 @Component
 public class RedisHealthIndicator implements HealthIndicator {
 
@@ -28,6 +30,7 @@ public class RedisHealthIndicator implements HealthIndicator {
                     .withDetail("redis", "Redis")
                     .build();
         } catch (Exception e) {
+            log.error("Redis health check failed: {}", e.getMessage(), e);
             return Health.down()
                     .withDetail("redis", e.getMessage())
                     .build();

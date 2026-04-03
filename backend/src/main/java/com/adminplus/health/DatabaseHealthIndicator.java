@@ -1,5 +1,6 @@
 package com.adminplus.health;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.stereotype.Component;
@@ -13,6 +14,7 @@ import java.sql.Connection;
  * @author AdminPlus
  * @since 2026-02-07
  */
+@Slf4j
 @Component
 public class DatabaseHealthIndicator implements HealthIndicator {
 
@@ -32,10 +34,12 @@ public class DatabaseHealthIndicator implements HealthIndicator {
                         .withDetail("username", connection.getMetaData().getUserName())
                         .build();
             }
+            log.error("Database health check failed: Connection not valid");
             return Health.down()
                     .withDetail("database", "Connection not valid")
                     .build();
         } catch (Exception e) {
+            log.error("Database health check failed: {}", e.getMessage(), e);
             return Health.down()
                     .withDetail("database", e.getMessage())
                     .build();

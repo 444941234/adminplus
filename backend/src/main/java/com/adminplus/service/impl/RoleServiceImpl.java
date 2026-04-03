@@ -17,6 +17,7 @@ import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,6 +66,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"userPermissions", "rolePermissions"}, allEntries = true)
     public RoleResp createRole(RoleCreateReq req) {
         // 检查角色编码是否已存在
         if (roleRepository.existsByCode(req.code())) {
@@ -89,6 +91,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"userPermissions", "rolePermissions"}, allEntries = true)
     public RoleResp updateRole(String id, RoleUpdateReq req) {
         var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
@@ -122,6 +125,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"userPermissions", "userRoles", "rolePermissions"}, allEntries = true)
     public void deleteRole(String id) {
         var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
@@ -152,6 +156,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"userPermissions", "rolePermissions"}, allEntries = true)
     public void assignMenus(String roleId, List<String> menuIds) {
         // 检查角色是否存在并获取角色信息（一次查询）
         var role = EntityHelper.findByIdOrThrow(roleRepository::findById, roleId, "角色不存在");
@@ -194,6 +199,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"userPermissions", "userRoles", "rolePermissions"}, allEntries = true)
     public void updateRoleStatus(String id, Integer status) {
         var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 

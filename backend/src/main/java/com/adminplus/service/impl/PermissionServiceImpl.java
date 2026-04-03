@@ -11,6 +11,7 @@ import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.PermissionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +37,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "userPermissions", key = "#userId", unless = "#result == null || #result.isEmpty()")
     public List<String> getUserPermissions(String userId) {
         // 1. 查询用户的角色ID列表
         List<String> roleIds = userRoleRepository.findByUserId(userId).stream()
@@ -65,6 +67,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "userRoles", key = "#userId", unless = "#result == null || #result.isEmpty()")
     public List<String> getUserRoles(String userId) {
         List<String> roleIds = userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
@@ -92,6 +95,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "rolePermissions", key = "#roleId", unless = "#result == null || #result.isEmpty()")
     public List<String> getRolePermissions(String roleId) {
         // 1. 查询角色的菜单ID列表
         List<String> menuIds = roleMenuRepository.findMenuIdByRoleId(roleId);
