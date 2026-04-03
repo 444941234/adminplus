@@ -304,9 +304,30 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             instances = instanceRepository.findByUserIdAndStatusAndDeletedFalseOrderBySubmitTimeDesc(userId, normalizeStatusForStorage(status));
         }
 
+        // Batch fetch dept names to avoid N+1 queries
+        Map<String, String> deptNameMap = batchGetDeptNames(instances);
+
         return instances.stream()
-                .map(i -> toInstanceResponse(i, false, false))
+                .map(i -> toInstanceResponseWithDeptName(i, deptNameMap.get(i.getDeptId()), false, false))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Batch fetch department names for workflow instances
+     */
+    private Map<String, String> batchGetDeptNames(List<WorkflowInstanceEntity> instances) {
+        List<String> deptIds = instances.stream()
+                .map(WorkflowInstanceEntity::getDeptId)
+                .filter(id -> id != null && !id.isEmpty())
+                .distinct()
+                .toList();
+
+        if (deptIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return deptRepository.findAllById(deptIds).stream()
+                .collect(Collectors.toMap(DeptEntity::getId, DeptEntity::getName));
     }
 
     @Override
@@ -317,8 +338,11 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         List<WorkflowInstanceEntity> instances = instanceRepository.findPendingApprovalsByUser(userId);
 
+        // Batch fetch dept names to avoid N+1 queries
+        Map<String, String> deptNameMap = batchGetDeptNames(instances);
+
         return instances.stream()
-                .map(i -> toInstanceResponse(i, true, true))
+                .map(i -> toInstanceResponseWithDeptName(i, deptNameMap.get(i.getDeptId()), true, true))
                 .collect(Collectors.toList());
     }
 
@@ -740,6 +764,15 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         String deptName = deptRepository.findById(entity.getDeptId())
                 .map(DeptEntity::getName)
                 .orElse(null);
+
+        return toInstanceResponseWithDeptName(entity, deptName, pendingApproval, canApprove);
+    }
+
+    /**
+     * 转换为响应对象（带预先查询的部门名称，避免 N+1 问题）
+     */
+    private WorkflowInstanceResp toInstanceResponseWithDeptName(WorkflowInstanceEntity entity, String deptName, Boolean pendingApproval, Boolean canApprove) {
+        String currentUserId = getCurrentUserId();
 
         return new WorkflowInstanceResp(
                 entity.getId(),

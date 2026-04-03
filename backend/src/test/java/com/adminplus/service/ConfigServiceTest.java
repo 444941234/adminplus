@@ -344,7 +344,7 @@ class ConfigServiceTest {
             // Given
             when(configRepository.findAll(any(Specification.class), any(Pageable.class)))
                     .thenReturn(new PageImpl<>(List.of(testConfig)));
-            when(configGroupRepository.findById("group-001")).thenReturn(Optional.of(testGroup));
+            when(configGroupRepository.findAllById(any(List.class))).thenReturn(List.of(testGroup));
 
             // When
             PageResultResp<ConfigResp> result = configService.getConfigList(1, 10, null, null, null);

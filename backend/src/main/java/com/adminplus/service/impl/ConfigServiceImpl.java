@@ -82,8 +82,13 @@ public class ConfigServiceImpl implements ConfigService {
         };
 
         var pageResult = configRepository.findAll(spec, pageable);
-        var records = pageResult.getContent().stream()
-                .map(this::toVO)
+        List<ConfigEntity> configs = pageResult.getContent();
+
+        // Batch fetch group names to avoid N+1 queries
+        Map<String, String> groupNameMap = batchGetGroupNames(configs);
+
+        var records = configs.stream()
+                .map(config -> toVOWithGroupName(config, groupNameMap.get(config.getGroupId())))
                 .toList();
 
         return new PageResultResp<>(
@@ -92,6 +97,24 @@ public class ConfigServiceImpl implements ConfigService {
                 pageResult.getNumber() + 1,
                 pageResult.getSize()
         );
+    }
+
+    /**
+     * Batch fetch group names for configs
+     */
+    private Map<String, String> batchGetGroupNames(List<ConfigEntity> configs) {
+        List<String> groupIds = configs.stream()
+                .map(ConfigEntity::getGroupId)
+                .filter(id -> id != null && !id.isEmpty())
+                .distinct()
+                .toList();
+
+        if (groupIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return configGroupRepository.findAllById(groupIds).stream()
+                .collect(Collectors.toMap(ConfigGroupEntity::getId, ConfigGroupEntity::getName));
     }
 
     @Override
@@ -578,6 +601,13 @@ public class ConfigServiceImpl implements ConfigService {
             }
         }
 
+        return toVOWithGroupName(entity, groupName);
+    }
+
+    /**
+     * 实体转换为 VO（带预先查询的组名，避免 N+1 问题）
+     */
+    private ConfigResp toVOWithGroupName(ConfigEntity entity, String groupName) {
         return new ConfigResp(
                 entity.getId(),
                 entity.getGroupId(),
