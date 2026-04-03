@@ -60,4 +60,31 @@ public interface LogRepository extends JpaRepository<LogEntity, String>, JpaSpec
      * 查询指定时间范围内的日志（用于备用方案）
      */
     List<LogEntity> findByCreateTimeBetweenAndDeletedFalseOrderByCreateTimeDesc(Instant startTime, Instant endTime);
+
+    /**
+     * 查询指定用户的日志（按时间倒序）
+     */
+    List<LogEntity> findByUserIdAndDeletedFalseOrderByCreateTimeDesc(String userId);
+
+    /**
+     * 查询指定用户最近N条日志
+     */
+    List<LogEntity> findTop5ByUserIdAndDeletedFalseOrderByCreateTimeDesc(String userId);
+
+    /**
+     * 查询指定用户的最近登录日志
+     */
+    @Query("SELECT log FROM LogEntity log WHERE log.userId = :userId AND log.logType = 2 AND log.status = 1 AND log.deleted = false ORDER BY log.createTime DESC LIMIT 1")
+    LogEntity findLastLoginByUserId(String userId);
+
+    /**
+     * 统计指定用户的日志数量
+     */
+    long countByUserIdAndDeletedFalse(String userId);
+
+    /**
+     * 统计指定用户的活跃天数（有操作记录的不同日期）
+     */
+    @Query("SELECT COUNT(DISTINCT FUNCTION('DATE', log.createTime)) FROM LogEntity log WHERE log.userId = :userId AND log.deleted = false")
+    long countDistinctDaysByUserId(String userId);
 }

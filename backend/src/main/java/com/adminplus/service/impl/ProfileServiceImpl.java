@@ -11,9 +11,11 @@ import com.adminplus.pojo.dto.resp.ProfileResp;
 import com.adminplus.pojo.dto.resp.SettingsResp;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
+import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.DeptRepository;
+import com.adminplus.repository.LogRepository;
 import com.adminplus.repository.ProfileRepository;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRoleRepository;
@@ -59,6 +61,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final DeptRepository deptRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
+    private final LogRepository logRepository;
 
     // 允许的图片格式
     private static final String[] ALLOWED_IMAGE_TYPES = {
@@ -321,65 +324,62 @@ public class ProfileServiceImpl implements ProfileService {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
-        // 生成模拟数据（实际实现应从审计日志表查询）
         Instant now = Instant.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
                 .withZone(ZoneId.systemDefault());
 
-        // 计算最近登录时间（使用用户最后更新时间作为参考）
-        String lastLogin = user.getUpdateTime() != null
-                ? formatter.format(user.getUpdateTime())
-                : formatter.format(now);
+        // 查询最近登录记录
+        LogEntity lastLoginLog = logRepository.findLastLoginByUserId(userId);
+        String lastLogin = lastLoginLog != null
+                ? formatter.format(lastLoginLog.getCreateTime())
+                : (user.getUpdateTime() != null ? formatter.format(user.getUpdateTime()) : formatter.format(now));
+        String lastLoginIp = lastLoginLog != null && lastLoginLog.getIp() != null
+                ? lastLoginLog.getIp()
+                : "N/A";
 
-        // 模拟最近登录IP
-        String lastLoginIp = "192.168.1.100";
+        // 统计活跃天数和操作次数
+        long daysActive = logRepository.countDistinctDaysByUserId(userId);
+        long totalActions = logRepository.countByUserIdAndDeletedFalse(userId);
 
-        // 模拟活跃天数
-        int daysActive = 45;
+        // 查询最近活动记录
+        List<LogEntity> recentLogs = logRepository.findTop5ByUserIdAndDeletedFalseOrderByCreateTimeDesc(userId);
+        List<ActivityItemResp> recentActivity = recentLogs.stream()
+                .map(log -> new ActivityItemResp(
+                        log.getId(),
+                        log.getDescription() != null ? log.getDescription() : log.getModule(),
+                        formatter.format(log.getCreateTime()),
+                        mapOperationType(log.getOperationType())
+                ))
+                .collect(Collectors.toList());
 
-        // 模拟总操作次数
-        int totalActions = 128;
-
-        // 模拟最近活动记录
-        List<ActivityItemResp> recentActivity = List.of(
-                new ActivityItemResp(
-                        "1",
-                        "更新个人信息",
-                        formatter.format(now.minusSeconds(3600)),
-                        "update"
-                ),
-                new ActivityItemResp(
-                        "2",
-                        "创建新用户",
-                        formatter.format(now.minusSeconds(86400)),
-                        "create"
-                ),
-                new ActivityItemResp(
-                        "3",
-                        "系统登录",
-                        formatter.format(now.minusSeconds(172800)),
-                        "login"
-                ),
-                new ActivityItemResp(
-                        "4",
-                        "删除过期数据",
-                        formatter.format(now.minusSeconds(259200)),
-                        "delete"
-                ),
-                new ActivityItemResp(
-                        "5",
-                        "修改系统设置",
-                        formatter.format(now.minusSeconds(345600)),
-                        "update"
-                )
-        );
+        // 如果没有活动记录，返回空列表而不是模拟数据
+        if (recentActivity.isEmpty()) {
+            recentActivity = List.of();
+        }
 
         return new ActivityStatsResp(
-                daysActive,
-                totalActions,
+                (int) daysActive,
+                (int) totalActions,
                 lastLogin,
                 lastLoginIp,
                 recentActivity
         );
+    }
+
+    /**
+     * 将操作类型转换为活动类型字符串
+     */
+    private String mapOperationType(Integer operationType) {
+        if (operationType == null) return "other";
+        return switch (operationType) {
+            case 1 -> "create";
+            case 2 -> "update";
+            case 3 -> "delete";
+            case 4 -> "query";
+            case 5 -> "login";
+            case 6 -> "logout";
+            case 7 -> "export";
+            default -> "other";
+        };
     }
 }
