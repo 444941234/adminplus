@@ -27,6 +27,7 @@ public class WorkflowCcServiceImpl implements WorkflowCcService {
     private final WorkflowCcRepository ccRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowCcResp> getUserCcRecords(String userId) {
         log.info("查询用户抄送记录: userId={}", userId);
         return ccRepository.findByUserId(userId).stream()
@@ -35,6 +36,7 @@ public class WorkflowCcServiceImpl implements WorkflowCcService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowCcResp> getUnreadCcRecords(String userId) {
         log.info("查询用户未读抄送记录: userId={}", userId);
         return ccRepository.findUnreadByUserId(userId).stream()
@@ -43,6 +45,7 @@ public class WorkflowCcServiceImpl implements WorkflowCcService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public long countUnreadCcRecords(String userId) {
         long count = ccRepository.countUnreadByUserId(userId);
         log.info("统计用户未读抄送数量: userId={}, count={}", userId, count);
@@ -88,6 +91,7 @@ public class WorkflowCcServiceImpl implements WorkflowCcService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowCcResp> getInstanceCcRecords(String instanceId) {
         log.info("查询工作流实例抄送记录: instanceId={}", instanceId);
         return ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId).stream()

@@ -29,6 +29,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     private final FormTemplateRepository templateRepository;
 
     @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "formTemplates", key = "'all'")
     public List<FormTemplateResp> getAllTemplates() {
         return templateRepository.findAll().stream()
@@ -37,6 +38,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "formTemplates", key = "'enabled'")
     public List<FormTemplateResp> getEnabledTemplates() {
         return templateRepository.findByStatusOrderByCreateTimeDesc(1).stream()
@@ -45,6 +47,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "formTemplates", key = "'category:' + #category")
     public List<FormTemplateResp> getTemplatesByCategory(String category) {
         return templateRepository.findByCategoryAndStatusOrderByCreateTimeDesc(category, 1).stream()
@@ -53,6 +56,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "formTemplate", key = "#id")
     public FormTemplateResp getTemplateById(String id) {
         return templateRepository.findById(id)
@@ -61,6 +65,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "formTemplate", key = "'code:' + #templateCode")
     public FormTemplateResp getTemplateByCode(String templateCode) {
         return templateRepository.findByTemplateCode(templateCode)
@@ -130,6 +135,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean existsByCode(String templateCode) {
         return templateRepository.existsByTemplateCode(templateCode);
     }

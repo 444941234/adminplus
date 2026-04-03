@@ -171,6 +171,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public WorkflowDraftDetailResp getDraftDetail(String instanceId) {
         String userId = getCurrentUserId();
         WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
@@ -230,6 +231,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public WorkflowDetailResp getDetail(String instanceId) {
         String userId = getCurrentUserId();
         log.info("查询工作流详情: instanceId={}", instanceId);
@@ -290,6 +292,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowInstanceResp> getMyWorkflows(String status) {
         String userId = getCurrentUserId();
         log.info("查询我发起的工作流: userId={}, status={}", userId, status);
@@ -307,6 +310,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowInstanceResp> getPendingApprovals() {
         String userId = getCurrentUserId();
         log.info("查询待我审批的工作流: userId={}", userId);
@@ -319,6 +323,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public long countPendingApprovals() {
         String userId = getCurrentUserId();
         return instanceRepository.countPendingApprovalsByUser(userId);
@@ -455,6 +460,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowApprovalResp> getApprovals(String instanceId) {
         log.info("查询审批记录: instanceId={}", instanceId);
 
@@ -878,6 +884,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowNodeResp> getRollbackableNodes(String instanceId) {
         WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
@@ -1217,6 +1224,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowAddSignResp> getAddSignRecords(String instanceId) {
         log.info("查询加签记录: instanceId={}", instanceId);
         return addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId)

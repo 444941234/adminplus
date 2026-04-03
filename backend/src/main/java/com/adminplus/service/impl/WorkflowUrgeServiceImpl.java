@@ -100,6 +100,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowUrgeResp> getReceivedUrgeRecords(String userId) {
         log.info("查询用户收到的催办记录: userId={}", userId);
         return urgeRepository.findByUrgeTargetId(userId).stream()
@@ -108,6 +109,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowUrgeResp> getSentUrgeRecords(String userId) {
         log.info("查询用户发送的催办记录: userId={}", userId);
         return urgeRepository.findByUrgeUserId(userId).stream()
@@ -116,6 +118,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowUrgeResp> getUnreadUrgeRecords(String userId) {
         log.info("查询用户未读催办记录: userId={}", userId);
         return urgeRepository.findUnreadByUrgeTargetId(userId).stream()
@@ -124,6 +127,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public long countUnreadUrgeRecords(String userId) {
         long count = urgeRepository.countUnreadByUrgeTargetId(userId);
         log.info("统计用户未读催办数量: userId={}, count={}", userId, count);
@@ -169,6 +173,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowUrgeResp> getInstanceUrgeRecords(String instanceId) {
         log.info("查询工作流实例催办记录: instanceId={}", instanceId);
         return urgeRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId).stream()

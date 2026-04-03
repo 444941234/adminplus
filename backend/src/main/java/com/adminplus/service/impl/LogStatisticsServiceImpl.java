@@ -9,6 +9,7 @@ import com.adminplus.constants.LogStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +33,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
+    @Transactional(readOnly = true)
     public LogStatisticsResp getStatistics() {
         LogStorageStrategy strategy = storageStrategySelector.getStrategy();
 
@@ -81,6 +83,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public LogStatisticsResp getTrendData(int days) {
         LogStorageStrategy strategy = storageStrategySelector.getStrategy();
 

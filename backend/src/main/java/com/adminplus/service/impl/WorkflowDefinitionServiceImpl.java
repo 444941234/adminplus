@@ -102,6 +102,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public WorkflowDefinitionResp getById(String id) {
         return definitionRepository.findById(id)
                 .map(this::toResponse)
@@ -109,6 +110,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowDefinitionResp> listAll() {
         return definitionRepository.findAll().stream()
                 .map(this::toResponse)
@@ -116,6 +118,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowDefinitionResp> listEnabled() {
         return definitionRepository.findByStatusAndDeletedFalseOrderByCreateTimeDesc(1).stream()
                 .map(this::toResponse)
@@ -180,6 +183,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<WorkflowNodeResp> listNodes(String definitionId) {
         log.info("Service层查询工作流节点: definitionId={}", definitionId);
         List<WorkflowNodeEntity> nodes = nodeRepository.findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(definitionId);
