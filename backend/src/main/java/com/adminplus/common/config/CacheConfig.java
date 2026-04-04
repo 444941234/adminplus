@@ -17,7 +17,6 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -72,7 +71,7 @@ public class CacheConfig {
      * 使用 RedisCacheManager 作为实现
      * @Primary 标记为默认 CacheManager，避免与其他 CacheManager bean 冲突
      *
-     * 注意：启用类型信息以确保反序列化时能正确恢复原始类型，避免 LinkedHashMap 问题
+     * 注意：使用 GenericJackson2JsonRedisSerializer 以支持复杂类型（如 List<T>）的正确序列化
      */
     @Bean
     @Primary
@@ -88,8 +87,8 @@ public class CacheConfig {
                 JsonTypeInfo.As.PROPERTY
         );
 
-        // 使用 Jackson2JsonRedisSerializer，明确指定类型为 Object
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+        // 使用 GenericJackson2JsonRedisSerializer 以支持泛型类型
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         // 配置 Redis 缓存
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
