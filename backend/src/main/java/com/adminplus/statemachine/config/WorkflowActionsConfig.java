@@ -1,9 +1,11 @@
 package com.adminplus.statemachine.config;
 
+import com.adminplus.service.NotificationService;
 import com.adminplus.statemachine.actions.CreateApprovalAction;
 import com.adminplus.statemachine.actions.LogAction;
 import com.adminplus.statemachine.actions.NotifyAction;
 import com.adminplus.statemachine.actions.UpdateNodeAction;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,7 +19,10 @@ import org.springframework.context.annotation.Configuration;
  * @since 2026-03-30
  */
 @Configuration
+@RequiredArgsConstructor
 public class WorkflowActionsConfig {
+
+    private final NotificationService notificationService;
 
     @Bean
     public UpdateNodeAction updateNodeAction() {
@@ -31,7 +36,7 @@ public class WorkflowActionsConfig {
 
     @Bean
     public NotifyAction notifyAction() {
-        return new NotifyAction();
+        return new NotifyAction(notificationService);
     }
 
     @Bean
