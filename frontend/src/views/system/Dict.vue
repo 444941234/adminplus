@@ -21,7 +21,7 @@ import {
   Textarea
 } from '@/components/ui'
 import { Edit, ListTree, Plus, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, PageHeader, Pagination, StatusBadge } from '@/components/common'
+import { ConfirmDialog, ListSearchBar, Pagination, StatusBadge } from '@/components/common'
 import {
   createDict,
   createDictItem,
@@ -342,20 +342,23 @@ onMounted(fetchData)
 
 <template>
   <div class="space-y-4">
-    <PageHeader
-      v-model:search="searchQuery"
+    <ListSearchBar
+      v-model="searchQuery"
       placeholder="搜索字典名称/类型"
+      :loading="loading"
       @search="handleSearch"
       @reset="handleReset"
     >
-      <Button
-        v-if="canAddDict"
-        @click="handleAdd"
-      >
-        <Plus class="w-4 h-4 mr-2" />
-        新增字典
-      </Button>
-    </PageHeader>
+      <template #actions>
+        <Button
+          v-if="canAddDict"
+          @click="handleAdd"
+        >
+          <Plus class="w-4 h-4 mr-2" />
+          新增字典
+        </Button>
+      </template>
+    </ListSearchBar>
 
     <Card>
       <CardContent class="p-0">

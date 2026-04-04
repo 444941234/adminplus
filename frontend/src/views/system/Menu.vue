@@ -20,8 +20,8 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { ChevronDown, ChevronRight, Edit, Plus, Search, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, StatusBadge } from '@/components/common'
+import { ChevronDown, ChevronRight, Edit, Plus, Trash2 } from 'lucide-vue-next'
+import { ConfirmDialog, ListSearchBar, StatusBadge } from '@/components/common'
 import { batchDelete, batchUpdateStatus, createMenu, deleteMenu, getMenuById, getMenuTree, updateMenu } from '@/api'
 import type { Menu } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -370,61 +370,47 @@ onMounted(fetchData)
 
 <template>
   <div class="space-y-4">
-    <Card>
-      <CardContent class="p-4">
-        <div class="flex items-center gap-4">
-          <Input
-            v-model="searchQuery"
-            placeholder="搜索菜单名称、路径或权限"
-            class="w-80"
-            @keyup.enter="handleSearch"
-          />
-          <Button @click="handleSearch">
-            <Search class="mr-2 h-4 w-4" />
-            搜索
-          </Button>
-          <Button
-            variant="outline"
-            @click="searchQuery = ''; handleSearch()"
-          >
-            重置
-          </Button>
-          <Button
-            v-if="canEditMenu"
-            variant="outline"
-            :disabled="!hasSelectedMenus"
-            @click="handleBatchStatusChange(1)"
-          >
-            批量启用
-          </Button>
-          <Button
-            v-if="canEditMenu"
-            variant="outline"
-            :disabled="!hasSelectedMenus"
-            @click="handleBatchStatusChange(0)"
-          >
-            批量禁用
-          </Button>
-          <Button
-            v-if="canDeleteMenu"
-            variant="outline"
-            :disabled="!hasSelectedMenus"
-            @click="handleBatchDeleteConfirm"
-          >
-            <Trash2 class="mr-2 h-4 w-4" />
-            批量删除
-          </Button>
-          <div class="flex-1" />
-          <Button
-            v-if="canAddMenu"
-            @click="handleAdd()"
-          >
-            <Plus class="mr-2 h-4 w-4" />
-            新增菜单
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <ListSearchBar
+      v-model="searchQuery"
+      placeholder="搜索菜单名称、路径或权限"
+      @search="handleSearch"
+      @reset="searchQuery = ''; handleSearch()"
+    >
+      <template #actions>
+        <Button
+          v-if="canEditMenu"
+          variant="outline"
+          :disabled="!hasSelectedMenus"
+          @click="handleBatchStatusChange(1)"
+        >
+          批量启用
+        </Button>
+        <Button
+          v-if="canEditMenu"
+          variant="outline"
+          :disabled="!hasSelectedMenus"
+          @click="handleBatchStatusChange(0)"
+        >
+          批量禁用
+        </Button>
+        <Button
+          v-if="canDeleteMenu"
+          variant="outline"
+          :disabled="!hasSelectedMenus"
+          @click="handleBatchDeleteConfirm"
+        >
+          <Trash2 class="mr-2 h-4 w-4" />
+          批量删除
+        </Button>
+        <Button
+          v-if="canAddMenu"
+          @click="handleAdd()"
+        >
+          <Plus class="mr-2 h-4 w-4" />
+          新增菜单
+        </Button>
+      </template>
+    </ListSearchBar>
 
     <Card>
       <CardContent class="p-0">

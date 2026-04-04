@@ -21,7 +21,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Edit, KeyRound, Plus, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, StatusBadge } from '@/components/common'
+import { ConfirmDialog, ListSearchBar, StatusBadge } from '@/components/common'
 import { assignMenus, getMenuTree, getRoleMenus, updateRoleStatus } from '@/api'
 import { getRolePagePermissionState } from '@/lib/page-permissions'
 import { isValidRoleCode } from '@/lib/validators'
@@ -270,32 +270,22 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-4">
-    <Card>
-      <CardContent class="p-4">
-        <div class="flex items-center gap-4">
-          <Input
-            v-model="searchQuery"
-            placeholder="搜索角色名称、编码或描述"
-            clearable
-            class="w-80"
-          />
-          <Button
-            variant="outline"
-            @click="searchQuery = ''"
-          >
-            重置
-          </Button>
-          <div class="flex-1" />
-          <Button
-            v-if="canAddRole"
-            @click="handleAdd"
-          >
-            <Plus class="mr-2 h-4 w-4" />
-            新增角色
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <ListSearchBar
+      v-model="searchQuery"
+      placeholder="搜索角色名称、编码或描述"
+      @search="searchQuery = searchQuery"
+      @reset="searchQuery = ''"
+    >
+      <template #actions>
+        <Button
+          v-if="canAddRole"
+          @click="handleAdd"
+        >
+          <Plus class="mr-2 h-4 w-4" />
+          新增角色
+        </Button>
+      </template>
+    </ListSearchBar>
 
     <Card>
       <CardContent class="p-0">

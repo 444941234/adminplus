@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { Button, Card, CardContent } from '@/components/ui'
-import { Plus, RefreshCw, Search } from 'lucide-vue-next'
-import { ConfirmDialog } from '@/components/common'
+import { Plus, RefreshCw } from 'lucide-vue-next'
+import { ConfirmDialog, ListSearchBar } from '@/components/common'
 import { getAllConfigGroups, getConfigsByGroupCode, deleteConfigGroup, deleteConfig, refreshConfigCache, updateConfigStatus } from '@/api'
 import type { ConfigGroup, Config } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -219,17 +219,13 @@ onMounted(async () => {
     <Card>
       <CardContent class="p-4">
         <!-- Search and Actions -->
-        <div class="mb-4 flex items-center justify-between gap-4">
-          <div class="relative flex-1 max-w-md">
-            <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              v-model="searchKeyword"
-              type="text"
-              placeholder="搜索配置名称或配置键..."
-              class="w-full rounded-md border border-input bg-background pl-10 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            >
-          </div>
-          <div class="flex gap-2">
+        <ListSearchBar
+          v-model="searchKeyword"
+          placeholder="搜索配置名称或配置键..."
+          @search="searchKeyword = searchKeyword"
+          @reset="searchKeyword = ''"
+        >
+          <template #actions>
             <Button
               v-if="canManageConfig"
               variant="outline"
@@ -244,8 +240,8 @@ onMounted(async () => {
               <Plus class="mr-2 h-4 w-4" />
               新增配置
             </Button>
-          </div>
-        </div>
+          </template>
+        </ListSearchBar>
 
         <!-- Config Table -->
         <ConfigItemTable

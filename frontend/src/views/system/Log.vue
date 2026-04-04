@@ -20,7 +20,7 @@ import {
   SelectValue,
   Textarea
 } from '@/components/ui'
-import { Download, Eye, Search, Trash2 } from 'lucide-vue-next'
+import { Download, Eye, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
 import { ConfirmDialog, Pagination, StatusBadge } from '@/components/common'
 import {
   cleanupExpiredLogs,
@@ -420,6 +420,7 @@ onMounted(async () => {
               variant="outline"
               @click="handleReset"
             >
+              <RefreshCw class="mr-2 h-4 w-4" />
               重置
             </Button>
           </div>

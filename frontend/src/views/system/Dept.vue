@@ -18,8 +18,8 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { Edit, Plus, Search, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, StatusBadge } from '@/components/common'
+import { Edit, Plus, Trash2 } from 'lucide-vue-next'
+import { ConfirmDialog, ListSearchBar, StatusBadge } from '@/components/common'
 import { isValidChinaPhone, isValidEmail } from '@/lib/validators'
 import type { Dept } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -298,28 +298,22 @@ onMounted(fetchList)
 
 <template>
   <div class="space-y-4">
-    <Card>
-      <CardContent class="p-4">
-        <div class="flex gap-4 items-center">
-          <div class="relative">
-            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              v-model="searchQuery"
-              placeholder="搜索部门名称/编码/负责人"
-              class="w-72 pl-9"
-            />
-          </div>
-          <div class="flex-1" />
-          <Button
-            v-if="canAddDept"
-            @click="handleAdd"
-          >
-            <Plus class="w-4 h-4 mr-2" />
-            新增部门
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <ListSearchBar
+      v-model="searchQuery"
+      placeholder="搜索部门名称/编码/负责人"
+      @search="searchQuery = searchQuery"
+      @reset="searchQuery = ''"
+    >
+      <template #actions>
+        <Button
+          v-if="canAddDept"
+          @click="handleAdd"
+        >
+          <Plus class="w-4 h-4 mr-2" />
+          新增部门
+        </Button>
+      </template>
+    </ListSearchBar>
 
     <Card>
       <CardContent class="p-0">

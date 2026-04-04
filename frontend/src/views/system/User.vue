@@ -6,15 +6,14 @@ import {
   Card,
   CardContent,
   Input,
-  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { Edit, KeyRound, LockKeyhole, Plus, Search, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, Pagination, StatusBadge } from '@/components/common'
+import { Edit, KeyRound, LockKeyhole, Plus, Trash2 } from 'lucide-vue-next'
+import { ConfirmDialog, ListSearchBar, Pagination, StatusBadge } from '@/components/common'
 import { getDeptTree, getRoleList, getUserList, updateUserStatus, deleteUser } from '@/api'
 import type { Dept, Role, User } from '@/types'
 import { getUserPagePermissionState } from '@/lib/page-permissions'
@@ -175,65 +174,49 @@ onMounted(async () => {
 
 <template>
   <div class="space-y-4">
-    <Card>
-      <CardContent class="p-4">
-        <div class="grid items-end gap-4 md:grid-cols-4">
-          <div class="space-y-2 md:col-span-2">
-            <Label>关键词</Label>
-            <Input
-              v-model="filters.keyword"
-              placeholder="搜索用户名、昵称、邮箱、电话"
-              @keyup.enter="handleSearch"
-              @input="handleSearch"
-            />
-          </div>
-          <div class="space-y-2">
-            <Label>部门</Label>
-            <Select
-              v-model="filters.deptId"
-              @update:model-value="handleSearch"
+    <ListSearchBar
+      :loading="loading"
+      @search="handleSearch"
+      @reset="handleResetSearch"
+    >
+      <template #filters>
+        <Input
+          v-model="filters.keyword"
+          placeholder="搜索用户名、昵称、邮箱、电话"
+          class="w-60"
+          @keyup.enter="handleSearch"
+        />
+        <Select
+          v-model="filters.deptId"
+          @update:model-value="handleSearch"
+        >
+          <SelectTrigger class="w-40">
+            <SelectValue placeholder="全部部门" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">
+              全部部门
+            </SelectItem>
+            <SelectItem
+              v-for="dept in deptOptions"
+              :key="dept.id"
+              :value="dept.id"
             >
-              <SelectTrigger>
-                <SelectValue placeholder="全部部门" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">
-                  全部部门
-                </SelectItem>
-                <SelectItem
-                  v-for="dept in deptOptions"
-                  :key="dept.id"
-                  :value="dept.id"
-                >
-                  {{ dept.label }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div class="flex gap-2">
-            <Button @click="handleSearch">
-              <Search class="mr-2 h-4 w-4" />
-              搜索
-            </Button>
-            <Button
-              variant="outline"
-              @click="handleResetSearch"
-            >
-              重置
-            </Button>
-          </div>
-        </div>
-        <div class="mt-4 flex justify-end">
-          <Button
-            v-if="canAddUser"
-            @click="handleAdd"
-          >
-            <Plus class="mr-2 h-4 w-4" />
-            新增用户
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+              {{ dept.label }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </template>
+      <template #actions>
+        <Button
+          v-if="canAddUser"
+          @click="handleAdd"
+        >
+          <Plus class="mr-2 h-4 w-4" />
+          新增用户
+        </Button>
+      </template>
+    </ListSearchBar>
 
     <Card>
       <CardContent class="p-0">

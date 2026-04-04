@@ -13,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { Download, FolderOpen, RefreshCw, Search, Trash2, Upload } from 'lucide-vue-next'
-import { ConfirmDialog } from '@/components/common'
+import { Download, FolderOpen, Trash2, Upload } from 'lucide-vue-next'
+import { ConfirmDialog, ListSearchBar } from '@/components/common'
 import { deleteManagedFile, getFilesByDirectory, getMyFiles, uploadManagedFile } from '@/api'
 import type { FileRecord } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -124,75 +124,57 @@ onMounted(fetchFiles)
 
 <template>
   <div class="space-y-4">
+    <ListSearchBar
+      v-model="searchQuery"
+      placeholder="按文件名、目录或类型过滤"
+      @search="handleSearch"
+      @reset="handleRefresh"
+    >
+      <template #filters>
+        <Select v-model="scope">
+          <SelectTrigger class="w-32">
+            <SelectValue placeholder="选择范围" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="my">
+              我的文件
+            </SelectItem>
+            <SelectItem value="directory">
+              按目录查看
+            </SelectItem>
+          </SelectContent>
+        </Select>
+        <Input
+          v-model="directory"
+          :disabled="scope === 'my'"
+          placeholder="例如：files / avatars / docs"
+          class="w-48"
+        />
+      </template>
+      <template #actions>
+        <Button
+          v-if="canUploadFile"
+          @click="handleUpload"
+          :disabled="uploading"
+        >
+          <Upload class="mr-2 h-4 w-4" />
+          {{ uploading ? '上传中...' : '上传文件' }}
+        </Button>
+      </template>
+    </ListSearchBar>
+
     <Card>
       <CardContent class="p-4">
-        <div class="grid gap-4 md:grid-cols-4">
-          <div class="space-y-2">
-            <Label>查看范围</Label>
-            <Select v-model="scope">
-              <SelectTrigger>
-                <SelectValue placeholder="选择范围" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="my">
-                  我的文件
-                </SelectItem>
-                <SelectItem value="directory">
-                  按目录查看
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div class="space-y-2">
-            <Label>目录</Label>
-            <Input
-              v-model="directory"
-              :disabled="scope === 'my'"
-              placeholder="例如：files / avatars / docs"
-            />
-          </div>
-          <div class="space-y-2 md:col-span-2">
-            <Label>搜索</Label>
-            <div class="flex gap-2">
-              <Input
-                v-model="searchQuery"
-                placeholder="按文件名、目录或类型过滤"
-                @keyup.enter="handleSearch"
-              />
-              <Button @click="handleSearch">
-                <Search class="mr-2 h-4 w-4" />
-                查询
-              </Button>
-              <Button
-                variant="outline"
-                @click="handleRefresh"
-              >
-                <RefreshCw class="mr-2 h-4 w-4" />
-                刷新
-              </Button>
-            </div>
-          </div>
-        </div>
-
         <div
           v-if="canUploadFile"
-          class="mt-4 grid gap-4 md:grid-cols-[1fr_auto] md:items-end"
+          class="space-y-2"
         >
-          <div class="space-y-2">
-            <Label>上传文件</Label>
-            <Input
-              id="managed-file-input"
-              type="file"
-              @change="handleFileChange"
-            />
-          </div>
-          <Button
-            :disabled="uploading"
-            @click="handleUpload"
-          >
-            <Upload class="mr-2 h-4 w-4" />
-            {{ uploading ? '上传中...' : '上传文件' }}
-          </Button>
+          <Label>选择文件</Label>
+          <Input
+            id="managed-file-input"
+            type="file"
+            @change="handleFileChange"
+          />
         </div>
       </CardContent>
     </Card>
