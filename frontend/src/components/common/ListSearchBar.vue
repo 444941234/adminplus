@@ -68,18 +68,27 @@ function handleKeydown(e: KeyboardEvent) {
         />
       </slot>
 
-      <Button :disabled="loading" @click="handleSearch">
+      <Button
+        :disabled="loading"
+        @click="handleSearch"
+      >
         <Search class="w-4 h-4 mr-1" />
         搜索
       </Button>
 
-      <Button variant="outline" @click="handleReset">
+      <Button
+        variant="outline"
+        @click="handleReset"
+      >
         <RefreshCw class="w-4 h-4 mr-1" />
         重置
       </Button>
     </div>
 
-    <div v-if="$slots.actions" class="search-actions">
+    <div
+      v-if="$slots.actions"
+      class="search-actions"
+    >
       <slot name="actions" />
     </div>
   </div>
