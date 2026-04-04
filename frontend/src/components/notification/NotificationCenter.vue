@@ -18,7 +18,7 @@ const fetchNotifications = async () => {
   loading.value = true
   try {
     const res = await getMyNotifications({ status: 0, page: 0, size: 20 })
-    notifications.value = (res as any).data?.content || []
+    notifications.value = res.data?.content || []
   } finally {
     loading.value = false
   }
@@ -28,7 +28,7 @@ const fetchNotifications = async () => {
 const fetchUnreadCount = async () => {
   try {
     const res = await getUnreadCount()
-    unreadCount.value = (res as any).data || 0
+    unreadCount.value = res.data || 0
   } catch {
     // Silent fail
   }
@@ -50,7 +50,7 @@ const handleMarkAsRead = async (id: string) => {
 const handleMarkAllAsRead = async () => {
   try {
     const res = await markAllAsRead()
-    const count = (res as any).data || 0
+    const count = res.data || 0
     notifications.value = []
     unreadCount.value = 0
     toast.success(`已标记 ${count} 条通知为已读`)

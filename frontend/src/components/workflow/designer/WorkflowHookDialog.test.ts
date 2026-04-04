@@ -54,11 +54,13 @@ const makeHook = (overrides: Partial<Record<string, any>> = {}) => ({
   ...overrides
 })
 
-const mockApiResponse = (data: any) => ({ data, code: 200, message: 'success' })
+const mockApiResponse = <T,>(data: T) => ({ data, code: 200, message: 'success' })
 
 const DialogStub = defineComponent({
   name: 'Dialog',
-  props: ['open'],
+  props: {
+    open: { type: Boolean, default: false }
+  },
   emits: ['update:open'],
   setup(props, { slots, emit }) {
     return () => h('div', {
