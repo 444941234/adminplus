@@ -4,7 +4,7 @@
 
 | 项目 | 测试文件数 | 测试用例数 | 状态 |
 |------|-----------|-----------|------|
-| 后端 | 78 | 857 | ✅ 全部通过 |
+| 后端 | 80 | 879 | ✅ 全部通过 |
 | 前端 | 66 | 1267 | ✅ 全部通过 |
 
 ## 后端测试覆盖
@@ -19,6 +19,7 @@
 | 钩子执行器 | `SpELHookExecutorTest.java`, `BeanHookExecutorTest.java`, `HttpHookExecutorTest.java` | SpEL表达式、Bean调用、HTTP请求 |
 | 工作流抄送 | `WorkflowCcServiceTest.java` | 抄送记录CRUD、标记已读 |
 | 工作流催办 | `WorkflowUrgeServiceTest.java` | 催办发送、已读标记 |
+| 通知系统 | `NotificationServiceTest.java` | 发送通知、批量发送、标记已读、获取未读数、删除通知 |
 
 ### 用户权限模块
 
@@ -51,6 +52,12 @@
 | `WorkflowStateMachineIntegrationTest.java` | 状态机集成测试 |
 | `UserIntegrationTest.java` | 用户模块集成测试 |
 | `AuthIntegrationTest.java` | 认证授权集成测试 |
+
+### 控制器测试
+
+| 测试类 | 覆盖功能 |
+|--------|----------|
+| `NotificationControllerTest.java` | 通知API端点测试、权限校验 |
 
 ## 前端测试覆盖
 
