@@ -4,6 +4,7 @@ import { getInstanceHookLogs, type WorkflowHookLog } from '@/api/workflow'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { ChevronDown, ChevronRight } from 'lucide-vue-next'
+import { formatDateTime } from '@/utils/format'
 
 const props = defineProps<{
   instanceId: string
@@ -142,7 +143,7 @@ watch(() => props.instanceId, () => {
               <div class="flex items-center gap-4 text-sm text-muted-foreground">
                 <span>{{ formatExecutionTime(log.executionTime) }}</span>
                 <span v-if="log.retryAttempts && log.retryAttempts > 0">重试{{ log.retryAttempts }}次</span>
-                <span class="text-xs">{{ new Date(log.createTime).toLocaleString() }}</span>
+                <span class="text-xs">{{ formatDateTime(log.createTime) }}</span>
               </div>
             </div>
 
