@@ -96,7 +96,10 @@ const formatTime = (time: string) => {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog
+    :open="open"
+    @update:open="emit('update:open', $event)"
+  >
     <DialogContent class="sm:max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
       <DialogHeader>
         <DialogTitle>配置变更历史</DialogTitle>
@@ -106,13 +109,26 @@ const formatTime = (time: string) => {
       </DialogHeader>
 
       <div class="flex-1 overflow-y-auto py-4">
-        <div v-if="historyLoading" class="flex items-center justify-center h-32">
-          <div class="text-muted-foreground">加载中...</div>
+        <div
+          v-if="historyLoading"
+          class="flex items-center justify-center h-32"
+        >
+          <div class="text-muted-foreground">
+            加载中...
+          </div>
         </div>
-        <div v-else-if="historyList.length === 0" class="flex items-center justify-center h-32">
-          <div class="text-muted-foreground">暂无历史记录</div>
+        <div
+          v-else-if="historyList.length === 0"
+          class="flex items-center justify-center h-32"
+        >
+          <div class="text-muted-foreground">
+            暂无历史记录
+          </div>
         </div>
-        <div v-else class="space-y-4">
+        <div
+          v-else
+          class="space-y-4"
+        >
           <div
             v-for="item in historyList"
             :key="item.id"
@@ -121,7 +137,10 @@ const formatTime = (time: string) => {
             <div class="mb-2 flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="text-sm font-medium">{{ item.remark }}</span>
-                <span v-if="item.operatorName" class="text-xs text-muted-foreground">
+                <span
+                  v-if="item.operatorName"
+                  class="text-xs text-muted-foreground"
+                >
                   by {{ item.operatorName }}
                 </span>
               </div>
@@ -142,13 +161,17 @@ const formatTime = (time: string) => {
 
             <div class="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <div class="mb-1 text-xs font-medium text-muted-foreground">旧值</div>
+                <div class="mb-1 text-xs font-medium text-muted-foreground">
+                  旧值
+                </div>
                 <div class="rounded bg-muted p-2">
                   <pre class="max-h-32 overflow-auto text-xs">{{ formatValue(item.oldValue) }}</pre>
                 </div>
               </div>
               <div>
-                <div class="mb-1 text-xs font-medium text-muted-foreground">新值</div>
+                <div class="mb-1 text-xs font-medium text-muted-foreground">
+                  新值
+                </div>
                 <div class="rounded bg-muted p-2">
                   <pre class="max-h-32 overflow-auto text-xs">{{ formatValue(item.newValue) }}</pre>
                 </div>
@@ -159,7 +182,10 @@ const formatTime = (time: string) => {
       </div>
 
       <DialogFooter>
-        <Button variant="outline" @click="emit('update:open', false)">
+        <Button
+          variant="outline"
+          @click="emit('update:open', false)"
+        >
           关闭
         </Button>
       </DialogFooter>
@@ -177,10 +203,17 @@ const formatTime = (time: string) => {
       </DialogHeader>
 
       <DialogFooter>
-        <Button variant="outline" :disabled="rollbackLoading" @click="rollbackDialogOpen = false">
+        <Button
+          variant="outline"
+          :disabled="rollbackLoading"
+          @click="rollbackDialogOpen = false"
+        >
           取消
         </Button>
-        <Button :disabled="rollbackLoading" @click="confirmRollback">
+        <Button
+          :disabled="rollbackLoading"
+          @click="confirmRollback"
+        >
           {{ rollbackLoading ? '回滚中...' : '确认回滚' }}
         </Button>
       </DialogFooter>

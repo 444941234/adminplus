@@ -100,20 +100,32 @@ const badgeColor = computed(() => {
   <Card class="completion-badge overflow-hidden border-0 shadow-md">
     <div class="completion-badge__content">
       <div class="completion-badge__header">
-        <div class="completion-badge__icon" :class="badgeColor">
+        <div
+          class="completion-badge__icon"
+          :class="badgeColor"
+        >
           <Trophy :size="32" />
         </div>
         <div class="completion-badge__title">
-          <h3 class="completion-badge__title-text">{{ badgeTitle }}</h3>
-          <p class="completion-badge__percentage">{{ completionPercentage }}%</p>
+          <h3 class="completion-badge__title-text">
+            {{ badgeTitle }}
+          </h3>
+          <p class="completion-badge__percentage">
+            {{ completionPercentage }}%
+          </p>
         </div>
       </div>
 
       <div class="completion-badge__progress">
-        <Progress :model-value="completionPercentage" class="completion-badge__progress-bar" />
+        <Progress
+          :model-value="completionPercentage"
+          class="completion-badge__progress-bar"
+        />
       </div>
 
-      <p class="completion-badge__message">{{ completionMessage }}</p>
+      <p class="completion-badge__message">
+        {{ completionMessage }}
+      </p>
     </div>
   </Card>
 </template>

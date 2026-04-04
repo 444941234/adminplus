@@ -42,7 +42,13 @@ const handleKeyup = (event: KeyboardEvent) => {
           <Search class="mr-2 h-4 w-4" />
           搜索
         </Button>
-        <Button v-if="showReset !== false" variant="outline" @click="emit('reset')">重置</Button>
+        <Button
+          v-if="showReset !== false"
+          variant="outline"
+          @click="emit('reset')"
+        >
+          重置
+        </Button>
         <div class="flex-1" />
         <slot />
       </div>

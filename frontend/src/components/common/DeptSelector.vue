@@ -62,8 +62,9 @@ const loadDepts = async () => {
   }
 }
 
-const handleSelect = (value: any) => {
-  emit('update:modelValue', value as string)
+const handleSelect = (value: unknown) => {
+  if (typeof value !== 'string') return
+  emit('update:modelValue', value)
   emit('change', null) // 由于 flatten 后丢失原始 Dept 对象，这里暂不传递
 }
 
@@ -79,8 +80,8 @@ onMounted(loadDepts)
     />
     <Select
       :model-value="modelValue"
-      @update:model-value="handleSelect"
       :disabled="disabled"
+      @update:model-value="handleSelect"
     >
       <SelectTrigger>
         <SelectValue :placeholder="placeholder || (loading ? '正在加载...' : '请选择部门')">
@@ -97,7 +98,10 @@ onMounted(loadDepts)
             <span>{{ dept.label }}</span>
           </div>
         </SelectItem>
-        <div v-if="filteredDepts.length === 0" class="px-2 py-1.5 text-sm text-muted-foreground text-center">
+        <div
+          v-if="filteredDepts.length === 0"
+          class="px-2 py-1.5 text-sm text-muted-foreground text-center"
+        >
           暂无匹配部门
         </div>
       </SelectContent>

@@ -47,7 +47,9 @@ function onLegendItemClick(d: BulletLegendItemInterface, i: number) {
 
 <template>
   <div
-    ref="elRef" class="w-max" :style="{
+    ref="elRef"
+    class="w-max"
+    :style="{
       '--vis-legend-bullet-size': '16px',
     }"
   >

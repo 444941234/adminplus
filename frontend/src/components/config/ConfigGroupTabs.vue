@@ -22,10 +22,20 @@ const emit = defineEmits<{
 <template>
   <div class="flex items-center gap-2 border-b border-border pb-0">
     <!-- Group Tabs -->
-    <div v-if="loading" class="flex gap-2">
-      <div v-for="i in 3" :key="i" class="h-10 w-24 animate-pulse rounded-t-lg bg-muted" />
+    <div
+      v-if="loading"
+      class="flex gap-2"
+    >
+      <div
+        v-for="i in 3"
+        :key="i"
+        class="h-10 w-24 animate-pulse rounded-t-lg bg-muted"
+      />
     </div>
-    <div v-else class="flex gap-2">
+    <div
+      v-else
+      class="flex gap-2"
+    >
       <button
         v-for="group in groups"
         :key="group.id"
@@ -53,7 +63,11 @@ const emit = defineEmits<{
 
     <!-- Add Group Button -->
     <div class="ml-auto">
-      <Button size="sm" variant="ghost" @click="emit('add')">
+      <Button
+        size="sm"
+        variant="ghost"
+        @click="emit('add')"
+      >
         <Plus class="mr-1 h-4 w-4" />
         新增分组
       </Button>

@@ -139,10 +139,16 @@ initDateRange()
   <div class="space-y-2">
     <Label :for="field.field">
       {{ field.label }}
-      <span v-if="field.required" class="text-destructive">*</span>
+      <span
+        v-if="field.required"
+        class="text-destructive"
+      >*</span>
     </Label>
 
-    <div v-if="isReadonly()" class="min-h-10 rounded-md border border-input bg-muted/30 px-3 py-2 text-sm">
+    <div
+      v-if="isReadonly()"
+      class="min-h-10 rounded-md border border-input bg-muted/30 px-3 py-2 text-sm"
+    >
       {{ getDisplayValue(modelValue) }}
     </div>
 
@@ -182,7 +188,7 @@ initDateRange()
         type="date"
         :value="typeof modelValue === 'string' ? modelValue : ''"
         @input="handleInput"
-      />
+      >
     </template>
 
     <template v-else-if="field.component === 'daterange'">
@@ -192,14 +198,14 @@ initDateRange()
           type="date"
           :value="dateRangeStart"
           @input="dateRangeStart = ($event.target as HTMLInputElement).value; handleDateRangeChange()"
-        />
+        >
         <span class="text-muted-foreground">至</span>
         <input
           class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           type="date"
           :value="dateRangeEnd"
           @input="dateRangeEnd = ($event.target as HTMLInputElement).value; handleDateRangeChange()"
-        />
+        >
       </div>
     </template>
 
@@ -221,15 +227,21 @@ initDateRange()
           class="hidden"
           :disabled="uploading"
           @change="handleFileSelect"
-        />
+        >
         <Button
           variant="outline"
           class="flex-1 justify-start"
           :disabled="uploading"
           @click="triggerFileSelect"
         >
-          <Loader2 v-if="uploading" class="mr-2 h-4 w-4 animate-spin" />
-          <Upload v-else class="mr-2 h-4 w-4" />
+          <Loader2
+            v-if="uploading"
+            class="mr-2 h-4 w-4 animate-spin"
+          />
+          <Upload
+            v-else
+            class="mr-2 h-4 w-4"
+          />
           {{ uploading ? '上传中...' : (selectedFileName || field.placeholder || '选择文件') }}
         </Button>
         <Button
@@ -268,10 +280,16 @@ initDateRange()
       />
     </template>
 
-    <p v-if="field.description" class="text-xs text-muted-foreground">
+    <p
+      v-if="field.description"
+      class="text-xs text-muted-foreground"
+    >
       {{ field.description }}
     </p>
-    <p v-if="error" class="text-xs text-destructive">
+    <p
+      v-if="error"
+      class="text-xs text-destructive"
+    >
       {{ error }}
     </p>
   </div>

@@ -13,20 +13,41 @@ import { BarChart3, GitBranch, ListChecks } from 'lucide-vue-next'
         </CardDescription>
       </CardHeader>
       <CardContent class="grid gap-4 md:grid-cols-3">
-        <RouterLink to="/analysis/statistics" class="rounded-xl border p-5 transition-colors hover:bg-accent">
+        <RouterLink
+          to="/analysis/statistics"
+          class="rounded-xl border p-5 transition-colors hover:bg-accent"
+        >
           <BarChart3 class="mb-3 h-7 w-7 text-primary" />
-          <div class="font-medium">数据统计</div>
-          <div class="mt-1 text-sm text-muted-foreground">查看用户、访问趋势、在线用户和系统信息。</div>
+          <div class="font-medium">
+            数据统计
+          </div>
+          <div class="mt-1 text-sm text-muted-foreground">
+            查看用户、访问趋势、在线用户和系统信息。
+          </div>
         </RouterLink>
-        <RouterLink to="/workflow/definitions" class="rounded-xl border p-5 transition-colors hover:bg-accent">
+        <RouterLink
+          to="/workflow/definitions"
+          class="rounded-xl border p-5 transition-colors hover:bg-accent"
+        >
           <GitBranch class="mb-3 h-7 w-7 text-primary" />
-          <div class="font-medium">流程模板</div>
-          <div class="mt-1 text-sm text-muted-foreground">查看可用的工作流模板并发起新流程。</div>
+          <div class="font-medium">
+            流程模板
+          </div>
+          <div class="mt-1 text-sm text-muted-foreground">
+            查看可用的工作流模板并发起新流程。
+          </div>
         </RouterLink>
-        <RouterLink to="/workflow/pending" class="rounded-xl border p-5 transition-colors hover:bg-accent">
+        <RouterLink
+          to="/workflow/pending"
+          class="rounded-xl border p-5 transition-colors hover:bg-accent"
+        >
           <ListChecks class="mb-3 h-7 w-7 text-primary" />
-          <div class="font-medium">待我审批</div>
-          <div class="mt-1 text-sm text-muted-foreground">查看待审批事项并进入流程详情处理。</div>
+          <div class="font-medium">
+            待我审批
+          </div>
+          <div class="mt-1 text-sm text-muted-foreground">
+            查看待审批事项并进入流程详情处理。
+          </div>
         </RouterLink>
       </CardContent>
     </Card>

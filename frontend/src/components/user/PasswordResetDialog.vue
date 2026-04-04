@@ -67,7 +67,10 @@ const handleOpenChange = (value: boolean) => {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="handleOpenChange">
+  <Dialog
+    :open="open"
+    @update:open="handleOpenChange"
+  >
     <DialogContent class="sm:max-w-[420px]">
       <DialogHeader>
         <DialogTitle>重置密码</DialogTitle>
@@ -89,14 +92,28 @@ const handleOpenChange = (value: boolean) => {
             class="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
             @click="showPassword = !showPassword"
           >
-            <Eye v-if="!showPassword" class="h-4 w-4 text-muted-foreground" />
-            <EyeOff v-else class="h-4 w-4 text-muted-foreground" />
+            <Eye
+              v-if="!showPassword"
+              class="h-4 w-4 text-muted-foreground"
+            />
+            <EyeOff
+              v-else
+              class="h-4 w-4 text-muted-foreground"
+            />
           </Button>
         </div>
       </div>
       <DialogFooter>
-        <Button variant="outline" @click="handleOpenChange(false)">取消</Button>
-        <Button :disabled="loading" @click="handleSubmit">
+        <Button
+          variant="outline"
+          @click="handleOpenChange(false)"
+        >
+          取消
+        </Button>
+        <Button
+          :disabled="loading"
+          @click="handleSubmit"
+        >
           {{ loading ? '处理中...' : '确认重置' }}
         </Button>
       </DialogFooter>

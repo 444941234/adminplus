@@ -25,7 +25,10 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <AlertDialog :open="open" @update:open="emit('update:open', $event)">
+  <AlertDialog
+    :open="open"
+    @update:open="emit('update:open', $event)"
+  >
     <AlertDialogContent>
       <AlertDialogHeader>
         <AlertDialogTitle>{{ title || '确认操作' }}</AlertDialogTitle>
@@ -33,7 +36,12 @@ const emit = defineEmits<{
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel>取消</AlertDialogCancel>
-        <AlertDialogAction :disabled="loading" @click="emit('confirm')">{{ confirmText || '确认' }}</AlertDialogAction>
+        <AlertDialogAction
+          :disabled="loading"
+          @click="emit('confirm')"
+        >
+          {{ confirmText || '确认' }}
+        </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
   </AlertDialog>

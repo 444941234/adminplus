@@ -203,47 +203,103 @@ onMounted(fetchDetail)
 <template>
   <div class="space-y-6">
     <div class="sticky top-0 z-10 -mx-6 px-6 py-3 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-      <Button variant="ghost" size="sm" @click="router.back()">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
+      <Button
+        variant="ghost"
+        size="sm"
+        @click="router.back()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 mr-1"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M19 12H5M12 19l-7-7 7-7" />
         </svg>
         返回
       </Button>
     </div>
 
-    <WorkflowOverviewCard :instance="detail?.instance ?? null" :loading="loading" />
+    <WorkflowOverviewCard
+      :instance="detail?.instance ?? null"
+      :loading="loading"
+    />
 
-    <WorkflowBusinessCard :config="detail?.formConfig" :form-data="detail?.formData" />
+    <WorkflowBusinessCard
+      :config="detail?.formConfig"
+      :form-data="detail?.formData"
+    />
 
     <Card v-if="workflowPermissionState.canApproveDetail">
       <CardHeader>
         <CardTitle>审批操作</CardTitle>
       </CardHeader>
       <CardContent class="space-y-4">
-        <Textarea v-model="approvalComment" placeholder="请输入审批意见" />
-        <div v-if="showRollback && workflowPermissionState.canRollbackDetail" class="space-y-2">
+        <Textarea
+          v-model="approvalComment"
+          placeholder="请输入审批意见"
+        />
+        <div
+          v-if="showRollback && workflowPermissionState.canRollbackDetail"
+          class="space-y-2"
+        >
           <label class="text-sm font-medium">回退到</label>
           <Select v-model="selectedRollbackNodeId">
             <SelectTrigger>
               <SelectValue placeholder="选择回退节点" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem v-for="node in rollbackableNodes" :key="node.id" :value="node.id">
+              <SelectItem
+                v-for="node in rollbackableNodes"
+                :key="node.id"
+                :value="node.id"
+              >
                 {{ node.nodeOrder }}. {{ node.nodeName }}
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div class="flex gap-3 flex-wrap">
-          <Button :disabled="actionLoading" @click="handleAction('approve')">通过</Button>
-          <Button v-if="workflowPermissionState.canRejectDetail" variant="destructive" :disabled="actionLoading" @click="handleAction('reject')">驳回</Button>
-          <Button v-if="workflowPermissionState.canRollbackDetail" variant="outline" :disabled="actionLoading" @click="toggleRollback">
+          <Button
+            :disabled="actionLoading"
+            @click="handleAction('approve')"
+          >
+            通过
+          </Button>
+          <Button
+            v-if="workflowPermissionState.canRejectDetail"
+            variant="destructive"
+            :disabled="actionLoading"
+            @click="handleAction('reject')"
+          >
+            驳回
+          </Button>
+          <Button
+            v-if="workflowPermissionState.canRollbackDetail"
+            variant="outline"
+            :disabled="actionLoading"
+            @click="toggleRollback"
+          >
             {{ showRollback ? '取消回退' : '回退' }}
           </Button>
-          <Button v-if="showRollback && workflowPermissionState.canRollbackDetail" :disabled="actionLoading" @click="handleRollback">
+          <Button
+            v-if="showRollback && workflowPermissionState.canRollbackDetail"
+            :disabled="actionLoading"
+            @click="handleRollback"
+          >
             确认回退
           </Button>
-          <Button v-if="workflowPermissionState.canAddSignDetail" variant="secondary" @click="addSignDialogOpen = true">加签/转办</Button>
+          <Button
+            v-if="workflowPermissionState.canAddSignDetail"
+            variant="secondary"
+            @click="addSignDialogOpen = true"
+          >
+            加签/转办
+          </Button>
         </div>
       </CardContent>
     </Card>
@@ -270,11 +326,21 @@ onMounted(fetchDetail)
           </TableHeader>
           <TableBody>
             <TableRow v-if="!detail?.nodes?.length">
-              <TableCell colspan="4" class="h-24 text-center text-muted-foreground">暂无节点数据</TableCell>
+              <TableCell
+                colspan="4"
+                class="h-24 text-center text-muted-foreground"
+              >
+                暂无节点数据
+              </TableCell>
             </TableRow>
-            <TableRow v-for="node in detail?.nodes || []" :key="node.id">
+            <TableRow
+              v-for="node in detail?.nodes || []"
+              :key="node.id"
+            >
               <TableCell>{{ node.nodeOrder }}</TableCell>
-              <TableCell class="font-medium">{{ node.nodeName }}</TableCell>
+              <TableCell class="font-medium">
+                {{ node.nodeName }}
+              </TableCell>
               <TableCell>{{ getApproverTypeLabel(node.approverType) }}</TableCell>
               <TableCell>{{ node.description || '-' }}</TableCell>
             </TableRow>
@@ -306,24 +372,47 @@ onMounted(fetchDetail)
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="BEFORE">前加签</SelectItem>
-                <SelectItem value="AFTER">后加签</SelectItem>
-                <SelectItem value="TRANSFER">转办</SelectItem>
+                <SelectItem value="BEFORE">
+                  前加签
+                </SelectItem>
+                <SelectItem value="AFTER">
+                  后加签
+                </SelectItem>
+                <SelectItem value="TRANSFER">
+                  转办
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div>
             <label class="text-sm font-medium">被加签人</label>
-            <input v-model="addSignUserId" class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" placeholder="请输入用户ID" />
+            <input
+              v-model="addSignUserId"
+              class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              placeholder="请输入用户ID"
+            >
           </div>
           <div>
             <label class="text-sm font-medium">原因</label>
-            <Textarea v-model="addSignReason" placeholder="请输入加签原因" />
+            <Textarea
+              v-model="addSignReason"
+              placeholder="请输入加签原因"
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="addSignDialogOpen = false">取消</Button>
-          <Button :disabled="actionLoading" @click="handleAddSign">确认</Button>
+          <Button
+            variant="outline"
+            @click="addSignDialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button
+            :disabled="actionLoading"
+            @click="handleAddSign"
+          >
+            确认
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -58,8 +58,8 @@ const roles = computed(() => {
 <template>
   <div class="profile-hero">
     <div class="profile-hero__background">
-      <div class="profile-hero__circle profile-hero__circle--1"></div>
-      <div class="profile-hero__circle profile-hero__circle--2"></div>
+      <div class="profile-hero__circle profile-hero__circle--1" />
+      <div class="profile-hero__circle profile-hero__circle--2" />
     </div>
 
     <div class="profile-hero__content">
@@ -67,13 +67,23 @@ const roles = computed(() => {
         <Avatar class="profile-hero__avatar-img">
           <AvatarFallback>{{ initials }}</AvatarFallback>
         </Avatar>
-        <div v-if="isOnline" class="profile-hero__status"></div>
+        <div
+          v-if="isOnline"
+          class="profile-hero__status"
+        />
       </div>
 
       <div class="profile-hero__info">
         <div class="profile-hero__name-row">
-          <h1 class="profile-hero__name">{{ profile.nickname || profile.username }}</h1>
-          <Badge variant="secondary" class="profile-hero__username">@{{ profile.username }}</Badge>
+          <h1 class="profile-hero__name">
+            {{ profile.nickname || profile.username }}
+          </h1>
+          <Badge
+            variant="secondary"
+            class="profile-hero__username"
+          >
+            @{{ profile.username }}
+          </Badge>
         </div>
 
         <p class="profile-hero__subtitle">
@@ -81,11 +91,16 @@ const roles = computed(() => {
         </p>
 
         <div class="profile-hero__contact">
-          <span v-if="profile.email" class="profile-hero__contact-badge">{{ profile.email }}</span>
-          <span v-if="profile.phone" class="profile-hero__contact-badge">{{ profile.phone }}</span>
+          <span
+            v-if="profile.email"
+            class="profile-hero__contact-badge"
+          >{{ profile.email }}</span>
+          <span
+            v-if="profile.phone"
+            class="profile-hero__contact-badge"
+          >{{ profile.phone }}</span>
         </div>
       </div>
-
     </div>
   </div>
 </template>

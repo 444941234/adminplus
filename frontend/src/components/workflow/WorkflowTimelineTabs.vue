@@ -43,13 +43,27 @@ const hasAnyRecords = computed(() => {
       >
         暂无流程记录
       </div>
-      <Tabs v-else :default-value="defaultTab" class="space-y-4">
+      <Tabs
+        v-else
+        :default-value="defaultTab"
+        class="space-y-4"
+      >
         <TabsList class="flex w-full flex-wrap justify-start gap-2">
-          <TabsTrigger value="approvals">审批记录</TabsTrigger>
-          <TabsTrigger value="cc">抄送记录</TabsTrigger>
-          <TabsTrigger value="urge">催办记录</TabsTrigger>
-          <TabsTrigger value="add-sign">加签记录</TabsTrigger>
-          <TabsTrigger value="hooks">钩子日志</TabsTrigger>
+          <TabsTrigger value="approvals">
+            审批记录
+          </TabsTrigger>
+          <TabsTrigger value="cc">
+            抄送记录
+          </TabsTrigger>
+          <TabsTrigger value="urge">
+            催办记录
+          </TabsTrigger>
+          <TabsTrigger value="add-sign">
+            加签记录
+          </TabsTrigger>
+          <TabsTrigger value="hooks">
+            钩子日志
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="approvals">
           <WorkflowApprovalTable :approvals="approvals" />

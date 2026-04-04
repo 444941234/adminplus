@@ -146,7 +146,10 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog
+    :open="open"
+    @update:open="emit('update:open', $event)"
+  >
     <DialogContent class="sm:max-w-md">
       <DialogHeader>
         <DialogTitle>{{ dialogTitle }}</DialogTitle>
@@ -184,12 +187,19 @@ const handleCancel = () => {
         <!-- Icon -->
         <div class="space-y-2">
           <Label for="icon">图标</Label>
-          <Select v-model="formData.icon" :disabled="loading">
+          <Select
+            v-model="formData.icon"
+            :disabled="loading"
+          >
             <SelectTrigger id="icon">
               <SelectValue placeholder="选择图标" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem v-for="icon in iconOptions" :key="icon.value" :value="icon.value">
+              <SelectItem
+                v-for="icon in iconOptions"
+                :key="icon.value"
+                :value="icon.value"
+              >
                 {{ icon.label }}
               </SelectItem>
             </SelectContent>
@@ -221,8 +231,17 @@ const handleCancel = () => {
       </div>
 
       <DialogFooter>
-        <Button variant="outline" :disabled="loading" @click="handleCancel">取消</Button>
-        <Button :disabled="loading" @click="handleSubmit">
+        <Button
+          variant="outline"
+          :disabled="loading"
+          @click="handleCancel"
+        >
+          取消
+        </Button>
+        <Button
+          :disabled="loading"
+          @click="handleSubmit"
+        >
           {{ loading ? '保存中...' : '保存' }}
         </Button>
       </DialogFooter>

@@ -178,7 +178,10 @@ onMounted(fetchDefinitions)
     <Card>
       <CardHeader class="flex flex-row items-center justify-between space-y-0">
         <CardTitle>流程模板</CardTitle>
-        <Button v-if="canCreateWorkflow" @click="openStartDialog()">
+        <Button
+          v-if="canCreateWorkflow"
+          @click="openStartDialog()"
+        >
           <Play class="mr-2 h-4 w-4" />
           新建流程
         </Button>
@@ -192,20 +195,37 @@ onMounted(fetchDefinitions)
               <TableHead>版本</TableHead>
               <TableHead>状态</TableHead>
               <TableHead>更新时间</TableHead>
-              <TableHead class="text-right">操作</TableHead>
+              <TableHead class="text-right">
+                操作
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow v-if="loading">
-              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
+              <TableCell
+                colspan="6"
+                class="h-24 text-center text-muted-foreground"
+              >
+                加载中...
+              </TableCell>
             </TableRow>
             <TableRow v-else-if="definitions.length === 0">
-              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">暂无流程模板</TableCell>
+              <TableCell
+                colspan="6"
+                class="h-24 text-center text-muted-foreground"
+              >
+                暂无流程模板
+              </TableCell>
             </TableRow>
-            <TableRow v-for="definition in definitions" :key="definition.id">
+            <TableRow
+              v-for="definition in definitions"
+              :key="definition.id"
+            >
               <TableCell class="font-medium">
                 <div>{{ definition.definitionName }}</div>
-                <div class="text-xs text-muted-foreground">{{ definition.description || '暂无描述' }}</div>
+                <div class="text-xs text-muted-foreground">
+                  {{ definition.description || '暂无描述' }}
+                </div>
               </TableCell>
               <TableCell>{{ definition.category || '-' }}</TableCell>
               <TableCell>v{{ definition.version }}</TableCell>
@@ -225,7 +245,10 @@ onMounted(fetchDefinitions)
                 >
                   立即发起
                 </Button>
-                <span v-else class="text-xs text-muted-foreground">无发起权限</span>
+                <span
+                  v-else
+                  class="text-xs text-muted-foreground"
+                >无发起权限</span>
               </TableCell>
             </TableRow>
           </TableBody>

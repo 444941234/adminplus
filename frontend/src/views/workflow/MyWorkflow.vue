@@ -257,7 +257,11 @@ onMounted(async () => {
     <Card>
       <CardHeader class="flex flex-row items-center justify-between space-y-0">
         <CardTitle>我的流程</CardTitle>
-        <WorkflowListFilters :status="statusFilter" @update:status="(value) => { statusFilter = value; fetchData() }" @refresh="fetchData" />
+        <WorkflowListFilters
+          :status="statusFilter"
+          @update:status="(value) => { statusFilter = value; fetchData() }"
+          @refresh="fetchData"
+        />
       </CardHeader>
       <CardContent class="p-0">
         <Table>
@@ -268,20 +272,37 @@ onMounted(async () => {
               <TableHead>当前节点</TableHead>
               <TableHead>状态</TableHead>
               <TableHead>提交时间</TableHead>
-              <TableHead class="text-right">操作</TableHead>
+              <TableHead class="text-right">
+                操作
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow v-if="loading">
-              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
+              <TableCell
+                colspan="6"
+                class="h-24 text-center text-muted-foreground"
+              >
+                加载中...
+              </TableCell>
             </TableRow>
             <TableRow v-else-if="workflows.length === 0">
-              <TableCell colspan="6" class="h-24 text-center text-muted-foreground">暂无流程记录</TableCell>
+              <TableCell
+                colspan="6"
+                class="h-24 text-center text-muted-foreground"
+              >
+                暂无流程记录
+              </TableCell>
             </TableRow>
-            <TableRow v-for="workflow in workflows" :key="workflow.id">
+            <TableRow
+              v-for="workflow in workflows"
+              :key="workflow.id"
+            >
               <TableCell class="font-medium">
                 <div>{{ workflow.title }}</div>
-                <div class="text-xs text-muted-foreground">{{ workflow.remark || '无备注' }}</div>
+                <div class="text-xs text-muted-foreground">
+                  {{ workflow.remark || '无备注' }}
+                </div>
               </TableCell>
               <TableCell>{{ workflow.definitionName }}</TableCell>
               <TableCell>{{ workflow.currentNodeName || '-' }}</TableCell>
@@ -330,8 +351,18 @@ onMounted(async () => {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="urgeDialogOpen = false">取消</Button>
-          <Button :disabled="actionLoading" @click="handleUrgeConfirm">发送催办</Button>
+          <Button
+            variant="outline"
+            @click="urgeDialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button
+            :disabled="actionLoading"
+            @click="handleUrgeConfirm"
+          >
+            发送催办
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

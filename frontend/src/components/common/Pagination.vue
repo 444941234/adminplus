@@ -57,11 +57,22 @@ const goToPage = (page: number) => {
       第 <span class="font-medium">{{ current }}</span> / <span class="font-medium">{{ totalPages }}</span> 页
     </p>
     <div class="flex items-center gap-1">
-      <Button variant="outline" size="icon" :disabled="current === 1" @click="goToPage(current - 1)">
+      <Button
+        variant="outline"
+        size="icon"
+        :disabled="current === 1"
+        @click="goToPage(current - 1)"
+      >
         <ChevronLeft class="h-4 w-4" />
       </Button>
-      <template v-for="(page, index) in visiblePages" :key="index">
-        <span v-if="page === '...'" class="px-2 text-muted-foreground">...</span>
+      <template
+        v-for="(page, index) in visiblePages"
+        :key="index"
+      >
+        <span
+          v-if="page === '...'"
+          class="px-2 text-muted-foreground"
+        >...</span>
         <Button
           v-else
           :variant="page === current ? 'default' : 'outline'"
@@ -71,7 +82,12 @@ const goToPage = (page: number) => {
           {{ page }}
         </Button>
       </template>
-      <Button variant="outline" size="icon" :disabled="current >= totalPages" @click="goToPage(current + 1)">
+      <Button
+        variant="outline"
+        size="icon"
+        :disabled="current >= totalPages"
+        @click="goToPage(current + 1)"
+      >
         <ChevronRight class="h-4 w-4" />
       </Button>
     </div>

@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<{
 
 // Use weakmap to store reference to each datapoint for Tooltip
 const wm = new WeakMap()
-function template(data: any) {
+function template(data: Record<string, unknown>) {
   if (wm.has(data)) {
     return wm.get(data)
   }
@@ -28,7 +28,7 @@ function template(data: any) {
       return { ...legendReference, value }
     })
     const TooltipComponent = props.customTooltip ?? ChartTooltip
-    createApp(TooltipComponent, { title: data[props.index].toString(), data: omittedData }).mount(componentDiv)
+    createApp(TooltipComponent, { title: data[props.index]?.toString() ?? '', data: omittedData }).mount(componentDiv)
     wm.set(data, componentDiv.innerHTML)
     return componentDiv.innerHTML
   }
@@ -40,6 +40,12 @@ function color(_d: unknown, i: number) {
 </script>
 
 <template>
-  <VisTooltip :horizontal-shift="20" :vertical-shift="20" />
-  <VisCrosshair :template="template" :color="color" />
+  <VisTooltip
+    :horizontal-shift="20"
+    :vertical-shift="20"
+  />
+  <VisCrosshair
+    :template="template"
+    :color="color"
+  />
 </template>

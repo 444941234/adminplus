@@ -29,7 +29,12 @@ const emit = defineEmits<{
 <template>
   <div class="flex justify-end gap-2">
     <RouterLink :to="`/workflow/detail/${workflow.id}`">
-      <Button size="sm" variant="outline">详情</Button>
+      <Button
+        size="sm"
+        variant="outline"
+      >
+        详情
+      </Button>
     </RouterLink>
     <Button
       v-if="mode === 'my' && canManage && canDraft && workflow.status === 'DRAFT'"

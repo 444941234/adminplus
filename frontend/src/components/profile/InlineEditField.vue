@@ -130,12 +130,24 @@ const handleKeydown = (e: KeyboardEvent) => {
 </script>
 
 <template>
-  <div class="inline-edit-field" :class="{ 'is-editing': isEditing }">
+  <div
+    class="inline-edit-field"
+    :class="{ 'is-editing': isEditing }"
+  >
     <!-- Display Mode -->
-    <div v-if="!isEditing" class="inline-edit-field__display">
+    <div
+      v-if="!isEditing"
+      class="inline-edit-field__display"
+    >
       <div class="inline-edit-field__content">
-        <label v-if="label" class="inline-edit-field__label">{{ label }}</label>
-        <p class="inline-edit-field__value" :class="{ 'is-empty': !modelValue }">
+        <label
+          v-if="label"
+          class="inline-edit-field__label"
+        >{{ label }}</label>
+        <p
+          class="inline-edit-field__value"
+          :class="{ 'is-empty': !modelValue }"
+        >
           {{ displayValue }}
         </p>
       </div>
@@ -152,9 +164,15 @@ const handleKeydown = (e: KeyboardEvent) => {
     </div>
 
     <!-- Edit Mode -->
-    <div v-else class="inline-edit-field__edit">
+    <div
+      v-else
+      class="inline-edit-field__edit"
+    >
       <div class="inline-edit-field__input-wrapper">
-        <label v-if="label" class="inline-edit-field__label">{{ label }}</label>
+        <label
+          v-if="label"
+          class="inline-edit-field__label"
+        >{{ label }}</label>
         <Input
           ref="inputRef"
           v-model="value"
@@ -181,8 +199,14 @@ const handleKeydown = (e: KeyboardEvent) => {
           :disabled="loading || isSaving || !value.trim()"
           @click="save"
         >
-          <Loader2 v-if="loading || isSaving" class="h-4 w-4 animate-spin" />
-          <Check v-else class="h-4 w-4" />
+          <Loader2
+            v-if="loading || isSaving"
+            class="h-4 w-4 animate-spin"
+          />
+          <Check
+            v-else
+            class="h-4 w-4"
+          />
         </Button>
       </div>
     </div>

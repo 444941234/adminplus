@@ -284,19 +284,29 @@ onMounted(async () => {
     <div class="grid gap-4 md:grid-cols-4">
       <Card>
         <CardContent class="p-4">
-          <p class="text-sm text-muted-foreground">日志总数</p>
-          <p class="mt-2 text-2xl font-semibold">{{ statisticsLoading ? '-' : statistics.totalCount }}</p>
+          <p class="text-sm text-muted-foreground">
+            日志总数
+          </p>
+          <p class="mt-2 text-2xl font-semibold">
+            {{ statisticsLoading ? '-' : statistics.totalCount }}
+          </p>
         </CardContent>
       </Card>
       <Card>
         <CardContent class="p-4">
-          <p class="text-sm text-muted-foreground">今日日志</p>
-          <p class="mt-2 text-2xl font-semibold">{{ statisticsLoading ? '-' : statistics.todayCount }}</p>
+          <p class="text-sm text-muted-foreground">
+            今日日志
+          </p>
+          <p class="mt-2 text-2xl font-semibold">
+            {{ statisticsLoading ? '-' : statistics.todayCount }}
+          </p>
         </CardContent>
       </Card>
       <Card>
         <CardContent class="p-4">
-          <p class="text-sm text-muted-foreground">成功 / 失败</p>
+          <p class="text-sm text-muted-foreground">
+            成功 / 失败
+          </p>
           <p class="mt-2 text-2xl font-semibold">
             {{ statisticsLoading ? '-' : `${statistics.successCount} / ${statistics.failureCount}` }}
           </p>
@@ -304,7 +314,9 @@ onMounted(async () => {
       </Card>
       <Card>
         <CardContent class="p-4">
-          <p class="text-sm text-muted-foreground">登录 / 操作 / 系统</p>
+          <p class="text-sm text-muted-foreground">
+            登录 / 操作 / 系统
+          </p>
           <p class="mt-2 text-2xl font-semibold">
             {{ statisticsLoading ? '-' : `${statistics.loginCount} / ${statistics.operationCount} / ${statistics.systemCount}` }}
           </p>
@@ -315,17 +327,33 @@ onMounted(async () => {
     <Card>
       <CardContent class="p-4">
         <div class="grid gap-4 md:grid-cols-3 xl:grid-cols-4">
-          <Input v-model="filters.username" placeholder="操作人用户名" @keyup.enter="handleSearch" />
-          <Input v-model="filters.module" placeholder="模块名称" @keyup.enter="handleSearch" />
+          <Input
+            v-model="filters.username"
+            placeholder="操作人用户名"
+            @keyup.enter="handleSearch"
+          />
+          <Input
+            v-model="filters.module"
+            placeholder="模块名称"
+            @keyup.enter="handleSearch"
+          />
           <Select v-model="filters.logType">
             <SelectTrigger>
               <SelectValue placeholder="日志类型" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">全部类型</SelectItem>
-              <SelectItem value="1">操作日志</SelectItem>
-              <SelectItem value="2">登录日志</SelectItem>
-              <SelectItem value="3">系统日志</SelectItem>
+              <SelectItem value="all">
+                全部类型
+              </SelectItem>
+              <SelectItem value="1">
+                操作日志
+              </SelectItem>
+              <SelectItem value="2">
+                登录日志
+              </SelectItem>
+              <SelectItem value="3">
+                系统日志
+              </SelectItem>
             </SelectContent>
           </Select>
           <Select v-model="filters.operationType">
@@ -333,14 +361,30 @@ onMounted(async () => {
               <SelectValue placeholder="操作类型" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">全部操作</SelectItem>
-              <SelectItem value="1">查询</SelectItem>
-              <SelectItem value="2">新增</SelectItem>
-              <SelectItem value="3">修改</SelectItem>
-              <SelectItem value="4">删除</SelectItem>
-              <SelectItem value="5">导出</SelectItem>
-              <SelectItem value="6">导入</SelectItem>
-              <SelectItem value="7">其他</SelectItem>
+              <SelectItem value="all">
+                全部操作
+              </SelectItem>
+              <SelectItem value="1">
+                查询
+              </SelectItem>
+              <SelectItem value="2">
+                新增
+              </SelectItem>
+              <SelectItem value="3">
+                修改
+              </SelectItem>
+              <SelectItem value="4">
+                删除
+              </SelectItem>
+              <SelectItem value="5">
+                导出
+              </SelectItem>
+              <SelectItem value="6">
+                导入
+              </SelectItem>
+              <SelectItem value="7">
+                其他
+              </SelectItem>
             </SelectContent>
           </Select>
           <Select v-model="filters.status">
@@ -348,37 +392,75 @@ onMounted(async () => {
               <SelectValue placeholder="执行状态" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">全部状态</SelectItem>
-              <SelectItem value="1">成功</SelectItem>
-              <SelectItem value="0">失败</SelectItem>
+              <SelectItem value="all">
+                全部状态
+              </SelectItem>
+              <SelectItem value="1">
+                成功
+              </SelectItem>
+              <SelectItem value="0">
+                失败
+              </SelectItem>
             </SelectContent>
           </Select>
-          <Input v-model="filters.startTime" type="datetime-local" />
-          <Input v-model="filters.endTime" type="datetime-local" />
+          <Input
+            v-model="filters.startTime"
+            type="datetime-local"
+          />
+          <Input
+            v-model="filters.endTime"
+            type="datetime-local"
+          />
           <div class="flex items-center gap-2 md:col-span-3 xl:col-span-1">
             <Button @click="handleSearch">
               <Search class="mr-2 h-4 w-4" />
               搜索
             </Button>
-            <Button variant="outline" @click="handleReset">重置</Button>
+            <Button
+              variant="outline"
+              @click="handleReset"
+            >
+              重置
+            </Button>
           </div>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
-          <Button v-if="canDeleteLog" variant="outline" @click="handleCleanupConfirm('condition')">
+          <Button
+            v-if="canDeleteLog"
+            variant="outline"
+            @click="handleCleanupConfirm('condition')"
+          >
             按条件清理
           </Button>
-          <Button v-if="canDeleteLog" variant="outline" @click="handleCleanupConfirm('expired')">
+          <Button
+            v-if="canDeleteLog"
+            variant="outline"
+            @click="handleCleanupConfirm('expired')"
+          >
             清理过期日志
           </Button>
-          <Button v-if="canDeleteLog" variant="outline" :disabled="!hasSelectedLogs" @click="handleBatchDeleteConfirm">
+          <Button
+            v-if="canDeleteLog"
+            variant="outline"
+            :disabled="!hasSelectedLogs"
+            @click="handleBatchDeleteConfirm"
+          >
             <Trash2 class="mr-2 h-4 w-4" />
             批量删除
           </Button>
-          <Button v-if="canExportLog" variant="outline" @click="handleExport('excel')">
+          <Button
+            v-if="canExportLog"
+            variant="outline"
+            @click="handleExport('excel')"
+          >
             <Download class="mr-2 h-4 w-4" />
             导出 Excel
           </Button>
-          <Button v-if="canExportLog" variant="outline" @click="handleExport('csv')">
+          <Button
+            v-if="canExportLog"
+            variant="outline"
+            @click="handleExport('csv')"
+          >
             <Download class="mr-2 h-4 w-4" />
             导出 CSV
           </Button>
@@ -392,28 +474,65 @@ onMounted(async () => {
           <thead class="border-b bg-muted/50">
             <tr>
               <th class="p-4 text-left font-medium">
-                <Checkbox :model-value="allSelected" @update:model-value="toggleSelectAll(Boolean($event))" />
+                <Checkbox
+                  :model-value="allSelected"
+                  @update:model-value="toggleSelectAll(Boolean($event))"
+                />
               </th>
-              <th class="p-4 text-left font-medium">类型</th>
-              <th class="p-4 text-left font-medium">操作人</th>
-              <th class="p-4 text-left font-medium">模块</th>
-              <th class="p-4 text-left font-medium">操作</th>
-              <th class="p-4 text-left font-medium">描述</th>
-              <th class="p-4 text-left font-medium">IP / 地点</th>
-              <th class="p-4 text-left font-medium">耗时</th>
-              <th class="p-4 text-left font-medium">状态</th>
-              <th class="p-4 text-left font-medium">时间</th>
-              <th class="p-4 text-left font-medium">操作</th>
+              <th class="p-4 text-left font-medium">
+                类型
+              </th>
+              <th class="p-4 text-left font-medium">
+                操作人
+              </th>
+              <th class="p-4 text-left font-medium">
+                模块
+              </th>
+              <th class="p-4 text-left font-medium">
+                操作
+              </th>
+              <th class="p-4 text-left font-medium">
+                描述
+              </th>
+              <th class="p-4 text-left font-medium">
+                IP / 地点
+              </th>
+              <th class="p-4 text-left font-medium">
+                耗时
+              </th>
+              <th class="p-4 text-left font-medium">
+                状态
+              </th>
+              <th class="p-4 text-left font-medium">
+                时间
+              </th>
+              <th class="p-4 text-left font-medium">
+                操作
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-if="loading">
-              <td colspan="11" class="p-8 text-center text-muted-foreground">加载中...</td>
+              <td
+                colspan="11"
+                class="p-8 text-center text-muted-foreground"
+              >
+                加载中...
+              </td>
             </tr>
             <tr v-else-if="tableData.records.length === 0">
-              <td colspan="11" class="p-8 text-center text-muted-foreground">暂无日志数据</td>
+              <td
+                colspan="11"
+                class="p-8 text-center text-muted-foreground"
+              >
+                暂无日志数据
+              </td>
             </tr>
-            <tr v-for="log in tableData.records" :key="log.id" class="hover:bg-muted/30">
+            <tr
+              v-for="log in tableData.records"
+              :key="log.id"
+              class="hover:bg-muted/30"
+            >
               <td class="p-4">
                 <Checkbox
                   :model-value="selectedLogIds.includes(log.id)"
@@ -425,28 +544,49 @@ onMounted(async () => {
                   {{ getLogTypeLabel(log.logType) }}
                 </Badge>
               </td>
-              <td class="p-4 font-medium">{{ log.username }}</td>
-              <td class="p-4">{{ log.module }}</td>
+              <td class="p-4 font-medium">
+                {{ log.username }}
+              </td>
+              <td class="p-4">
+                {{ log.module }}
+              </td>
               <td class="p-4">
                 <Badge :variant="log.operationType === 4 ? 'destructive' : 'secondary'">
                   {{ getOperationLabel(log.operationType) }}
                 </Badge>
               </td>
               <td class="max-w-xs p-4 text-muted-foreground">
-                <p class="truncate" :title="log.description">{{ log.description }}</p>
+                <p
+                  class="truncate"
+                  :title="log.description"
+                >
+                  {{ log.description }}
+                </p>
               </td>
               <td class="p-4 text-sm text-muted-foreground">
                 <div>{{ log.ip }}</div>
                 <div>{{ log.location || '-' }}</div>
               </td>
-              <td class="p-4 text-muted-foreground">{{ getDuration(log) }} ms</td>
-              <td class="p-4">
-                <StatusBadge :status="log.status" active-text="成功" inactive-text="失败" />
+              <td class="p-4 text-muted-foreground">
+                {{ getDuration(log) }} ms
               </td>
-              <td class="p-4 text-sm text-muted-foreground">{{ log.createTime }}</td>
+              <td class="p-4">
+                <StatusBadge
+                  :status="log.status"
+                  active-text="成功"
+                  inactive-text="失败"
+                />
+              </td>
+              <td class="p-4 text-sm text-muted-foreground">
+                {{ log.createTime }}
+              </td>
               <td class="p-4">
                 <div class="flex gap-2">
-                  <Button size="sm" variant="ghost" @click="handleView(log.id)">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    @click="handleView(log.id)"
+                  >
                     <Eye class="h-4 w-4" />
                   </Button>
                   <Button
@@ -478,57 +618,108 @@ onMounted(async () => {
         <DialogHeader>
           <DialogTitle>日志详情</DialogTitle>
         </DialogHeader>
-        <div v-if="detailLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
-        <div v-else-if="currentLog" class="space-y-4 py-2">
+        <div
+          v-if="detailLoading"
+          class="py-8 text-center text-muted-foreground"
+        >
+          加载中...
+        </div>
+        <div
+          v-else-if="currentLog"
+          class="space-y-4 py-2"
+        >
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>日志类型</Label>
-              <Input :model-value="getLogTypeLabel(currentLog.logType)" disabled />
+              <Input
+                :model-value="getLogTypeLabel(currentLog.logType)"
+                disabled
+              />
             </div>
             <div class="space-y-2">
               <Label>操作类型</Label>
-              <Input :model-value="getOperationLabel(currentLog.operationType)" disabled />
+              <Input
+                :model-value="getOperationLabel(currentLog.operationType)"
+                disabled
+              />
             </div>
             <div class="space-y-2">
               <Label>操作人</Label>
-              <Input :model-value="currentLog.username" disabled />
+              <Input
+                :model-value="currentLog.username"
+                disabled
+              />
             </div>
             <div class="space-y-2">
               <Label>模块</Label>
-              <Input :model-value="currentLog.module" disabled />
+              <Input
+                :model-value="currentLog.module"
+                disabled
+              />
             </div>
             <div class="space-y-2">
               <Label>请求方法</Label>
-              <Input :model-value="getRequestMethod(currentLog)" disabled />
+              <Input
+                :model-value="getRequestMethod(currentLog)"
+                disabled
+              />
             </div>
             <div class="space-y-2">
               <Label>执行耗时</Label>
-              <Input :model-value="`${getDuration(currentLog)} ms`" disabled />
+              <Input
+                :model-value="`${getDuration(currentLog)} ms`"
+                disabled
+              />
             </div>
             <div class="space-y-2">
               <Label>IP</Label>
-              <Input :model-value="currentLog.ip" disabled />
+              <Input
+                :model-value="currentLog.ip"
+                disabled
+              />
             </div>
             <div class="space-y-2">
               <Label>地点</Label>
-              <Input :model-value="currentLog.location || '-'" disabled />
+              <Input
+                :model-value="currentLog.location || '-'"
+                disabled
+              />
             </div>
           </div>
           <div class="space-y-2">
             <Label>描述</Label>
-            <Textarea :model-value="currentLog.description" disabled />
+            <Textarea
+              :model-value="currentLog.description"
+              disabled
+            />
           </div>
           <div class="space-y-2">
             <Label>请求参数</Label>
-            <Textarea :model-value="getRequestParams(currentLog) || '-'" disabled class="min-h-28" />
+            <Textarea
+              :model-value="getRequestParams(currentLog) || '-'"
+              disabled
+              class="min-h-28"
+            />
           </div>
-          <div v-if="currentLog.errorMsg" class="space-y-2">
+          <div
+            v-if="currentLog.errorMsg"
+            class="space-y-2"
+          >
             <Label>异常信息</Label>
-            <Textarea :model-value="currentLog.errorMsg" disabled class="min-h-28" />
+            <Textarea
+              :model-value="currentLog.errorMsg"
+              disabled
+              class="min-h-28"
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="detailDialogOpen = false">关闭</Button>
+          <Button
+            variant="outline"
+            @click="detailDialogOpen = false"
+          >
+            关闭
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

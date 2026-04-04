@@ -134,24 +134,39 @@ onMounted(fetchFiles)
                 <SelectValue placeholder="选择范围" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="my">我的文件</SelectItem>
-                <SelectItem value="directory">按目录查看</SelectItem>
+                <SelectItem value="my">
+                  我的文件
+                </SelectItem>
+                <SelectItem value="directory">
+                  按目录查看
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div class="space-y-2">
             <Label>目录</Label>
-            <Input v-model="directory" :disabled="scope === 'my'" placeholder="例如：files / avatars / docs" />
+            <Input
+              v-model="directory"
+              :disabled="scope === 'my'"
+              placeholder="例如：files / avatars / docs"
+            />
           </div>
           <div class="space-y-2 md:col-span-2">
             <Label>搜索</Label>
             <div class="flex gap-2">
-              <Input v-model="searchQuery" placeholder="按文件名、目录或类型过滤" @keyup.enter="handleSearch" />
+              <Input
+                v-model="searchQuery"
+                placeholder="按文件名、目录或类型过滤"
+                @keyup.enter="handleSearch"
+              />
               <Button @click="handleSearch">
                 <Search class="mr-2 h-4 w-4" />
                 查询
               </Button>
-              <Button variant="outline" @click="handleRefresh">
+              <Button
+                variant="outline"
+                @click="handleRefresh"
+              >
                 <RefreshCw class="mr-2 h-4 w-4" />
                 刷新
               </Button>
@@ -159,12 +174,22 @@ onMounted(fetchFiles)
           </div>
         </div>
 
-        <div v-if="canUploadFile" class="mt-4 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
+        <div
+          v-if="canUploadFile"
+          class="mt-4 grid gap-4 md:grid-cols-[1fr_auto] md:items-end"
+        >
           <div class="space-y-2">
             <Label>上传文件</Label>
-            <Input id="managed-file-input" type="file" @change="handleFileChange" />
+            <Input
+              id="managed-file-input"
+              type="file"
+              @change="handleFileChange"
+            />
           </div>
-          <Button :disabled="uploading" @click="handleUpload">
+          <Button
+            :disabled="uploading"
+            @click="handleUpload"
+          >
             <Upload class="mr-2 h-4 w-4" />
             {{ uploading ? '上传中...' : '上传文件' }}
           </Button>
@@ -177,42 +202,92 @@ onMounted(fetchFiles)
         <table class="w-full">
           <thead class="border-b bg-muted/50">
             <tr>
-              <th class="p-4 text-left font-medium">文件名</th>
-              <th class="p-4 text-left font-medium">目录</th>
-              <th class="p-4 text-left font-medium">类型</th>
-              <th class="p-4 text-left font-medium">大小</th>
-              <th class="p-4 text-left font-medium">存储方式</th>
-              <th class="p-4 text-left font-medium">创建时间</th>
-              <th class="p-4 text-left font-medium">操作</th>
+              <th class="p-4 text-left font-medium">
+                文件名
+              </th>
+              <th class="p-4 text-left font-medium">
+                目录
+              </th>
+              <th class="p-4 text-left font-medium">
+                类型
+              </th>
+              <th class="p-4 text-left font-medium">
+                大小
+              </th>
+              <th class="p-4 text-left font-medium">
+                存储方式
+              </th>
+              <th class="p-4 text-left font-medium">
+                创建时间
+              </th>
+              <th class="p-4 text-left font-medium">
+                操作
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-if="loading">
-              <td colspan="7" class="p-8 text-center text-muted-foreground">加载中...</td>
+              <td
+                colspan="7"
+                class="p-8 text-center text-muted-foreground"
+              >
+                加载中...
+              </td>
             </tr>
             <tr v-else-if="visibleFiles.length === 0">
-              <td colspan="7" class="p-8 text-center text-muted-foreground">暂无文件数据</td>
+              <td
+                colspan="7"
+                class="p-8 text-center text-muted-foreground"
+              >
+                暂无文件数据
+              </td>
             </tr>
-            <tr v-for="file in visibleFiles" :key="file.id" class="hover:bg-muted/30">
+            <tr
+              v-for="file in visibleFiles"
+              :key="file.id"
+              class="hover:bg-muted/30"
+            >
               <td class="p-4">
                 <div>
-                  <p class="font-medium">{{ file.originalName }}</p>
-                  <p class="text-xs text-muted-foreground">{{ file.fileName }}</p>
+                  <p class="font-medium">
+                    {{ file.originalName }}
+                  </p>
+                  <p class="text-xs text-muted-foreground">
+                    {{ file.fileName }}
+                  </p>
                 </div>
               </td>
-              <td class="p-4 text-muted-foreground">{{ file.directory || '-' }}</td>
-              <td class="p-4 text-muted-foreground">{{ file.contentType || file.fileExt || '-' }}</td>
-              <td class="p-4 text-muted-foreground">{{ formatFileSize(file.fileSize) }}</td>
-              <td class="p-4">
-                <Badge variant="secondary">{{ file.storageType }}</Badge>
+              <td class="p-4 text-muted-foreground">
+                {{ file.directory || '-' }}
               </td>
-              <td class="p-4 text-sm text-muted-foreground">{{ file.createTime || '-' }}</td>
+              <td class="p-4 text-muted-foreground">
+                {{ file.contentType || file.fileExt || '-' }}
+              </td>
+              <td class="p-4 text-muted-foreground">
+                {{ formatFileSize(file.fileSize) }}
+              </td>
+              <td class="p-4">
+                <Badge variant="secondary">
+                  {{ file.storageType }}
+                </Badge>
+              </td>
+              <td class="p-4 text-sm text-muted-foreground">
+                {{ file.createTime || '-' }}
+              </td>
               <td class="p-4">
                 <div class="flex gap-2">
-                  <Button size="sm" variant="ghost" @click="handleOpenFile(file)">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    @click="handleOpenFile(file)"
+                  >
                     <FolderOpen class="h-4 w-4" />
                   </Button>
-                  <Button size="sm" variant="ghost" @click="handleOpenFile(file)">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    @click="handleOpenFile(file)"
+                  >
                     <Download class="h-4 w-4" />
                   </Button>
                   <Button

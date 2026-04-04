@@ -383,19 +383,42 @@ onMounted(fetchData)
             <Search class="mr-2 h-4 w-4" />
             搜索
           </Button>
-          <Button variant="outline" @click="searchQuery = ''; handleSearch()">重置</Button>
-          <Button v-if="canEditMenu" variant="outline" :disabled="!hasSelectedMenus" @click="handleBatchStatusChange(1)">
+          <Button
+            variant="outline"
+            @click="searchQuery = ''; handleSearch()"
+          >
+            重置
+          </Button>
+          <Button
+            v-if="canEditMenu"
+            variant="outline"
+            :disabled="!hasSelectedMenus"
+            @click="handleBatchStatusChange(1)"
+          >
             批量启用
           </Button>
-          <Button v-if="canEditMenu" variant="outline" :disabled="!hasSelectedMenus" @click="handleBatchStatusChange(0)">
+          <Button
+            v-if="canEditMenu"
+            variant="outline"
+            :disabled="!hasSelectedMenus"
+            @click="handleBatchStatusChange(0)"
+          >
             批量禁用
           </Button>
-          <Button v-if="canDeleteMenu" variant="outline" :disabled="!hasSelectedMenus" @click="handleBatchDeleteConfirm">
+          <Button
+            v-if="canDeleteMenu"
+            variant="outline"
+            :disabled="!hasSelectedMenus"
+            @click="handleBatchDeleteConfirm"
+          >
             <Trash2 class="mr-2 h-4 w-4" />
             批量删除
           </Button>
           <div class="flex-1" />
-          <Button v-if="canAddMenu" @click="handleAdd()">
+          <Button
+            v-if="canAddMenu"
+            @click="handleAdd()"
+          >
             <Plus class="mr-2 h-4 w-4" />
             新增菜单
           </Button>
@@ -409,26 +432,59 @@ onMounted(fetchData)
           <thead class="border-b bg-muted/50">
             <tr>
               <th class="p-4 text-left font-medium">
-                <Checkbox :model-value="allSelected" @update:model-value="toggleSelectAll(Boolean($event))" />
+                <Checkbox
+                  :model-value="allSelected"
+                  @update:model-value="toggleSelectAll(Boolean($event))"
+                />
               </th>
-              <th class="p-4 text-left font-medium">菜单名称</th>
-              <th class="p-4 text-left font-medium">类型</th>
-              <th class="p-4 text-left font-medium">路由路径</th>
-              <th class="p-4 text-left font-medium">组件/权限</th>
-              <th class="p-4 text-left font-medium">可见</th>
-              <th class="p-4 text-left font-medium">状态</th>
-              <th class="p-4 text-left font-medium">排序</th>
-              <th class="p-4 text-left font-medium">操作</th>
+              <th class="p-4 text-left font-medium">
+                菜单名称
+              </th>
+              <th class="p-4 text-left font-medium">
+                类型
+              </th>
+              <th class="p-4 text-left font-medium">
+                路由路径
+              </th>
+              <th class="p-4 text-left font-medium">
+                组件/权限
+              </th>
+              <th class="p-4 text-left font-medium">
+                可见
+              </th>
+              <th class="p-4 text-left font-medium">
+                状态
+              </th>
+              <th class="p-4 text-left font-medium">
+                排序
+              </th>
+              <th class="p-4 text-left font-medium">
+                操作
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-if="loading">
-              <td colspan="9" class="p-8 text-center text-muted-foreground">加载中...</td>
+              <td
+                colspan="9"
+                class="p-8 text-center text-muted-foreground"
+              >
+                加载中...
+              </td>
             </tr>
             <tr v-else-if="flattenedRows.length === 0">
-              <td colspan="9" class="p-8 text-center text-muted-foreground">暂无菜单数据</td>
+              <td
+                colspan="9"
+                class="p-8 text-center text-muted-foreground"
+              >
+                暂无菜单数据
+              </td>
             </tr>
-            <tr v-for="row in flattenedRows" :key="row.id" class="hover:bg-muted/30">
+            <tr
+              v-for="row in flattenedRows"
+              :key="row.id"
+              class="hover:bg-muted/30"
+            >
               <td class="p-4">
                 <Checkbox
                   :model-value="selectedMenuIds.includes(row.id)"
@@ -436,19 +492,38 @@ onMounted(fetchData)
                 />
               </td>
               <td class="p-4">
-                <div class="flex items-center gap-2" :style="{ paddingLeft: `${row.level * 24}px` }">
+                <div
+                  class="flex items-center gap-2"
+                  :style="{ paddingLeft: `${row.level * 24}px` }"
+                >
                   <button
                     v-if="row.hasChildren"
                     class="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     @click="toggleExpand(row.id)"
                   >
-                    <ChevronDown v-if="row.expanded" class="h-4 w-4" />
-                    <ChevronRight v-else class="h-4 w-4" />
+                    <ChevronDown
+                      v-if="row.expanded"
+                      class="h-4 w-4"
+                    />
+                    <ChevronRight
+                      v-else
+                      class="h-4 w-4"
+                    />
                   </button>
-                  <span v-else class="w-5" />
+                  <span
+                    v-else
+                    class="w-5"
+                  />
                   <div>
-                    <p class="font-medium">{{ row.menu.name }}</p>
-                    <p v-if="row.menu.icon" class="text-sm text-muted-foreground">{{ row.menu.icon }}</p>
+                    <p class="font-medium">
+                      {{ row.menu.name }}
+                    </p>
+                    <p
+                      v-if="row.menu.icon"
+                      class="text-sm text-muted-foreground"
+                    >
+                      {{ row.menu.icon }}
+                    </p>
                   </div>
                 </div>
               </td>
@@ -477,9 +552,15 @@ onMounted(fetchData)
                 </Badge>
               </td>
               <td class="p-4">
-                <StatusBadge :status="row.menu.status" :clickable="canEditMenu" @toggle="handleStatusClick(row.menu)" />
+                <StatusBadge
+                  :status="row.menu.status"
+                  :clickable="canEditMenu"
+                  @toggle="handleStatusClick(row.menu)"
+                />
               </td>
-              <td class="p-4 text-muted-foreground">{{ row.menu.sortOrder }}</td>
+              <td class="p-4 text-muted-foreground">
+                {{ row.menu.sortOrder }}
+              </td>
               <td class="p-4">
                 <div class="flex gap-2">
                   <Button
@@ -490,7 +571,12 @@ onMounted(fetchData)
                   >
                     <Plus class="h-4 w-4" />
                   </Button>
-                  <Button v-if="canEditMenu" size="sm" variant="ghost" @click="handleEdit(row.menu.id)">
+                  <Button
+                    v-if="canEditMenu"
+                    size="sm"
+                    variant="ghost"
+                    @click="handleEdit(row.menu.id)"
+                  >
                     <Edit class="h-4 w-4" />
                   </Button>
                   <Button
@@ -510,14 +596,25 @@ onMounted(fetchData)
       </CardContent>
     </Card>
 
-    <Dialog v-if="canAddMenu || canEditMenu" v-model:open="dialogOpen">
+    <Dialog
+      v-if="canAddMenu || canEditMenu"
+      v-model:open="dialogOpen"
+    >
       <DialogContent class="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑菜单' : '新增菜单' }}</DialogTitle>
           <DialogDescription>配置菜单名称、路径和权限标识</DialogDescription>
         </DialogHeader>
-        <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
-        <div v-else class="space-y-4 py-2">
+        <div
+          v-if="dialogLoading"
+          class="py-8 text-center text-muted-foreground"
+        >
+          加载中...
+        </div>
+        <div
+          v-else
+          class="space-y-4 py-2"
+        >
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>父级菜单</Label>
@@ -526,7 +623,11 @@ onMounted(fetchData)
                   <SelectValue placeholder="请选择父级菜单" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem v-for="item in parentOptions" :key="item.id" :value="item.id">
+                  <SelectItem
+                    v-for="item in parentOptions"
+                    :key="item.id"
+                    :value="item.id"
+                  >
                     {{ item.label }}
                   </SelectItem>
                 </SelectContent>
@@ -539,9 +640,15 @@ onMounted(fetchData)
                   <SelectValue placeholder="请选择菜单类型" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">目录</SelectItem>
-                  <SelectItem value="1">菜单</SelectItem>
-                  <SelectItem value="2">按钮</SelectItem>
+                  <SelectItem value="0">
+                    目录
+                  </SelectItem>
+                  <SelectItem value="1">
+                    菜单
+                  </SelectItem>
+                  <SelectItem value="2">
+                    按钮
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -549,7 +656,10 @@ onMounted(fetchData)
 
           <div class="space-y-2">
             <Label>菜单名称</Label>
-            <Input v-model="form.name" placeholder="请输入菜单名称" />
+            <Input
+              v-model="form.name"
+              placeholder="请输入菜单名称"
+            />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -562,7 +672,10 @@ onMounted(fetchData)
             </div>
             <div class="space-y-2">
               <Label>图标</Label>
-              <Input v-model="form.icon" placeholder="例如：Users" />
+              <Input
+                v-model="form.icon"
+                placeholder="例如：Users"
+              />
             </div>
           </div>
 
@@ -601,8 +714,12 @@ onMounted(fetchData)
                   <SelectValue placeholder="请选择可见性" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">显示</SelectItem>
-                  <SelectItem value="0">隐藏</SelectItem>
+                  <SelectItem value="1">
+                    显示
+                  </SelectItem>
+                  <SelectItem value="0">
+                    隐藏
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -613,16 +730,30 @@ onMounted(fetchData)
                   <SelectValue placeholder="请选择状态" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">正常</SelectItem>
-                  <SelectItem value="0">禁用</SelectItem>
+                  <SelectItem value="1">
+                    正常
+                  </SelectItem>
+                  <SelectItem value="0">
+                    禁用
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="dialogOpen = false">取消</Button>
-          <Button :disabled="dialogLoading" @click="handleSubmit">{{ isEdit ? '保存' : '创建' }}</Button>
+          <Button
+            variant="outline"
+            @click="dialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button
+            :disabled="dialogLoading"
+            @click="handleSubmit"
+          >
+            {{ isEdit ? '保存' : '创建' }}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

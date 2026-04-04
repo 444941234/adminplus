@@ -42,7 +42,10 @@ const formatDateTime = (value?: string | null) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="record in records" :key="record.id">
+          <TableRow
+            v-for="record in records"
+            :key="record.id"
+          >
             <TableCell>{{ record.nodeName || '-' }}</TableCell>
             <TableCell>{{ record.urgeUserName || '-' }}</TableCell>
             <TableCell>{{ record.urgeTargetName || '-' }}</TableCell>

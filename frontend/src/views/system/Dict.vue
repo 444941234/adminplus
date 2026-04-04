@@ -348,7 +348,10 @@ onMounted(fetchData)
       @search="handleSearch"
       @reset="handleReset"
     >
-      <Button v-if="canAddDict" @click="handleAdd">
+      <Button
+        v-if="canAddDict"
+        @click="handleAdd"
+      >
         <Plus class="w-4 h-4 mr-2" />
         新增字典
       </Button>
@@ -359,40 +362,98 @@ onMounted(fetchData)
         <table class="w-full">
           <thead class="bg-muted/50 border-b">
             <tr>
-              <th class="text-left p-4 font-medium">ID</th>
-              <th class="text-left p-4 font-medium">字典名称</th>
-              <th class="text-left p-4 font-medium">字典类型</th>
-              <th class="text-left p-4 font-medium">备注</th>
-              <th class="text-left p-4 font-medium">状态</th>
-              <th class="text-left p-4 font-medium">创建时间</th>
-              <th class="text-left p-4 font-medium">操作</th>
+              <th class="text-left p-4 font-medium">
+                ID
+              </th>
+              <th class="text-left p-4 font-medium">
+                字典名称
+              </th>
+              <th class="text-left p-4 font-medium">
+                字典类型
+              </th>
+              <th class="text-left p-4 font-medium">
+                备注
+              </th>
+              <th class="text-left p-4 font-medium">
+                状态
+              </th>
+              <th class="text-left p-4 font-medium">
+                创建时间
+              </th>
+              <th class="text-left p-4 font-medium">
+                操作
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-if="loading">
-              <td colspan="7" class="p-8 text-center text-muted-foreground">加载中...</td>
+              <td
+                colspan="7"
+                class="p-8 text-center text-muted-foreground"
+              >
+                加载中...
+              </td>
             </tr>
             <tr v-else-if="tableData.records.length === 0">
-              <td colspan="7" class="p-8 text-center text-muted-foreground">暂无数据</td>
-            </tr>
-            <tr v-for="dict in tableData.records" :key="dict.id" class="hover:bg-muted/30">
-              <td class="p-4 text-muted-foreground">{{ dict.id }}</td>
-              <td class="p-4 font-medium">{{ dict.dictName }}</td>
-              <td class="p-4"><code class="bg-muted px-2 py-0.5 rounded text-sm">{{ dict.dictType }}</code></td>
-              <td class="p-4 text-muted-foreground">{{ getDictRemark(dict) || '-' }}</td>
-              <td class="p-4">
-                <StatusBadge :status="dict.status" :clickable="canEditDict" @toggle="handleStatusToggle(dict)" />
+              <td
+                colspan="7"
+                class="p-8 text-center text-muted-foreground"
+              >
+                暂无数据
               </td>
-              <td class="p-4 text-muted-foreground">{{ dict.createTime }}</td>
+            </tr>
+            <tr
+              v-for="dict in tableData.records"
+              :key="dict.id"
+              class="hover:bg-muted/30"
+            >
+              <td class="p-4 text-muted-foreground">
+                {{ dict.id }}
+              </td>
+              <td class="p-4 font-medium">
+                {{ dict.dictName }}
+              </td>
+              <td class="p-4">
+                <code class="bg-muted px-2 py-0.5 rounded text-sm">{{ dict.dictType }}</code>
+              </td>
+              <td class="p-4 text-muted-foreground">
+                {{ getDictRemark(dict) || '-' }}
+              </td>
+              <td class="p-4">
+                <StatusBadge
+                  :status="dict.status"
+                  :clickable="canEditDict"
+                  @toggle="handleStatusToggle(dict)"
+                />
+              </td>
+              <td class="p-4 text-muted-foreground">
+                {{ dict.createTime }}
+              </td>
               <td class="p-4">
                 <div class="flex gap-2">
-                  <Button v-if="canListDictItems" size="sm" variant="ghost" @click="openItemDialog(dict)">
+                  <Button
+                    v-if="canListDictItems"
+                    size="sm"
+                    variant="ghost"
+                    @click="openItemDialog(dict)"
+                  >
                     <ListTree class="w-4 h-4" />
                   </Button>
-                  <Button v-if="canEditDict" size="sm" variant="ghost" @click="handleEdit(dict.id)">
+                  <Button
+                    v-if="canEditDict"
+                    size="sm"
+                    variant="ghost"
+                    @click="handleEdit(dict.id)"
+                  >
                     <Edit class="w-4 h-4" />
                   </Button>
-                  <Button v-if="canDeleteDict" size="sm" variant="ghost" class="text-destructive" @click="handleDeleteConfirm(dict.id)">
+                  <Button
+                    v-if="canDeleteDict"
+                    size="sm"
+                    variant="ghost"
+                    class="text-destructive"
+                    @click="handleDeleteConfirm(dict.id)"
+                  >
                     <Trash2 class="w-4 h-4" />
                   </Button>
                 </div>
@@ -410,37 +471,81 @@ onMounted(fetchData)
       </CardContent>
     </Card>
 
-    <Dialog v-if="canAddDict || canEditDict" v-model:open="dialogOpen">
+    <Dialog
+      v-if="canAddDict || canEditDict"
+      v-model:open="dialogOpen"
+    >
       <DialogContent class="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑字典' : '新增字典' }}</DialogTitle>
           <DialogDescription>配置字典类型和名称</DialogDescription>
         </DialogHeader>
-        <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
-        <div v-else class="space-y-4 py-2">
+        <div
+          v-if="dialogLoading"
+          class="py-8 text-center text-muted-foreground"
+        >
+          加载中...
+        </div>
+        <div
+          v-else
+          class="space-y-4 py-2"
+        >
           <div class="space-y-2">
             <Label>字典类型</Label>
-            <Input v-model="form.dictType" :disabled="isEdit" placeholder="例如：user_status" />
+            <Input
+              v-model="form.dictType"
+              :disabled="isEdit"
+              placeholder="例如：user_status"
+            />
           </div>
           <div class="space-y-2">
             <Label>字典名称</Label>
-            <Input v-model="form.dictName" placeholder="请输入字典名称" />
+            <Input
+              v-model="form.dictName"
+              placeholder="请输入字典名称"
+            />
           </div>
           <div class="space-y-2">
             <Label>备注</Label>
-            <Textarea v-model="form.remark" placeholder="请输入备注" />
+            <Textarea
+              v-model="form.remark"
+              placeholder="请输入备注"
+            />
           </div>
-          <div v-if="isEdit" class="space-y-2">
+          <div
+            v-if="isEdit"
+            class="space-y-2"
+          >
             <Label>状态</Label>
             <div class="flex gap-2">
-              <Button :variant="form.status === '1' ? 'default' : 'outline'" @click="form.status = '1'">正常</Button>
-              <Button :variant="form.status === '0' ? 'destructive' : 'outline'" @click="form.status = '0'">禁用</Button>
+              <Button
+                :variant="form.status === '1' ? 'default' : 'outline'"
+                @click="form.status = '1'"
+              >
+                正常
+              </Button>
+              <Button
+                :variant="form.status === '0' ? 'destructive' : 'outline'"
+                @click="form.status = '0'"
+              >
+                禁用
+              </Button>
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="dialogOpen = false">取消</Button>
-          <Button :disabled="dialogLoading" @click="handleSubmit">{{ isEdit ? '保存' : '创建' }}</Button>
+          <Button
+            variant="outline"
+            @click="dialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button
+            :disabled="dialogLoading"
+            @click="handleSubmit"
+          >
+            {{ isEdit ? '保存' : '创建' }}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -454,7 +559,10 @@ onMounted(fetchData)
       @confirm="handleDelete"
     />
 
-    <Dialog v-if="canListDictItems" v-model:open="itemDialogOpen">
+    <Dialog
+      v-if="canListDictItems"
+      v-model:open="itemDialogOpen"
+    >
       <DialogContent class="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>字典项管理{{ activeDict ? ` - ${activeDict.dictName}` : '' }}</DialogTitle>
@@ -462,7 +570,10 @@ onMounted(fetchData)
         </DialogHeader>
         <div class="space-y-4">
           <div class="flex justify-end">
-            <Button v-if="canAddDictItem" @click="openAddItemDialog">
+            <Button
+              v-if="canAddDictItem"
+              @click="openAddItemDialog"
+            >
               <Plus class="w-4 h-4 mr-2" />
               新增字典项
             </Button>
@@ -471,42 +582,98 @@ onMounted(fetchData)
           <table class="w-full">
             <thead class="bg-muted/50 border-b">
               <tr>
-                <th class="text-left p-4 font-medium">标签</th>
-                <th class="text-left p-4 font-medium">值</th>
-                <th class="text-left p-4 font-medium">父级</th>
-                <th class="text-left p-4 font-medium">排序</th>
-                <th class="text-left p-4 font-medium">备注</th>
-                <th class="text-left p-4 font-medium">状态</th>
-                <th class="text-left p-4 font-medium">操作</th>
+                <th class="text-left p-4 font-medium">
+                  标签
+                </th>
+                <th class="text-left p-4 font-medium">
+                  值
+                </th>
+                <th class="text-left p-4 font-medium">
+                  父级
+                </th>
+                <th class="text-left p-4 font-medium">
+                  排序
+                </th>
+                <th class="text-left p-4 font-medium">
+                  备注
+                </th>
+                <th class="text-left p-4 font-medium">
+                  状态
+                </th>
+                <th class="text-left p-4 font-medium">
+                  操作
+                </th>
               </tr>
             </thead>
             <tbody class="divide-y">
               <tr v-if="itemLoading">
-                <td colspan="7" class="p-8 text-center text-muted-foreground">加载中...</td>
+                <td
+                  colspan="7"
+                  class="p-8 text-center text-muted-foreground"
+                >
+                  加载中...
+                </td>
               </tr>
               <tr v-else-if="itemTableData.records.length === 0">
-                <td colspan="7" class="p-8 text-center text-muted-foreground">暂无字典项</td>
+                <td
+                  colspan="7"
+                  class="p-8 text-center text-muted-foreground"
+                >
+                  暂无字典项
+                </td>
               </tr>
-              <tr v-for="item in itemTableData.records" :key="item.id" class="hover:bg-muted/30">
-                <td class="p-4 font-medium">{{ item.label }}</td>
-                <td class="p-4"><code class="bg-muted px-2 py-0.5 rounded text-sm">{{ item.value }}</code></td>
+              <tr
+                v-for="item in itemTableData.records"
+                :key="item.id"
+                class="hover:bg-muted/30"
+              >
+                <td class="p-4 font-medium">
+                  {{ item.label }}
+                </td>
+                <td class="p-4">
+                  <code class="bg-muted px-2 py-0.5 rounded text-sm">{{ item.value }}</code>
+                </td>
                 <td class="p-4 text-muted-foreground">
                   {{ getItemParentId(item) === '0' ? '顶级字典项' : itemLabelMap[item.parentId ?? '0'] || '-' }}
                 </td>
-                <td class="p-4">{{ item.sortOrder }}</td>
-                <td class="p-4 text-muted-foreground">{{ item.remark || '-' }}</td>
                 <td class="p-4">
-                  <StatusBadge :status="item.status" :clickable="canEditDictItem" @toggle="handleToggleItemStatus(item)" />
+                  {{ item.sortOrder }}
+                </td>
+                <td class="p-4 text-muted-foreground">
+                  {{ item.remark || '-' }}
+                </td>
+                <td class="p-4">
+                  <StatusBadge
+                    :status="item.status"
+                    :clickable="canEditDictItem"
+                    @toggle="handleToggleItemStatus(item)"
+                  />
                 </td>
                 <td class="p-4">
                   <div class="flex gap-2">
-                    <Button v-if="canAddDictItem" size="sm" variant="ghost" @click="openAddChildItemDialog(item)">
+                    <Button
+                      v-if="canAddDictItem"
+                      size="sm"
+                      variant="ghost"
+                      @click="openAddChildItemDialog(item)"
+                    >
                       <Plus class="w-4 h-4" />
                     </Button>
-                    <Button v-if="canEditDictItem" size="sm" variant="ghost" @click="handleEditItem(item.id)">
+                    <Button
+                      v-if="canEditDictItem"
+                      size="sm"
+                      variant="ghost"
+                      @click="handleEditItem(item.id)"
+                    >
                       <Edit class="w-4 h-4" />
                     </Button>
-                    <Button v-if="canDeleteDictItem" size="sm" variant="ghost" class="text-destructive" @click="handleDeleteItemConfirm(item.id)">
+                    <Button
+                      v-if="canDeleteDictItem"
+                      size="sm"
+                      variant="ghost"
+                      class="text-destructive"
+                      @click="handleDeleteItemConfirm(item.id)"
+                    >
                       <Trash2 class="w-4 h-4" />
                     </Button>
                   </div>
@@ -518,14 +685,25 @@ onMounted(fetchData)
       </DialogContent>
     </Dialog>
 
-    <Dialog v-if="canAddDictItem || canEditDictItem" v-model:open="itemFormDialogOpen">
+    <Dialog
+      v-if="canAddDictItem || canEditDictItem"
+      v-model:open="itemFormDialogOpen"
+    >
       <DialogContent class="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{{ isEditItem ? '编辑字典项' : '新增字典项' }}</DialogTitle>
           <DialogDescription>配置字典项的标签、值和排序</DialogDescription>
         </DialogHeader>
-        <div v-if="itemFormLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
-        <div v-else class="space-y-4 py-2">
+        <div
+          v-if="itemFormLoading"
+          class="py-8 text-center text-muted-foreground"
+        >
+          加载中...
+        </div>
+        <div
+          v-else
+          class="space-y-4 py-2"
+        >
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>父级字典项</Label>
@@ -534,8 +712,14 @@ onMounted(fetchData)
                   <SelectValue placeholder="选择父级字典项" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">顶级字典项</SelectItem>
-                  <SelectItem v-for="item in itemParentOptions" :key="item.id" :value="item.id">
+                  <SelectItem value="0">
+                    顶级字典项
+                  </SelectItem>
+                  <SelectItem
+                    v-for="item in itemParentOptions"
+                    :key="item.id"
+                    :value="item.id"
+                  >
                     {{ item.label }}
                   </SelectItem>
                 </SelectContent>
@@ -548,8 +732,12 @@ onMounted(fetchData)
                   <SelectValue placeholder="选择状态" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">正常</SelectItem>
-                  <SelectItem value="0">禁用</SelectItem>
+                  <SelectItem value="1">
+                    正常
+                  </SelectItem>
+                  <SelectItem value="0">
+                    禁用
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -557,27 +745,50 @@ onMounted(fetchData)
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>标签</Label>
-              <Input v-model="itemForm.label" placeholder="请输入字典项标签" />
+              <Input
+                v-model="itemForm.label"
+                placeholder="请输入字典项标签"
+              />
             </div>
             <div class="space-y-2">
               <Label>值</Label>
-              <Input v-model="itemForm.value" placeholder="请输入字典项值" />
+              <Input
+                v-model="itemForm.value"
+                placeholder="请输入字典项值"
+              />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>排序</Label>
-              <Input v-model="itemForm.sortOrder" type="number" placeholder="排序值" />
+              <Input
+                v-model="itemForm.sortOrder"
+                type="number"
+                placeholder="排序值"
+              />
             </div>
             <div class="space-y-2">
               <Label>备注</Label>
-              <Input v-model="itemForm.remark" placeholder="请输入备注" />
+              <Input
+                v-model="itemForm.remark"
+                placeholder="请输入备注"
+              />
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="itemFormDialogOpen = false">取消</Button>
-          <Button :disabled="itemFormLoading" @click="handleSubmitItem">{{ isEditItem ? '保存' : '创建' }}</Button>
+          <Button
+            variant="outline"
+            @click="itemFormDialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button
+            :disabled="itemFormLoading"
+            @click="handleSubmitItem"
+          >
+            {{ isEditItem ? '保存' : '创建' }}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

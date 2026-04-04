@@ -145,32 +145,57 @@ const handleOpenChange = (value: boolean) => {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="handleOpenChange">
+  <Dialog
+    :open="open"
+    @update:open="handleOpenChange"
+  >
     <DialogContent class="sm:max-w-[560px]">
       <DialogHeader>
         <DialogTitle>{{ isEdit ? '编辑用户' : '新增用户' }}</DialogTitle>
         <DialogDescription>{{ isEdit ? '修改用户基础信息' : '创建新的系统用户' }}</DialogDescription>
       </DialogHeader>
-      <div v-if="loading" class="py-8 text-center text-muted-foreground">加载中...</div>
-      <div v-else class="space-y-4 py-2">
+      <div
+        v-if="loading"
+        class="py-8 text-center text-muted-foreground"
+      >
+        加载中...
+      </div>
+      <div
+        v-else
+        class="space-y-4 py-2"
+      >
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
             <Label>用户名</Label>
-            <Input v-model="form.username" :disabled="isEdit" placeholder="请输入用户名" />
+            <Input
+              v-model="form.username"
+              :disabled="isEdit"
+              placeholder="请输入用户名"
+            />
           </div>
           <div class="space-y-2">
             <Label>昵称</Label>
-            <Input v-model="form.nickname" placeholder="请输入昵称" />
+            <Input
+              v-model="form.nickname"
+              placeholder="请输入昵称"
+            />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
             <Label>邮箱</Label>
-            <Input v-model="form.email" type="email" placeholder="请输入邮箱" />
+            <Input
+              v-model="form.email"
+              type="email"
+              placeholder="请输入邮箱"
+            />
           </div>
           <div class="space-y-2">
             <Label>手机号</Label>
-            <Input v-model="form.phone" placeholder="请输入手机号" />
+            <Input
+              v-model="form.phone"
+              placeholder="请输入手机号"
+            />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
@@ -181,7 +206,11 @@ const handleOpenChange = (value: boolean) => {
                 <SelectValue placeholder="请选择部门" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem v-for="dept in deptOptions" :key="dept.id" :value="dept.id">
+                <SelectItem
+                  v-for="dept in deptOptions"
+                  :key="dept.id"
+                  :value="dept.id"
+                >
                   {{ dept.label }}
                 </SelectItem>
               </SelectContent>
@@ -194,20 +223,41 @@ const handleOpenChange = (value: boolean) => {
                 <SelectValue placeholder="请选择状态" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">正常</SelectItem>
-                <SelectItem value="0">禁用</SelectItem>
+                <SelectItem value="1">
+                  正常
+                </SelectItem>
+                <SelectItem value="0">
+                  禁用
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
-        <div v-if="!isEdit" class="space-y-2">
+        <div
+          v-if="!isEdit"
+          class="space-y-2"
+        >
           <Label>初始密码</Label>
-          <Input v-model="form.password" type="password" placeholder="12 位以上，需包含大小写字母、数字和特殊字符" />
+          <Input
+            v-model="form.password"
+            type="password"
+            placeholder="12 位以上，需包含大小写字母、数字和特殊字符"
+          />
         </div>
       </div>
       <DialogFooter>
-        <Button variant="outline" @click="handleOpenChange(false)">取消</Button>
-        <Button :disabled="loading" @click="handleSubmit">{{ isEdit ? '保存' : '创建' }}</Button>
+        <Button
+          variant="outline"
+          @click="handleOpenChange(false)"
+        >
+          取消
+        </Button>
+        <Button
+          :disabled="loading"
+          @click="handleSubmit"
+        >
+          {{ isEdit ? '保存' : '创建' }}
+        </Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

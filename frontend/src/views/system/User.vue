@@ -180,17 +180,31 @@ onMounted(async () => {
         <div class="grid items-end gap-4 md:grid-cols-4">
           <div class="space-y-2 md:col-span-2">
             <Label>关键词</Label>
-            <Input v-model="filters.keyword" placeholder="搜索用户名、昵称、邮箱、电话" @keyup.enter="handleSearch" @input="handleSearch" />
+            <Input
+              v-model="filters.keyword"
+              placeholder="搜索用户名、昵称、邮箱、电话"
+              @keyup.enter="handleSearch"
+              @input="handleSearch"
+            />
           </div>
           <div class="space-y-2">
             <Label>部门</Label>
-            <Select v-model="filters.deptId" @update:model-value="handleSearch">
+            <Select
+              v-model="filters.deptId"
+              @update:model-value="handleSearch"
+            >
               <SelectTrigger>
                 <SelectValue placeholder="全部部门" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">全部部门</SelectItem>
-                <SelectItem v-for="dept in deptOptions" :key="dept.id" :value="dept.id">
+                <SelectItem value="all">
+                  全部部门
+                </SelectItem>
+                <SelectItem
+                  v-for="dept in deptOptions"
+                  :key="dept.id"
+                  :value="dept.id"
+                >
                   {{ dept.label }}
                 </SelectItem>
               </SelectContent>
@@ -201,11 +215,19 @@ onMounted(async () => {
               <Search class="mr-2 h-4 w-4" />
               搜索
             </Button>
-            <Button variant="outline" @click="handleResetSearch">重置</Button>
+            <Button
+              variant="outline"
+              @click="handleResetSearch"
+            >
+              重置
+            </Button>
           </div>
         </div>
         <div class="mt-4 flex justify-end">
-          <Button v-if="canAddUser" @click="handleAdd">
+          <Button
+            v-if="canAddUser"
+            @click="handleAdd"
+          >
             <Plus class="mr-2 h-4 w-4" />
             新增用户
           </Button>
@@ -218,44 +240,108 @@ onMounted(async () => {
         <table class="w-full">
           <thead class="border-b bg-muted/50">
             <tr>
-              <th class="p-4 text-left font-medium">用户名</th>
-              <th class="p-4 text-left font-medium">昵称</th>
-              <th class="p-4 text-left font-medium">邮箱</th>
-              <th class="p-4 text-left font-medium">电话</th>
-              <th class="p-4 text-left font-medium">部门</th>
-              <th class="p-4 text-left font-medium">角色</th>
-              <th class="p-4 text-left font-medium">状态</th>
-              <th class="p-4 text-left font-medium">创建时间</th>
-              <th class="p-4 text-left font-medium">操作</th>
+              <th class="p-4 text-left font-medium">
+                用户名
+              </th>
+              <th class="p-4 text-left font-medium">
+                昵称
+              </th>
+              <th class="p-4 text-left font-medium">
+                邮箱
+              </th>
+              <th class="p-4 text-left font-medium">
+                电话
+              </th>
+              <th class="p-4 text-left font-medium">
+                部门
+              </th>
+              <th class="p-4 text-left font-medium">
+                角色
+              </th>
+              <th class="p-4 text-left font-medium">
+                状态
+              </th>
+              <th class="p-4 text-left font-medium">
+                创建时间
+              </th>
+              <th class="p-4 text-left font-medium">
+                操作
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-if="loading">
-              <td colspan="9" class="h-32 text-center text-muted-foreground">加载中...</td>
+              <td
+                colspan="9"
+                class="h-32 text-center text-muted-foreground"
+              >
+                加载中...
+              </td>
             </tr>
             <tr v-else-if="tableData.records.length === 0">
-              <td colspan="9" class="h-32 text-center text-muted-foreground">暂无数据</td>
-            </tr>
-            <tr v-for="user in tableData.records" :key="user.id" class="hover:bg-muted/30">
-              <td class="p-4 font-medium">{{ user.username }}</td>
-              <td class="p-4">{{ user.nickname || '-' }}</td>
-              <td class="p-4">{{ user.email || '-' }}</td>
-              <td class="p-4">{{ user.phone || '-' }}</td>
-              <td class="p-4">{{ user.deptName || '-' }}</td>
-              <td class="p-4 text-sm text-muted-foreground">{{ user.roles?.join('、') || '-' }}</td>
-              <td class="p-4">
-                <StatusBadge :status="user.status" :clickable="canEditUser" @toggle="handleStatusClick(user)" />
+              <td
+                colspan="9"
+                class="h-32 text-center text-muted-foreground"
+              >
+                暂无数据
               </td>
-              <td class="p-4 text-sm text-muted-foreground">{{ formatTime(user.createTime) }}
-            </td>              <td class="p-4">
+            </tr>
+            <tr
+              v-for="user in tableData.records"
+              :key="user.id"
+              class="hover:bg-muted/30"
+            >
+              <td class="p-4 font-medium">
+                {{ user.username }}
+              </td>
+              <td class="p-4">
+                {{ user.nickname || '-' }}
+              </td>
+              <td class="p-4">
+                {{ user.email || '-' }}
+              </td>
+              <td class="p-4">
+                {{ user.phone || '-' }}
+              </td>
+              <td class="p-4">
+                {{ user.deptName || '-' }}
+              </td>
+              <td class="p-4 text-sm text-muted-foreground">
+                {{ user.roles?.join('、') || '-' }}
+              </td>
+              <td class="p-4">
+                <StatusBadge
+                  :status="user.status"
+                  :clickable="canEditUser"
+                  @toggle="handleStatusClick(user)"
+                />
+              </td>
+              <td class="p-4 text-sm text-muted-foreground">
+                {{ formatTime(user.createTime) }}
+              </td>              <td class="p-4">
                 <div class="flex gap-2">
-                  <Button v-if="canEditUser" size="sm" variant="ghost" @click="handleEdit(user.id)">
+                  <Button
+                    v-if="canEditUser"
+                    size="sm"
+                    variant="ghost"
+                    @click="handleEdit(user.id)"
+                  >
                     <Edit class="h-4 w-4" />
                   </Button>
-                  <Button v-if="canAssignUser" size="sm" variant="ghost" @click="openAssignDialog(user)">
+                  <Button
+                    v-if="canAssignUser"
+                    size="sm"
+                    variant="ghost"
+                    @click="openAssignDialog(user)"
+                  >
                     <KeyRound class="h-4 w-4" />
                   </Button>
-                  <Button v-if="canEditUser" size="sm" variant="ghost" @click="openPasswordDialog(user)">
+                  <Button
+                    v-if="canEditUser"
+                    size="sm"
+                    variant="ghost"
+                    @click="openPasswordDialog(user)"
+                  >
                     <LockKeyhole class="h-4 w-4" />
                   </Button>
                   <Button

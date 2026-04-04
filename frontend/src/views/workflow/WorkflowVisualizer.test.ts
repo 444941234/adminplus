@@ -66,7 +66,7 @@ vi.mock('@/api', () => ({
   getWorkflowNodes: apiMocks.getWorkflowNodes
 }))
 
-const makeWorkflowNode = (overrides: Partial<Record<string, any>> = {}) => ({
+const makeWorkflowNode = (overrides: Partial<any> = {}) => ({
   id: 'node-001',
   definitionId: 'def-001',
   nodeName: '部门经理审批',
@@ -81,7 +81,7 @@ const makeWorkflowNode = (overrides: Partial<Record<string, any>> = {}) => ({
   ...overrides
 })
 
-const makeWorkflowDefinition = (overrides: Partial<Record<string, any>> = {}) => ({
+const makeWorkflowDefinition = (overrides: Partial<any> = {}) => ({
   id: 'def-001',
   definitionName: '请假审批',
   definitionKey: 'leave_approval',
@@ -96,7 +96,7 @@ const makeWorkflowDefinition = (overrides: Partial<Record<string, any>> = {}) =>
   ...overrides
 })
 
-const mockApiResponse = (data: any) => ({
+const mockApiResponse = <T,>(data: T) => ({
   code: 200,
   message: 'success',
   data

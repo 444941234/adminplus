@@ -190,7 +190,10 @@ const handleCancel = () => {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog
+    :open="open"
+    @update:open="emit('update:open', $event)"
+  >
     <DialogContent class="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>{{ dialogTitle }}</DialogTitle>
@@ -203,12 +206,19 @@ const handleCancel = () => {
         <!-- Group Selection -->
         <div class="space-y-2">
           <Label for="groupId">配置分组 <span class="text-destructive">*</span></Label>
-          <Select v-model="formData.groupId" :disabled="loading || isEdit">
+          <Select
+            v-model="formData.groupId"
+            :disabled="loading || isEdit"
+          >
             <SelectTrigger id="groupId">
               <SelectValue placeholder="选择配置分组" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem v-for="group in groups" :key="group.id" :value="group.id">
+              <SelectItem
+                v-for="group in groups"
+                :key="group.id"
+                :value="group.id"
+              >
                 {{ group.name }}
               </SelectItem>
             </SelectContent>
@@ -243,12 +253,19 @@ const handleCancel = () => {
         <!-- Value Type -->
         <div class="space-y-2">
           <Label for="valueType">值类型 <span class="text-destructive">*</span></Label>
-          <Select v-model="formData.valueType" :disabled="loading">
+          <Select
+            v-model="formData.valueType"
+            :disabled="loading"
+          >
             <SelectTrigger id="valueType">
               <SelectValue placeholder="选择值类型" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem v-for="type in valueTypeOptions" :key="type.value" :value="type.value">
+              <SelectItem
+                v-for="type in valueTypeOptions"
+                :key="type.value"
+                :value="type.value"
+              >
                 {{ type.label }}
               </SelectItem>
             </SelectContent>
@@ -298,12 +315,19 @@ const handleCancel = () => {
         <!-- Effect Type -->
         <div class="space-y-2">
           <Label for="effectType">生效方式 <span class="text-destructive">*</span></Label>
-          <Select v-model="formData.effectType" :disabled="loading">
+          <Select
+            v-model="formData.effectType"
+            :disabled="loading"
+          >
             <SelectTrigger id="effectType">
               <SelectValue placeholder="选择生效方式" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem v-for="type in effectTypeOptions" :key="type.value" :value="type.value">
+              <SelectItem
+                v-for="type in effectTypeOptions"
+                :key="type.value"
+                :value="type.value"
+              >
                 {{ type.label }}
               </SelectItem>
             </SelectContent>
@@ -313,7 +337,11 @@ const handleCancel = () => {
         <!-- Required Switch -->
         <div class="flex items-center justify-between">
           <Label for="isRequired">是否必填</Label>
-          <Switch id="isRequired" v-model="formData.isRequired" :disabled="loading" />
+          <Switch
+            id="isRequired"
+            v-model="formData.isRequired"
+            :disabled="loading"
+          />
         </div>
 
         <!-- Validation Rule -->
@@ -356,8 +384,17 @@ const handleCancel = () => {
       </div>
 
       <DialogFooter>
-        <Button variant="outline" :disabled="loading" @click="handleCancel">取消</Button>
-        <Button :disabled="loading" @click="handleSubmit">
+        <Button
+          variant="outline"
+          :disabled="loading"
+          @click="handleCancel"
+        >
+          取消
+        </Button>
+        <Button
+          :disabled="loading"
+          @click="handleSubmit"
+        >
           {{ loading ? '保存中...' : '保存' }}
         </Button>
       </DialogFooter>

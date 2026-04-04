@@ -76,14 +76,24 @@ onMounted(fetchData)
 <template>
   <div class="space-y-6">
     <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <Card v-for="card in summaryCards" :key="card.label">
+      <Card
+        v-for="card in summaryCards"
+        :key="card.label"
+      >
         <CardContent class="flex items-center justify-between p-6">
           <div>
-            <p class="text-sm text-muted-foreground">{{ card.label }}</p>
-            <p class="mt-2 text-3xl font-semibold">{{ loading ? '...' : card.value }}</p>
+            <p class="text-sm text-muted-foreground">
+              {{ card.label }}
+            </p>
+            <p class="mt-2 text-3xl font-semibold">
+              {{ loading ? '...' : card.value }}
+            </p>
           </div>
           <div :class="[card.accent, 'flex h-12 w-12 items-center justify-center rounded-xl text-white']">
-            <component :is="card.icon" class="h-6 w-6" />
+            <component
+              :is="card.icon"
+              class="h-6 w-6"
+            />
           </div>
         </CardContent>
       </Card>
@@ -95,10 +105,16 @@ onMounted(fetchData)
           <CardTitle>用户增长趋势</CardTitle>
         </CardHeader>
         <CardContent>
-          <div v-if="!statistics?.userGrowthData?.labels?.length" class="py-10 text-center text-sm text-muted-foreground">
+          <div
+            v-if="!statistics?.userGrowthData?.labels?.length"
+            class="py-10 text-center text-sm text-muted-foreground"
+          >
             暂无趋势数据
           </div>
-          <div v-else class="space-y-4">
+          <div
+            v-else
+            class="space-y-4"
+          >
             <div
               v-for="(label, index) in statistics.userGrowthData.labels"
               :key="`${label}-${index}`"
@@ -126,10 +142,16 @@ onMounted(fetchData)
           <CardTitle>访问量趋势</CardTitle>
         </CardHeader>
         <CardContent>
-          <div v-if="!statistics?.visitTrendData?.labels?.length" class="py-10 text-center text-sm text-muted-foreground">
+          <div
+            v-if="!statistics?.visitTrendData?.labels?.length"
+            class="py-10 text-center text-sm text-muted-foreground"
+          >
             暂无访问数据
           </div>
-          <div v-else class="space-y-4">
+          <div
+            v-else
+            class="space-y-4"
+          >
             <div
               v-for="(label, index) in statistics.visitTrendData.labels"
               :key="`${label}-${index}`"
@@ -171,13 +193,28 @@ onMounted(fetchData)
             </TableHeader>
             <TableBody>
               <TableRow v-if="loading">
-                <TableCell colspan="5" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
+                <TableCell
+                  colspan="5"
+                  class="h-24 text-center text-muted-foreground"
+                >
+                  加载中...
+                </TableCell>
               </TableRow>
               <TableRow v-else-if="onlineUsers.length === 0">
-                <TableCell colspan="5" class="h-24 text-center text-muted-foreground">暂无在线用户</TableCell>
+                <TableCell
+                  colspan="5"
+                  class="h-24 text-center text-muted-foreground"
+                >
+                  暂无在线用户
+                </TableCell>
               </TableRow>
-              <TableRow v-for="user in onlineUsers" :key="user.userId">
-                <TableCell class="font-medium">{{ user.username }}</TableCell>
+              <TableRow
+                v-for="user in onlineUsers"
+                :key="user.userId"
+              >
+                <TableCell class="font-medium">
+                  {{ user.username }}
+                </TableCell>
                 <TableCell>{{ user.ip || '-' }}</TableCell>
                 <TableCell>{{ user.browser || '-' }}</TableCell>
                 <TableCell>{{ user.os || '-' }}</TableCell>

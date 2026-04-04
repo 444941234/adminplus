@@ -359,36 +359,65 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
   <div class="space-y-4">
     <!-- Mode Switcher & Actions -->
     <div class="flex items-center justify-between">
-      <Tabs v-model="editMode" class="w-auto">
+      <Tabs
+        v-model="editMode"
+        class="w-auto"
+      >
         <TabsList>
-          <TabsTrigger value="visual" class="flex items-center gap-2">
+          <TabsTrigger
+            value="visual"
+            class="flex items-center gap-2"
+          >
             <List class="h-4 w-4" />
             可视化
           </TabsTrigger>
-          <TabsTrigger value="json" class="flex items-center gap-2" @click="syncToJson">
+          <TabsTrigger
+            value="json"
+            class="flex items-center gap-2"
+            @click="syncToJson"
+          >
             <Code class="h-4 w-4" />
             JSON
           </TabsTrigger>
         </TabsList>
       </Tabs>
-      <Button variant="outline" size="sm" @click="showPreview = !showPreview">
+      <Button
+        variant="outline"
+        size="sm"
+        @click="showPreview = !showPreview"
+      >
         <Eye class="mr-2 h-4 w-4" />
         {{ showPreview ? '隐藏预览' : '预览表单' }}
       </Button>
     </div>
 
     <!-- Visual Mode -->
-    <div v-if="editMode === 'visual'" class="space-y-4">
+    <div
+      v-if="editMode === 'visual'"
+      class="space-y-4"
+    >
       <!-- Sections List -->
-      <div v-if="sections.length === 0" class="text-center py-8 border-2 border-dashed rounded-lg">
-        <p class="text-muted-foreground mb-2">暂无表单分组</p>
-        <Button size="sm" @click="openSectionDialog()">
+      <div
+        v-if="sections.length === 0"
+        class="text-center py-8 border-2 border-dashed rounded-lg"
+      >
+        <p class="text-muted-foreground mb-2">
+          暂无表单分组
+        </p>
+        <Button
+          size="sm"
+          @click="openSectionDialog()"
+        >
           <Plus class="mr-2 h-4 w-4" />
           添加分组
         </Button>
       </div>
 
-      <Accordion v-else type="multiple" class="space-y-2">
+      <Accordion
+        v-else
+        type="multiple"
+        class="space-y-2"
+      >
         <AccordionItem
           v-for="(section, sIndex) in sections"
           :key="section.key"
@@ -399,7 +428,9 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
             <div class="flex items-center justify-between w-full pr-4">
               <span class="font-medium">{{ section.title }}</span>
               <div class="flex items-center gap-2">
-                <Badge variant="outline">{{ section.fields.length }} 个字段</Badge>
+                <Badge variant="outline">
+                  {{ section.fields.length }} 个字段
+                </Badge>
                 <Button
                   size="icon"
                   variant="ghost"
@@ -412,8 +443,8 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
                   size="icon"
                   variant="ghost"
                   class="h-7 w-7"
-                  @click.stop="moveSection(sIndex, 'up')"
                   :disabled="sIndex === 0"
+                  @click.stop="moveSection(sIndex, 'up')"
                 >
                   ▲
                 </Button>
@@ -421,8 +452,8 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
                   size="icon"
                   variant="ghost"
                   class="h-7 w-7"
-                  @click.stop="moveSection(sIndex, 'down')"
                   :disabled="sIndex === sections.length - 1"
+                  @click.stop="moveSection(sIndex, 'down')"
                 >
                   ▼
                 </Button>
@@ -439,10 +470,16 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
           </AccordionTrigger>
           <AccordionContent class="px-4 pb-4">
             <!-- Fields List -->
-            <div v-if="section.fields.length === 0" class="text-center py-4 text-muted-foreground text-sm">
+            <div
+              v-if="section.fields.length === 0"
+              class="text-center py-4 text-muted-foreground text-sm"
+            >
               暂无字段，点击下方按钮添加
             </div>
-            <div v-else class="space-y-2">
+            <div
+              v-else
+              class="space-y-2"
+            >
               <div
                 v-for="(field, fIndex) in section.fields"
                 :key="field.field"
@@ -453,8 +490,20 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
                   <div>
                     <div class="flex items-center gap-2">
                       <span class="font-medium text-sm">{{ field.label }}</span>
-                      <Badge v-if="field.required" variant="destructive" class="text-xs">必填</Badge>
-                      <Badge v-if="field.readonly" variant="secondary" class="text-xs">只读</Badge>
+                      <Badge
+                        v-if="field.required"
+                        variant="destructive"
+                        class="text-xs"
+                      >
+                        必填
+                      </Badge>
+                      <Badge
+                        v-if="field.readonly"
+                        variant="secondary"
+                        class="text-xs"
+                      >
+                        只读
+                      </Badge>
                     </div>
                     <div class="text-xs text-muted-foreground">
                       <code>{{ field.field }}</code>
@@ -468,8 +517,8 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
                     size="icon"
                     variant="ghost"
                     class="h-7 w-7"
-                    @click="moveField(sIndex, fIndex, 'up')"
                     :disabled="fIndex === 0"
+                    @click="moveField(sIndex, fIndex, 'up')"
                   >
                     ▲
                   </Button>
@@ -477,8 +526,8 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
                     size="icon"
                     variant="ghost"
                     class="h-7 w-7"
-                    @click="moveField(sIndex, fIndex, 'down')"
                     :disabled="fIndex === section.fields.length - 1"
+                    @click="moveField(sIndex, fIndex, 'down')"
                   >
                     ▼
                   </Button>
@@ -501,7 +550,12 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
                 </div>
               </div>
             </div>
-            <Button size="sm" variant="outline" class="mt-3 w-full" @click="openFieldDialog(sIndex)">
+            <Button
+              size="sm"
+              variant="outline"
+              class="mt-3 w-full"
+              @click="openFieldDialog(sIndex)"
+            >
               <Plus class="mr-2 h-3 w-3" />
               添加字段
             </Button>
@@ -509,21 +563,30 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
         </AccordionItem>
       </Accordion>
 
-      <Button @click="openSectionDialog()" class="w-full">
+      <Button
+        class="w-full"
+        @click="openSectionDialog()"
+      >
         <Plus class="mr-2 h-4 w-4" />
         添加分组
       </Button>
     </div>
 
     <!-- JSON Mode -->
-    <div v-else class="space-y-2">
+    <div
+      v-else
+      class="space-y-2"
+    >
       <div class="relative">
         <Textarea
           v-model="jsonValue"
           class="font-mono text-sm min-h-[400px]"
           @blur="handleJsonChange"
         />
-        <div v-if="jsonError" class="absolute top-2 right-2 bg-destructive text-destructive-foreground px-2 py-1 rounded text-xs">
+        <div
+          v-if="jsonError"
+          class="absolute top-2 right-2 bg-destructive text-destructive-foreground px-2 py-1 rounded text-xs"
+        >
           {{ jsonError }}
         </div>
       </div>
@@ -533,8 +596,13 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
     </div>
 
     <!-- Preview Panel -->
-    <div v-if="showPreview" class="border-t pt-4">
-      <h3 class="text-sm font-medium mb-3">表单预览</h3>
+    <div
+      v-if="showPreview"
+      class="border-t pt-4"
+    >
+      <h3 class="text-sm font-medium mb-3">
+        表单预览
+      </h3>
       <Card>
         <CardContent class="p-6">
           <WorkflowFormRenderer
@@ -557,16 +625,29 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
         <div class="space-y-4">
           <div class="space-y-2">
             <Label>分组标识 <span class="text-destructive">*</span></Label>
-            <Input v-model="sectionForm.key" placeholder="如: basic_info" />
+            <Input
+              v-model="sectionForm.key"
+              placeholder="如: basic_info"
+            />
           </div>
           <div class="space-y-2">
             <Label>分组标题 <span class="text-destructive">*</span></Label>
-            <Input v-model="sectionForm.title" placeholder="如: 基本信息" />
+            <Input
+              v-model="sectionForm.title"
+              placeholder="如: 基本信息"
+            />
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="sectionDialogOpen = false">取消</Button>
-          <Button @click="saveSection">保存</Button>
+          <Button
+            variant="outline"
+            @click="sectionDialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button @click="saveSection">
+            保存
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -583,11 +664,17 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>字段标识 <span class="text-destructive">*</span></Label>
-              <Input v-model="fieldForm.field" placeholder="如: leaveReason" />
+              <Input
+                v-model="fieldForm.field"
+                placeholder="如: leaveReason"
+              />
             </div>
             <div class="space-y-2">
               <Label>字段标签 <span class="text-destructive">*</span></Label>
-              <Input v-model="fieldForm.label" placeholder="如: 请假原因" />
+              <Input
+                v-model="fieldForm.label"
+                placeholder="如: 请假原因"
+              />
             </div>
           </div>
 
@@ -598,15 +685,33 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="input">单行文本</SelectItem>
-                <SelectItem value="textarea">多行文本</SelectItem>
-                <SelectItem value="number">数字</SelectItem>
-                <SelectItem value="select">下拉选择</SelectItem>
-                <SelectItem value="date">日期</SelectItem>
-                <SelectItem value="daterange">日期范围</SelectItem>
-                <SelectItem value="user">用户选择</SelectItem>
-                <SelectItem value="dept">部门选择</SelectItem>
-                <SelectItem value="file">文件上传</SelectItem>
+                <SelectItem value="input">
+                  单行文本
+                </SelectItem>
+                <SelectItem value="textarea">
+                  多行文本
+                </SelectItem>
+                <SelectItem value="number">
+                  数字
+                </SelectItem>
+                <SelectItem value="select">
+                  下拉选择
+                </SelectItem>
+                <SelectItem value="date">
+                  日期
+                </SelectItem>
+                <SelectItem value="daterange">
+                  日期范围
+                </SelectItem>
+                <SelectItem value="user">
+                  用户选择
+                </SelectItem>
+                <SelectItem value="dept">
+                  部门选择
+                </SelectItem>
+                <SelectItem value="file">
+                  文件上传
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -626,35 +731,56 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
           <!-- Placeholder -->
           <div class="space-y-2">
             <Label>占位提示</Label>
-            <Input v-model="fieldForm.placeholder" placeholder="请输入提示文本" />
+            <Input
+              v-model="fieldForm.placeholder"
+              placeholder="请输入提示文本"
+            />
           </div>
 
           <!-- Default Value -->
           <div class="space-y-2">
             <Label>默认值</Label>
-            <Input v-model="fieldForm.defaultValue" placeholder="留空则无默认值" />
+            <Input
+              v-model="fieldForm.defaultValue"
+              placeholder="留空则无默认值"
+            />
           </div>
 
           <!-- Description -->
           <div class="space-y-2">
             <Label>字段说明</Label>
-            <Textarea v-model="fieldForm.description" placeholder="字段的补充说明" rows="2" />
+            <Textarea
+              v-model="fieldForm.description"
+              placeholder="字段的补充说明"
+              rows="2"
+            />
           </div>
 
           <!-- Options (for select) -->
-          <div v-if="needsOptions" class="space-y-2">
+          <div
+            v-if="needsOptions"
+            class="space-y-2"
+          >
             <Label>选项配置</Label>
             <div class="border rounded-lg p-3 space-y-2">
-              <div v-if="fieldForm.options.length === 0" class="text-sm text-muted-foreground text-center py-2">
+              <div
+                v-if="fieldForm.options.length === 0"
+                class="text-sm text-muted-foreground text-center py-2"
+              >
                 暂无选项
               </div>
-              <div v-else class="space-y-1">
+              <div
+                v-else
+                class="space-y-1"
+              >
                 <div
                   v-for="(option, index) in fieldForm.options"
                   :key="index"
                   class="flex items-center gap-2 text-sm"
                 >
-                  <Badge variant="outline">{{ option.label }}</Badge>
+                  <Badge variant="outline">
+                    {{ option.label }}
+                  </Badge>
                   <code class="text-xs">{{ option.value }}</code>
                   <Button
                     size="icon"
@@ -667,17 +793,34 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
                 </div>
               </div>
               <div class="flex gap-2">
-                <Input v-model="newOptionLabel" placeholder="标签" />
-                <Input v-model="newOptionValue" placeholder="值 (可选)" />
-                <Button size="sm" @click="addOption">添加</Button>
+                <Input
+                  v-model="newOptionLabel"
+                  placeholder="标签"
+                />
+                <Input
+                  v-model="newOptionValue"
+                  placeholder="值 (可选)"
+                />
+                <Button
+                  size="sm"
+                  @click="addOption"
+                >
+                  添加
+                </Button>
               </div>
             </div>
           </div>
 
           <!-- Validation Rules -->
-          <div v-if="supportsRules" class="space-y-3">
+          <div
+            v-if="supportsRules"
+            class="space-y-3"
+          >
             <Label class="text-sm font-medium">验证规则</Label>
-            <div v-if="supportsMinMax" class="grid grid-cols-2 gap-4">
+            <div
+              v-if="supportsMinMax"
+              class="grid grid-cols-2 gap-4"
+            >
               <div class="space-y-2">
                 <Label class="text-xs">最小值/长度</Label>
                 <Input
@@ -705,8 +848,15 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="fieldDialogOpen = false">取消</Button>
-          <Button @click="saveField">保存</Button>
+          <Button
+            variant="outline"
+            @click="fieldDialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button @click="saveField">
+            保存
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

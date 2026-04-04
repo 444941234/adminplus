@@ -24,7 +24,9 @@ const updateFieldValue = (field: string, value: unknown, modelValue: WorkflowFor
 <template>
   <section class="space-y-4 rounded-lg border border-border/60 p-4">
     <header class="space-y-1">
-      <h3 class="text-sm font-semibold">{{ section.title }}</h3>
+      <h3 class="text-sm font-semibold">
+        {{ section.title }}
+      </h3>
     </header>
 
     <div class="grid gap-4 md:grid-cols-2">

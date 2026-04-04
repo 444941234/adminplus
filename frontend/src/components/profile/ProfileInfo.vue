@@ -36,16 +36,26 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
   <div class="profile-info">
     <div class="profile-info__header">
       <div>
-        <h3 class="profile-info__title">个人资料</h3>
-        <p class="profile-info__subtitle">点击编辑图标即可更新您的信息</p>
+        <h3 class="profile-info__title">
+          个人资料
+        </h3>
+        <p class="profile-info__subtitle">
+          点击编辑图标即可更新您的信息
+        </p>
       </div>
     </div>
 
-    <div v-if="loading" class="profile-info__loading">
+    <div
+      v-if="loading"
+      class="profile-info__loading"
+    >
       加载个人资料中...
     </div>
 
-    <div v-else class="profile-info__content">
+    <div
+      v-else
+      class="profile-info__content"
+    >
       <!-- Display Name (Editable) -->
       <div class="profile-info__field">
         <InlineEditField
@@ -95,11 +105,24 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
       <div class="profile-info__field profile-info__field--roles">
         <div class="profile-info__roles">
           <label class="profile-info__roles-label">角色</label>
-          <div v-if="roleList.length === 0" class="profile-info__roles-empty">
-            <Badge variant="outline">未分配角色</Badge>
+          <div
+            v-if="roleList.length === 0"
+            class="profile-info__roles-empty"
+          >
+            <Badge variant="outline">
+              未分配角色
+            </Badge>
           </div>
-          <div v-else class="profile-info__roles-list">
-            <Badge v-for="role in roleList" :key="role" variant="secondary" class="role-badge">
+          <div
+            v-else
+            class="profile-info__roles-list"
+          >
+            <Badge
+              v-for="role in roleList"
+              :key="role"
+              variant="secondary"
+              class="role-badge"
+            >
               {{ role }}
             </Badge>
           </div>

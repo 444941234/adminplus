@@ -254,7 +254,7 @@ function mapWorkflowNodes(
   }))
 }
 
-function onNodeClick(event: any) {
+function onNodeClick(event: { node: { id: string; data: { node: WorkflowNode } } }) {
   if (props.readonly) return
   if (event.node.id === 'start' || event.node.id === 'end') return
   const workflowNode = event.node.data.node as WorkflowNode
@@ -323,12 +323,21 @@ watch(
 </script>
 
 <template>
-  <div class="workflow-visualizer" :style="{ height: `${containerHeight}px` }">
-    <div v-if="loading" class="loading">
+  <div
+    class="workflow-visualizer"
+    :style="{ height: `${containerHeight}px` }"
+  >
+    <div
+      v-if="loading"
+      class="loading"
+    >
       <p>加载流程图中...</p>
     </div>
 
-    <div v-else-if="!definition || definition.nodes.length === 0" class="empty-state">
+    <div
+      v-else-if="!definition || definition.nodes.length === 0"
+      class="empty-state"
+    >
       <p>暂无流程节点数据</p>
     </div>
 
@@ -367,23 +376,41 @@ watch(
           <div class="node-header">
             <span class="node-title">{{ data.label }}</span>
           </div>
-          <div v-if="data.node" class="node-details">
+          <div
+            v-if="data.node"
+            class="node-details"
+          >
             <span class="node-badge type">
               {{ getApproverTypeLabel(data.node.approverType) }}
             </span>
-            <span v-if="data.node.state === 'current'" class="node-badge current">
+            <span
+              v-if="data.node.state === 'current'"
+              class="node-badge current"
+            >
               处理中
             </span>
-            <span v-else-if="data.node.state === 'completed'" class="node-badge completed">
+            <span
+              v-else-if="data.node.state === 'completed'"
+              class="node-badge completed"
+            >
               已完成
             </span>
-            <span v-else-if="data.node.state === 'pending'" class="node-badge pending">
+            <span
+              v-else-if="data.node.state === 'pending'"
+              class="node-badge pending"
+            >
               待处理
             </span>
-            <span v-if="data.node.isCounterSign" class="node-badge countersign">
+            <span
+              v-if="data.node.isCounterSign"
+              class="node-badge countersign"
+            >
               会签
             </span>
-            <span v-if="data.node.autoPassSameUser" class="node-badge auto-pass">
+            <span
+              v-if="data.node.autoPassSameUser"
+              class="node-badge auto-pass"
+            >
               自动通过
             </span>
           </div>

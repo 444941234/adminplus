@@ -62,25 +62,53 @@ const displayActivities = computed(() => {
     <div class="activity-dashboard__stats">
       <div class="stat-card">
         <div class="stat-card__icon stat-card__icon--active">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
           </svg>
         </div>
         <div class="stat-card__content">
-          <p class="stat-card__value">{{ activity.daysActive }}</p>
-          <p class="stat-card__label">活跃天数</p>
+          <p class="stat-card__value">
+            {{ activity.daysActive }}
+          </p>
+          <p class="stat-card__label">
+            活跃天数
+          </p>
         </div>
       </div>
 
       <div class="stat-card">
         <div class="stat-card__icon stat-card__icon--actions">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
         </div>
         <div class="stat-card__content">
-          <p class="stat-card__value">{{ activity.totalActions }}</p>
-          <p class="stat-card__label">总操作数</p>
+          <p class="stat-card__value">
+            {{ activity.totalActions }}
+          </p>
+          <p class="stat-card__label">
+            总操作数
+          </p>
         </div>
       </div>
     </div>
@@ -88,19 +116,32 @@ const displayActivities = computed(() => {
     <!-- Recent Activity Timeline -->
     <div class="activity-dashboard__timeline">
       <div class="activity-dashboard__header">
-        <h3 class="activity-dashboard__title">最近活动</h3>
-        <Badge variant="outline">最近 5 条活动</Badge>
+        <h3 class="activity-dashboard__title">
+          最近活动
+        </h3>
+        <Badge variant="outline">
+          最近 5 条活动
+        </Badge>
       </div>
 
-      <div v-if="loading" class="activity-dashboard__loading">
+      <div
+        v-if="loading"
+        class="activity-dashboard__loading"
+      >
         加载活动数据中...
       </div>
 
-      <div v-else-if="displayActivities.length === 0" class="activity-dashboard__empty">
+      <div
+        v-else-if="displayActivities.length === 0"
+        class="activity-dashboard__empty"
+      >
         <p>暂无最近活动</p>
       </div>
 
-      <div v-else class="activity-list">
+      <div
+        v-else
+        class="activity-list"
+      >
         <div
           v-for="item in displayActivities"
           :key="item.id"
@@ -123,7 +164,9 @@ const displayActivities = computed(() => {
                 {{ item.type }}
               </span>
             </div>
-            <p class="activity-item__time">{{ formatTime(item.timestamp) }}</p>
+            <p class="activity-item__time">
+              {{ formatTime(item.timestamp) }}
+            </p>
           </div>
         </div>
       </div>
@@ -132,14 +175,22 @@ const displayActivities = computed(() => {
     <!-- Last Login Info -->
     <div class="activity-dashboard__login">
       <div class="activity-dashboard__header">
-        <h3 class="activity-dashboard__title">上次登录</h3>
+        <h3 class="activity-dashboard__title">
+          上次登录
+        </h3>
       </div>
 
-      <div v-if="loading" class="activity-dashboard__loading">
+      <div
+        v-if="loading"
+        class="activity-dashboard__loading"
+      >
         加载登录信息中...
       </div>
 
-      <div v-else class="login-info">
+      <div
+        v-else
+        class="login-info"
+      >
         <div class="login-info__item">
           <span class="login-info__label">登录时间</span>
           <span class="login-info__value">{{ formatTime(activity.lastLogin) }}</span>

@@ -303,10 +303,17 @@ onMounted(fetchList)
         <div class="flex gap-4 items-center">
           <div class="relative">
             <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input v-model="searchQuery" placeholder="搜索部门名称/编码/负责人" class="w-72 pl-9" />
+            <Input
+              v-model="searchQuery"
+              placeholder="搜索部门名称/编码/负责人"
+              class="w-72 pl-9"
+            />
           </div>
           <div class="flex-1" />
-          <Button v-if="canAddDept" @click="handleAdd">
+          <Button
+            v-if="canAddDept"
+            @click="handleAdd"
+          >
             <Plus class="w-4 h-4 mr-2" />
             新增部门
           </Button>
@@ -316,26 +323,60 @@ onMounted(fetchList)
 
     <Card>
       <CardContent class="p-0">
-        <div v-if="loading" class="p-8 text-center text-muted-foreground">加载中...</div>
-        <table v-else class="w-full">
+        <div
+          v-if="loading"
+          class="p-8 text-center text-muted-foreground"
+        >
+          加载中...
+        </div>
+        <table
+          v-else
+          class="w-full"
+        >
           <thead class="bg-muted/50 border-b">
             <tr>
-              <th class="text-left p-4 font-medium">部门名称</th>
-              <th class="text-left p-4 font-medium">部门编码</th>
-              <th class="text-left p-4 font-medium">负责人</th>
-              <th class="text-left p-4 font-medium">电话</th>
-              <th class="text-left p-4 font-medium">排序</th>
-              <th class="text-left p-4 font-medium">状态</th>
-              <th class="text-left p-4 font-medium">操作</th>
+              <th class="text-left p-4 font-medium">
+                部门名称
+              </th>
+              <th class="text-left p-4 font-medium">
+                部门编码
+              </th>
+              <th class="text-left p-4 font-medium">
+                负责人
+              </th>
+              <th class="text-left p-4 font-medium">
+                电话
+              </th>
+              <th class="text-left p-4 font-medium">
+                排序
+              </th>
+              <th class="text-left p-4 font-medium">
+                状态
+              </th>
+              <th class="text-left p-4 font-medium">
+                操作
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-if="tableRows.length === 0">
-              <td colspan="7" class="p-8 text-center text-muted-foreground">暂无数据</td>
+              <td
+                colspan="7"
+                class="p-8 text-center text-muted-foreground"
+              >
+                暂无数据
+              </td>
             </tr>
-            <tr v-for="dept in tableRows" :key="dept.id" class="hover:bg-muted/30">
+            <tr
+              v-for="dept in tableRows"
+              :key="dept.id"
+              class="hover:bg-muted/30"
+            >
               <td class="p-4">
-                <div class="flex items-center gap-2" :style="{ paddingLeft: `${dept.level * 24}px` }">
+                <div
+                  class="flex items-center gap-2"
+                  :style="{ paddingLeft: `${dept.level * 24}px` }"
+                >
                   <button
                     v-if="dept.hasChildren && !searchQuery.trim()"
                     class="w-4 h-4 flex items-center justify-center text-muted-foreground hover:text-foreground"
@@ -343,23 +384,49 @@ onMounted(fetchList)
                   >
                     {{ dept.isExpanded ? '−' : '+' }}
                   </button>
-                  <span v-else class="w-4" />
+                  <span
+                    v-else
+                    class="w-4"
+                  />
                   <span class="font-medium">{{ dept.displayName }}</span>
                 </div>
               </td>
-              <td class="p-4"><code class="bg-muted px-2 py-0.5 rounded text-sm">{{ dept.displayCode || '-' }}</code></td>
-              <td class="p-4">{{ dept.leader || '-' }}</td>
-              <td class="p-4">{{ dept.phone || '-' }}</td>
-              <td class="p-4">{{ dept.displaySort }}</td>
               <td class="p-4">
-                <StatusBadge :status="dept.status" :clickable="canEditDept" @toggle="handleStatusClick(dept)" />
+                <code class="bg-muted px-2 py-0.5 rounded text-sm">{{ dept.displayCode || '-' }}</code>
+              </td>
+              <td class="p-4">
+                {{ dept.leader || '-' }}
+              </td>
+              <td class="p-4">
+                {{ dept.phone || '-' }}
+              </td>
+              <td class="p-4">
+                {{ dept.displaySort }}
+              </td>
+              <td class="p-4">
+                <StatusBadge
+                  :status="dept.status"
+                  :clickable="canEditDept"
+                  @toggle="handleStatusClick(dept)"
+                />
               </td>
               <td class="p-4">
                 <div class="flex gap-2">
-                  <Button v-if="canEditDept" size="sm" variant="ghost" @click="handleEdit(dept.id)">
+                  <Button
+                    v-if="canEditDept"
+                    size="sm"
+                    variant="ghost"
+                    @click="handleEdit(dept.id)"
+                  >
                     <Edit class="w-4 h-4" />
                   </Button>
-                  <Button v-if="canDeleteDept" size="sm" variant="ghost" class="text-destructive" @click="handleDeleteConfirm(dept.id)">
+                  <Button
+                    v-if="canDeleteDept"
+                    size="sm"
+                    variant="ghost"
+                    class="text-destructive"
+                    @click="handleDeleteConfirm(dept.id)"
+                  >
                     <Trash2 class="w-4 h-4" />
                   </Button>
                 </div>
@@ -370,14 +437,25 @@ onMounted(fetchList)
       </CardContent>
     </Card>
 
-    <Dialog v-if="canAddDept || canEditDept" v-model:open="dialogOpen">
+    <Dialog
+      v-if="canAddDept || canEditDept"
+      v-model:open="dialogOpen"
+    >
       <DialogContent class="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑部门' : '新增部门' }}</DialogTitle>
           <DialogDescription>配置部门基本信息和上级关系</DialogDescription>
         </DialogHeader>
-        <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
-        <div v-else class="space-y-4 py-2">
+        <div
+          v-if="dialogLoading"
+          class="py-8 text-center text-muted-foreground"
+        >
+          加载中...
+        </div>
+        <div
+          v-else
+          class="space-y-4 py-2"
+        >
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>上级部门</Label>
@@ -386,8 +464,14 @@ onMounted(fetchList)
                   <SelectValue placeholder="选择上级部门" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">顶级部门</SelectItem>
-                  <SelectItem v-for="dept in parentOptions" :key="dept.id" :value="dept.id">
+                  <SelectItem value="0">
+                    顶级部门
+                  </SelectItem>
+                  <SelectItem
+                    v-for="dept in parentOptions"
+                    :key="dept.id"
+                    :value="dept.id"
+                  >
                     {{ dept.label }}
                   </SelectItem>
                 </SelectContent>
@@ -400,8 +484,12 @@ onMounted(fetchList)
                   <SelectValue placeholder="选择状态" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">正常</SelectItem>
-                  <SelectItem value="0">禁用</SelectItem>
+                  <SelectItem value="1">
+                    正常
+                  </SelectItem>
+                  <SelectItem value="0">
+                    禁用
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -410,39 +498,68 @@ onMounted(fetchList)
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>部门名称</Label>
-              <Input v-model="form.name" placeholder="请输入部门名称" />
+              <Input
+                v-model="form.name"
+                placeholder="请输入部门名称"
+              />
             </div>
             <div class="space-y-2">
               <Label>部门编码</Label>
-              <Input v-model="form.code" placeholder="请输入部门编码" />
+              <Input
+                v-model="form.code"
+                placeholder="请输入部门编码"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>负责人</Label>
-              <Input v-model="form.leader" placeholder="请输入负责人" />
+              <Input
+                v-model="form.leader"
+                placeholder="请输入负责人"
+              />
             </div>
             <div class="space-y-2">
               <Label>电话</Label>
-              <Input v-model="form.phone" placeholder="请输入电话" />
+              <Input
+                v-model="form.phone"
+                placeholder="请输入电话"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>邮箱</Label>
-              <Input v-model="form.email" placeholder="请输入邮箱" />
+              <Input
+                v-model="form.email"
+                placeholder="请输入邮箱"
+              />
             </div>
             <div class="space-y-2">
               <Label>排序</Label>
-              <Input v-model="form.sortOrder" type="number" placeholder="排序值" />
+              <Input
+                v-model="form.sortOrder"
+                type="number"
+                placeholder="排序值"
+              />
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="dialogOpen = false">取消</Button>
-          <Button :disabled="dialogLoading" @click="handleSubmit">{{ isEdit ? '保存' : '创建' }}</Button>
+          <Button
+            variant="outline"
+            @click="dialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button
+            :disabled="dialogLoading"
+            @click="handleSubmit"
+          >
+            {{ isEdit ? '保存' : '创建' }}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

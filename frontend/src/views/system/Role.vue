@@ -279,9 +279,17 @@ onMounted(async () => {
             clearable
             class="w-80"
           />
-          <Button variant="outline" @click="searchQuery = ''">重置</Button>
+          <Button
+            variant="outline"
+            @click="searchQuery = ''"
+          >
+            重置
+          </Button>
           <div class="flex-1" />
-          <Button v-if="canAddRole" @click="handleAdd">
+          <Button
+            v-if="canAddRole"
+            @click="handleAdd"
+          >
             <Plus class="mr-2 h-4 w-4" />
             新增角色
           </Button>
@@ -294,41 +302,89 @@ onMounted(async () => {
         <table class="w-full">
           <thead class="border-b bg-muted/50">
             <tr>
-              <th class="p-4 text-left font-medium">角色名称</th>
-              <th class="p-4 text-left font-medium">角色编码</th>
-              <th class="p-4 text-left font-medium">描述</th>
-              <th class="p-4 text-left font-medium">数据范围</th>
-              <th class="p-4 text-left font-medium">状态</th>
-              <th class="p-4 text-left font-medium">排序</th>
-              <th class="p-4 text-left font-medium">操作</th>
+              <th class="p-4 text-left font-medium">
+                角色名称
+              </th>
+              <th class="p-4 text-left font-medium">
+                角色编码
+              </th>
+              <th class="p-4 text-left font-medium">
+                描述
+              </th>
+              <th class="p-4 text-left font-medium">
+                数据范围
+              </th>
+              <th class="p-4 text-left font-medium">
+                状态
+              </th>
+              <th class="p-4 text-left font-medium">
+                排序
+              </th>
+              <th class="p-4 text-left font-medium">
+                操作
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y">
             <tr v-if="listLoading">
-              <td colspan="7" class="p-8 text-center text-muted-foreground">加载中...</td>
+              <td
+                colspan="7"
+                class="p-8 text-center text-muted-foreground"
+              >
+                加载中...
+              </td>
             </tr>
             <tr v-else-if="filteredRoles.length === 0">
-              <td colspan="7" class="p-8 text-center text-muted-foreground">暂无数据</td>
+              <td
+                colspan="7"
+                class="p-8 text-center text-muted-foreground"
+              >
+                暂无数据
+              </td>
             </tr>
-            <tr v-for="role in filteredRoles" :key="role.id" class="hover:bg-muted/30">
-              <td class="p-4 font-medium">{{ role.name }}</td>
+            <tr
+              v-for="role in filteredRoles"
+              :key="role.id"
+              class="hover:bg-muted/30"
+            >
+              <td class="p-4 font-medium">
+                {{ role.name }}
+              </td>
               <td class="p-4">
                 <code class="rounded bg-muted px-2 py-0.5 text-sm">{{ role.code }}</code>
               </td>
-              <td class="p-4 text-muted-foreground">{{ role.description || '-' }}</td>
+              <td class="p-4 text-muted-foreground">
+                {{ role.description || '-' }}
+              </td>
               <td class="p-4 text-muted-foreground">
                 {{ role.dataScope === 1 ? '全部数据' : `范围 ${role.dataScope}` }}
               </td>
               <td class="p-4">
-                <StatusBadge :status="role.status" :clickable="canEditRole" @toggle="handleStatusClick(role)" />
+                <StatusBadge
+                  :status="role.status"
+                  :clickable="canEditRole"
+                  @toggle="handleStatusClick(role)"
+                />
               </td>
-              <td class="p-4 text-muted-foreground">{{ role.sortOrder }}</td>
+              <td class="p-4 text-muted-foreground">
+                {{ role.sortOrder }}
+              </td>
               <td class="p-4">
                 <div class="flex gap-2">
-                  <Button v-if="canAssignRole" size="sm" variant="ghost" @click="handleOpenAssign(role)">
+                  <Button
+                    v-if="canAssignRole"
+                    size="sm"
+                    variant="ghost"
+                    @click="handleOpenAssign(role)"
+                  >
                     <KeyRound class="h-4 w-4" />
                   </Button>
-                  <Button v-if="canEditRole" size="sm" variant="ghost" @click="handleEdit(role.id)">
+                  <Button
+                    v-if="canEditRole"
+                    size="sm"
+                    variant="ghost"
+                    @click="handleEdit(role.id)"
+                  >
                     <Edit class="h-4 w-4" />
                   </Button>
                   <Button
@@ -348,18 +404,32 @@ onMounted(async () => {
       </CardContent>
     </Card>
 
-    <Dialog v-if="canAddRole || canEditRole" v-model:open="dialogOpen">
+    <Dialog
+      v-if="canAddRole || canEditRole"
+      v-model:open="dialogOpen"
+    >
       <DialogContent class="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑角色' : '新增角色' }}</DialogTitle>
           <DialogDescription>配置角色名称、编码和描述信息</DialogDescription>
         </DialogHeader>
-        <div v-if="dialogLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
-        <div v-else class="space-y-4 py-2">
+        <div
+          v-if="dialogLoading"
+          class="py-8 text-center text-muted-foreground"
+        >
+          加载中...
+        </div>
+        <div
+          v-else
+          class="space-y-4 py-2"
+        >
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
               <Label>角色名称</Label>
-              <Input v-model="form.name" placeholder="请输入角色名称" />
+              <Input
+                v-model="form.name"
+                placeholder="请输入角色名称"
+              />
             </div>
             <div class="space-y-2">
               <Label>角色编码</Label>
@@ -372,7 +442,10 @@ onMounted(async () => {
           </div>
           <div class="space-y-2">
             <Label>描述</Label>
-            <Input v-model="form.description" placeholder="请输入角色描述" />
+            <Input
+              v-model="form.description"
+              placeholder="请输入角色描述"
+            />
           </div>
           <div class="grid grid-cols-3 gap-4">
             <div class="space-y-2">
@@ -382,11 +455,21 @@ onMounted(async () => {
                   <SelectValue placeholder="请选择数据范围" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">全部数据</SelectItem>
-                  <SelectItem value="2">本部门及以下</SelectItem>
-                  <SelectItem value="3">本部门</SelectItem>
-                  <SelectItem value="4">仅本人</SelectItem>
-                  <SelectItem value="5">自定义</SelectItem>
+                  <SelectItem value="1">
+                    全部数据
+                  </SelectItem>
+                  <SelectItem value="2">
+                    本部门及以下
+                  </SelectItem>
+                  <SelectItem value="3">
+                    本部门
+                  </SelectItem>
+                  <SelectItem value="4">
+                    仅本人
+                  </SelectItem>
+                  <SelectItem value="5">
+                    自定义
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -397,8 +480,12 @@ onMounted(async () => {
                   <SelectValue placeholder="请选择状态" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">正常</SelectItem>
-                  <SelectItem value="0">禁用</SelectItem>
+                  <SelectItem value="1">
+                    正常
+                  </SelectItem>
+                  <SelectItem value="0">
+                    禁用
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -414,20 +501,41 @@ onMounted(async () => {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="dialogOpen = false">取消</Button>
-          <Button :disabled="dialogLoading" @click="handleSubmit">{{ isEdit ? '保存' : '创建' }}</Button>
+          <Button
+            variant="outline"
+            @click="dialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button
+            :disabled="dialogLoading"
+            @click="handleSubmit"
+          >
+            {{ isEdit ? '保存' : '创建' }}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
 
-    <Dialog v-if="canAssignRole" v-model:open="assignDialogOpen">
+    <Dialog
+      v-if="canAssignRole"
+      v-model:open="assignDialogOpen"
+    >
       <DialogContent class="sm:max-w-[680px]">
         <DialogHeader>
           <DialogTitle>分配菜单权限{{ assignRole ? ` - ${assignRole.name}` : '' }}</DialogTitle>
           <DialogDescription>勾选菜单项为角色分配访问权限</DialogDescription>
         </DialogHeader>
-        <div v-if="assignLoading" class="py-8 text-center text-muted-foreground">加载中...</div>
-        <ScrollArea v-else class="max-h-[420px] rounded-md border">
+        <div
+          v-if="assignLoading"
+          class="py-8 text-center text-muted-foreground"
+        >
+          加载中...
+        </div>
+        <ScrollArea
+          v-else
+          class="max-h-[420px] rounded-md border"
+        >
           <div class="space-y-1 p-4">
             <label class="flex cursor-pointer items-center gap-3 rounded border-b px-3 py-2 mb-2 font-medium transition-colors hover:bg-muted/50">
               <Checkbox
@@ -452,8 +560,18 @@ onMounted(async () => {
           </div>
         </ScrollArea>
         <DialogFooter>
-          <Button variant="outline" @click="assignDialogOpen = false">取消</Button>
-          <Button :disabled="assignLoading" @click="handleAssignSubmit">保存授权</Button>
+          <Button
+            variant="outline"
+            @click="assignDialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button
+            :disabled="assignLoading"
+            @click="handleAssignSubmit"
+          >
+            保存授权
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

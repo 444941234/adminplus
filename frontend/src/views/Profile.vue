@@ -52,18 +52,27 @@ onMounted(() => {
 <template>
   <div class="profile-page">
     <!-- Hero Section -->
-    <div v-if="profileLoading" class="profile-page__loading">
+    <div
+      v-if="profileLoading"
+      class="profile-page__loading"
+    >
       <p>加载个人资料中...</p>
     </div>
 
-    <div v-else-if="profile" class="profile-page__hero">
+    <div
+      v-else-if="profile"
+      class="profile-page__hero"
+    >
       <ProfileHero
         :profile="profile"
       />
     </div>
 
     <!-- Main Content Grid -->
-    <div v-if="profile" class="profile-page__grid">
+    <div
+      v-if="profile"
+      class="profile-page__grid"
+    >
       <!-- Left Column: Profile Info (2fr) -->
       <div class="profile-page__main">
         <ProfileInfo
@@ -83,7 +92,10 @@ onMounted(() => {
           :activity="activityStats"
           :loading="activityLoading"
         />
-        <div v-else class="profile-page__activity-empty">
+        <div
+          v-else
+          class="profile-page__activity-empty"
+        >
           <p>暂无活动数据</p>
         </div>
       </div>

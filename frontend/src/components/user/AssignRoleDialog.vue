@@ -76,14 +76,25 @@ const handleOpenChange = (value: boolean) => {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="handleOpenChange">
+  <Dialog
+    :open="open"
+    @update:open="handleOpenChange"
+  >
     <DialogContent class="sm:max-w-[560px]">
       <DialogHeader>
         <DialogTitle>分配角色{{ user ? ` - ${user.username}` : '' }}</DialogTitle>
         <DialogDescription>为当前用户分配系统角色</DialogDescription>
       </DialogHeader>
-      <div v-if="loading" class="py-8 text-center text-muted-foreground">加载中...</div>
-      <ScrollArea v-else class="max-h-[360px] rounded-md border">
+      <div
+        v-if="loading"
+        class="py-8 text-center text-muted-foreground"
+      >
+        加载中...
+      </div>
+      <ScrollArea
+        v-else
+        class="max-h-[360px] rounded-md border"
+      >
         <div class="space-y-1 p-4">
           <label
             v-for="role in roleList"
@@ -102,8 +113,18 @@ const handleOpenChange = (value: boolean) => {
         </div>
       </ScrollArea>
       <DialogFooter>
-        <Button variant="outline" @click="handleOpenChange(false)">取消</Button>
-        <Button :disabled="loading" @click="handleSubmit">保存角色</Button>
+        <Button
+          variant="outline"
+          @click="handleOpenChange(false)"
+        >
+          取消
+        </Button>
+        <Button
+          :disabled="loading"
+          @click="handleSubmit"
+        >
+          保存角色
+        </Button>
       </DialogFooter>
     </DialogContent>
   </Dialog>

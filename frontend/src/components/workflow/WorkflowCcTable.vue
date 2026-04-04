@@ -52,7 +52,10 @@ const getCcTypeLabel = (type?: string) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow v-for="cc in records" :key="cc.id">
+          <TableRow
+            v-for="cc in records"
+            :key="cc.id"
+          >
             <TableCell>{{ cc.nodeName || '-' }}</TableCell>
             <TableCell>{{ cc.userName || '-' }}</TableCell>
             <TableCell>{{ getCcTypeLabel(cc.ccType) }}</TableCell>

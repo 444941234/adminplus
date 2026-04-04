@@ -112,7 +112,10 @@ const getInputType = (config: Config) => {
 </script>
 
 <template>
-  <Dialog :open="open" @update:open="emit('update:open', $event)">
+  <Dialog
+    :open="open"
+    @update:open="emit('update:open', $event)"
+  >
     <DialogContent class="sm:max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
       <DialogHeader>
         <DialogTitle>批量编辑配置</DialogTitle>
@@ -146,6 +149,7 @@ const getInputType = (config: Config) => {
             <div class="mb-3 flex items-start gap-3">
               <Checkbox
                 :checked="selectedConfigIds.has(config.id)"
+                class="mt-1"
                 @update:checked="(checked: boolean) => {
                   if (checked) {
                     selectedConfigIds.add(config.id)
@@ -154,14 +158,15 @@ const getInputType = (config: Config) => {
                     delete formValues[config.id]
                   }
                 }"
-                class="mt-1"
               />
               <div class="flex-1">
                 <div class="flex items-center gap-2">
                   <span class="font-medium">{{ config.name }}</span>
                   <span class="text-xs text-muted-foreground">({{ config.key }})</span>
                 </div>
-                <p class="mt-1 text-xs text-muted-foreground">{{ config.description || '无描述' }}</p>
+                <p class="mt-1 text-xs text-muted-foreground">
+                  {{ config.description || '无描述' }}
+                </p>
                 <div class="mt-2 flex items-center gap-2 text-xs">
                   <span class="rounded bg-muted px-2 py-0.5">{{ config.valueType }}</span>
                   <span class="rounded bg-muted px-2 py-0.5">{{ config.effectType === 'IMMEDIATE' ? '立即生效' : config.effectType === 'MANUAL' ? '手动生效' : '重启生效' }}</span>
@@ -170,9 +175,15 @@ const getInputType = (config: Config) => {
             </div>
 
             <!-- Value Input -->
-            <div v-if="selectedConfigIds.has(config.id)" class="ml-6">
+            <div
+              v-if="selectedConfigIds.has(config.id)"
+              class="ml-6"
+            >
               <div class="space-y-1">
-                <Label :for="`value-${config.id}`" class="text-xs">配置值</Label>
+                <Label
+                  :for="`value-${config.id}`"
+                  class="text-xs"
+                >配置值</Label>
                 <div class="flex items-center gap-2">
                   <Input
                     :id="`value-${config.id}`"
@@ -193,7 +204,11 @@ const getInputType = (config: Config) => {
       </div>
 
       <DialogFooter>
-        <Button variant="outline" :disabled="loading" @click="handleCancel">
+        <Button
+          variant="outline"
+          :disabled="loading"
+          @click="handleCancel"
+        >
           取消
         </Button>
         <Button

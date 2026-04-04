@@ -53,17 +53,26 @@ onMounted(fetchDashboard)
   <div class="space-y-6">
     <!-- 统计卡片 -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card v-for="stat in statCards" :key="stat.label" class="hover:shadow-lg transition-shadow">
+      <Card
+        v-for="stat in statCards"
+        :key="stat.label"
+        class="hover:shadow-lg transition-shadow"
+      >
         <CardContent class="p-6">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm text-muted-foreground">{{ stat.label }}</p>
+              <p class="text-sm text-muted-foreground">
+                {{ stat.label }}
+              </p>
               <p class="text-3xl font-bold mt-1">
                 {{ loading ? '...' : stats?.[stat.key] ?? 0 }}
               </p>
             </div>
             <div :class="[stat.color, 'w-12 h-12 rounded-lg flex items-center justify-center']">
-              <component :is="stat.icon" class="w-6 h-6 text-white" />
+              <component
+                :is="stat.icon"
+                class="w-6 h-6 text-white"
+              />
             </div>
           </div>
         </CardContent>
@@ -74,7 +83,9 @@ onMounted(fetchDashboard)
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>
         <CardContent class="p-6">
-          <h3 class="text-lg font-semibold mb-4">快捷操作</h3>
+          <h3 class="text-lg font-semibold mb-4">
+            快捷操作
+          </h3>
           <div class="grid grid-cols-2 gap-3">
             <RouterLink
               v-for="action in quickActions"
@@ -82,7 +93,10 @@ onMounted(fetchDashboard)
               :to="action.path"
               class="p-4 border rounded-lg hover:bg-gray-50 transition-colors text-center"
             >
-              <component :is="action.icon" :class="['w-6 h-6 mx-auto mb-2', action.color]" />
+              <component
+                :is="action.icon"
+                :class="['w-6 h-6 mx-auto mb-2', action.color]"
+              />
               <span class="text-sm">{{ action.label }}</span>
             </RouterLink>
           </div>
@@ -91,10 +105,25 @@ onMounted(fetchDashboard)
 
       <Card>
         <CardContent class="p-6">
-          <h3 class="text-lg font-semibold mb-4">最近活动</h3>
-          <div v-if="loading" class="text-center py-8 text-gray-400">加载中...</div>
-          <div v-else-if="recentLogs.length === 0" class="text-center py-8 text-gray-400">暂无数据</div>
-          <div v-else class="space-y-4">
+          <h3 class="text-lg font-semibold mb-4">
+            最近活动
+          </h3>
+          <div
+            v-if="loading"
+            class="text-center py-8 text-gray-400"
+          >
+            加载中...
+          </div>
+          <div
+            v-else-if="recentLogs.length === 0"
+            class="text-center py-8 text-gray-400"
+          >
+            暂无数据
+          </div>
+          <div
+            v-else
+            class="space-y-4"
+          >
             <div
               v-for="log in recentLogs"
               :key="log.id"

@@ -174,10 +174,24 @@ onMounted(() => {
     >
       <!-- Logo -->
       <div class="h-14 flex items-center justify-center border-b px-4">
-        <RouterLink to="/dashboard" class="flex items-center gap-2 font-bold text-lg text-primary">
-          <svg viewBox="0 0 32 32" class="w-7 h-7 flex-shrink-0">
-            <rect width="32" height="32" rx="6" fill="currentColor"/>
-            <path d="M8 12L16 8L24 12V20L16 24L8 20V12Z" fill="white"/>
+        <RouterLink
+          to="/dashboard"
+          class="flex items-center gap-2 font-bold text-lg text-primary"
+        >
+          <svg
+            viewBox="0 0 32 32"
+            class="w-7 h-7 flex-shrink-0"
+          >
+            <rect
+              width="32"
+              height="32"
+              rx="6"
+              fill="currentColor"
+            />
+            <path
+              d="M8 12L16 8L24 12V20L16 24L8 20V12Z"
+              fill="white"
+            />
           </svg>
           <span v-if="!collapsed">AdminPlus</span>
         </RouterLink>
@@ -197,11 +211,17 @@ onMounted(() => {
                 : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
             ]"
           >
-            <component :is="item.icon" class="w-5 h-5 flex-shrink-0" />
+            <component
+              :is="item.icon"
+              class="w-5 h-5 flex-shrink-0"
+            />
           </RouterLink>
         </template>
         <template v-else>
-          <template v-for="node in sidebarTree" :key="node.id">
+          <template
+            v-for="node in sidebarTree"
+            :key="node.id"
+          >
             <RouterLink
               v-if="node.kind === 'item'"
               :to="node.path"
@@ -212,17 +232,26 @@ onMounted(() => {
                   : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
               ]"
             >
-              <component :is="node.icon" class="h-5 w-5 flex-shrink-0" />
+              <component
+                :is="node.icon"
+                class="h-5 w-5 flex-shrink-0"
+              />
               <span>{{ node.label }}</span>
             </RouterLink>
 
-            <div v-else class="space-y-1">
+            <div
+              v-else
+              class="space-y-1"
+            >
               <button
                 type="button"
                 class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent"
                 @click="toggleGroup(node)"
               >
-                <component :is="node.icon" class="h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                <component
+                  :is="node.icon"
+                  class="h-5 w-5 flex-shrink-0 text-muted-foreground"
+                />
                 <span class="flex-1">{{ node.label }}</span>
                 <ChevronDown
                   :class="[
@@ -232,8 +261,14 @@ onMounted(() => {
                 />
               </button>
 
-              <div v-show="openGroups[node.id]" class="space-y-1 pl-4">
-                <template v-for="child in node.children" :key="child.id">
+              <div
+                v-show="openGroups[node.id]"
+                class="space-y-1 pl-4"
+              >
+                <template
+                  v-for="child in node.children"
+                  :key="child.id"
+                >
                   <RouterLink
                     v-if="child.kind === 'item'"
                     :to="child.path"
@@ -244,16 +279,25 @@ onMounted(() => {
                         : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                     ]"
                   >
-                    <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
+                    <component
+                      :is="child.icon"
+                      class="h-4 w-4 flex-shrink-0"
+                    />
                     <span>{{ child.label }}</span>
                   </RouterLink>
-                  <div v-else class="space-y-1">
+                  <div
+                    v-else
+                    class="space-y-1"
+                  >
                     <button
                       type="button"
                       class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                       @click="toggleGroup(child)"
                     >
-                      <component :is="child.icon" class="h-4 w-4 flex-shrink-0" />
+                      <component
+                        :is="child.icon"
+                        class="h-4 w-4 flex-shrink-0"
+                      />
                       <span class="flex-1">{{ child.label }}</span>
                       <ChevronDown
                         :class="[
@@ -262,7 +306,10 @@ onMounted(() => {
                         ]"
                       />
                     </button>
-                    <div v-show="openGroups[child.id]" class="space-y-1 pl-4">
+                    <div
+                      v-show="openGroups[child.id]"
+                      class="space-y-1 pl-4"
+                    >
                       <RouterLink
                         v-for="grandChild in getSidebarItems(child.children)"
                         :key="grandChild.id"
@@ -273,10 +320,13 @@ onMounted(() => {
                             ? 'bg-primary/10 text-primary'
                             : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                         ]"
-                        >
-                          <component :is="grandChild.icon" class="h-4 w-4 flex-shrink-0" />
-                          <span>{{ grandChild.label }}</span>
-                        </RouterLink>
+                      >
+                        <component
+                          :is="grandChild.icon"
+                          class="h-4 w-4 flex-shrink-0"
+                        />
+                        <span>{{ grandChild.label }}</span>
+                      </RouterLink>
                       <div
                         v-for="deepGroup in getSidebarGroups(child.children)"
                         :key="deepGroup.id"
@@ -287,7 +337,10 @@ onMounted(() => {
                           class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                           @click="toggleGroup(deepGroup)"
                         >
-                          <component :is="deepGroup.icon" class="h-4 w-4 flex-shrink-0" />
+                          <component
+                            :is="deepGroup.icon"
+                            class="h-4 w-4 flex-shrink-0"
+                          />
                           <span class="flex-1">{{ deepGroup.label }}</span>
                           <ChevronDown
                             :class="[
@@ -296,7 +349,10 @@ onMounted(() => {
                             ]"
                           />
                         </button>
-                        <div v-show="openGroups[deepGroup.id]" class="space-y-1 pl-4">
+                        <div
+                          v-show="openGroups[deepGroup.id]"
+                          class="space-y-1 pl-4"
+                        >
                           <RouterLink
                             v-for="grandChild in getSidebarItems(deepGroup.children)"
                             :key="grandChild.id"
@@ -308,7 +364,10 @@ onMounted(() => {
                                 : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                             ]"
                           >
-                            <component :is="grandChild.icon" class="h-4 w-4 flex-shrink-0" />
+                            <component
+                              :is="grandChild.icon"
+                              class="h-4 w-4 flex-shrink-0"
+                            />
                             <span>{{ grandChild.label }}</span>
                           </RouterLink>
                         </div>
@@ -330,8 +389,14 @@ onMounted(() => {
           class="w-full justify-center"
           @click="collapsed = !collapsed"
         >
-          <ChevronLeft v-if="!collapsed" class="w-4 h-4" />
-          <ChevronRight v-else class="w-4 h-4" />
+          <ChevronLeft
+            v-if="!collapsed"
+            class="w-4 h-4"
+          />
+          <ChevronRight
+            v-else
+            class="w-4 h-4"
+          />
         </Button>
       </div>
     </aside>
@@ -341,35 +406,70 @@ onMounted(() => {
       <!-- 头部 -->
       <header class="h-14 bg-card border-b flex items-center justify-between px-4">
         <div class="flex items-center gap-2">
-          <Separator orientation="vertical" class="h-6" />
-          <h1 class="text-lg font-semibold">{{ route.meta.title || 'AdminPlus' }}</h1>
+          <Separator
+            orientation="vertical"
+            class="h-6"
+          />
+          <h1 class="text-lg font-semibold">
+            {{ route.meta.title || 'AdminPlus' }}
+          </h1>
         </div>
         
         <div class="flex items-center gap-4">
           <div class="hidden md:flex items-center gap-2">
-            <RouterLink v-if="workflowPermissionState.canApprovePendingActions" to="/workflow/pending">
-              <Button variant="outline" size="sm" class="gap-2">
+            <RouterLink
+              v-if="workflowPermissionState.canApprovePendingActions"
+              to="/workflow/pending"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                class="gap-2"
+              >
                 <Clock3 class="w-4 h-4" />
                 待审批
-                <span v-if="pendingCount > 0" class="rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
+                <span
+                  v-if="pendingCount > 0"
+                  class="rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground"
+                >
                   {{ pendingCount }}
                 </span>
               </Button>
             </RouterLink>
-            <RouterLink v-if="workflowPermissionState.canViewCc" to="/workflow/cc">
-              <Button variant="outline" size="sm" class="gap-2">
+            <RouterLink
+              v-if="workflowPermissionState.canViewCc"
+              to="/workflow/cc"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                class="gap-2"
+              >
                 <Users class="w-4 h-4" />
                 抄送
-                <span v-if="ccUnreadCount > 0" class="rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
+                <span
+                  v-if="ccUnreadCount > 0"
+                  class="rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground"
+                >
                   {{ ccUnreadCount }}
                 </span>
               </Button>
             </RouterLink>
-            <RouterLink v-if="workflowPermissionState.canViewUrge" to="/workflow/urge">
-              <Button variant="outline" size="sm" class="gap-2">
+            <RouterLink
+              v-if="workflowPermissionState.canViewUrge"
+              to="/workflow/urge"
+            >
+              <Button
+                variant="outline"
+                size="sm"
+                class="gap-2"
+              >
                 <Bell class="w-4 h-4" />
                 催办
-                <span v-if="urgeUnreadCount > 0" class="rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground">
+                <span
+                  v-if="urgeUnreadCount > 0"
+                  class="rounded-full bg-primary px-1.5 py-0.5 text-xs text-primary-foreground"
+                >
                   {{ urgeUnreadCount }}
                 </span>
               </Button>
@@ -377,7 +477,10 @@ onMounted(() => {
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger as-child>
-              <Button variant="ghost" class="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                class="flex items-center gap-2"
+              >
                 <Avatar class="w-7 h-7">
                   <AvatarFallback class="text-xs">
                     {{ userStore.nickname?.charAt(0) || userStore.username?.charAt(0) || 'U' }}
@@ -386,17 +489,26 @@ onMounted(() => {
                 <span class="hidden sm:inline">{{ userStore.nickname || userStore.username }}</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" class="w-48">
+            <DropdownMenuContent
+              align="end"
+              class="w-48"
+            >
               <DropdownMenuLabel>我的账户</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem as-child>
-                <RouterLink to="/profile" class="flex items-center cursor-pointer">
+                <RouterLink
+                  to="/profile"
+                  class="flex items-center cursor-pointer"
+                >
                   <User class="w-4 h-4 mr-2" />
                   个人资料
                 </RouterLink>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem @click="handleLogout" class="text-destructive cursor-pointer">
+              <DropdownMenuItem
+                class="text-destructive cursor-pointer"
+                @click="handleLogout"
+              >
                 <LogOut class="w-4 h-4 mr-2" />
                 退出登录
               </DropdownMenuItem>

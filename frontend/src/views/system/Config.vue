@@ -176,15 +176,31 @@ onMounted(async () => {
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <h2 class="text-xl font-semibold">参数配置</h2>
-        <p class="text-sm text-muted-foreground">管理系统配置参数和分组</p>
+        <h2 class="text-xl font-semibold">
+          参数配置
+        </h2>
+        <p class="text-sm text-muted-foreground">
+          管理系统配置参数和分组
+        </p>
       </div>
       <div class="flex gap-2">
-        <Button v-if="canManageConfig" variant="outline" :disabled="refreshLoading" @click="handleRefreshCache">
-          <RefreshCw class="mr-2 h-4 w-4" :class="{ 'animate-spin': refreshLoading }" />
+        <Button
+          v-if="canManageConfig"
+          variant="outline"
+          :disabled="refreshLoading"
+          @click="handleRefreshCache"
+        >
+          <RefreshCw
+            class="mr-2 h-4 w-4"
+            :class="{ 'animate-spin': refreshLoading }"
+          />
           刷新缓存
         </Button>
-        <Button v-if="canManageConfig" variant="outline" @click="importExportDialogOpen = true">
+        <Button
+          v-if="canManageConfig"
+          variant="outline"
+          @click="importExportDialogOpen = true"
+        >
           上传 / 下载
         </Button>
       </div>
@@ -211,13 +227,20 @@ onMounted(async () => {
               type="text"
               placeholder="搜索配置名称或配置键..."
               class="w-full rounded-md border border-input bg-background pl-10 pr-4 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-            />
+            >
           </div>
           <div class="flex gap-2">
-            <Button v-if="canManageConfig" variant="outline" @click="batchEditDialogOpen = true">
+            <Button
+              v-if="canManageConfig"
+              variant="outline"
+              @click="batchEditDialogOpen = true"
+            >
               批量编辑
             </Button>
-            <Button v-if="canManageConfig" @click="handleAddConfig">
+            <Button
+              v-if="canManageConfig"
+              @click="handleAddConfig"
+            >
               <Plus class="mr-2 h-4 w-4" />
               新增配置
             </Button>

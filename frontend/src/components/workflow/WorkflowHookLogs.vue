@@ -82,19 +82,36 @@ watch(() => props.instanceId, () => {
 <template>
   <Card>
     <CardHeader>
-      <CardTitle class="text-lg">钩子执行日志</CardTitle>
+      <CardTitle class="text-lg">
+        钩子执行日志
+      </CardTitle>
     </CardHeader>
     <CardContent>
-      <div v-if="loading" class="flex justify-center py-8">
-        <div class="text-muted-foreground">加载中...</div>
+      <div
+        v-if="loading"
+        class="flex justify-center py-8"
+      >
+        <div class="text-muted-foreground">
+          加载中...
+        </div>
       </div>
 
-      <div v-else-if="Object.keys(groupedLogs).length === 0" class="text-center py-8 text-muted-foreground">
+      <div
+        v-else-if="Object.keys(groupedLogs).length === 0"
+        class="text-center py-8 text-muted-foreground"
+      >
         暂无钩子执行日志
       </div>
 
-      <div v-else class="space-y-4">
-        <div v-for="(logGroup, hookPoint) in groupedLogs" :key="hookPoint" class="space-y-2">
+      <div
+        v-else
+        class="space-y-4"
+      >
+        <div
+          v-for="(logGroup, hookPoint) in groupedLogs"
+          :key="hookPoint"
+          class="space-y-2"
+        >
           <div class="text-sm font-medium text-muted-foreground">
             {{ hookPointLabel[hookPoint] || hookPoint }}
           </div>
@@ -109,12 +126,18 @@ watch(() => props.instanceId, () => {
               @click="toggleExpand(log.id)"
             >
               <div class="flex items-center gap-2">
-                <component :is="expandedLogId === log.id ? ChevronDown : ChevronRight" class="h-4 w-4" />
+                <component
+                  :is="expandedLogId === log.id ? ChevronDown : ChevronRight"
+                  class="h-4 w-4"
+                />
                 <Badge :variant="log.success ? 'default' : 'destructive'">
                   {{ log.success ? '成功' : '失败' }}
                 </Badge>
                 <span class="text-sm">{{ getExecutorTypeLabel(log.executorType) }}</span>
-                <span v-if="log.async" class="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-800">异步</span>
+                <span
+                  v-if="log.async"
+                  class="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-800"
+                >异步</span>
               </div>
               <div class="flex items-center gap-4 text-sm text-muted-foreground">
                 <span>{{ formatExecutionTime(log.executionTime) }}</span>
@@ -123,7 +146,10 @@ watch(() => props.instanceId, () => {
               </div>
             </div>
 
-            <div v-if="expandedLogId === log.id" class="border-t p-3 space-y-2 text-sm bg-muted/30">
+            <div
+              v-if="expandedLogId === log.id"
+              class="border-t p-3 space-y-2 text-sm bg-muted/30"
+            >
               <div class="grid grid-cols-2 gap-2">
                 <div>
                   <span class="text-muted-foreground">结果码:</span>
@@ -135,13 +161,21 @@ watch(() => props.instanceId, () => {
                 </div>
               </div>
 
-              <div v-if="log.resultMessage" class="p-2 bg-background rounded">
+              <div
+                v-if="log.resultMessage"
+                class="p-2 bg-background rounded"
+              >
                 <span class="text-muted-foreground">消息:</span>
                 <span class="ml-2">{{ log.resultMessage }}</span>
               </div>
 
-              <div v-if="log.executorConfig" class="p-2 bg-background rounded">
-                <div class="text-muted-foreground mb-1">执行配置:</div>
+              <div
+                v-if="log.executorConfig"
+                class="p-2 bg-background rounded"
+              >
+                <div class="text-muted-foreground mb-1">
+                  执行配置:
+                </div>
                 <pre class="text-xs overflow-x-auto">{{ log.executorConfig }}</pre>
               </div>
 

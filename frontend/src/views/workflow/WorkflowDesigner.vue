@@ -323,7 +323,9 @@ const enterDesignMode = (definition: WorkflowDefinition) => {
 // 处理 WorkflowVisualizer 加载完成事件
 const handleWorkflowLoaded = (workflowDef: any) => {
   // WorkflowVisualizer 中的 nodes 是 WorkflowNode[] 类型，直接使用
-  nodes.value = workflowDef.nodes
+  if (workflowDef && Array.isArray(workflowDef.nodes)) {
+    nodes.value = workflowDef.nodes as WorkflowNode[]
+  }
 }
 
 const exitDesignMode = () => {
@@ -346,7 +348,10 @@ onMounted(() => {
       <Card>
         <CardHeader class="flex flex-row items-center justify-between space-y-0">
           <CardTitle>流程设计</CardTitle>
-          <Button v-if="canCreateDefinition" @click="openDefinitionDialog()">
+          <Button
+            v-if="canCreateDefinition"
+            @click="openDefinitionDialog()"
+          >
             <Plus class="mr-2 h-4 w-4" />
             新建流程
           </Button>
@@ -361,27 +366,46 @@ onMounted(() => {
                 <TableHead>节点数</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>更新时间</TableHead>
-                <TableHead class="text-right">操作</TableHead>
+                <TableHead class="text-right">
+                  操作
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow v-if="loading">
-                <TableCell colspan="7" class="h-24 text-center text-muted-foreground">加载中...</TableCell>
+                <TableCell
+                  colspan="7"
+                  class="h-24 text-center text-muted-foreground"
+                >
+                  加载中...
+                </TableCell>
               </TableRow>
               <TableRow v-else-if="definitions.length === 0">
-                <TableCell colspan="7" class="h-24 text-center text-muted-foreground">暂无流程定义</TableCell>
+                <TableCell
+                  colspan="7"
+                  class="h-24 text-center text-muted-foreground"
+                >
+                  暂无流程定义
+                </TableCell>
               </TableRow>
-              <TableRow v-for="definition in definitions" :key="definition.id">
+              <TableRow
+                v-for="definition in definitions"
+                :key="definition.id"
+              >
                 <TableCell class="font-medium">
                   <div>{{ definition.definitionName }}</div>
-                  <div class="text-xs text-muted-foreground">{{ definition.description || '暂无描述' }}</div>
+                  <div class="text-xs text-muted-foreground">
+                    {{ definition.description || '暂无描述' }}
+                  </div>
                 </TableCell>
                 <TableCell>
                   <code class="text-xs bg-muted px-1.5 py-0.5 rounded">{{ definition.definitionKey }}</code>
                 </TableCell>
                 <TableCell>{{ definition.category || '-' }}</TableCell>
                 <TableCell>
-                  <Badge variant="outline">{{ definition.nodeCount ?? 0 }}</Badge>
+                  <Badge variant="outline">
+                    {{ definition.nodeCount ?? 0 }}
+                  </Badge>
                 </TableCell>
                 <TableCell>
                   <Badge :variant="definition.status === 1 ? 'default' : 'secondary'">
@@ -430,7 +454,11 @@ onMounted(() => {
       <Card>
         <CardHeader class="flex flex-row items-center justify-between space-y-0">
           <div class="flex items-center gap-4">
-            <Button variant="ghost" size="sm" @click="exitDesignMode">
+            <Button
+              variant="ghost"
+              size="sm"
+              @click="exitDesignMode"
+            >
               <ArrowLeft class="mr-2 h-4 w-4" />
               返回
             </Button>
@@ -439,7 +467,10 @@ onMounted(() => {
               {{ selectedDefinition.status === 1 ? '启用' : '停用' }}
             </Badge>
           </div>
-          <Button v-if="canCreateDefinition" @click="openNodeDialog()">
+          <Button
+            v-if="canCreateDefinition"
+            @click="openNodeDialog()"
+          >
             <Plus class="mr-2 h-4 w-4" />
             添加节点
           </Button>
@@ -448,7 +479,9 @@ onMounted(() => {
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <!-- Flow Visualization -->
             <div class="lg:col-span-2">
-              <h3 class="text-sm font-medium mb-2">流程图</h3>
+              <h3 class="text-sm font-medium mb-2">
+                流程图
+              </h3>
               <WorkflowVisualizer
                 :definition-id="selectedDefinition.id"
                 :readonly="true"
@@ -459,9 +492,14 @@ onMounted(() => {
 
             <!-- Node List -->
             <div>
-              <h3 class="text-sm font-medium mb-2">节点列表</h3>
+              <h3 class="text-sm font-medium mb-2">
+                节点列表
+              </h3>
               <div class="border rounded-lg divide-y">
-                <div v-if="nodes.length === 0" class="p-4 text-center text-muted-foreground text-sm">
+                <div
+                  v-if="nodes.length === 0"
+                  class="p-4 text-center text-muted-foreground text-sm"
+                >
                   暂无节点，点击"添加节点"创建
                 </div>
                 <div
@@ -471,7 +509,9 @@ onMounted(() => {
                 >
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
-                      <div class="font-medium text-sm">{{ node.nodeName }}</div>
+                      <div class="font-medium text-sm">
+                        {{ node.nodeName }}
+                      </div>
                       <div class="text-xs text-muted-foreground mt-1">
                         <code class="bg-muted px-1 rounded">{{ node.nodeCode }}</code>
                         <span class="mx-1">|</span>
@@ -479,13 +519,25 @@ onMounted(() => {
                         <span class="mx-1">|</span>
                         <span>
                           {{ node.approverType === 'user' ? '用户审批' :
-                             node.approverType === 'role' ? '角色审批' :
-                             node.approverType === 'dept' ? '部门审批' : '领导审批' }}
+                            node.approverType === 'role' ? '角色审批' :
+                            node.approverType === 'dept' ? '部门审批' : '领导审批' }}
                         </span>
                       </div>
                       <div class="flex gap-1 mt-1">
-                        <Badge v-if="node.isCounterSign" variant="outline" class="text-xs">会签</Badge>
-                        <Badge v-if="node.autoPassSameUser" variant="outline" class="text-xs">自动通过</Badge>
+                        <Badge
+                          v-if="node.isCounterSign"
+                          variant="outline"
+                          class="text-xs"
+                        >
+                          会签
+                        </Badge>
+                        <Badge
+                          v-if="node.autoPassSameUser"
+                          variant="outline"
+                          class="text-xs"
+                        >
+                          自动通过
+                        </Badge>
                       </div>
                     </div>
                     <div class="flex gap-1">
@@ -559,8 +611,12 @@ onMounted(() => {
                   <SelectValue placeholder="请选择状态" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem :value="1">启用</SelectItem>
-                  <SelectItem :value="0">停用</SelectItem>
+                  <SelectItem :value="1">
+                    启用
+                  </SelectItem>
+                  <SelectItem :value="0">
+                    停用
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -586,16 +642,29 @@ onMounted(() => {
                       <SelectValue placeholder="选择表单模板（可选）" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem v-for="template in formTemplates" :key="template.id" :value="template.id">
+                      <SelectItem
+                        v-for="template in formTemplates"
+                        :key="template.id"
+                        :value="template.id"
+                      >
                         <div class="flex items-center justify-between w-full gap-2">
                           <span class="flex-1">{{ template.templateName }}</span>
-                          <Badge variant="secondary" class="text-xs">{{ template.category || '未分类' }}</Badge>
+                          <Badge
+                            variant="secondary"
+                            class="text-xs"
+                          >
+                            {{ template.category || '未分类' }}
+                          </Badge>
                         </div>
                       </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <Button size="default" @click="importFormTemplate" :disabled="!selectedFormTemplateId">
+                <Button
+                  size="default"
+                  :disabled="!selectedFormTemplateId"
+                  @click="importFormTemplate"
+                >
                   导入模板
                 </Button>
               </div>
@@ -606,8 +675,16 @@ onMounted(() => {
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" @click="closeDefinitionDialog">取消</Button>
-          <Button :disabled="dialogLoading" @click="handleSaveDefinition">
+          <Button
+            variant="outline"
+            @click="closeDefinitionDialog"
+          >
+            取消
+          </Button>
+          <Button
+            :disabled="dialogLoading"
+            @click="handleSaveDefinition"
+          >
             {{ isEditMode ? '保存' : '创建' }}
           </Button>
         </DialogFooter>
@@ -625,8 +702,16 @@ onMounted(() => {
         </DialogHeader>
         <WorkflowNodeProperties v-model="nodeForm" />
         <DialogFooter>
-          <Button variant="outline" @click="nodeDialogOpen = false">取消</Button>
-          <Button :disabled="dialogLoading" @click="handleSaveNode">
+          <Button
+            variant="outline"
+            @click="nodeDialogOpen = false"
+          >
+            取消
+          </Button>
+          <Button
+            :disabled="dialogLoading"
+            @click="handleSaveNode"
+          >
             {{ isEditMode ? '保存' : '添加' }}
           </Button>
         </DialogFooter>

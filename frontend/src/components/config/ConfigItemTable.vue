@@ -147,25 +147,57 @@ const shouldShowCopyButton = (config: Config) => {
     <table class="w-full">
       <thead class="border-b bg-muted/50">
         <tr>
-          <th class="p-4 text-left font-medium">配置名称</th>
-          <th class="p-4 text-left font-medium">配置键</th>
-          <th class="p-4 text-left font-medium">配置值</th>
-          <th class="p-4 text-left font-medium">类型</th>
-          <th class="p-4 text-left font-medium">生效方式</th>
-          <th class="p-4 text-left font-medium">状态</th>
-          <th class="p-4 text-left font-medium">操作</th>
+          <th class="p-4 text-left font-medium">
+            配置名称
+          </th>
+          <th class="p-4 text-left font-medium">
+            配置键
+          </th>
+          <th class="p-4 text-left font-medium">
+            配置值
+          </th>
+          <th class="p-4 text-left font-medium">
+            类型
+          </th>
+          <th class="p-4 text-left font-medium">
+            生效方式
+          </th>
+          <th class="p-4 text-left font-medium">
+            状态
+          </th>
+          <th class="p-4 text-left font-medium">
+            操作
+          </th>
         </tr>
       </thead>
       <tbody class="divide-y">
         <tr v-if="loading">
-          <td colspan="7" class="h-32 text-center text-muted-foreground">加载中...</td>
+          <td
+            colspan="7"
+            class="h-32 text-center text-muted-foreground"
+          >
+            加载中...
+          </td>
         </tr>
         <tr v-else-if="configs.length === 0">
-          <td colspan="7" class="h-32 text-center text-muted-foreground">暂无配置项</td>
+          <td
+            colspan="7"
+            class="h-32 text-center text-muted-foreground"
+          >
+            暂无配置项
+          </td>
         </tr>
-        <tr v-for="config in configs" :key="config.id" class="hover:bg-muted/30">
-          <td class="p-4 font-medium">{{ config.name }}</td>
-          <td class="p-4 font-mono text-sm text-muted-foreground">{{ config.key }}</td>
+        <tr
+          v-for="config in configs"
+          :key="config.id"
+          class="hover:bg-muted/30"
+        >
+          <td class="p-4 font-medium">
+            {{ config.name }}
+          </td>
+          <td class="p-4 font-mono text-sm text-muted-foreground">
+            {{ config.key }}
+          </td>
           <td class="max-w-md p-4">
             <div class="flex items-center gap-2">
               <div
@@ -181,8 +213,14 @@ const shouldShowCopyButton = (config: Config) => {
                 class="h-6 w-6 p-0"
                 @click="toggleSecret(config.id)"
               >
-                <Eye v-if="!isSecretVisible(config.id)" class="h-4 w-4" />
-                <EyeOff v-else class="h-4 w-4" />
+                <Eye
+                  v-if="!isSecretVisible(config.id)"
+                  class="h-4 w-4"
+                />
+                <EyeOff
+                  v-else
+                  class="h-4 w-4"
+                />
               </Button>
               <Button
                 v-if="shouldShowCopyButton(config)"
@@ -192,8 +230,14 @@ const shouldShowCopyButton = (config: Config) => {
                 :title="copiedId === config.id ? '已复制' : '复制值'"
                 @click="copyValue(config)"
               >
-                <Check v-if="copiedId === config.id" class="h-4 w-4 text-green-600" />
-                <Copy v-else class="h-4 w-4" />
+                <Check
+                  v-if="copiedId === config.id"
+                  class="h-4 w-4 text-green-600"
+                />
+                <Copy
+                  v-else
+                  class="h-4 w-4"
+                />
               </Button>
             </div>
           </td>
@@ -216,10 +260,19 @@ const shouldShowCopyButton = (config: Config) => {
           </td>
           <td class="p-4">
             <div class="flex gap-2">
-              <Button v-if="canEdit" size="sm" variant="ghost" @click="emit('edit', config)">
+              <Button
+                v-if="canEdit"
+                size="sm"
+                variant="ghost"
+                @click="emit('edit', config)"
+              >
                 <Edit class="h-4 w-4" />
               </Button>
-              <Button size="sm" variant="ghost" @click="emit('history', config)">
+              <Button
+                size="sm"
+                variant="ghost"
+                @click="emit('history', config)"
+              >
                 <History class="h-4 w-4" />
               </Button>
               <Button

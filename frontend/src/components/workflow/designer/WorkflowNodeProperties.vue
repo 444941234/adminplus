@@ -108,10 +108,18 @@ const handleHooksRefresh = () => {
             <SelectValue placeholder="请选择审批类型" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="user">用户审批</SelectItem>
-            <SelectItem value="role">角色审批</SelectItem>
-            <SelectItem value="dept">部门审批</SelectItem>
-            <SelectItem value="leader">领导审批</SelectItem>
+            <SelectItem value="user">
+              用户审批
+            </SelectItem>
+            <SelectItem value="role">
+              角色审批
+            </SelectItem>
+            <SelectItem value="dept">
+              部门审批
+            </SelectItem>
+            <SelectItem value="leader">
+              领导审批
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -133,7 +141,10 @@ const handleHooksRefresh = () => {
           :model-value="modelValue.isCounterSign"
           @update:model-value="(value: boolean | 'indeterminate') => updateField('isCounterSign', value === true)"
         />
-        <Label for="counterSign" class="cursor-pointer text-sm font-normal">会签</Label>
+        <Label
+          for="counterSign"
+          class="cursor-pointer text-sm font-normal"
+        >会签</Label>
       </div>
       <div class="flex items-center space-x-2">
         <Checkbox
@@ -141,7 +152,10 @@ const handleHooksRefresh = () => {
           :model-value="modelValue.autoPassSameUser"
           @update:model-value="(value: boolean | 'indeterminate') => updateField('autoPassSameUser', value === true)"
         />
-        <Label for="autoPass" class="cursor-pointer text-sm font-normal">自动通过</Label>
+        <Label
+          for="autoPass"
+          class="cursor-pointer text-sm font-normal"
+        >自动通过</Label>
       </div>
     </div>
 
@@ -158,12 +172,20 @@ const handleHooksRefresh = () => {
     <div class="border-t pt-4 space-y-3">
       <div class="flex items-center justify-between">
         <div>
-          <h4 class="text-sm font-medium">节点钩子</h4>
-          <p class="text-xs text-muted-foreground">配置节点级别的钩子逻辑</p>
+          <h4 class="text-sm font-medium">
+            节点钩子
+          </h4>
+          <p class="text-xs text-muted-foreground">
+            配置节点级别的钩子逻辑
+          </p>
         </div>
         <Dialog v-model:open="hookDialogOpen">
           <DialogTrigger as-child>
-            <Button variant="outline" size="sm" :disabled="!nodeId">
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="!nodeId"
+            >
               高级钩子配置
             </Button>
           </DialogTrigger>
@@ -188,7 +210,7 @@ const handleHooksRefresh = () => {
           <Label class="text-xs">提交前校验（SpEL）</Label>
           <Input
             :model-value="modelValue.preSubmitValidate"
-            placeholder='#formData.amount > 0'
+            placeholder="#formData.amount > 0"
             @update:model-value="(value) => updateField('preSubmitValidate', String(value))"
           />
         </div>
@@ -196,7 +218,7 @@ const handleHooksRefresh = () => {
           <Label class="text-xs">同意前校验（SpEL）</Label>
           <Input
             :model-value="modelValue.preApproveValidate"
-            placeholder='#extraParams.req.comment != null && !#extraParams.req.comment.isEmpty()'
+            placeholder="#extraParams.req.comment != null && !#extraParams.req.comment.isEmpty()"
             @update:model-value="(value) => updateField('preApproveValidate', String(value))"
           />
         </div>
@@ -204,7 +226,7 @@ const handleHooksRefresh = () => {
           <Label class="text-xs">同意后执行（SpEL）</Label>
           <Input
             :model-value="modelValue.postApproveAction"
-            placeholder='@myService.updateStatus(#instance.id, "approved")'
+            placeholder="@myService.updateStatus(#instance.id, &quot;approved&quot;)"
             @update:model-value="(value) => updateField('postApproveAction', String(value))"
           />
         </div>

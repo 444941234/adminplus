@@ -120,7 +120,10 @@ watch(
         v-model="keyword"
         :placeholder="loading ? '加载中...' : '输入关键字筛选'"
       />
-      <Select :model-value="modelValue" @update:model-value="(value) => emit('update:modelValue', String(value))">
+      <Select
+        :model-value="modelValue"
+        @update:model-value="(value) => emit('update:modelValue', String(value))"
+      >
         <SelectTrigger>
           <SelectValue :placeholder="loading ? '正在加载选项' : '请选择审批对象'" />
         </SelectTrigger>

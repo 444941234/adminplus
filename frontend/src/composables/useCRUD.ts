@@ -22,7 +22,7 @@ export interface ApiResponse<T> {
 
 export interface CRUDOptions<T, TForm> {
   /** API function to fetch list data */
-  getList: (params?: any) => Promise<ApiResponse<T[]>>
+  getList: (params?: Record<string, unknown>) => Promise<ApiResponse<T[]>>
 
   /** API function to fetch single item by ID (optional, for edit) */
   getById?: (id: string) => Promise<ApiResponse<T>>

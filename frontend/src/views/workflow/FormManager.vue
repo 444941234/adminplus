@@ -211,21 +211,37 @@ onMounted(fetchTemplates)
     <template v-if="editMode === 'list'">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="text-2xl font-bold">表单管理</h1>
-          <p class="text-muted-foreground mt-1">管理流程表单模板，支持可视化编辑和复用</p>
+          <h1 class="text-2xl font-bold">
+            表单管理
+          </h1>
+          <p class="text-muted-foreground mt-1">
+            管理流程表单模板，支持可视化编辑和复用
+          </p>
         </div>
-        <Button v-if="canCreate" @click="openCreateForm">
+        <Button
+          v-if="canCreate"
+          @click="openCreateForm"
+        >
           <Plus class="mr-2 h-4 w-4" />
           新建表单
         </Button>
       </div>
 
       <!-- 分类筛选 -->
-      <div v-if="categories.length > 0" class="mb-4">
+      <div
+        v-if="categories.length > 0"
+        class="mb-4"
+      >
         <Tabs v-model="selectedCategory">
           <TabsList>
-            <TabsTrigger value="all">全部 ({{ templates.length }})</TabsTrigger>
-            <TabsTrigger v-for="cat in categories" :key="cat" :value="cat">
+            <TabsTrigger value="all">
+              全部 ({{ templates.length }})
+            </TabsTrigger>
+            <TabsTrigger
+              v-for="cat in categories"
+              :key="cat"
+              :value="cat"
+            >
               {{ cat }} ({{ templates.filter(t => t.category === cat).length }})
             </TabsTrigger>
           </TabsList>
@@ -247,8 +263,12 @@ onMounted(fetchTemplates)
                   <FileText class="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <CardTitle class="text-base">{{ template.templateName }}</CardTitle>
-                  <p class="text-xs text-muted-foreground mt-0.5">{{ template.templateCode }}</p>
+                  <CardTitle class="text-base">
+                    {{ template.templateName }}
+                  </CardTitle>
+                  <p class="text-xs text-muted-foreground mt-0.5">
+                    {{ template.templateCode }}
+                  </p>
                 </div>
               </div>
               <Badge :variant="template.status === 1 ? 'default' : 'secondary'">
@@ -261,13 +281,15 @@ onMounted(fetchTemplates)
               {{ template.description || '暂无描述' }}
             </p>
             <div class="flex items-center justify-between">
-              <Badge variant="outline">{{ template.category || '未分类' }}</Badge>
+              <Badge variant="outline">
+                {{ template.category || '未分类' }}
+              </Badge>
               <div class="flex gap-1">
                 <Button
                   size="sm"
                   variant="ghost"
-                  @click.stop="applyToWorkflow(template)"
                   title="复制配置"
+                  @click.stop="applyToWorkflow(template)"
                 >
                   <Copy class="h-4 w-4" />
                 </Button>
@@ -276,8 +298,8 @@ onMounted(fetchTemplates)
                   size="sm"
                   variant="ghost"
                   class="text-destructive"
-                  @click.stop="deleteForm(template)"
                   title="删除"
+                  @click.stop="deleteForm(template)"
                 >
                   <Trash2 class="h-4 w-4" />
                 </Button>
@@ -294,13 +316,18 @@ onMounted(fetchTemplates)
         >
           <div class="text-center text-muted-foreground">
             <Plus class="h-8 w-8 mx-auto mb-2" />
-            <p class="text-sm">新建表单模板</p>
+            <p class="text-sm">
+              新建表单模板
+            </p>
           </div>
         </Card>
       </div>
 
       <!-- 空状态 -->
-      <div v-if="filteredTemplates.length === 0 && !loading" class="text-center py-16">
+      <div
+        v-if="filteredTemplates.length === 0 && !loading"
+        class="text-center py-16"
+      >
         <FileText class="h-16 w-16 mx-auto text-muted-foreground mb-4" />
         <h3 class="text-lg font-medium mb-2">
           {{ selectedCategory === 'all' ? '暂无表单模板' : '该分类下暂无表单模板' }}
@@ -308,7 +335,10 @@ onMounted(fetchTemplates)
         <p class="text-muted-foreground mb-4">
           {{ selectedCategory === 'all' ? '创建你的第一个表单模板' : '请选择其他分类或新建表单' }}
         </p>
-        <Button v-if="canCreate" @click="openCreateForm">
+        <Button
+          v-if="canCreate"
+          @click="openCreateForm"
+        >
           <Plus class="mr-2 h-4 w-4" />
           新建表单
         </Button>
@@ -320,7 +350,10 @@ onMounted(fetchTemplates)
       <!-- 顶部操作栏 -->
       <div class="flex items-center justify-between mb-6 border-b pb-4">
         <div class="flex items-center gap-4">
-          <Button variant="ghost" @click="backToList">
+          <Button
+            variant="ghost"
+            @click="backToList"
+          >
             ← 返回
           </Button>
           <div>
@@ -333,15 +366,24 @@ onMounted(fetchTemplates)
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <Button variant="outline" @click="copyFormConfig">
+          <Button
+            variant="outline"
+            @click="copyFormConfig"
+          >
             <Copy class="mr-2 h-4 w-4" />
             {{ copiedToClipboard ? '已复制 ✓' : '复制配置' }}
           </Button>
-          <Button variant="outline" @click="previewMode = !previewMode">
+          <Button
+            variant="outline"
+            @click="previewMode = !previewMode"
+          >
             <Eye class="mr-2 h-4 w-4" />
             {{ previewMode ? '编辑' : '预览' }}
           </Button>
-          <Button :disabled="saveLoading || (editMode === 'edit' && !canUpdate)" @click="saveForm">
+          <Button
+            :disabled="saveLoading || (editMode === 'edit' && !canUpdate)"
+            @click="saveForm"
+          >
             <Save class="mr-2 h-4 w-4" />
             保存
           </Button>
@@ -349,20 +391,32 @@ onMounted(fetchTemplates)
       </div>
 
       <!-- 编辑模式 -->
-      <div v-if="!previewMode" class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div
+        v-if="!previewMode"
+        class="grid grid-cols-1 lg:grid-cols-4 gap-6"
+      >
         <!-- 左侧：基本信息 -->
         <Card class="lg:col-span-1">
           <CardHeader>
-            <CardTitle class="text-base">基本信息</CardTitle>
+            <CardTitle class="text-base">
+              基本信息
+            </CardTitle>
           </CardHeader>
           <CardContent class="space-y-4">
             <div class="space-y-2">
               <Label>表单名称 <span class="text-destructive">*</span></Label>
-              <Input v-model="editForm.templateName" placeholder="如：请假申请表单" />
+              <Input
+                v-model="editForm.templateName"
+                placeholder="如：请假申请表单"
+              />
             </div>
             <div class="space-y-2">
               <Label>表单标识 <span class="text-destructive">*</span></Label>
-              <Input v-model="editForm.templateCode" placeholder="如：leave_request_form" :disabled="editMode === 'edit'" />
+              <Input
+                v-model="editForm.templateCode"
+                placeholder="如：leave_request_form"
+                :disabled="editMode === 'edit'"
+              />
             </div>
             <div class="space-y-2">
               <Label>分类</Label>
@@ -371,11 +425,21 @@ onMounted(fetchTemplates)
                   <SelectValue placeholder="选择分类" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="人力资源">人力资源</SelectItem>
-                  <SelectItem value="财务">财务</SelectItem>
-                  <SelectItem value="采购">采购</SelectItem>
-                  <SelectItem value="法务">法务</SelectItem>
-                  <SelectItem value="其他">其他</SelectItem>
+                  <SelectItem value="人力资源">
+                    人力资源
+                  </SelectItem>
+                  <SelectItem value="财务">
+                    财务
+                  </SelectItem>
+                  <SelectItem value="采购">
+                    采购
+                  </SelectItem>
+                  <SelectItem value="法务">
+                    法务
+                  </SelectItem>
+                  <SelectItem value="其他">
+                    其他
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -394,8 +458,12 @@ onMounted(fetchTemplates)
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem :value="1">启用</SelectItem>
-                  <SelectItem :value="0">停用</SelectItem>
+                  <SelectItem :value="1">
+                    启用
+                  </SelectItem>
+                  <SelectItem :value="0">
+                    停用
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -405,7 +473,9 @@ onMounted(fetchTemplates)
         <!-- 右侧：表单配置编辑器 -->
         <Card class="lg:col-span-3">
           <CardHeader>
-            <CardTitle class="text-base">表单字段配置</CardTitle>
+            <CardTitle class="text-base">
+              表单字段配置
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <WorkflowFormConfigEditor v-model="editForm.formConfig" />
@@ -417,7 +487,9 @@ onMounted(fetchTemplates)
       <div v-else>
         <Card>
           <CardHeader>
-            <CardTitle class="text-base">表单预览</CardTitle>
+            <CardTitle class="text-base">
+              表单预览
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <WorkflowFormRenderer

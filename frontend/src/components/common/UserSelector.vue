@@ -50,10 +50,10 @@ const loadUsers = async () => {
   }
 }
 
-const handleSelect = (value: any) => {
-  const strValue = value as string
-  emit('update:modelValue', strValue)
-  const user = users.value.find(u => u.id === strValue)
+const handleSelect = (value: unknown) => {
+  if (typeof value !== 'string') return
+  emit('update:modelValue', value)
+  const user = users.value.find(u => u.id === value)
   emit('change', user || null)
 }
 
@@ -69,8 +69,8 @@ onMounted(loadUsers)
     />
     <Select
       :model-value="modelValue"
-      @update:model-value="handleSelect"
       :disabled="disabled"
+      @update:model-value="handleSelect"
     >
       <SelectTrigger>
         <SelectValue :placeholder="placeholder || (loading ? '正在加载...' : '请选择用户')">
@@ -88,7 +88,10 @@ onMounted(loadUsers)
             <span class="text-xs text-muted-foreground">({{ user.username }})</span>
           </div>
         </SelectItem>
-        <div v-if="filteredUsers.length === 0" class="px-2 py-1.5 text-sm text-muted-foreground text-center">
+        <div
+          v-if="filteredUsers.length === 0"
+          class="px-2 py-1.5 text-sm text-muted-foreground text-center"
+        >
           暂无匹配用户
         </div>
       </SelectContent>

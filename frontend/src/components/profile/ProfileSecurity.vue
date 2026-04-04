@@ -97,8 +97,9 @@ const handlePasswordChange = async () => {
     // Close dialog and reset form on success
     isPasswordDialogOpen.value = false
     resetPasswordForm()
-  } catch (error: any) {
-    toast.error(error.response?.data?.message || '密码修改失败，请重试')
+  } catch (error) {
+    const err = error as { response?: { data?: { message?: string } } }
+    toast.error(err.response?.data?.message || '密码修改失败，请重试')
   } finally {
     isChangingPassword.value = false
   }
@@ -126,15 +127,22 @@ const handleDialogOpenChange = (open: boolean) => {
     <!-- Password Section -->
     <Card class="profile-security__card">
       <div class="profile-security__header">
-        <h3 class="profile-security__title">密码安全</h3>
+        <h3 class="profile-security__title">
+          密码安全
+        </h3>
         <p class="profile-security__description">
           定期修改密码以保护账户安全
         </p>
       </div>
       <div class="profile-security__content">
-        <Dialog :open="isPasswordDialogOpen" @update:open="handleDialogOpenChange">
+        <Dialog
+          :open="isPasswordDialogOpen"
+          @update:open="handleDialogOpenChange"
+        >
           <DialogTrigger as-child>
-            <Button variant="outline">修改密码</Button>
+            <Button variant="outline">
+              修改密码
+            </Button>
           </DialogTrigger>
           <DialogContent class="sm:max-w-md">
             <DialogHeader>
@@ -156,7 +164,10 @@ const handleDialogOpenChange = (open: boolean) => {
                   :class="{ 'password-form__input--error': validationErrors.currentPassword }"
                   @keyup.enter="handlePasswordChange"
                 />
-                <div v-if="validationErrors.currentPassword" class="password-form__field-error">
+                <div
+                  v-if="validationErrors.currentPassword"
+                  class="password-form__field-error"
+                >
                   {{ validationErrors.currentPassword }}
                 </div>
               </div>
@@ -172,7 +183,10 @@ const handleDialogOpenChange = (open: boolean) => {
                   :class="{ 'password-form__input--error': validationErrors.newPassword }"
                   @keyup.enter="handlePasswordChange"
                 />
-                <div v-if="validationErrors.newPassword" class="password-form__field-error">
+                <div
+                  v-if="validationErrors.newPassword"
+                  class="password-form__field-error"
+                >
                   {{ validationErrors.newPassword }}
                 </div>
               </div>
@@ -188,7 +202,10 @@ const handleDialogOpenChange = (open: boolean) => {
                   :class="{ 'password-form__input--error': validationErrors.confirmPassword }"
                   @keyup.enter="handlePasswordChange"
                 />
-                <div v-if="validationErrors.confirmPassword" class="password-form__field-error">
+                <div
+                  v-if="validationErrors.confirmPassword"
+                  class="password-form__field-error"
+                >
                   {{ validationErrors.confirmPassword }}
                 </div>
               </div>
@@ -218,7 +235,9 @@ const handleDialogOpenChange = (open: boolean) => {
     <!-- Two-Factor Authentication Section -->
     <Card class="profile-security__card">
       <div class="profile-security__header">
-        <h3 class="profile-security__title">双因素认证</h3>
+        <h3 class="profile-security__title">
+          双因素认证
+        </h3>
         <p class="profile-security__description">
           为您的账户添加额外的安全保护层
         </p>
@@ -226,12 +245,17 @@ const handleDialogOpenChange = (open: boolean) => {
       <div class="profile-security__content">
         <div class="security-card__2fa">
           <div class="security-card__2fa-info">
-            <p class="security-card__2fa-status">未启用</p>
+            <p class="security-card__2fa-status">
+              未启用
+            </p>
             <p class="security-card__2fa-description">
               通过短信或认证器应用使用 2FA 保护您的账户
             </p>
           </div>
-          <Button variant="outline" disabled>
+          <Button
+            variant="outline"
+            disabled
+          >
             即将推出
           </Button>
         </div>

@@ -59,9 +59,17 @@ const getStatusClass = (status?: string) => {
         </TableHeader>
         <TableBody>
           <TableRow v-if="approvals.length === 0">
-            <TableCell colspan="5" class="h-24 text-center text-muted-foreground">暂无审批记录</TableCell>
+            <TableCell
+              colspan="5"
+              class="h-24 text-center text-muted-foreground"
+            >
+              暂无审批记录
+            </TableCell>
           </TableRow>
-          <TableRow v-for="approval in approvals" :key="approval.id">
+          <TableRow
+            v-for="approval in approvals"
+            :key="approval.id"
+          >
             <TableCell>{{ approval.nodeName || '-' }}</TableCell>
             <TableCell>{{ approval.approverName || '-' }}</TableCell>
             <TableCell :class="getStatusClass(approval.approvalStatus)">
