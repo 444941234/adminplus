@@ -5,6 +5,7 @@ import com.adminplus.repository.WorkflowHookLogRepository;
 import com.adminplus.service.LogService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -14,12 +15,16 @@ import java.time.temporal.ChronoUnit;
 /**
  * 日志清理定时任务
  *
+ * 通过配置 app.logging.storage.cleanup.enabled=true 启用
+ * 默认禁用
+ *
  * @author AdminPlus
  * @since 2026-03-04
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(name = "app.logging.storage.cleanup.enabled", havingValue = "true", matchIfMissing = false)
 public class LogCleanupScheduler {
 
     private final LogService logService;

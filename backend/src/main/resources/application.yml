@@ -197,8 +197,8 @@ app:
         # Socket 超时（秒）
         socket-timeout: 30
       cleanup:
-        # 是否启用自动清理
-        enabled: ${LOG_CLEANUP_ENABLED:true}
+        # 是否启用自动清理（默认禁用）
+        enabled: ${LOG_CLEANUP_ENABLED:false}
         # 日志保留天数
         retention-days: ${LOG_RETENTION_DAYS:90}
         # 清理任务 Cron 表达式（每天凌晨2点）
