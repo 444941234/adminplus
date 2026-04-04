@@ -618,6 +618,7 @@ onMounted(async () => {
       <DialogContent class="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle>日志详情</DialogTitle>
+          <DialogDescription>查看日志的详细信息</DialogDescription>
         </DialogHeader>
         <div
           v-if="detailLoading"
