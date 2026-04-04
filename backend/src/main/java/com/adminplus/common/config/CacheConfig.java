@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
@@ -23,9 +24,13 @@ import java.time.Duration;
 /**
  * 缓存配置
  *
+ * 使用 Redis 作为分布式缓存。
+ * GenericJackson2JsonRedisSerializer 自带类型信息处理，无需手动启用。
+ *
  * @author AdminPlus
  * @since 2026-02-06
  */
+@Slf4j
 @Configuration
 @EnableCaching
 @EnableJpaAuditing
@@ -33,24 +38,18 @@ public class CacheConfig {
 
     /**
      * 配置 RedisTemplate
+     * 用于 JWT 黑名单、限流等 Redis 操作
      */
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // 配置 JSON 序列化（不启用类型信息，避免兼容性问题）
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        objectMapper.registerModule(new JavaTimeModule());
-
+        ObjectMapper objectMapper = createObjectMapper();
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
-        // Key 使用 String 序列化
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
-
-        // Value 使用 JSON 序列化
         template.setValueSerializer(jsonSerializer);
         template.setHashValueSerializer(jsonSerializer);
 
@@ -59,32 +58,37 @@ public class CacheConfig {
     }
 
     /**
-     * 配置缓存管理器
-     * 使用 RedisCacheManager 作为实现
-     *
-     * 注意：不启用类型信息，避免与旧缓存数据不兼容的问题
-     * CacheCleanupRunner 会在启动时清理旧缓存
+     * 配置 Redis 缓存管理器
+     * GenericJackson2JsonRedisSerializer 自带类型信息处理
      */
     @Bean
     @Primary
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        // 配置 JSON 序列化（不启用类型信息）
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        objectMapper.registerModule(new JavaTimeModule());
-
+        ObjectMapper objectMapper = createObjectMapper();
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
-        // 配置 Redis 缓存
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
                 .disableCachingNullValues();
 
+        log.info("使用 Redis 缓存管理器");
+
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
                 .transactionAware()
                 .build();
+    }
+
+    /**
+     * 创建 ObjectMapper
+     * GenericJackson2JsonRedisSerializer 会自动处理类型信息
+     */
+    private ObjectMapper createObjectMapper() {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
     }
 }
