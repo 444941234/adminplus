@@ -46,7 +46,7 @@ const loadLogs = async () => {
   loading.value = true
   try {
     const response = await getInstanceHookLogs(props.instanceId)
-    logs.value = (response as any).data || response
+    logs.value = response.data || []
   } finally {
     loading.value = false
   }

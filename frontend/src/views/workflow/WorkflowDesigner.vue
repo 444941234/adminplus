@@ -42,6 +42,11 @@ import {
 } from '@/api'
 import type { WorkflowDefinition, WorkflowNode, WorkflowDefinitionReq, WorkflowNodeReq } from '@/types'
 import { toast } from 'vue-sonner'
+
+// WorkflowVisualizer 返回的定义类型（包含 nodes）
+interface WorkflowDefinitionWithNodes extends WorkflowDefinition {
+  nodes: WorkflowNode[]
+}
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { Plus, Pencil, Trash2, Settings, ArrowLeft } from 'lucide-vue-next'
 import WorkflowVisualizer from './WorkflowVisualizer.vue'
@@ -321,7 +326,7 @@ const enterDesignMode = (definition: WorkflowDefinition) => {
 }
 
 // 处理 WorkflowVisualizer 加载完成事件
-const handleWorkflowLoaded = (workflowDef: any) => {
+const handleWorkflowLoaded = (workflowDef: WorkflowDefinitionWithNodes) => {
   // WorkflowVisualizer 内部定义的 WorkflowDefinition 包含 nodes 属性
   if (workflowDef && Array.isArray(workflowDef.nodes)) {
     nodes.value = workflowDef.nodes
