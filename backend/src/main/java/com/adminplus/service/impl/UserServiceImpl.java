@@ -216,9 +216,9 @@ public class UserServiceImpl implements UserService {
         var user = new UserEntity();
         user.setUsername(req.username());
         user.setPassword(passwordEncoder.encode(req.password()));
-        user.setNickname(XssUtils.escape(req.nickname()));
-        user.setEmail(XssUtils.escape(req.email()));
-        user.setPhone(XssUtils.escape(req.phone()));
+        user.setNickname(XssUtils.escapeOrNull(req.nickname()));
+        user.setEmail(XssUtils.escapeOrNull(req.email()));
+        user.setPhone(XssUtils.escapeOrNull(req.phone()));
         user.setAvatar(req.avatar());
         user.setDeptId(req.deptId());
         user.setStatus(UserStatus.ENABLED);
@@ -245,13 +245,13 @@ public class UserServiceImpl implements UserService {
         var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
 
         if (req.nickname() != null) {
-            user.setNickname(XssUtils.escape(req.nickname()));
+            user.setNickname(XssUtils.escapeOrNull(req.nickname()));
         }
         if (req.email() != null) {
-            user.setEmail(XssUtils.escape(req.email()));
+            user.setEmail(XssUtils.escapeOrNull(req.email()));
         }
         if (req.phone() != null) {
-            user.setPhone(XssUtils.escape(req.phone()));
+            user.setPhone(XssUtils.escapeOrNull(req.phone()));
         }
         if (req.avatar() != null) {
             user.setAvatar(req.avatar());

@@ -1,27 +1,19 @@
 import { ref, type Ref } from 'vue'
 import { useAsyncAction } from './useAsyncAction'
+import { STATUS_ACTIVE, STATUS_INACTIVE } from '@/constants/status'
 
 interface UseStatusToggleOptions<T> {
-  /** 更新状态的 API 调用 */
   updateStatus: (id: string, newStatus: number) => Promise<unknown>
-  /** 成功后的回调（通常是刷新列表） */
   onSuccess?: () => void
-  /** 获取项目的 ID */
   getId?: (item: T) => string
-  /** 获取项目的当前状态 */
   getStatus?: (item: T) => number
 }
 
 interface StatusToggleReturn<T> {
-  /** 当前要更改状态的项目 */
   statusChangeItem: Ref<T | null>
-  /** 确认对话框是否打开 */
   statusConfirmOpen: Ref<boolean>
-  /** 状态更新是否正在进行中 */
   loading: Ref<boolean>
-  /** 点击状态切换按钮时调用 */
   handleStatusClick: (item: T) => void
-  /** 确认状态切换时调用 */
   handleStatusConfirm: () => Promise<void>
 }
 
@@ -62,7 +54,7 @@ export function useStatusToggle<T>(options: UseStatusToggleOptions<T>): StatusTo
     const item = statusChangeItem.value
     const id = getId(item)
     const currentStatus = getStatus(item)
-    const newStatus = currentStatus === 1 ? 0 : 1
+    const newStatus = currentStatus === STATUS_ACTIVE ? STATUS_INACTIVE : STATUS_ACTIVE
 
     await run(
       async () => {

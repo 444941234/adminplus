@@ -44,6 +44,16 @@ public class XssUtils {
     }
 
     /**
+     * 安全过滤 HTML 标签，处理 null 值
+     *
+     * @param input 输入字符串
+     * @return 过滤后的字符串，如果输入为 null 则返回 null
+     */
+    public static String escapeOrNull(String input) {
+        return input != null ? HtmlUtils.htmlEscape(input) : null;
+    }
+
+    /**
      * 清理输入，移除危险的 HTML/JavaScript
      *
      * @param input 输入字符串

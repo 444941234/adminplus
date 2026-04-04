@@ -123,13 +123,13 @@ public class ProfileServiceImpl implements ProfileService {
         // 只有当前登录用户可以修改自己的个人资料
 
         if (req.nickname() != null) {
-            user.setNickname(XssUtils.escape(req.nickname()));
+            user.setNickname(XssUtils.escapeOrNull(req.nickname()));
         }
         if (req.email() != null) {
-            user.setEmail(XssUtils.escape(req.email()));
+            user.setEmail(XssUtils.escapeOrNull(req.email()));
         }
         if (req.phone() != null) {
-            user.setPhone(XssUtils.escape(req.phone()));
+            user.setPhone(XssUtils.escapeOrNull(req.phone()));
         }
         if (req.avatar() != null) {
             user.setAvatar(req.avatar());
