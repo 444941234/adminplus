@@ -222,8 +222,6 @@ onMounted(async () => {
         <ListSearchBar
           v-model="searchKeyword"
           placeholder="搜索配置名称或配置键..."
-          @search="searchKeyword = searchKeyword"
-          @reset="searchKeyword = ''"
         >
           <template #actions>
             <Button

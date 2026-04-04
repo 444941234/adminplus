@@ -273,8 +273,6 @@ onMounted(async () => {
     <ListSearchBar
       v-model="searchQuery"
       placeholder="搜索角色名称、编码或描述"
-      @search="searchQuery = searchQuery"
-      @reset="searchQuery = ''"
     >
       <template #actions>
         <Button

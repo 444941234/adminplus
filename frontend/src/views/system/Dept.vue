@@ -301,8 +301,6 @@ onMounted(fetchList)
     <ListSearchBar
       v-model="searchQuery"
       placeholder="搜索部门名称/编码/负责人"
-      @search="searchQuery = searchQuery"
-      @reset="searchQuery = ''"
     >
       <template #actions>
         <Button

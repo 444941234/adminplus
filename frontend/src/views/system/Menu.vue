@@ -374,7 +374,7 @@ onMounted(fetchData)
       v-model="searchQuery"
       placeholder="搜索菜单名称、路径或权限"
       @search="handleSearch"
-      @reset="searchQuery = ''; handleSearch()"
+      @reset="handleSearch"
     >
       <template #actions>
         <Button
