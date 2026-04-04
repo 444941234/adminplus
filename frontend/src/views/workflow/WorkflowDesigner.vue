@@ -43,6 +43,7 @@ import {
 import type { WorkflowDefinition, WorkflowNode, WorkflowDefinitionReq, WorkflowNodeReq } from '@/types'
 import { toast } from 'vue-sonner'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { ConfirmDialog } from '@/components/common'
 
 // WorkflowVisualizer 返回的定义类型（内部定义的结构）
 // 注意：WorkflowVisualizer 使用内部的 WorkflowNode 类型，与 types 中的不同
@@ -96,6 +97,12 @@ const viewMode = ref<'list' | 'design'>('list')
 const definitionDialogOpen = ref(false)
 const nodeDialogOpen = ref(false)
 const isEditMode = ref(false)
+
+// Delete confirmation dialogs
+const deleteDefinitionDialogOpen = ref(false)
+const deleteDefinitionTarget = ref<WorkflowDefinition | null>(null)
+const deleteNodeDialogOpen = ref(false)
+const deleteNodeTarget = ref<WorkflowNode | null>(null)
 
 // Forms
 const definitionForm = ref<WorkflowDefinitionReq>({
@@ -249,15 +256,22 @@ const importFormTemplate = () => {
 }
 
 const handleDeleteDefinition = (definition: WorkflowDefinition) => {
-  if (!confirm(`确定要删除流程"${definition.definitionName}"吗？此操作将同时删除该流程的所有节点。`)) {
-    return
-  }
+  deleteDefinitionTarget.value = definition
+  deleteDefinitionDialogOpen.value = true
+}
+
+const confirmDeleteDefinition = () => {
+  if (!deleteDefinitionTarget.value) return
+
   runList(async () => {
-    await deleteWorkflowDefinition(definition.id)
+    await deleteWorkflowDefinition(deleteDefinitionTarget.value!.id)
   }, {
     successMessage: '删除成功',
     errorMessage: '删除流程定义失败',
     onSuccess: () => fetchDefinitions()
+  }).finally(() => {
+    deleteDefinitionDialogOpen.value = false
+    deleteDefinitionTarget.value = null
   })
 }
 
@@ -322,17 +336,24 @@ const handleSaveNode = () => {
 }
 
 const handleDeleteNode = (node: WorkflowNode) => {
-  if (!confirm(`确定要删除节点"${node.nodeName}"吗？`)) {
-    return
-  }
+  deleteNodeTarget.value = node
+  deleteNodeDialogOpen.value = true
+}
+
+const confirmDeleteNode = () => {
+  if (!deleteNodeTarget.value) return
+
   runList(async () => {
-    await deleteWorkflowNode(node.id)
+    await deleteWorkflowNode(deleteNodeTarget.value!.id)
   }, {
     successMessage: '删除节点成功',
     errorMessage: '删除节点失败',
     onSuccess: () => {
       if (selectedDefinition.value) fetchNodes(selectedDefinition.value.id)
     }
+  }).finally(() => {
+    deleteNodeDialogOpen.value = false
+    deleteNodeTarget.value = null
   })
 }
 
@@ -741,5 +762,23 @@ onMounted(() => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <!-- Delete Definition Confirmation -->
+    <ConfirmDialog
+      v-model:open="deleteDefinitionDialogOpen"
+      title="确认删除流程"
+      :description="`确定要删除流程「${deleteDefinitionTarget?.definitionName}」吗？此操作将同时删除该流程的所有节点。`"
+      confirm-text="确认删除"
+      @confirm="confirmDeleteDefinition"
+    />
+
+    <!-- Delete Node Confirmation -->
+    <ConfirmDialog
+      v-model:open="deleteNodeDialogOpen"
+      title="确认删除节点"
+      :description="`确定要删除节点「${deleteNodeTarget?.nodeName}」吗？`"
+      confirm-text="确认删除"
+      @confirm="confirmDeleteNode"
+    />
   </div>
 </template>

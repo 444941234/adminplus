@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import WorkflowDetailView from './WorkflowDetail.vue'
+import WorkflowDetailView from '@/views/workflow/WorkflowDetail.vue'
 import type { WorkflowDetail as WorkflowDetailData } from '@/types'
 
 const apiMocks = vi.hoisted(() => ({

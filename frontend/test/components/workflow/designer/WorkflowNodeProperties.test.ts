@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
-import WorkflowNodeProperties from './WorkflowNodeProperties.vue'
+import WorkflowNodeProperties from '@/components/workflow/designer/WorkflowNodeProperties.vue'
 
 const InputStub = defineComponent({
   name: 'Input',

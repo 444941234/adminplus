@@ -29,6 +29,7 @@ import type { Menu, Role } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useCRUD } from '@/composables/useCRUD'
+import { useStatusToggle } from '@/composables/useStatusToggle'
 import { createRole, deleteRole, getRoleById, getRoleList, updateRole } from '@/api'
 
 interface RoleFormState {
@@ -57,10 +58,17 @@ const assignRole = ref<Role | null>(null)
 const selectedMenuIds = ref<string[]>([])
 const { loading: assignLoading, run: runAssign } = useAsyncAction('操作失败')
 
-// Status toggle confirmation
-const statusConfirmOpen = ref(false)
-const statusChangeRole = ref<Role | null>(null)
-const { loading: statusLoading, run: runStatus } = useAsyncAction('状态更新失败')
+// Status toggle
+const {
+  statusChangeItem: statusChangeRole,
+  statusConfirmOpen,
+  loading: statusLoading,
+  handleStatusClick,
+  handleStatusConfirm
+} = useStatusToggle<Role>({
+  updateStatus: (id, newStatus) => updateRoleStatus(id, newStatus),
+  onSuccess: () => fetchRoles()
+})
 
 // CRUD composable
 const {
@@ -215,27 +223,6 @@ const isSomeMenusSelected = computed(() =>
 
 const toggleAllMenus = (checked: boolean | string) => {
   selectedMenuIds.value = checked ? menuOptions.value.map((item) => item.id) : []
-}
-
-// Status toggle handlers
-const handleStatusClick = (role: Role) => {
-  statusChangeRole.value = role
-  statusConfirmOpen.value = true
-}
-
-const handleStatusConfirm = () => {
-  if (!statusChangeRole.value) return
-  runStatus(async () => {
-    const newStatus = statusChangeRole.value!.status === 1 ? 0 : 1
-    await updateRoleStatus(statusChangeRole.value!.id, newStatus)
-  }, {
-    successMessage: '状态更新成功',
-    errorMessage: '更新状态失败',
-    onSuccess: () => fetchRoles()
-  }).finally(() => {
-    statusConfirmOpen.value = false
-    statusChangeRole.value = null
-  })
 }
 
 // Assign menus handlers
@@ -413,15 +400,17 @@ onMounted(async () => {
         >
           <div class="grid grid-cols-2 gap-4">
             <div class="space-y-2">
-              <Label>角色名称</Label>
+              <Label for="role-name">角色名称</Label>
               <Input
+                id="role-name"
                 v-model="form.name"
                 placeholder="请输入角色名称"
               />
             </div>
             <div class="space-y-2">
-              <Label>角色编码</Label>
+              <Label for="role-code">角色编码</Label>
               <Input
+                id="role-code"
                 v-model="form.code"
                 :disabled="isEdit"
                 placeholder="例如：ROLE_MANAGER"
@@ -429,17 +418,18 @@ onMounted(async () => {
             </div>
           </div>
           <div class="space-y-2">
-            <Label>描述</Label>
+            <Label for="role-description">描述</Label>
             <Input
+              id="role-description"
               v-model="form.description"
               placeholder="请输入角色描述"
             />
           </div>
           <div class="grid grid-cols-3 gap-4">
             <div class="space-y-2">
-              <Label>数据范围</Label>
+              <Label for="role-dataScope">数据范围</Label>
               <Select v-model="form.dataScope">
-                <SelectTrigger>
+                <SelectTrigger id="role-dataScope">
                   <SelectValue placeholder="请选择数据范围" />
                 </SelectTrigger>
                 <SelectContent>
@@ -462,9 +452,9 @@ onMounted(async () => {
               </Select>
             </div>
             <div class="space-y-2">
-              <Label>状态</Label>
+              <Label for="role-status">状态</Label>
               <Select v-model="form.status">
-                <SelectTrigger>
+                <SelectTrigger id="role-status">
                   <SelectValue placeholder="请选择状态" />
                 </SelectTrigger>
                 <SelectContent>
@@ -478,8 +468,9 @@ onMounted(async () => {
               </Select>
             </div>
             <div class="space-y-2">
-              <Label>排序</Label>
+              <Label for="role-sortOrder">排序</Label>
               <Input
+                id="role-sortOrder"
                 :model-value="String(form.sortOrder)"
                 type="number"
                 placeholder="排序值"

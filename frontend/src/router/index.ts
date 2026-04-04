@@ -6,6 +6,7 @@ import {
   normalizeComponentPath
 } from '@/router/dynamic-routes'
 import { decideGuardAction } from '@/router/guard'
+import { logError } from '@/utils/logger'
 
 const viewModules = import.meta.glob('../views/**/*.vue')
 
@@ -121,7 +122,7 @@ export const ensureDynamicRoutes = async () => {
       addDynamicRoutes(userStore.menus)
       dynamicRoutesLoaded = true
     } catch (error) {
-      console.error('Failed to load dynamic routes:', error)
+      logError('加载动态路由失败', error as Error, 'Router')
       // Don't set dynamicRoutesLoaded to true on error, so we can retry
     }
   }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import {
   Button,
   Card,
@@ -20,6 +20,7 @@ import {
 } from '@/components/ui'
 import { Plus, Trash2, Eye, Save, FileText, Copy } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
+import { ConfirmDialog } from '@/components/common'
 import WorkflowFormConfigEditor from '@/components/workflow/designer/WorkflowFormConfigEditor.vue'
 import WorkflowFormRenderer from '@/components/workflow/WorkflowFormRenderer.vue'
 import { useAsyncAction } from '@/composables/useAsyncAction'
@@ -55,6 +56,11 @@ const editForm = ref<FormTemplateReq>({
 
 // 复制状态
 const copiedToClipboard = ref(false)
+const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
+
+// 删除确认对话框
+const deleteDialogOpen = ref(false)
+const deleteTarget = ref<FormTemplate | null>(null)
 
 // 用户权限
 const userStore = useUserStore()
@@ -165,16 +171,22 @@ const deleteForm = (template: FormTemplate) => {
     return
   }
 
-  if (!confirm(`确定要删除表单模板"${template.templateName}"吗？`)) {
-    return
-  }
+  deleteTarget.value = template
+  deleteDialogOpen.value = true
+}
+
+const confirmDelete = () => {
+  if (!deleteTarget.value) return
 
   runList(async () => {
-    await deleteFormTemplate(template.id)
+    await deleteFormTemplate(deleteTarget.value!.id)
   }, {
     successMessage: '删除成功',
     errorMessage: '删除失败',
     onSuccess: () => fetchTemplates()
+  }).finally(() => {
+    deleteDialogOpen.value = false
+    deleteTarget.value = null
   })
 }
 
@@ -183,7 +195,8 @@ const copyFormConfig = () => {
   navigator.clipboard.writeText(editForm.value.formConfig || '')
   copiedToClipboard.value = true
   toast.success('已复制到剪贴板')
-  setTimeout(() => {
+  if (copyTimeout.value) clearTimeout(copyTimeout.value)
+  copyTimeout.value = setTimeout(() => {
     copiedToClipboard.value = false
   }, 2000)
 }
@@ -203,6 +216,13 @@ const backToList = () => {
 
 // 生命周期
 onMounted(fetchTemplates)
+
+// 清理定时器
+onUnmounted(() => {
+  if (copyTimeout.value) {
+    clearTimeout(copyTimeout.value)
+  }
+})
 </script>
 
 <template>
@@ -502,6 +522,15 @@ onMounted(fetchTemplates)
         </Card>
       </div>
     </template>
+
+    <!-- 删除确认对话框 -->
+    <ConfirmDialog
+      v-model:open="deleteDialogOpen"
+      title="确认删除"
+      :description="`确定要删除表单模板「${deleteTarget?.templateName}」吗？`"
+      confirm-text="确认删除"
+      @confirm="confirmDelete"
+    />
   </div>
 </template>
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import WorkflowBusinessCard from './WorkflowBusinessCard.vue'
+import WorkflowBusinessCard from '@/components/workflow/WorkflowBusinessCard.vue'
 import type { WorkflowFormConfig } from '@/types'
 
 const workflowFormConfig: WorkflowFormConfig = {

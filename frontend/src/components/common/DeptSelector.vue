@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { getDeptTree } from '@/api'
 import type { Dept } from '@/types'
+import { logError } from '@/utils/logger'
 
 interface DeptOption {
   id: string
@@ -55,8 +56,8 @@ const loadDepts = async () => {
   try {
     const res = await getDeptTree()
     deptOptions.value = flattenDeptTree(res.data)
-  } catch {
-    // Silent failure - selector will show empty list
+  } catch (error) {
+    logError('加载部门列表失败', error as Error, 'DeptSelector')
   } finally {
     loading.value = false
   }

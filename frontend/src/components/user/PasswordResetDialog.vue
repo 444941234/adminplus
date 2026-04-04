@@ -77,12 +77,14 @@ const handleOpenChange = (value: boolean) => {
         <DialogDescription>为用户 {{ username }} 设置新的登录密码</DialogDescription>
       </DialogHeader>
       <div class="space-y-2 py-2">
-        <Label>新密码</Label>
+        <Label for="reset-password">新密码</Label>
         <div class="relative">
           <Input
+            id="reset-password"
             v-model="newPassword"
             :type="showPassword ? 'text' : 'password'"
-            placeholder="请输入新密码"
+            placeholder="12 位以上，需包含大小写字母、数字和特殊字符"
+            autocomplete="new-password"
             class="pr-10"
           />
           <Button

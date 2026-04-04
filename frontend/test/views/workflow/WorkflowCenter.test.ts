@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { defineComponent, h, ref } from 'vue'
 import { createPinia, setActivePinia } from 'pinia'
-import WorkflowCenter from './WorkflowCenter.vue'
+import WorkflowCenter from '@/views/workflow/WorkflowCenter.vue'
 
 const apiMocks = vi.hoisted(() => ({
   getWorkflowDefinitions: vi.fn(),

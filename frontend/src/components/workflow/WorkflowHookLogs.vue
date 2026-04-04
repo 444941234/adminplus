@@ -124,7 +124,13 @@ watch(() => props.instanceId, () => {
           >
             <div
               class="flex items-center justify-between p-3 cursor-pointer hover:bg-muted/50"
+              role="button"
+              tabindex="0"
+              :aria-expanded="expandedLogId === log.id"
+              :aria-label="expandedLogId === log.id ? '收起详情' : '展开详情'"
               @click="toggleExpand(log.id)"
+              @keydown.enter="toggleExpand(log.id)"
+              @keydown.space.prevent="toggleExpand(log.id)"
             >
               <div class="flex items-center gap-2">
                 <component

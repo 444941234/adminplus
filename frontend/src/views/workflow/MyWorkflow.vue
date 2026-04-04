@@ -33,6 +33,7 @@ import WorkflowActionButtons from '@/components/workflow/WorkflowActionButtons.v
 import WorkflowListFilters from '@/components/workflow/WorkflowListFilters.vue'
 import WorkflowStartDialog from '@/components/workflow/WorkflowStartDialog.vue'
 import WorkflowStatusBadge from '@/components/workflow/WorkflowStatusBadge.vue'
+import { ConfirmDialog } from '@/components/common'
 import { useWorkflowActions } from '@/composables/workflow/useWorkflowActions'
 import { useWorkflowForm } from '@/composables/workflow/useWorkflowForm'
 import type { WorkflowDefinition, WorkflowFormValues, WorkflowInstance } from '@/types'
@@ -233,17 +234,29 @@ const handleQuickSubmitDraft = async (workflow: WorkflowInstance) => {
   await openDraftDialog(workflow)
 }
 
+// 删除草稿确认
+const deleteDialogOpen = ref(false)
+const deleteDraftTarget = ref<WorkflowInstance | null>(null)
+
 const handleDeleteDraft = (workflow: WorkflowInstance) => {
   if (!permissionState.value.canDraftWorkflow) return
-  if (!window.confirm('确认删除该草稿吗？')) return
+  deleteDraftTarget.value = workflow
+  deleteDialogOpen.value = true
+}
+
+const confirmDeleteDraft = () => {
+  if (!deleteDraftTarget.value) return
 
   runDeleteDraft(async () => {
-    await deleteWorkflowDraft(workflow.id)
+    await deleteWorkflowDraft(deleteDraftTarget.value!.id)
   }, {
     successMessage: '草稿已删除',
     onSuccess: () => {
       fetchData()
     }
+  }).finally(() => {
+    deleteDialogOpen.value = false
+    deleteDraftTarget.value = null
   })
 }
 
@@ -386,6 +399,15 @@ onMounted(async () => {
       @update:form-values="(value) => { formValues = value }"
       @save-draft="handleDraftSave"
       @submit="handleDraftSubmit"
+    />
+
+    <!-- 删除草稿确认对话框 -->
+    <ConfirmDialog
+      v-model:open="deleteDialogOpen"
+      title="确认删除"
+      description="确定要删除该草稿吗？"
+      confirm-text="确认删除"
+      @confirm="confirmDeleteDraft"
     />
   </div>
 </template>

@@ -15,9 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'vue-sonner'
 import { changePassword } from '@/api'
-
-// Constants
-const MIN_PASSWORD_LENGTH = 6
+import { isStrongPassword } from '@/lib/validators'
 
 // Password change dialog state
 const isPasswordDialogOpen = ref(false)
@@ -33,27 +31,8 @@ const validationErrors = ref<{
   confirmPassword?: string
 }>({})
 
-// Validate password format
-const validatePassword = (password: string): boolean => {
-  // Check minimum length
-  if (password.length < MIN_PASSWORD_LENGTH) {
-    return false
-  }
-
-  // Check for at least one letter
-  const hasLetter = /[a-zA-Z]/.test(password)
-  if (!hasLetter) {
-    return false
-  }
-
-  // Check for at least one number
-  const hasNumber = /[0-9]/.test(password)
-  if (!hasNumber) {
-    return false
-  }
-
-  return true
-}
+// Password requirement message (matches isStrongPassword validator)
+const PASSWORD_REQUIREMENT_MSG = '密码需 12 位以上，且包含大小写字母、数字和特殊字符'
 
 // Validate password form
 const validateForm = (): boolean => {
@@ -66,8 +45,8 @@ const validateForm = (): boolean => {
 
   if (!newPassword.value.trim()) {
     errors.newPassword = '请输入新密码'
-  } else if (!validatePassword(newPassword.value)) {
-    errors.newPassword = `密码至少需要 ${MIN_PASSWORD_LENGTH} 个字符，包含字母和数字`
+  } else if (!isStrongPassword(newPassword.value)) {
+    errors.newPassword = PASSWORD_REQUIREMENT_MSG
   }
 
   if (!confirmPassword.value.trim()) {
@@ -161,6 +140,7 @@ const handleDialogOpenChange = (open: boolean) => {
                   v-model="currentPassword"
                   type="password"
                   placeholder="请输入当前密码"
+                  autocomplete="current-password"
                   :class="{ 'password-form__input--error': validationErrors.currentPassword }"
                   @keyup.enter="handlePasswordChange"
                 />
@@ -179,7 +159,8 @@ const handleDialogOpenChange = (open: boolean) => {
                   id="new-password"
                   v-model="newPassword"
                   type="password"
-                  placeholder="请输入新密码（至少 6 个字符）"
+                  placeholder="12 位以上，需包含大小写字母、数字和特殊字符"
+                  autocomplete="new-password"
                   :class="{ 'password-form__input--error': validationErrors.newPassword }"
                   @keyup.enter="handlePasswordChange"
                 />
@@ -199,6 +180,7 @@ const handleDialogOpenChange = (open: boolean) => {
                   v-model="confirmPassword"
                   type="password"
                   placeholder="请再次输入新密码"
+                  autocomplete="new-password"
                   :class="{ 'password-form__input--error': validationErrors.confirmPassword }"
                   @keyup.enter="handlePasswordChange"
                 />

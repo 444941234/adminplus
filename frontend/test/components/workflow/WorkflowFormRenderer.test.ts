@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
-import WorkflowFormRenderer from './WorkflowFormRenderer.vue'
+import WorkflowFormRenderer from '@/components/workflow/WorkflowFormRenderer.vue'
 import type { WorkflowFormConfig } from '@/types'
 
 const workflowFormConfig: WorkflowFormConfig = {

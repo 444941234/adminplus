@@ -30,7 +30,11 @@ vi.mock('vue-sonner', () => ({
 vi.mock('@/composables/useApiInterceptors', () => ({
   showErrorToast: vi.fn((_error: Error, message: string) => {
     toastMocks.error(message)
-  })
+  }),
+  setupRequestInterceptor: vi.fn(),
+  setupResponseInterceptor: vi.fn(),
+  clearPendingRequests: vi.fn(),
+  isCanceledError: vi.fn()
 }))
 
 const makeHook = (overrides: Partial<Record<string, any>> = {}) => ({
@@ -108,6 +112,25 @@ const DialogFooterStub = defineComponent({
   }
 })
 
+const ConfirmDialogStub = defineComponent({
+  name: 'ConfirmDialog',
+  props: {
+    open: { type: Boolean, default: false },
+    title: { type: String, default: '' },
+    description: { type: String, default: '' },
+    confirmText: { type: String, default: '' }
+  },
+  emits: ['update:open', 'confirm'],
+  setup(props, { emit }) {
+    return () => h('div', {
+      class: 'confirm-dialog-stub',
+      'data-open': String(props.open)
+    }, [
+      h('button', { class: 'confirm-btn', onClick: () => emit('confirm') }, 'Confirm')
+    ])
+  }
+})
+
 describe('WorkflowHookDialog.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -132,6 +155,7 @@ describe('WorkflowHookDialog.vue', () => {
           DialogTitle: DialogTitleStub,
           DialogDescription: DialogDescriptionStub,
           DialogFooter: DialogFooterStub,
+          ConfirmDialog: ConfirmDialogStub,
           Button: true,
           Input: true,
           Label: true,
@@ -184,6 +208,7 @@ describe('WorkflowHookDialog.vue', () => {
             DialogTitle: DialogTitleStub,
             DialogDescription: DialogDescriptionStub,
             DialogFooter: DialogFooterStub,
+            ConfirmDialog: ConfirmDialogStub,
             Button: true, Input: true, Label: true, Textarea: true,
             Select: true, SelectContent: true, SelectItem: true, SelectTrigger: true, SelectValue: true, Checkbox: true
           }
@@ -361,33 +386,55 @@ describe('WorkflowHookDialog.vue', () => {
   // 8. Delete Hook
   // =========================================================================
   describe('Delete Hook', () => {
-    it('deletes hook after confirmation', async () => {
-      vi.spyOn(window, 'confirm').mockReturnValue(true)
+    it('opens delete confirmation dialog', async () => {
       const wrapper = await mountComponent()
       const vm = wrapper.vm as any
 
-      await vm.handleDeleteHook('hook-001')
+      vm.handleDeleteHook('hook-001')
+      await flushPromises()
+
+      expect(vm.deleteDialogOpen).toBe(true)
+      expect(vm.deleteHookId).toBe('hook-001')
+    })
+
+    it('deletes hook after confirmation', async () => {
+      const wrapper = await mountComponent()
+      const vm = wrapper.vm as any
+
+      // Open delete dialog
+      vm.handleDeleteHook('hook-001')
+      await flushPromises()
+
+      // Confirm delete (simulate clicking confirm button)
+      await vm.confirmDeleteHook()
       await flushPromises()
 
       expect(apiMocks.deleteHook).toHaveBeenCalledWith('hook-001')
     })
 
-    it('does not delete when confirmation is cancelled', async () => {
-      vi.spyOn(window, 'confirm').mockReturnValue(false)
+    it('does not delete when dialog is cancelled', async () => {
       const wrapper = await mountComponent()
       const vm = wrapper.vm as any
 
-      await vm.handleDeleteHook('hook-001')
+      // Open delete dialog
+      vm.handleDeleteHook('hook-001')
+      await flushPromises()
+
+      // Close dialog without confirming (simulate clicking cancel)
+      vm.deleteDialogOpen = false
+      await flushPromises()
 
       expect(apiMocks.deleteHook).not.toHaveBeenCalled()
     })
 
     it('emits refresh event after delete', async () => {
-      vi.spyOn(window, 'confirm').mockReturnValue(true)
       const wrapper = await mountComponent()
       const vm = wrapper.vm as any
 
-      await vm.handleDeleteHook('hook-001')
+      // Open and confirm delete
+      vm.handleDeleteHook('hook-001')
+      await flushPromises()
+      await vm.confirmDeleteHook()
       await flushPromises()
 
       expect(wrapper.emitted('refresh')).toBeTruthy()

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { mount, RouterLinkStub } from '@vue/test-utils'
-import WorkflowActionButtons from './WorkflowActionButtons.vue'
+import WorkflowActionButtons from '@/components/workflow/WorkflowActionButtons.vue'
 import type { WorkflowInstance } from '@/types'
 
 const baseWorkflow: WorkflowInstance = {

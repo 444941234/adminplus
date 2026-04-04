@@ -12,6 +12,7 @@ import {
 import { Input, Label, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Checkbox } from '@/components/ui'
 import { getNodeHooks, createHook, updateHook, deleteHook, type WorkflowNodeHook, type WorkflowHookReq } from '@/api/workflow'
 import { showErrorToast } from '@/composables/useApiInterceptors'
+import { ConfirmDialog } from '@/components/common'
 
 const HOOK_POINTS = [
   { value: 'PRE_SUBMIT', label: '提交前校验', type: 'validate' },
@@ -48,6 +49,10 @@ const emit = defineEmits<{
 }>()
 
 const hooks = ref<WorkflowNodeHook[]>([])
+
+// Delete confirmation dialog
+const deleteDialogOpen = ref(false)
+const deleteHookId = ref<string | null>(null)
 const loading = ref(false)
 const editingHook = ref<WorkflowNodeHook | null>(null)
 const showForm = ref(false)
@@ -178,13 +183,21 @@ const saveHook = async () => {
 }
 
 const handleDeleteHook = async (hookId: string) => {
-  if (!confirm('确定要删除这个钩子配置吗？')) return
+  deleteHookId.value = hookId
+  deleteDialogOpen.value = true
+}
+
+const confirmDeleteHook = async () => {
+  if (!deleteHookId.value) return
   try {
-    await deleteHook(hookId)
+    await deleteHook(deleteHookId.value)
     await loadHooks()
     emit('refresh')
   } catch (error) {
     showErrorToast(error, '删除钩子失败')
+  } finally {
+    deleteDialogOpen.value = false
+    deleteHookId.value = null
   }
 }
 
@@ -533,4 +546,13 @@ watch(() => props.open, (val) => {
       </DialogFooter>
     </DialogContent>
   </Dialog>
+
+  <!-- Delete Hook Confirmation -->
+  <ConfirmDialog
+    v-model:open="deleteDialogOpen"
+    title="确认删除"
+    description="确定要删除这个钩子配置吗？"
+    confirm-text="确认删除"
+    @confirm="confirmDeleteHook"
+  />
 </template>

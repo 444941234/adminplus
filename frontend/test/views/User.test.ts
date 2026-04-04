@@ -190,10 +190,10 @@ describe('User Page', () => {
       expect(wrapper.find('.space-y-4').exists()).toBe(true)
     })
 
-    it('renders two Card components (filter card + table card)', async () => {
+    it('renders one Card component (table card)', async () => {
       wrapper = await mountAndFlush()
       const cards = wrapper.findAllComponents({ name: 'Card' })
-      expect(cards.length).toBeGreaterThanOrEqual(2)
+      expect(cards.length).toBeGreaterThanOrEqual(1)
     })
 
     it('renders the user table with 9 column headers', async () => {

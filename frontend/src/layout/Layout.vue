@@ -246,6 +246,8 @@ onMounted(() => {
               <button
                 type="button"
                 class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-accent"
+                :aria-expanded="openGroups[node.id]"
+                :aria-label="`${node.label} ${openGroups[node.id] ? '收起' : '展开'}`"
                 @click="toggleGroup(node)"
               >
                 <component
@@ -292,6 +294,8 @@ onMounted(() => {
                     <button
                       type="button"
                       class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                      :aria-expanded="openGroups[child.id]"
+                      :aria-label="`${child.label} ${openGroups[child.id] ? '收起' : '展开'}`"
                       @click="toggleGroup(child)"
                     >
                       <component
@@ -335,6 +339,8 @@ onMounted(() => {
                         <button
                           type="button"
                           class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                          :aria-expanded="openGroups[deepGroup.id]"
+                          :aria-label="`${deepGroup.label} ${openGroups[deepGroup.id] ? '收起' : '展开'}`"
                           @click="toggleGroup(deepGroup)"
                         >
                           <component

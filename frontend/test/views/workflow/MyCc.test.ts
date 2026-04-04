@@ -2,40 +2,39 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, ref } from 'vue'
 import { flushPromises, mount, RouterLinkStub } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import UrgeCenter from './UrgeCenter.vue'
+import MyCc from '@/views/workflow/MyCc.vue'
 
-const fetchUrgeList = vi.fn()
+const fetchCcList = vi.fn()
 const fetchUnreadCount = vi.fn()
 const markRead = vi.fn()
 const markAllRead = vi.fn()
 const loadingRef = ref(false)
-const unreadCountRef = ref(3)
-const activeTabRef = ref<'received' | 'sent' | 'unread'>('received')
+const unreadCountRef = ref(2)
+const activeTabRef = ref<'all' | 'unread'>('all')
 const recordsRef = ref([
   {
-    id: 'urge-001',
+    id: 'cc-001',
     instanceId: 'inst-001',
     nodeId: 'node-001',
-    nodeName: '财务审批',
-    urgeUserId: 'user-001',
-    urgeUserName: '张三',
-    urgeTargetId: 'user-002',
-    urgeTargetName: '李四',
-    urgeContent: '请尽快审批',
+    nodeName: '部门经理审批',
+    userId: 'user-002',
+    userName: '李四',
+    ccType: 'approve',
+    ccContent: '审批通过抄送',
     isRead: false,
     readTime: null,
     createTime: '2026-03-27T08:00:00Z'
   }
 ])
 
-vi.mock('@/composables/workflow/useWorkflowUrge', () => ({
-  useWorkflowUrge: () => ({
+vi.mock('@/composables/workflow/useWorkflowCc', () => ({
+  useWorkflowCc: () => ({
     loading: loadingRef,
     unreadCount: unreadCountRef,
     activeTab: activeTabRef,
     records: recordsRef,
     fetchUnreadCount,
-    fetchUrgeList,
+    fetchCcList,
     markRead,
     markAllRead
   })
@@ -54,7 +53,6 @@ const TabsStub = defineComponent({
     return () =>
       h('div', { class: 'tabs-stub' }, [
         slots.default?.(),
-        h('button', { class: 'switch-sent', onClick: () => emit('update:modelValue', 'sent') }, '切换发出'),
         h('button', { class: 'switch-unread', onClick: () => emit('update:modelValue', 'unread') }, '切换未读')
       ])
   }
@@ -74,24 +72,23 @@ const TabsTriggerStub = defineComponent({
   }
 })
 
-describe('UrgeCenter.vue', () => {
+describe('MyCc.vue', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
     loadingRef.value = false
-    unreadCountRef.value = 3
-    activeTabRef.value = 'received'
+    unreadCountRef.value = 2
+    activeTabRef.value = 'all'
     recordsRef.value = [
       {
-        id: 'urge-001',
+        id: 'cc-001',
         instanceId: 'inst-001',
         nodeId: 'node-001',
-        nodeName: '财务审批',
-        urgeUserId: 'user-001',
-        urgeUserName: '张三',
-        urgeTargetId: 'user-002',
-        urgeTargetName: '李四',
-        urgeContent: '请尽快审批',
+        nodeName: '部门经理审批',
+        userId: 'user-002',
+        userName: '李四',
+        ccType: 'approve',
+        ccContent: '审批通过抄送',
         isRead: false,
         readTime: null,
         createTime: '2026-03-27T08:00:00Z'
@@ -99,8 +96,8 @@ describe('UrgeCenter.vue', () => {
     ]
   })
 
-  it('fetches urge list and unread count on mount', async () => {
-    mount(UrgeCenter, {
+  it('fetches cc list and unread count on mount', async () => {
+    mount(MyCc, {
       global: {
         stubs: {
           RouterLink: RouterLinkStub,
@@ -113,12 +110,12 @@ describe('UrgeCenter.vue', () => {
 
     await flushPromises()
 
-    expect(fetchUrgeList).toHaveBeenCalled()
+    expect(fetchCcList).toHaveBeenCalled()
     expect(fetchUnreadCount).toHaveBeenCalled()
   })
 
-  it('switches tabs and marks urge as read', async () => {
-    const wrapper = mount(UrgeCenter, {
+  it('switches to unread tab and marks record as read', async () => {
+    const wrapper = mount(MyCc, {
       global: {
         stubs: {
           RouterLink: RouterLinkStub,
@@ -130,17 +127,15 @@ describe('UrgeCenter.vue', () => {
     })
 
     await flushPromises()
-    await wrapper.find('.switch-sent').trigger('click')
     await wrapper.find('.switch-unread').trigger('click')
     await wrapper.findAll('button').find((button) => button.text() === '标记已读')!.trigger('click')
 
-    expect(fetchUrgeList).toHaveBeenCalledWith('sent')
-    expect(fetchUrgeList).toHaveBeenCalledWith('unread')
-    expect(markRead).toHaveBeenCalledWith('urge-001')
+    expect(fetchCcList).toHaveBeenCalledWith('unread')
+    expect(markRead).toHaveBeenCalledWith('cc-001')
   })
 
-  it('marks all unread urge records as read', async () => {
-    const wrapper = mount(UrgeCenter, {
+  it('marks all unread records as read', async () => {
+    const wrapper = mount(MyCc, {
       global: {
         stubs: {
           RouterLink: RouterLinkStub,

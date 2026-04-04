@@ -5,6 +5,7 @@ import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@/compo
 import { toast } from 'vue-sonner'
 import { useUserStore } from '@/stores/user'
 import { ensureDynamicRoutes } from '@/router'
+import { logError } from '@/utils/logger'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -48,7 +49,8 @@ const refreshCaptcha = async () => {
   try {
     await userStore.fetchCaptcha()
     form.captchaCode = ''
-  } catch {
+  } catch (error) {
+    logError('获取验证码失败', error as Error, 'Login')
     toast.error('获取验证码失败')
   }
 }
@@ -130,29 +132,67 @@ onMounted(() => {
             @submit.prevent="handleLogin"
           >
             <div>
-              <label class="block text-sm font-medium mb-1.5">用户名</label>
+              <label
+                for="username"
+                class="block text-sm font-medium mb-1.5"
+              >
+                用户名
+                <span
+                  class="text-destructive"
+                  aria-hidden="true"
+                >*</span>
+              </label>
               <Input
+                id="username"
                 v-model="form.username"
                 placeholder="请输入用户名"
-              />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium mb-1.5">密码</label>
-              <Input
-                v-model="form.password"
-                type="password"
-                placeholder="请输入密码"
+                autocomplete="username"
+                required
+                aria-required="true"
               />
             </div>
 
             <div>
-              <label class="block text-sm font-medium mb-1.5">验证码</label>
+              <label
+                for="password"
+                class="block text-sm font-medium mb-1.5"
+              >
+                密码
+                <span
+                  class="text-destructive"
+                  aria-hidden="true"
+                >*</span>
+              </label>
+              <Input
+                id="password"
+                v-model="form.password"
+                type="password"
+                placeholder="请输入密码"
+                autocomplete="current-password"
+                required
+                aria-required="true"
+              />
+            </div>
+
+            <div>
+              <label
+                for="captchaCode"
+                class="block text-sm font-medium mb-1.5"
+              >
+                验证码
+                <span
+                  class="text-destructive"
+                  aria-hidden="true"
+                >*</span>
+              </label>
               <div class="flex gap-3">
                 <Input
+                  id="captchaCode"
                   v-model="form.captchaCode"
                   placeholder="请输入验证码"
                   class="flex-1"
+                  required
+                  aria-required="true"
                   @keyup.enter="handleLogin"
                 />
                 <img

@@ -4,6 +4,10 @@ import type { BadgeVariants } from "."
 import { cn } from "@/lib/utils"
 import { badgeVariants } from "."
 
+defineOptions({
+  inheritAttrs: false
+})
+
 const props = defineProps<{
   variant?: BadgeVariants["variant"]
   class?: HTMLAttributes["class"]
@@ -11,7 +15,10 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div :class="cn(badgeVariants({ variant }), props.class)">
+  <div
+    :class="cn(badgeVariants({ variant }), props.class)"
+    v-bind="$attrs"
+  >
     <slot />
   </div>
 </template>

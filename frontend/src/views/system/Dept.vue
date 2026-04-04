@@ -24,7 +24,7 @@ import { isValidChinaPhone, isValidEmail } from '@/lib/validators'
 import type { Dept } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { useCRUD } from '@/composables/useCRUD'
-import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useStatusToggle } from '@/composables/useStatusToggle'
 import { createDept, deleteDept, getDeptById, getDeptTree, updateDept, updateDeptStatus } from '@/api'
 
 interface DeptFormState {
@@ -52,10 +52,17 @@ const searchQuery = ref('')
 const expandedKeys = ref<Set<string>>(new Set())
 const userStore = useUserStore()
 
-// Status toggle confirmation
-const statusConfirmOpen = ref(false)
-const statusChangeDept = ref<Dept | null>(null)
-const { loading: statusLoading, run: runStatus } = useAsyncAction('状态更新失败')
+// Status toggle
+const {
+  statusChangeItem: statusChangeDept,
+  statusConfirmOpen,
+  loading: statusLoading,
+  handleStatusClick,
+  handleStatusConfirm
+} = useStatusToggle<Dept>({
+  updateStatus: (id, newStatus) => updateDeptStatus(id, newStatus),
+  onSuccess: () => fetchList()
+})
 
 // CRUD composable
 const {
@@ -272,27 +279,6 @@ const parentOptions = computed(() => {
   return flattenDeptOptions(treeData.value).filter((item) => !blockedIds.has(item.id))
 })
 
-// Status toggle handlers
-const handleStatusClick = (dept: Dept) => {
-  statusChangeDept.value = dept
-  statusConfirmOpen.value = true
-}
-
-const handleStatusConfirm = () => {
-  if (!statusChangeDept.value) return
-  runStatus(async () => {
-    const newStatus = statusChangeDept.value!.status === 1 ? 0 : 1
-    await updateDeptStatus(statusChangeDept.value!.id, newStatus)
-  }, {
-    successMessage: '状态更新成功',
-    errorMessage: '更新状态失败',
-    onSuccess: () => fetchList()
-  }).finally(() => {
-    statusConfirmOpen.value = false
-    statusChangeDept.value = null
-  })
-}
-
 onMounted(fetchList)
 </script>
 
@@ -372,6 +358,8 @@ onMounted(fetchList)
                   <button
                     v-if="dept.hasChildren && !searchQuery.trim()"
                     class="w-4 h-4 flex items-center justify-center text-muted-foreground hover:text-foreground"
+                    :aria-label="dept.isExpanded ? '收起' : '展开'"
+                    :aria-expanded="dept.isExpanded"
                     @click="toggleExpand(dept.id)"
                   >
                     {{ dept.isExpanded ? '−' : '+' }}

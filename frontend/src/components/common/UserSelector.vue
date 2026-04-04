@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui'
 import { getUserList } from '@/api'
 import type { User } from '@/types'
+import { logError } from '@/utils/logger'
 
 const props = defineProps<{
   modelValue?: string
@@ -43,8 +44,8 @@ const loadUsers = async () => {
   try {
     const res = await getUserList({ page: 1, size: 200 })
     users.value = res.data.records
-  } catch {
-    // Silent failure - selector will show empty list
+  } catch (error) {
+    logError('加载用户列表失败', error as Error, 'UserSelector')
   } finally {
     loading.value = false
   }

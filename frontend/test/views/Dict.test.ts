@@ -166,7 +166,7 @@ describe('Dict Page', () => {
         plugins: [pinia],
         stubs: {
           ConfirmDialog: true,
-          PageHeader: true,
+          ListSearchBar: true,
           Pagination: true,
           StatusBadge: true
         }
@@ -201,9 +201,9 @@ describe('Dict Page', () => {
       ])
     })
 
-    it('renders PageHeader stub', async () => {
+    it('renders ListSearchBar stub', async () => {
       wrapper = await mountAndFlush()
-      expect(wrapper.findComponent({ name: 'PageHeader' }).exists()).toBe(true)
+      expect(wrapper.findComponent({ name: 'ListSearchBar' }).exists()).toBe(true)
     })
 
     it('renders Pagination stub', async () => {
@@ -911,7 +911,7 @@ describe('Dict Page', () => {
           plugins: [pinia],
           stubs: {
             ConfirmDialog: true,
-            PageHeader: true,
+            ListSearchBar: true,
             Pagination: true,
             StatusBadge: true
           }

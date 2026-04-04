@@ -16,16 +16,31 @@ withDefaults(defineProps<{
   inactiveText: '禁用'
 })
 
-defineEmits<{
+const emit = defineEmits<{
   (_e: 'toggle'): void
 }>()
+
+const handleClick = () => {
+  emit('toggle')
+}
+
+const handleKeydown = (event: KeyboardEvent) => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    emit('toggle')
+  }
+}
 </script>
 
 <template>
   <Badge
     :variant="status === 1 ? 'default' : 'destructive'"
-    :class="clickable ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''"
-    @click="clickable && $emit('toggle')"
+    :role="clickable ? 'button' : undefined"
+    :tabindex="clickable ? 0 : undefined"
+    :aria-label="clickable ? `点击${status === 1 ? '禁用' : '启用'}` : undefined"
+    :class="clickable ? 'cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2' : ''"
+    @click="clickable && handleClick()"
+    @keydown="clickable && handleKeydown($event)"
   >
     {{ status === 1 ? activeText : inactiveText }}
   </Badge>

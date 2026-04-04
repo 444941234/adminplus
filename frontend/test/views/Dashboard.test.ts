@@ -9,6 +9,15 @@ vi.mock('@/api', () => ({
   getRecentLogs: vi.fn()
 }))
 
+// Mock the notification API module (used by NotificationCenter)
+vi.mock('@/api/notification', () => ({
+  getMyNotifications: vi.fn().mockResolvedValue({ code: 200, message: 'success', data: { content: [], totalElements: 0 } }),
+  getUnreadCount: vi.fn().mockResolvedValue({ code: 200, message: 'success', data: 0 }),
+  markAsRead: vi.fn(),
+  markAllAsRead: vi.fn(),
+  deleteNotification: vi.fn()
+}))
+
 // Mock the permissions library
 vi.mock('@/lib/page-permissions', () => ({
   getDashboardQuickActions: vi.fn(() => [])

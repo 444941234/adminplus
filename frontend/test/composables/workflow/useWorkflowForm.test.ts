@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { useWorkflowForm } from './useWorkflowForm'
+import { useWorkflowForm } from '@/composables/workflow/useWorkflowForm'
 
 describe('useWorkflowForm', () => {
   it('initializes form values from config defaults and raw data', () => {

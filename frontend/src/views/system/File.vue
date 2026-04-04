@@ -154,8 +154,8 @@ onMounted(fetchFiles)
       <template #actions>
         <Button
           v-if="canUploadFile"
-          @click="handleUpload"
           :disabled="uploading"
+          @click="handleUpload"
         >
           <Upload class="mr-2 h-4 w-4" />
           {{ uploading ? '上传中...' : '上传文件' }}

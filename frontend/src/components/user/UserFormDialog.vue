@@ -166,16 +166,19 @@ const handleOpenChange = (value: boolean) => {
       >
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
-            <Label>用户名</Label>
+            <Label for="username">用户名</Label>
             <Input
+              id="username"
               v-model="form.username"
               :disabled="isEdit"
               placeholder="请输入用户名"
+              autocomplete="username"
             />
           </div>
           <div class="space-y-2">
-            <Label>昵称</Label>
+            <Label for="nickname">昵称</Label>
             <Input
+              id="nickname"
               v-model="form.nickname"
               placeholder="请输入昵称"
             />
@@ -183,26 +186,30 @@ const handleOpenChange = (value: boolean) => {
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
-            <Label>邮箱</Label>
+            <Label for="email">邮箱</Label>
             <Input
+              id="email"
               v-model="form.email"
               type="email"
               placeholder="请输入邮箱"
+              autocomplete="email"
             />
           </div>
           <div class="space-y-2">
-            <Label>手机号</Label>
+            <Label for="phone">手机号</Label>
             <Input
+              id="phone"
               v-model="form.phone"
               placeholder="请输入手机号"
+              autocomplete="tel"
             />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div class="space-y-2">
-            <Label>部门</Label>
+            <Label for="deptId">部门</Label>
             <Select v-model="form.deptId">
-              <SelectTrigger>
+              <SelectTrigger id="deptId">
                 <SelectValue placeholder="请选择部门" />
               </SelectTrigger>
               <SelectContent>
@@ -217,9 +224,9 @@ const handleOpenChange = (value: boolean) => {
             </Select>
           </div>
           <div class="space-y-2">
-            <Label>状态</Label>
+            <Label for="status">状态</Label>
             <Select v-model="form.status">
-              <SelectTrigger>
+              <SelectTrigger id="status">
                 <SelectValue placeholder="请选择状态" />
               </SelectTrigger>
               <SelectContent>
@@ -237,11 +244,13 @@ const handleOpenChange = (value: boolean) => {
           v-if="!isEdit"
           class="space-y-2"
         >
-          <Label>初始密码</Label>
+          <Label for="password">初始密码</Label>
           <Input
+            id="password"
             v-model="form.password"
             type="password"
             placeholder="12 位以上，需包含大小写字母、数字和特殊字符"
+            autocomplete="new-password"
           />
         </div>
       </div>

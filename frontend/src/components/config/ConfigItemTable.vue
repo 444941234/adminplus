@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { Button, Switch } from '@/components/ui'
 import { Edit, Eye, EyeOff, History, Trash2, Copy, Check } from 'lucide-vue-next'
 import type { Config } from '@/types'
@@ -20,6 +20,13 @@ const copyValue = async (config: Config) => {
     // Fallback failed - user can manually copy
   }
 }
+
+// Cleanup timeout on unmount
+onUnmounted(() => {
+  if (copyTimeout.value) {
+    clearTimeout(copyTimeout.value)
+  }
+})
 
 interface Props {
   configs: Config[]
@@ -211,6 +218,8 @@ const shouldShowCopyButton = (config: Config) => {
                 size="sm"
                 variant="ghost"
                 class="h-6 w-6 p-0"
+                :title="isSecretVisible(config.id) ? '隐藏密文' : '显示密文'"
+                :aria-label="isSecretVisible(config.id) ? '隐藏密文' : '显示密文'"
                 @click="toggleSecret(config.id)"
               >
                 <Eye
@@ -228,6 +237,7 @@ const shouldShowCopyButton = (config: Config) => {
                 variant="ghost"
                 class="h-6 w-6 p-0"
                 :title="copiedId === config.id ? '已复制' : '复制值'"
+                :aria-label="copiedId === config.id ? '已复制' : '复制值'"
                 @click="copyValue(config)"
               >
                 <Check

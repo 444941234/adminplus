@@ -28,6 +28,7 @@ import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useTreeData } from '@/composables/useTreeData'
+import { useStatusToggle } from '@/composables/useStatusToggle'
 
 interface MenuFormState {
   parentId: string
@@ -135,9 +136,16 @@ const deleteDialogOpen = ref(false)
 const deleteMenuId = ref('')
 const selectedMenuIds = ref<string[]>([])
 
-// Status toggle confirmation
-const statusConfirmOpen = ref(false)
-const statusChangeMenu = ref<Menu | null>(null)
+// Status toggle
+const {
+  statusChangeItem: statusChangeMenu,
+  statusConfirmOpen,
+  handleStatusClick,
+  handleStatusConfirm
+} = useStatusToggle<Menu>({
+  updateStatus: (id, newStatus) => batchUpdateStatus([id], newStatus),
+  onSuccess: () => fetchData()
+})
 
 const form = reactive<MenuFormState>({
   parentId: '0',
@@ -344,27 +352,6 @@ const handleBatchStatusChange = (status: number) => {
   })
 }
 
-// Single menu status toggle
-const handleStatusClick = (menu: Menu) => {
-  statusChangeMenu.value = menu
-  statusConfirmOpen.value = true
-}
-
-const handleStatusConfirm = () => {
-  if (!statusChangeMenu.value) return
-  runList(async () => {
-    const newStatus = statusChangeMenu.value!.status === 1 ? 0 : 1
-    await batchUpdateStatus([statusChangeMenu.value!.id], newStatus)
-  }, {
-    successMessage: '状态更新成功',
-    errorMessage: '更新状态失败',
-    onSuccess: () => fetchData()
-  }).finally(() => {
-    statusConfirmOpen.value = false
-    statusChangeMenu.value = null
-  })
-}
-
 onMounted(fetchData)
 </script>
 
@@ -485,6 +472,8 @@ onMounted(fetchData)
                   <button
                     v-if="row.hasChildren"
                     class="flex h-5 w-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                    :aria-label="row.expanded ? '收起' : '展开'"
+                    :aria-expanded="row.expanded"
                     @click="toggleExpand(row.id)"
                   >
                     <ChevronDown

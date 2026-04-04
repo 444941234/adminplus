@@ -191,8 +191,9 @@ describe('Config Page', () => {
 
     it('renders search input', async () => {
       wrapper = await mountAndFlush()
-      const input = wrapper.find('input[type="text"]')
+      const input = wrapper.find('input')
       expect(input.exists()).toBe(true)
+      // Placeholder is passed to ListSearchBar which uses Input component
       expect(input.attributes('placeholder')).toContain('搜索配置名称或配置键')
     })
 

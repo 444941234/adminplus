@@ -20,6 +20,8 @@ import { getUserPagePermissionState } from '@/lib/page-permissions'
 import { useUserStore } from '@/stores/user'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { usePageList } from '@/composables/usePageList'
+import { useStatusToggle } from '@/composables/useStatusToggle'
+import { formatDateTime as formatTime } from '@/utils/format'
 import UserFormDialog from '@/components/user/UserFormDialog.vue'
 import PasswordResetDialog from '@/components/user/PasswordResetDialog.vue'
 import AssignRoleDialog from '@/components/user/AssignRoleDialog.vue'
@@ -60,11 +62,16 @@ const resetUsername = ref('')
 const assignDialogOpen = ref(false)
 const assignUser = ref<User | null>(null)
 
-// 状态切换确认
-const statusConfirmOpen = ref(false)
-const statusChangeUser = ref<User | null>(null)
-
-import { formatDateTime as formatTime } from '@/utils/format'
+// 状态切换
+const {
+  statusChangeItem: statusChangeUser,
+  statusConfirmOpen,
+  handleStatusClick,
+  handleStatusConfirm
+} = useStatusToggle<User>({
+  updateStatus: (id, newStatus) => updateUserStatus(id, newStatus),
+  onSuccess: () => fetchUsers()
+})
 
 const permissionState = computed(() => getUserPagePermissionState(userStore.hasPermission))
 const canAddUser = computed(() => permissionState.value.canAddUser)
@@ -118,26 +125,6 @@ const handleAdd = () => {
 const handleEdit = (id: string) => {
   editUserId.value = id
   formDialogOpen.value = true
-}
-
-const handleStatusClick = (user: User) => {
-  statusChangeUser.value = user
-  statusConfirmOpen.value = true
-}
-
-const handleStatusConfirm = () => {
-  if (!statusChangeUser.value) return
-  runDelete(async () => {
-    const newStatus = statusChangeUser.value!.status === 1 ? 0 : 1
-    await updateUserStatus(statusChangeUser.value!.id, newStatus)
-  }, {
-    successMessage: '状态更新成功',
-    errorMessage: '更新状态失败',
-    onSuccess: () => fetchUsers()
-  }).finally(() => {
-    statusConfirmOpen.value = false
-    statusChangeUser.value = null
-  })
 }
 
 const handleDeleteConfirm = (id: string) => {

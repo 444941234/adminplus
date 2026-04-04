@@ -8,6 +8,7 @@ import type { Notification } from '@/types'
 import { toast } from 'vue-sonner'
 import { Bell, BellRing, Check, Trash2, CheckCheck } from 'lucide-vue-next'
 import { formatDateTime } from '@/utils/format'
+import { logError } from '@/utils/logger'
 
 const notifications = ref<Notification[]>([])
 const unreadCount = ref(0)
@@ -29,8 +30,8 @@ const fetchUnreadCount = async () => {
   try {
     const res = await getUnreadCount()
     unreadCount.value = res.data || 0
-  } catch {
-    // Silent fail
+  } catch (error) {
+    logError('获取未读通知数量失败', error as Error, 'NotificationCenter')
   }
 }
 
@@ -41,7 +42,8 @@ const handleMarkAsRead = async (id: string) => {
     notifications.value = notifications.value.filter(n => n.id !== id)
     unreadCount.value = Math.max(0, unreadCount.value - 1)
     toast.success('已标记为已读')
-  } catch {
+  } catch (error) {
+    logError('标记通知已读失败', error as Error, 'NotificationCenter')
     toast.error('操作失败')
   }
 }
@@ -54,7 +56,8 @@ const handleMarkAllAsRead = async () => {
     notifications.value = []
     unreadCount.value = 0
     toast.success(`已标记 ${count} 条通知为已读`)
-  } catch {
+  } catch (error) {
+    logError('标记全部已读失败', error as Error, 'NotificationCenter')
     toast.error('操作失败')
   }
 }
@@ -66,7 +69,8 @@ const handleDelete = async (id: string) => {
     notifications.value = notifications.value.filter(n => n.id !== id)
     unreadCount.value = Math.max(0, unreadCount.value - 1)
     toast.success('已删除')
-  } catch {
+  } catch (error) {
+    logError('删除通知失败', error as Error, 'NotificationCenter')
     toast.error('删除失败')
   }
 }

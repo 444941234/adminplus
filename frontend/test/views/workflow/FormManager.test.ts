@@ -458,11 +458,12 @@ describe('FormManager.vue', () => {
       const wrapper = await mountComponent()
       const vm = wrapper.vm as any
 
-      vi.spyOn(window, 'confirm').mockReturnValue(false)
-
+      // Open delete dialog
       vm.deleteForm(makeFormTemplate())
       await flushPromises()
 
+      // Dialog is open, but user doesn't confirm (closes dialog)
+      expect(vm.deleteDialogOpen).toBe(true)
       expect(apiMocks.deleteFormTemplate).not.toHaveBeenCalled()
     })
 
@@ -470,9 +471,12 @@ describe('FormManager.vue', () => {
       const wrapper = await mountComponent()
       const vm = wrapper.vm as any
 
-      vi.spyOn(window, 'confirm').mockReturnValue(true)
-
+      // Open delete dialog
       vm.deleteForm(makeFormTemplate())
+      await flushPromises()
+
+      // Confirm the deletion
+      await vm.confirmDelete()
       await flushPromises()
 
       expect(apiMocks.deleteFormTemplate).toHaveBeenCalledWith('template-001')

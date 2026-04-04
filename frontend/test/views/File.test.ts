@@ -132,7 +132,8 @@ describe('File Page', () => {
 
     it('renders scope select', async () => {
       wrapper = await mountAndFlush()
-      expect(wrapper.html()).toContain('查看范围')
+      // The scope select shows "我的文件" in the trigger (dropdown content is in a portal)
+      expect(wrapper.html()).toContain('我的文件')
     })
 
     it('renders directory input', async () => {
@@ -142,8 +143,9 @@ describe('File Page', () => {
 
     it('renders search input and buttons', async () => {
       wrapper = await mountAndFlush()
-      expect(wrapper.html()).toContain('查询')
-      expect(wrapper.html()).toContain('刷新')
+      // ListSearchBar uses "搜索" and "重置" buttons
+      expect(wrapper.html()).toContain('搜索')
+      expect(wrapper.html()).toContain('重置')
     })
 
     it('renders file table header', async () => {

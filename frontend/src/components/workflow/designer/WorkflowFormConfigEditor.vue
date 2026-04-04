@@ -31,6 +31,7 @@ import {
 import { Plus, Pencil, Trash2, Code, List, Eye } from 'lucide-vue-next'
 import type { WorkflowFormConfig, WorkflowFormSection, WorkflowFormField, WorkflowFormOption } from '@/types'
 import { toast } from 'vue-sonner'
+import { ConfirmDialog } from '@/components/common'
 import WorkflowFormRenderer from '../WorkflowFormRenderer.vue'
 
 // Props
@@ -56,6 +57,13 @@ const fieldDialogOpen = ref(false)
 const editingSectionIndex = ref<number | null>(null)
 const editingFieldIndex = ref<number | null>(null)
 const editingFieldSectionIndex = ref<number | null>(null)
+
+// Delete confirmation dialogs
+const deleteSectionDialogOpen = ref(false)
+const deleteSectionIndex = ref<number | null>(null)
+const deleteFieldDialogOpen = ref(false)
+const deleteFieldSectionIndex = ref<number | null>(null)
+const deleteFieldIndex = ref<number | null>(null)
 
 // Forms
 const sectionForm = ref({
@@ -188,10 +196,16 @@ const saveSection = () => {
 }
 
 const deleteSection = (index: number) => {
-  if (confirm(`确定要删除分组"${sections.value[index].title}"吗？`)) {
-    sections.value.splice(index, 1)
-    emitChange()
-  }
+  deleteSectionIndex.value = index
+  deleteSectionDialogOpen.value = true
+}
+
+const confirmDeleteSection = () => {
+  if (deleteSectionIndex.value === null) return
+  sections.value.splice(deleteSectionIndex.value, 1)
+  emitChange()
+  deleteSectionDialogOpen.value = false
+  deleteSectionIndex.value = null
 }
 
 // Field handlers
@@ -275,11 +289,18 @@ const saveField = () => {
 }
 
 const deleteField = (sectionIndex: number, fieldIndex: number) => {
-  const field = sections.value[sectionIndex].fields[fieldIndex]
-  if (confirm(`确定要删除字段"${field.label}"吗？`)) {
-    sections.value[sectionIndex].fields.splice(fieldIndex, 1)
-    emitChange()
-  }
+  deleteFieldSectionIndex.value = sectionIndex
+  deleteFieldIndex.value = fieldIndex
+  deleteFieldDialogOpen.value = true
+}
+
+const confirmDeleteField = () => {
+  if (deleteFieldSectionIndex.value === null || deleteFieldIndex.value === null) return
+  sections.value[deleteFieldSectionIndex.value].fields.splice(deleteFieldIndex.value, 1)
+  emitChange()
+  deleteFieldDialogOpen.value = false
+  deleteFieldSectionIndex.value = null
+  deleteFieldIndex.value = null
 }
 
 // Option handlers
@@ -860,5 +881,23 @@ const formConfigForPreview = computed(() => JSON.stringify({ sections: sections.
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <!-- Delete Section Confirmation -->
+    <ConfirmDialog
+      v-model:open="deleteSectionDialogOpen"
+      title="确认删除分组"
+      :description="deleteSectionIndex !== null ? `确定要删除分组「${sections[deleteSectionIndex]?.title}」吗？` : ''"
+      confirm-text="确认删除"
+      @confirm="confirmDeleteSection"
+    />
+
+    <!-- Delete Field Confirmation -->
+    <ConfirmDialog
+      v-model:open="deleteFieldDialogOpen"
+      title="确认删除字段"
+      :description="deleteFieldSectionIndex !== null && deleteFieldIndex !== null ? `确定要删除字段「${sections[deleteFieldSectionIndex]?.fields[deleteFieldIndex]?.label}」吗？` : ''"
+      confirm-text="确认删除"
+      @confirm="confirmDeleteField"
+    />
   </div>
 </template>
