@@ -30,36 +30,15 @@ public class CacheCleanupRunner implements CommandLineRunner {
         log.info("检查并清理旧格式缓存数据...");
 
         try {
-            // 清理所有缓存键（Spring Cache 格式: cacheName::key）
+            // 清理所有缓存键
             Set<String> keys = redisTemplate.keys("*");
 
             if (keys != null && !keys.isEmpty()) {
-                // 过滤出 Spring Cache 相关的键（包含 :: 的键）
-                Set<String> cacheKeys = keys.stream()
-                        .filter(key -> key.contains("::") ||
-                                key.startsWith("roles") ||
-                                key.startsWith("dashboardStats") ||
-                                key.startsWith("menuTree") ||
-                                key.startsWith("userMenus") ||
-                                key.startsWith("userPermissions") ||
-                                key.startsWith("userRoles") ||
-                                key.startsWith("rolePermissions") ||
-                                key.startsWith("allPermissions") ||
-                                key.startsWith("deptTree") ||
-                                key.startsWith("dict") ||
-                                key.startsWith("dictItem") ||
-                                key.startsWith("config") ||
-                                key.startsWith("configGroup") ||
-                                key.startsWith("workflow") ||
-                                key.startsWith("formTemplate"))
-                        .collect(java.util.stream.Collectors.toSet());
-
-                if (!cacheKeys.isEmpty()) {
-                    redisTemplate.delete(cacheKeys);
-                    log.info("清理旧缓存数据: {} 个键", cacheKeys.size());
-                } else {
-                    log.info("无需清理缓存数据");
-                }
+                // 删除所有键（彻底清理，避免序列化格式不兼容）
+                Long deleted = redisTemplate.delete(keys);
+                log.info("清理缓存数据完成: 删除 {} 个键", deleted != null ? deleted : keys.size());
+            } else {
+                log.info("无需清理缓存数据");
             }
         } catch (Exception e) {
             log.warn("缓存清理失败，将继续启动: {}", e.getMessage());
