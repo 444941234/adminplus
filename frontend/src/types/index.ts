@@ -470,6 +470,29 @@ export interface WorkflowAddSign {
   createTime: string
 }
 
+// 通知相关类型
+export interface Notification {
+  id: string
+  type: string
+  recipientId: string
+  title: string
+  content: string
+  relatedId?: string
+  relatedType?: string
+  status: number // 0-未读, 1-已读
+  createTime: string
+  updateTime: string
+}
+
+export interface NotificationSendReq {
+  type: string
+  recipientId: string
+  title: string
+  content: string
+  relatedId?: string
+  relatedType?: string
+}
+
 export interface WorkflowDetail {
   instance: WorkflowInstance
   approvals: WorkflowApproval[]

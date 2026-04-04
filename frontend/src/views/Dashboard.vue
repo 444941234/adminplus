@@ -7,6 +7,7 @@ import type { DashboardStats, OperationLog } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { getDashboardQuickActions } from '@/lib/page-permissions'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import NotificationCenter from '@/components/notification/NotificationCenter.vue'
 
 const { loading, run: runDashboard } = useAsyncAction('获取仪表盘数据失败')
 const stats = ref<DashboardStats | null>(null)
@@ -142,5 +143,8 @@ onMounted(fetchDashboard)
         </CardContent>
       </Card>
     </div>
+
+    <!-- 通知中心 -->
+    <NotificationCenter />
   </div>
 </template>
