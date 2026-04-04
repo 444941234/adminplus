@@ -68,7 +68,7 @@ class NotificationControllerTest {
         when(notificationService.getUserNotifications(eq("admin"), any(), any()))
                 .thenReturn(emptyPage);
 
-        mockMvc.perform(get("/api/v1/notifications")
+        mockMvc.perform(get("/v1/notifications")
                         .param("page", "0")
                         .param("size", "20"))
                 .andExpect(status().isOk())
@@ -82,7 +82,7 @@ class NotificationControllerTest {
     void testGetUnreadCount() throws Exception {
         when(notificationService.getUnreadCount("admin")).thenReturn(5L);
 
-        mockMvc.perform(get("/api/v1/notifications/unread-count"))
+        mockMvc.perform(get("/v1/notifications/unread-count"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value(5));
 
@@ -95,7 +95,7 @@ class NotificationControllerTest {
         when(notificationService.sendNotification(any(NotificationSendReq.class)))
                 .thenReturn(mockNotification);
 
-        mockMvc.perform(post("/api/v1/notifications")
+        mockMvc.perform(post("/v1/notifications")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"type\":\"workflow_approve\",\"recipientId\":\"user-001\",\"title\":\"测试通知\",\"content\":\"这是一条测试通知\"}"))
                 .andExpect(status().isOk())
@@ -110,7 +110,7 @@ class NotificationControllerTest {
     void testSendBatchNotification() throws Exception {
         doNothing().when(notificationService).sendBatchNotification(anyList(), any(NotificationSendReq.class));
 
-        mockMvc.perform(post("/api/v1/notifications/batch")
+        mockMvc.perform(post("/v1/notifications/batch")
                         .param("recipientIds", "user-001,user-002")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"type\":\"workflow_approve\",\"recipientId\":\"user-001\",\"title\":\"测试通知\",\"content\":\"这是一条测试通知\"}"))
@@ -124,7 +124,7 @@ class NotificationControllerTest {
     void testMarkAsRead() throws Exception {
         doNothing().when(notificationService).markAsRead(eq("notif-001"), eq("admin"));
 
-        mockMvc.perform(put("/api/v1/notifications/notif-001/read"))
+        mockMvc.perform(put("/v1/notifications/notif-001/read"))
                 .andExpect(status().isOk());
 
         verify(notificationService).markAsRead(eq("notif-001"), eq("admin"));
@@ -135,7 +135,7 @@ class NotificationControllerTest {
     void testMarkAllAsRead() throws Exception {
         when(notificationService.markAllAsRead("admin")).thenReturn(10);
 
-        mockMvc.perform(put("/api/v1/notifications/read-all"))
+        mockMvc.perform(put("/v1/notifications/read-all"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value(10));
 
@@ -147,7 +147,7 @@ class NotificationControllerTest {
     void testDeleteNotification() throws Exception {
         doNothing().when(notificationService).deleteNotification(eq("notif-001"), eq("admin"));
 
-        mockMvc.perform(delete("/api/v1/notifications/notif-001"))
+        mockMvc.perform(delete("/v1/notifications/notif-001"))
                 .andExpect(status().isOk());
 
         verify(notificationService).deleteNotification(eq("notif-001"), eq("admin"));
@@ -161,7 +161,7 @@ class NotificationControllerTest {
         when(notificationService.getUserNotifications(eq("admin"), eq(0), any()))
                 .thenReturn(emptyPage);
 
-        mockMvc.perform(get("/api/v1/notifications")
+        mockMvc.perform(get("/v1/notifications")
                         .param("status", "0")
                         .param("page", "0")
                         .param("size", "20"))
@@ -173,7 +173,7 @@ class NotificationControllerTest {
 
     @Test
     void testGetMyNotifications_WithoutAuth() throws Exception {
-        mockMvc.perform(get("/api/v1/notifications"))
+        mockMvc.perform(get("/v1/notifications"))
                 .andExpect(status().isUnauthorized());
     }
 
