@@ -1,5 +1,6 @@
 import { get, post, put, del } from '@/utils/request'
 import type {
+  FormTemplate,
   WorkflowAddSign,
   WorkflowApproval,
   WorkflowCc,
@@ -8,11 +9,20 @@ import type {
   WorkflowDetail,
   WorkflowDraftDetail,
   WorkflowFormValues,
+  WorkflowHookLog,
   WorkflowInstance,
   WorkflowNode,
+  WorkflowNodeHook,
   WorkflowNodeReq,
   WorkflowUrge
 } from '@/types'
+
+// Re-export types for convenience
+export type {
+  FormTemplate,
+  WorkflowHookLog,
+  WorkflowNodeHook
+}
 
 interface ApprovalPayload {
   comment: string
@@ -211,18 +221,6 @@ export function getAddSignRecords(instanceId: string) {
 
 // ========== Form Template Management ==========
 
-export interface FormTemplate {
-  id: string
-  templateName: string
-  templateCode: string
-  category: string
-  description: string
-  formConfig: string
-  status: number
-  createTime: string
-  updateTime: string
-}
-
 export interface FormTemplateReq {
   templateName: string
   templateCode: string
@@ -269,46 +267,6 @@ export function checkFormTemplateCodeExists(code: string) {
 }
 
 // ========== Workflow Hook Management ==========
-
-export interface WorkflowNodeHook {
-  id: string
-  nodeId: string
-  hookPoint: string
-  hookType: 'validate' | 'execute'
-  executorType: 'spel' | 'bean' | 'http'
-  executorConfig: string
-  asyncExecution: boolean
-  blockOnFailure: boolean
-  failureMessage?: string
-  priority: number
-  conditionExpression?: string
-  retryCount: number
-  retryInterval: number
-  hookName?: string
-  description?: string
-  createTime: string
-  updateTime: string
-}
-
-export interface WorkflowHookLog {
-  id: string
-  instanceId: string
-  nodeId?: string
-  hookId?: string
-  hookSource: 'node_field' | 'hook_table'
-  hookPoint: string
-  executorType: string
-  executorConfig: string
-  success: boolean
-  resultCode: string
-  resultMessage: string
-  executionTime?: number
-  retryAttempts?: number
-  async: boolean
-  operatorId?: string
-  operatorName?: string
-  createTime: string
-}
 
 export interface WorkflowHookReq {
   nodeId: string
