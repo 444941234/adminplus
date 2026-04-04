@@ -321,7 +321,7 @@ const enterDesignMode = (definition: WorkflowDefinition) => {
 }
 
 // 处理 WorkflowVisualizer 加载完成事件
-const handleWorkflowLoaded = (workflowDef: any) => {
+const handleWorkflowLoaded = (workflowDef: WorkflowDefinition) => {
   // WorkflowVisualizer 中的 nodes 是 WorkflowNode[] 类型，直接使用
   if (workflowDef && Array.isArray(workflowDef.nodes)) {
     nodes.value = workflowDef.nodes as WorkflowNode[]
