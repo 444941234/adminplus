@@ -86,7 +86,7 @@ const handleFileSelect = async (event: Event) => {
     const res = await uploadManagedFile(file, 'workflow')
     emit('update:modelValue', res.data.fileUrl)
     toast.success('文件上传成功')
-  } catch (error) {
+  } catch {
     selectedFileName.value = ''
     toast.error('文件上传失败')
     if (fileInputRef.value) {

@@ -51,7 +51,7 @@ vi.mock('@/composables/useAsyncAction', () => ({
         if (options?.successMessage) toastMocks.success(options.successMessage)
         if (options?.onSuccess) options.onSuccess()
         return result
-      } catch (error) {
+      } catch {
         toastMocks.error(options?.errorMessage || _defaultErrorMessage)
         return undefined
       }

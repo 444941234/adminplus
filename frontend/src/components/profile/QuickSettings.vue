@@ -28,7 +28,7 @@ const fetchSettings = async () => {
   try {
     const res = await getUserSettings()
     settings.value = res.data
-  } catch (error) {
+  } catch {
     toast.error('获取设置失败')
   } finally {
     loading.value = false
@@ -45,7 +45,7 @@ const updateSetting = async <K extends keyof UserSettings>(
     await updateUserSettings({ [key]: value })
     settings.value[key] = value
     toast.success('设置更新成功')
-  } catch (error) {
+  } catch {
     toast.error('设置更新失败')
     // Revert on error
     await fetchSettings()

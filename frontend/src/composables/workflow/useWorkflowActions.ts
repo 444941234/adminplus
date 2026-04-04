@@ -43,7 +43,7 @@ export const useWorkflowActions = () => {
       const result = await executor()
       toast.success(successMessage)
       return result
-    } catch (error) {
+    } catch {
       // 错误提示已在响应拦截器 (useApiInterceptors) 中统一处理
       return null
     } finally {
