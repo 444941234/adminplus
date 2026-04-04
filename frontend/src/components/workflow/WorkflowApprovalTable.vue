@@ -12,15 +12,11 @@ import {
   TableRow
 } from '@/components/ui'
 import type { WorkflowApproval } from '@/types'
+import { formatDateTime } from '@/utils/format'
 
 defineProps<{
   approvals: WorkflowApproval[]
 }>()
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) return '-'
-  return new Date(value).toLocaleString('zh-CN', { hour12: false })
-}
 
 const getStatusLabel = (status?: string) => {
   switch (status) {

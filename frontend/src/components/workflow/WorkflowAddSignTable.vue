@@ -12,15 +12,11 @@ import {
   TableRow
 } from '@/components/ui'
 import type { WorkflowAddSign } from '@/types'
+import { formatDateTime } from '@/utils/format'
 
 defineProps<{
   records: WorkflowAddSign[]
 }>()
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) return '-'
-  return new Date(value).toLocaleString('zh-CN', { hour12: false })
-}
 
 const getAddSignTypeLabel = (type?: string) => {
   const map: Record<string, string> = {

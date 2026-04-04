@@ -7,16 +7,12 @@ import {
 } from '@/components/ui'
 import WorkflowStatusBadge from '@/components/workflow/WorkflowStatusBadge.vue'
 import type { WorkflowInstance } from '@/types'
+import { formatDateTime } from '@/utils/format'
 
 defineProps<{
   instance: WorkflowInstance | null
   loading?: boolean
 }>()
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) return '-'
-  return new Date(value).toLocaleString('zh-CN', { hour12: false })
-}
 </script>
 
 <template>

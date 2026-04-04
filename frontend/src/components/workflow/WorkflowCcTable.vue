@@ -13,15 +13,11 @@ import {
   TableRow
 } from '@/components/ui'
 import type { WorkflowCc } from '@/types'
+import { formatDateTime } from '@/utils/format'
 
 defineProps<{
   records: WorkflowCc[]
 }>()
-
-const formatDateTime = (value?: string | null) => {
-  if (!value) return '-'
-  return new Date(value).toLocaleString('zh-CN', { hour12: false })
-}
 
 const getCcTypeLabel = (type?: string) => {
   const map: Record<string, string> = {
