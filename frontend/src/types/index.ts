@@ -14,6 +14,18 @@ export interface PageResult<T> {
   size: number
 }
 
+// Spring Data 分页结果
+export interface SpringPage<T> {
+  content: T[]
+  totalElements: number
+  totalPages: number
+  number: number
+  size: number
+  first: boolean
+  last: boolean
+  empty: boolean
+}
+
 // 用户
 export interface User {
   id: string

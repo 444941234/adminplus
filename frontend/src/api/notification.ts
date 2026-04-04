@@ -1,5 +1,5 @@
 import { get, post, put, del } from '@/utils/request'
-import type { Notification, NotificationSendReq } from '@/types'
+import type { Notification, NotificationSendReq, SpringPage } from '@/types'
 
 /**
  * 获取当前用户的通知列表
@@ -9,7 +9,7 @@ export function getMyNotifications(params?: {
   page?: number
   size?: number
 }) {
-  return get('/notifications', params)
+  return get<SpringPage<Notification>>('/notifications', params)
 }
 
 /**
