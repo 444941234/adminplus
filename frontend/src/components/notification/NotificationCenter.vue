@@ -110,10 +110,19 @@ onMounted(() => {
     <CardHeader>
       <div class="flex items-center justify-between">
         <CardTitle class="flex items-center gap-2">
-          <BellRing v-if="unreadCount > 0" class="h-5 w-5 text-orange-500" />
-          <Bell v-else class="h-5 w-5" />
+          <BellRing
+            v-if="unreadCount > 0"
+            class="h-5 w-5 text-orange-500"
+          />
+          <Bell
+            v-else
+            class="h-5 w-5"
+          />
           通知中心
-          <Badge v-if="unreadCount > 0" variant="destructive">
+          <Badge
+            v-if="unreadCount > 0"
+            variant="destructive"
+          >
             {{ unreadCount }}
           </Badge>
         </CardTitle>
