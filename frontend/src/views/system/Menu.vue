@@ -571,10 +571,8 @@ onMounted(fetchData)
       </CardContent>
     </Card>
 
-    <Dialog
-      v-if="canAddMenu || canEditMenu"
-      v-model:open="dialogOpen"
-    >
+    <!-- 新增/编辑菜单对话框 -->
+    <Dialog v-model:open="dialogOpen">
       <DialogContent class="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>{{ isEdit ? '编辑菜单' : '新增菜单' }}</DialogTitle>
@@ -587,7 +585,7 @@ onMounted(fetchData)
           加载中...
         </div>
         <div
-          v-else
+          v-else-if="canAddMenu || canEditMenu"
           class="space-y-4 py-2"
         >
           <div class="grid grid-cols-2 gap-4">

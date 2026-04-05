@@ -10,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,8 +50,8 @@ class NotificationServiceTest {
         savedEntity.setTitle("测试通知");
         savedEntity.setContent("这是一条测试通知");
         savedEntity.setStatus(0);
-        savedEntity.setCreateTime(LocalDateTime.now());
-        savedEntity.setUpdateTime(LocalDateTime.now());
+        savedEntity.setCreateTime(Instant.now());
+        savedEntity.setUpdateTime(Instant.now());
 
         when(notificationRepository.save(any(NotificationEntity.class))).thenReturn(savedEntity);
 

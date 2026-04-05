@@ -50,7 +50,7 @@ public class ConfigEntity extends BaseEntity {
     /**
      * 配置键（唯一）
      */
-    @Column(name = "key", nullable = false, length = 100, unique = true)
+    @Column(name = "key", nullable = false, length = 100)
     private String key;
 
     /**

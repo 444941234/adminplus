@@ -4,6 +4,8 @@ import com.adminplus.constants.StorageType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 /**
  * 文件元数据实体
@@ -13,7 +15,16 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Table(name = "sys_file")
+@Table(name = "sys_file",
+       indexes = {
+           @Index(name = "idx_file_create_user", columnList = "create_user"),
+           @Index(name = "idx_file_directory", columnList = "directory"),
+           @Index(name = "idx_file_storage_type", columnList = "storage_type"),
+           @Index(name = "idx_file_status", columnList = "status"),
+           @Index(name = "idx_file_deleted", columnList = "deleted")
+       })
+@SQLDelete(sql = "UPDATE sys_file SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
 public class FileEntity extends BaseEntity {
 
     /**
@@ -66,16 +77,16 @@ public class FileEntity extends BaseEntity {
     private String directory;
 
     /**
-     * 文件状态（0:正常 1:禁用）
+     * 文件状态（1=正常，0=禁用）
      */
     @Column(name = "status", nullable = false)
-    private Integer status = 0;
+    private Integer status = 1;
 
     @PrePersist
     public void prePersist() {
         super.prePersist();
         if (this.status == null) {
-            this.status = 0;
+            this.status = 1;
         }
     }
 }

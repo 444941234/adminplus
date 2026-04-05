@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { STATUS_ACTIVE, getStatusToggleLabel } from '@/constants/status'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   /** 1 = 正常, 0 = 禁用 */
   status: number
   /** 是否可点击切换 */
@@ -34,20 +34,20 @@ const handleKeydown = (event: KeyboardEvent) => {
 }
 
 const ariaLabel = computed(() =>
-  clickable ? `点击${getStatusToggleLabel(status)}` : undefined
+  props.clickable ? `点击${getStatusToggleLabel(props.status)}` : undefined
 )
 </script>
 
 <template>
   <Badge
-    :variant="status === STATUS_ACTIVE ? 'default' : 'destructive'"
-    :role="clickable ? 'button' : undefined"
-    :tabindex="clickable ? 0 : undefined"
+    :variant="props.status === STATUS_ACTIVE ? 'default' : 'destructive'"
+    :role="props.clickable ? 'button' : undefined"
+    :tabindex="props.clickable ? 0 : undefined"
     :aria-label="ariaLabel"
-    :class="clickable ? 'cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2' : ''"
-    @click="clickable && handleClick()"
-    @keydown="clickable && handleKeydown($event)"
+    :class="props.clickable ? 'cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2' : ''"
+    @click="props.clickable && handleClick()"
+    @keydown="props.clickable && handleKeydown($event)"
   >
-    {{ status === STATUS_ACTIVE ? activeText : inactiveText }}
+    {{ props.status === STATUS_ACTIVE ? props.activeText : props.inactiveText }}
   </Badge>
 </template>

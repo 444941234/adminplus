@@ -9,10 +9,10 @@ export const STATUS_ACTIVE = 1
 export const STATUS_INACTIVE = 0
 
 /** 状态标签映射 */
-export const STATUS_LABELS = {
+export const STATUS_LABELS: Record<number, string> = {
   [STATUS_ACTIVE]: '正常',
   [STATUS_INACTIVE]: '禁用'
-} as const
+}
 
 /** 获取状态切换按钮的标签 */
 export function getStatusToggleLabel(status: number): string {

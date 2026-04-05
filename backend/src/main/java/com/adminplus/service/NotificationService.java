@@ -11,7 +11,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -48,8 +47,6 @@ public class NotificationService {
         notification.setRelatedId(req.getRelatedId());
         notification.setRelatedType(req.getRelatedType());
         notification.setStatus(0); // 0-未读, 1-已读
-        notification.setCreateTime(LocalDateTime.now());
-        notification.setUpdateTime(LocalDateTime.now());
 
         notification = notificationRepository.save(notification);
 
@@ -78,8 +75,6 @@ public class NotificationService {
                     notification.setRelatedId(req.getRelatedId());
                     notification.setRelatedType(req.getRelatedType());
                     notification.setStatus(0);
-                    notification.setCreateTime(LocalDateTime.now());
-                    notification.setUpdateTime(LocalDateTime.now());
                     return notification;
                 })
                 .toList();
@@ -105,7 +100,6 @@ public class NotificationService {
         }
 
         notification.setStatus(1);
-        notification.setUpdateTime(LocalDateTime.now());
         notificationRepository.save(notification);
 
         log.info("通知已标记为已读: id={}", notificationId);

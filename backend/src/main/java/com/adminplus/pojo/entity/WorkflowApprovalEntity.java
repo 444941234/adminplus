@@ -19,6 +19,9 @@ import org.hibernate.annotations.Where;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "sys_workflow_approval",
+       uniqueConstraints = {
+           @UniqueConstraint(name = "uk_wf_appr_inst_node_user", columnNames = {"instance_id", "node_id", "approver_id"})
+       },
        indexes = {
            @Index(name = "idx_wf_appr_inst_id", columnList = "instance_id"),
            @Index(name = "idx_wf_appr_node_id", columnList = "node_id"),

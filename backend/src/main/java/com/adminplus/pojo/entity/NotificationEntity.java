@@ -2,6 +2,9 @@ package com.adminplus.pojo.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 /**
  * 通知实体
@@ -10,14 +13,20 @@ import lombok.Data;
  * @since 2026-04-04
  */
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity
-@Table(name = "sys_notification")
-public class NotificationEntity {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "id", length = 100)
-    private String id;
+@Table(name = "sys_notification",
+       indexes = {
+           @Index(name = "idx_notification_recipient", columnList = "recipient_id"),
+           @Index(name = "idx_notification_type", columnList = "type"),
+           @Index(name = "idx_notification_status", columnList = "status"),
+           @Index(name = "idx_notification_related", columnList = "related_id"),
+           @Index(name = "idx_notification_create_time", columnList = "create_time"),
+           @Index(name = "idx_notification_deleted", columnList = "deleted")
+       })
+@SQLDelete(sql = "UPDATE sys_notification SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
+public class NotificationEntity extends BaseEntity {
 
     /**
      * 通知类型
@@ -59,18 +68,6 @@ public class NotificationEntity {
     /**
      * 状态: 0-未读, 1-已读
      */
-    @Column(name = "status")
-    private Integer status;
-
-    /**
-     * 创建时间
-     */
-    @Column(name = "create_time")
-    private java.time.LocalDateTime createTime;
-
-    /**
-     * 更新时间
-     */
-    @Column(name = "update_time")
-    private java.time.LocalDateTime updateTime;
+    @Column(name = "status", nullable = false)
+    private Integer status = 0;
 }
