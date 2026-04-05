@@ -21,7 +21,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { ChevronDown, ChevronRight, Edit, Plus, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, ListSearchBar, StatusBadge } from '@/components/common'
+import { ConfirmDialog, EmptyState, ListSearchBar, StatusBadge } from '@/components/common'
 import { batchDelete, batchUpdateStatus, createMenu, deleteMenu, getMenuById, getMenuTree, updateMenu } from '@/api'
 import type { Menu } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -448,9 +448,18 @@ onMounted(fetchData)
             <tr v-else-if="flattenedRows.length === 0">
               <td
                 colspan="9"
-                class="p-8 text-center text-muted-foreground"
+                class="p-0"
               >
-                暂无菜单数据
+                <EmptyState
+                  type="menus"
+                  :show-action="canAddMenu"
+                  action-text="添加菜单"
+                  @action="handleAdd()"
+                >
+                  <template #action-icon>
+                    <Plus class="mr-2 h-4 w-4" />
+                  </template>
+                </EmptyState>
               </td>
             </tr>
             <tr

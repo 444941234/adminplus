@@ -14,7 +14,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Download, FolderOpen, Trash2, Upload } from 'lucide-vue-next'
-import { ConfirmDialog, ListSearchBar } from '@/components/common'
+import { ConfirmDialog, EmptyState, ListSearchBar } from '@/components/common'
 import { deleteManagedFile, getFilesByDirectory, getMyFiles, uploadManagedFile } from '@/api'
 import type { FileRecord } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -219,9 +219,18 @@ onMounted(fetchFiles)
             <tr v-else-if="visibleFiles.length === 0">
               <td
                 colspan="7"
-                class="p-8 text-center text-muted-foreground"
+                class="p-0"
               >
-                暂无文件数据
+                <EmptyState
+                  type="files"
+                  :show-action="canUploadFile"
+                  action-text="上传文件"
+                  @action="handleUpload"
+                >
+                  <template #action-icon>
+                    <Upload class="mr-2 h-4 w-4" />
+                  </template>
+                </EmptyState>
               </td>
             </tr>
             <tr

@@ -21,7 +21,7 @@ import {
   Textarea
 } from '@/components/ui'
 import { Edit, ListTree, Plus, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, ListSearchBar, Pagination, StatusBadge } from '@/components/common'
+import { ConfirmDialog, EmptyState, ListSearchBar, Pagination, StatusBadge } from '@/components/common'
 import {
   createDict,
   createDictItem,
@@ -400,9 +400,18 @@ onMounted(fetchData)
             <tr v-else-if="tableData.records.length === 0">
               <td
                 colspan="7"
-                class="p-8 text-center text-muted-foreground"
+                class="p-0"
               >
-                暂无数据
+                <EmptyState
+                  type="dicts"
+                  :show-action="canAddDict"
+                  action-text="添加字典"
+                  @action="handleAdd"
+                >
+                  <template #action-icon>
+                    <Plus class="mr-2 h-4 w-4" />
+                  </template>
+                </EmptyState>
               </td>
             </tr>
             <tr

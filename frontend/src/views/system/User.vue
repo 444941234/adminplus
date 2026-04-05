@@ -13,7 +13,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Edit, KeyRound, LockKeyhole, Plus, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, ListSearchBar, Pagination, StatusBadge } from '@/components/common'
+import { ConfirmDialog, EmptyState, ListSearchBar, Pagination, StatusBadge } from '@/components/common'
 import { getDeptTree, getRoleList, getUserList, updateUserStatus, deleteUser } from '@/api'
 import type { Dept, Role, User } from '@/types'
 import { getUserPagePermissionState } from '@/lib/page-permissions'
@@ -251,9 +251,18 @@ onMounted(async () => {
             <tr v-else-if="tableData.records.length === 0">
               <td
                 colspan="9"
-                class="h-32 text-center text-muted-foreground"
+                class="p-0"
               >
-                暂无数据
+                <EmptyState
+                  type="users"
+                  :show-action="canAddUser"
+                  action-text="添加用户"
+                  @action="handleAdd"
+                >
+                  <template #action-icon>
+                    <Plus class="mr-2 h-4 w-4" />
+                  </template>
+                </EmptyState>
               </td>
             </tr>
             <tr

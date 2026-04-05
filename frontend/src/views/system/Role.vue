@@ -21,7 +21,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Edit, KeyRound, Plus, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, ListSearchBar, StatusBadge } from '@/components/common'
+import { ConfirmDialog, EmptyState, ListSearchBar, StatusBadge } from '@/components/common'
 import { assignMenus, getMenuTree, getRoleMenus, updateRoleStatus } from '@/api'
 import { getRolePagePermissionState } from '@/lib/page-permissions'
 import { isValidRoleCode } from '@/lib/validators'
@@ -312,9 +312,18 @@ onMounted(async () => {
             <tr v-else-if="filteredRoles.length === 0">
               <td
                 colspan="7"
-                class="p-8 text-center text-muted-foreground"
+                class="p-0"
               >
-                暂无数据
+                <EmptyState
+                  type="roles"
+                  :show-action="canAddRole"
+                  action-text="添加角色"
+                  @action="handleAdd"
+                >
+                  <template #action-icon>
+                    <Plus class="mr-2 h-4 w-4" />
+                  </template>
+                </EmptyState>
               </td>
             </tr>
             <tr

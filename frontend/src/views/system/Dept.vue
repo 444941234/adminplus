@@ -19,7 +19,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { Edit, Plus, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, ListSearchBar, StatusBadge } from '@/components/common'
+import { ConfirmDialog, EmptyState, ListSearchBar, StatusBadge } from '@/components/common'
 import { isValidChinaPhone, isValidEmail } from '@/lib/validators'
 import type { Dept } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -340,9 +340,18 @@ onMounted(fetchList)
             <tr v-if="tableRows.length === 0">
               <td
                 colspan="7"
-                class="p-8 text-center text-muted-foreground"
+                class="p-0"
               >
-                暂无数据
+                <EmptyState
+                  type="depts"
+                  :show-action="canAddDept"
+                  action-text="添加部门"
+                  @action="handleAdd()"
+                >
+                  <template #action-icon>
+                    <Plus class="mr-2 h-4 w-4" />
+                  </template>
+                </EmptyState>
               </td>
             </tr>
             <tr

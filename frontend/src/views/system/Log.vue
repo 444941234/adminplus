@@ -21,7 +21,7 @@ import {
   Textarea
 } from '@/components/ui'
 import { Download, Eye, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
-import { ConfirmDialog, Pagination, StatusBadge } from '@/components/common'
+import { ConfirmDialog, EmptyState, Pagination, StatusBadge } from '@/components/common'
 import {
   cleanupExpiredLogs,
   deleteLog,
@@ -524,9 +524,9 @@ onMounted(async () => {
             <tr v-else-if="tableData.records.length === 0">
               <td
                 colspan="11"
-                class="p-8 text-center text-muted-foreground"
+                class="p-0"
               >
-                暂无日志数据
+                <EmptyState type="logs" />
               </td>
             </tr>
             <tr

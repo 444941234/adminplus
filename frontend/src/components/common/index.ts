@@ -1,4 +1,5 @@
 export { default as ConfirmDialog } from './ConfirmDialog.vue'
+export { default as EmptyState } from './EmptyState.vue'
 export { default as ListSearchBar } from './ListSearchBar.vue'
 export { default as PageHeader } from './PageHeader.vue'
 export { default as Pagination } from './Pagination.vue'
