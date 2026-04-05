@@ -20,6 +20,11 @@ public interface DashboardService {
     DashboardStatsResp getStats();
 
     /**
+     * 清除统计数据缓存
+     */
+    void clearStatsCache();
+
+    /**
      * 获取用户增长趋势数据
      *
      * @return 图表数据

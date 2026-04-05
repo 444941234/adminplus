@@ -9,6 +9,7 @@ import com.adminplus.service.DashboardService;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +64,12 @@ public class DashboardServiceImpl implements DashboardService {
         long logCount = logRepository.countByDeletedFalse();
 
         return new DashboardStatsResp(userCount, roleCount, menuCount, logCount);
+    }
+
+    @Override
+    @CacheEvict(value = "dashboardStats", key = "'stats'")
+    public void clearStatsCache() {
+        log.info("清除 Dashboard 统计数据缓存");
     }
 
     @Override
