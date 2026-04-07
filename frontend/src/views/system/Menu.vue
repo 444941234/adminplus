@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import {
   Badge,
   Button,
@@ -172,6 +172,29 @@ const allSelected = computed(
   () => flattenedRows.value.length > 0 && flattenedRows.value.every((row) => selectedMenuIds.value.includes(row.id))
 )
 
+// 根据菜单类型显示/隐藏字段
+const isDirectory = computed(() => form.type === '0')
+const isMenu = computed(() => form.type === '1')
+const isButton = computed(() => form.type === '2')
+
+// 监听菜单类型变化，自动清空不需要的字段
+watch(() => form.type, (newType, oldType) => {
+  if (!oldType) return // 首次初始化时不处理
+
+  // 切换到按钮类型时，清空不需要的字段
+  if (newType === '2') {
+    form.path = ''
+    form.component = ''
+    form.icon = ''
+    form.visible = '1'
+  }
+  // 切换到目录类型时，清空组件路径
+  else if (newType === '0') {
+    form.component = ''
+  }
+  // 切换到菜单类型时，保持原有数据
+})
+
 const resetForm = () => {
   Object.assign(form, {
     parentId: '0',
@@ -197,17 +220,20 @@ const validateForm = () => {
     return false
   }
 
-  if (form.type !== '2' && !form.path.trim()) {
+  // 目录和菜单需要路由路径
+  if (!isButton.value && !form.path.trim()) {
     toast.warning('请输入路由路径')
     return false
   }
 
-  if (form.type === '1' && !form.component.trim()) {
+  // 菜单类型需要组件路径
+  if (isMenu.value && !form.component.trim()) {
     toast.warning('请输入组件路径')
     return false
   }
 
-  if (form.type === '2' && !form.permKey.trim()) {
+  // 按钮类型强烈建议填写权限标识
+  if (isButton.value && !form.permKey.trim()) {
     toast.warning('请输入权限标识')
     return false
   }
@@ -640,13 +666,20 @@ onMounted(fetchData)
             />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <!-- 目录：显示 路由路径 + 图标 -->
+          <div
+            v-if="isDirectory"
+            class="grid grid-cols-2 gap-4"
+          >
             <div class="space-y-2">
               <Label>路由路径</Label>
               <Input
                 v-model="form.path"
-                :placeholder="form.type === '2' ? '按钮通常可留空' : '例如：/system/user'"
+                placeholder="例如：/system"
               />
+              <p class="text-xs text-muted-foreground">
+                目录的路由路径，通常以 / 开头
+              </p>
             </div>
             <div class="space-y-2">
               <Label>图标</Label>
@@ -657,25 +690,66 @@ onMounted(fetchData)
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <!-- 菜单：显示 路由路径 + 组件路径 + 图标 + 可选权限标识 -->
+          <div
+            v-if="isMenu"
+            class="grid grid-cols-2 gap-4"
+          >
+            <div class="space-y-2">
+              <Label>路由路径</Label>
+              <Input
+                v-model="form.path"
+                placeholder="例如：/system/user"
+              />
+            </div>
             <div class="space-y-2">
               <Label>组件路径</Label>
               <Input
                 v-model="form.component"
-                :disabled="form.type !== '1'"
                 placeholder="例如：system/User.vue"
+              />
+            </div>
+          </div>
+
+          <div
+            v-if="isMenu"
+            class="grid grid-cols-2 gap-4"
+          >
+            <div class="space-y-2">
+              <Label>图标</Label>
+              <Input
+                v-model="form.icon"
+                placeholder="例如：Users"
               />
             </div>
             <div class="space-y-2">
               <Label>权限标识</Label>
               <Input
                 v-model="form.permKey"
-                :placeholder="form.type === '2' ? '例如：user:add' : '可选，页面权限标识'"
+                placeholder="可选，页面权限标识"
               />
             </div>
           </div>
 
-          <div class="grid grid-cols-3 gap-4">
+          <!-- 按钮：只显示 权限标识 -->
+          <div
+            v-if="isButton"
+            class="space-y-2"
+          >
+            <Label>权限标识</Label>
+            <Input
+              v-model="form.permKey"
+              placeholder="例如：user:add"
+            />
+            <p class="text-xs text-muted-foreground">
+              按钮的权限标识，用于前端权限控制
+            </p>
+          </div>
+
+          <!-- 通用设置：排序 + 可见性（按钮除外） + 状态 -->
+          <div
+            :class="isButton ? 'grid grid-cols-2 gap-4' : 'grid grid-cols-3 gap-4'"
+          >
             <div class="space-y-2">
               <Label>排序</Label>
               <Input
@@ -685,7 +759,10 @@ onMounted(fetchData)
                 @update:model-value="form.sortOrder = Number($event) || 0"
               />
             </div>
-            <div class="space-y-2">
+            <div
+              v-if="!isButton"
+              class="space-y-2"
+            >
               <Label>可见性</Label>
               <Select v-model="form.visible">
                 <SelectTrigger>
