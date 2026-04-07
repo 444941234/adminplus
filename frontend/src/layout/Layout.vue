@@ -173,7 +173,10 @@ onMounted(() => {
       ]"
     >
       <!-- Logo -->
-      <div class="h-14 flex items-center justify-center border-b px-4">
+      <div :class="[
+        'h-14 flex items-center justify-center border-b',
+        collapsed ? 'px-2' : 'px-4'
+      ]">
         <RouterLink
           to="/dashboard"
           class="flex items-center gap-2 font-bold text-lg text-primary"
@@ -199,7 +202,7 @@ onMounted(() => {
 
       <!-- 菜单 -->
       <nav :class="[
-        'flex-1 space-y-1 overflow-y-auto',
+        'flex-1 space-y-1 overflow-y-auto scrollbar-hide',
         collapsed ? 'p-2' : 'p-3'
       ]">
         <template v-if="collapsed">
@@ -535,3 +538,13 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+</style>
