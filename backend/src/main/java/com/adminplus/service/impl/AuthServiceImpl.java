@@ -7,11 +7,7 @@ import com.adminplus.pojo.dto.req.UserLoginReq;
 import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.LoginResp;
 import com.adminplus.pojo.dto.resp.UserResp;
-import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserEntity;
-import com.adminplus.pojo.entity.UserRoleEntity;
-import com.adminplus.repository.RoleRepository;
-import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.*;
 import com.adminplus.utils.LogMaskingUtils;
 import com.adminplus.utils.SecurityUtils;
@@ -33,8 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -51,8 +45,6 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtEncoder jwtEncoder;
     private final UserService userService;
-    private final UserRoleRepository userRoleRepository;
-    private final RoleRepository roleRepository;
     private final PermissionService permissionService;
     private final CaptchaService captchaService;
     private final TokenBlacklistService tokenBlacklistService;
@@ -86,11 +78,9 @@ public class AuthServiceImpl implements AuthService {
             // 获取用户信息
             UserEntity user = userService.getUserByUsername(req.username());
 
-            // 查询用户角色 - 批量查询避免 N+1
-            var userRoles = getUserRoles(user.getId());
-            List<RoleEntity> roles = userRoles.roles();
-            List<String> roleCodes = roles.stream().map(RoleEntity::getCode).toList();
-            List<String> roleNames = roles.stream().map(RoleEntity::getName).collect(Collectors.toList());
+            // 查询用户角色
+            List<String> roleCodes = userService.getUserRoleCodes(user.getId());
+            List<String> roleNames = userService.getUserRoleNames(user.getId());
 
             // 生成 JWT Token
             Instant now = Instant.now();
@@ -212,35 +202,4 @@ public class AuthServiceImpl implements AuthService {
     public String refreshAccessToken(String refreshToken) {
         return refreshTokenService.refreshAccessToken(refreshToken);
     }
-
-    /**
-     * 获取用户的角色信息（批量查询避免 N+1）
-     */
-    private UserRoles getUserRoles(String userId) {
-        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(userId);
-        if (userRoles.isEmpty()) {
-            return new UserRoles(List.of());
-        }
-
-        List<String> roleIds = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-
-        Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
-                .collect(Collectors.toMap(RoleEntity::getId, r -> r));
-
-        List<RoleEntity> roles = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .map(roleMap::get)
-                .filter(Objects::nonNull)
-                .filter(role -> role.getStatus() == 1)
-                .toList();
-
-        return new UserRoles(roles);
-    }
-
-    /**
-     * 用户角色信息封装
-     */
-    private record UserRoles(List<RoleEntity> roles) {}
 }

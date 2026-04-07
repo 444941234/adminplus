@@ -399,22 +399,52 @@ public class UserServiceImpl implements UserService {
         return buildUserRespWithRoles(user);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getUserRoleCodes(String userId) {
+        return getActiveRoles(userId).stream()
+                .map(RoleEntity::getCode)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getUserRoleNames(String userId) {
+        return getActiveRoles(userId).stream()
+                .map(RoleEntity::getName)
+                .toList();
+    }
+
+    /**
+     * 获取用户的启用状态角色列表
+     */
+    private List<RoleEntity> getActiveRoles(String userId) {
+        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(userId);
+        if (userRoles.isEmpty()) {
+            return List.of();
+        }
+
+        List<String> roleIds = userRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .toList();
+
+        Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
+                .collect(Collectors.toMap(RoleEntity::getId, r -> r));
+
+        return userRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .map(roleMap::get)
+                .filter(Objects::nonNull)
+                .filter(role -> role.getStatus() == 1)
+                .toList();
+    }
+
     /**
      * 构建用户响应对象（包含角色信息）
      */
     private UserResp buildUserRespWithRoles(UserEntity user) {
-        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
-
-        // 批量查询角色信息，避免 N+1 问题
-        List<String> roleIds = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-        Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
-                .collect(Collectors.toMap(RoleEntity::getId, r -> r));
-        List<String> roleNames = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .map(roleMap::get)
-                .filter(Objects::nonNull)
+        List<RoleEntity> roles = getActiveRoles(user.getId());
+        List<String> roleNames = roles.stream()
                 .map(RoleEntity::getName)
                 .toList();
 

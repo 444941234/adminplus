@@ -73,4 +73,20 @@ public interface UserService {
      * @return 用户信息
      */
     UserResp getUserRespByUsername(String username);
+
+    /**
+     * 获取用户的角色编码列表（用于 JWT scope）
+     *
+     * @param userId 用户ID
+     * @return 角色编码列表
+     */
+    List<String> getUserRoleCodes(String userId);
+
+    /**
+     * 获取用户的角色名称列表
+     *
+     * @param userId 用户ID
+     * @return 角色名称列表
+     */
+    List<String> getUserRoleNames(String userId);
 }
