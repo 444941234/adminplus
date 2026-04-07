@@ -234,7 +234,7 @@ onMounted(async () => {
               <th class="p-4 text-left font-medium">
                 创建时间
               </th>
-              <th class="p-4 text-left font-medium">
+              <th class="p-4 text-center font-medium">
                 操作
               </th>
             </tr>
@@ -297,8 +297,8 @@ onMounted(async () => {
               </td>
               <td class="p-4 text-sm text-muted-foreground">
                 {{ formatTime(user.createTime) }}
-              </td>              <td class="p-4">
-                <div class="flex gap-2">
+              </td>              <td class="p-4 text-center">
+                <div class="flex justify-center gap-2">
                   <Button
                     v-if="canEditUser"
                     size="sm"

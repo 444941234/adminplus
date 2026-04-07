@@ -96,7 +96,7 @@ onMounted(fetchData)
               <TableHead>流程定义</TableHead>
               <TableHead>当前节点</TableHead>
               <TableHead>提交时间</TableHead>
-              <TableHead class="text-right">
+              <TableHead class="text-center">
                 操作
               </TableHead>
             </TableRow>
@@ -129,7 +129,7 @@ onMounted(fetchData)
               <TableCell>{{ workflow.definitionName }}</TableCell>
               <TableCell>{{ workflow.currentNodeName || '-' }}</TableCell>
               <TableCell>{{ formatDateTime(workflow.submitTime || workflow.createTime) }}</TableCell>
-              <TableCell class="text-right">
+              <TableCell class="text-center">
                 <WorkflowActionButtons
                   :workflow="workflow"
                   mode="pending"

@@ -285,7 +285,7 @@ onMounted(async () => {
               <TableHead>当前节点</TableHead>
               <TableHead>状态</TableHead>
               <TableHead>提交时间</TableHead>
-              <TableHead class="text-right">
+              <TableHead class="text-center">
                 操作
               </TableHead>
             </TableRow>
@@ -323,7 +323,7 @@ onMounted(async () => {
                 <WorkflowStatusBadge :status="workflow.status" />
               </TableCell>
               <TableCell>{{ formatDateTime(workflow.submitTime || workflow.createTime) }}</TableCell>
-              <TableCell class="text-right">
+              <TableCell class="text-center">
                 <WorkflowActionButtons
                   :workflow="workflow"
                   mode="my"

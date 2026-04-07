@@ -381,7 +381,7 @@ onMounted(fetchData)
               <th class="text-left p-4 font-medium">
                 创建时间
               </th>
-              <th class="text-left p-4 font-medium">
+              <th class="text-center p-4 font-medium">
                 操作
               </th>
             </tr>
@@ -436,8 +436,8 @@ onMounted(fetchData)
               <td class="p-4 text-muted-foreground text-sm">
                 {{ formatDateTime(dict.createTime) }}
               </td>
-              <td class="p-4">
-                <div class="flex gap-2">
+              <td class="p-4 text-center">
+                <div class="flex justify-center gap-2">
                   <Button
                     v-if="canListDictItems"
                     size="sm"

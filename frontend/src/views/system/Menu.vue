@@ -455,7 +455,7 @@ onMounted(fetchData)
               <th class="p-4 text-left font-medium">
                 排序
               </th>
-              <th class="p-4 text-left font-medium">
+              <th class="p-4 text-center font-medium">
                 操作
               </th>
             </tr>
@@ -569,8 +569,8 @@ onMounted(fetchData)
               <td class="p-4 text-muted-foreground">
                 {{ row.menu.sortOrder }}
               </td>
-              <td class="p-4">
-                <div class="flex gap-2">
+              <td class="p-4 text-center">
+                <div class="flex justify-center gap-2">
                   <Button
                     v-if="canAddMenu && row.menu.type !== 2"
                     size="sm"

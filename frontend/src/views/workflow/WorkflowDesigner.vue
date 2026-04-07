@@ -416,7 +416,7 @@ onMounted(() => {
                 <TableHead>节点数</TableHead>
                 <TableHead>状态</TableHead>
                 <TableHead>更新时间</TableHead>
-                <TableHead class="text-right">
+                <TableHead class="text-center">
                   操作
                 </TableHead>
               </TableRow>
@@ -463,7 +463,7 @@ onMounted(() => {
                   </Badge>
                 </TableCell>
                 <TableCell>{{ formatDateTime(definition.updateTime) }}</TableCell>
-                <TableCell class="text-right">
+                <TableCell class="text-center">
                   <div class="flex justify-end gap-2">
                     <Button
                       size="sm"

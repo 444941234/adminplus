@@ -107,7 +107,7 @@ onMounted(async () => {
                   <TableHead>内容</TableHead>
                   <TableHead>状态</TableHead>
                   <TableHead>时间</TableHead>
-                  <TableHead class="text-right">
+                  <TableHead class="text-center">
                     操作
                   </TableHead>
                 </TableRow>
@@ -143,7 +143,7 @@ onMounted(async () => {
                     </Badge>
                   </TableCell>
                   <TableCell>{{ formatDateTime(record.createTime) }}</TableCell>
-                  <TableCell class="text-right">
+                  <TableCell class="text-center">
                     <div class="flex justify-end gap-2">
                       <RouterLink :to="`/workflow/detail/${record.instanceId}`">
                         <Button
