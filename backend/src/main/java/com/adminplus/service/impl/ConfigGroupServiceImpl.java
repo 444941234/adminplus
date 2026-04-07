@@ -1,13 +1,12 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.constants.OperationType;
+import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
 import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
 import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.ConfigGroupResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
-import com.adminplus.pojo.entity.ConfigEntity;
 import com.adminplus.pojo.entity.ConfigGroupEntity;
 import com.adminplus.repository.ConfigGroupRepository;
 import com.adminplus.repository.ConfigRepository;

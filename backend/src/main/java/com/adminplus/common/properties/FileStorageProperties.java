@@ -1,6 +1,6 @@
 package com.adminplus.common.properties;
 
-import com.adminplus.constants.StorageType;
+import com.adminplus.enums.StorageType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;

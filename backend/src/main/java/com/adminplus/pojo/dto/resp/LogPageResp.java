@@ -1,8 +1,8 @@
 package com.adminplus.pojo.dto.resp;
 
-import com.adminplus.constants.LogStatus;
-import com.adminplus.constants.LogType;
-import com.adminplus.constants.OperationType;
+import com.adminplus.enums.LogStatus;
+import com.adminplus.enums.LogType;
+import com.adminplus.enums.OperationType;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.Instant;

@@ -9,18 +9,14 @@ package com.adminplus.common.constant;
  * @author AdminPlus
  * @since 2026-04-07
  */
-public final class PublicEndpointConstants {
-
-    private PublicEndpointConstants() {
-        // 防止实例化
-    }
+public interface PublicEndpointConstants {
 
     /**
      * 无需认证的公开端点
      * 注意：由于配置了 server.servlet.context-path=/api，Spring Security 匹配器不需要包含 /api 前缀
      * Spring Security 在 context-path 之后的路径上进行匹配
      */
-    public static final String[] PUBLIC_ENDPOINTS = {
+    String[] PUBLIC_ENDPOINTS = {
             "/v1/auth/login",
             "/v1/captcha/**",
             "/v1/verify/**",
@@ -31,7 +27,7 @@ public final class PublicEndpointConstants {
     /**
      * 认证端点（用于 CSRF 配置）
      */
-    public static final String[] AUTH_ENDPOINTS = {
+    String[] AUTH_ENDPOINTS = {
             "/v1/auth/login"
     };
 }

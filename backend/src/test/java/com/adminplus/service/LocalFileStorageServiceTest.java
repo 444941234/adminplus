@@ -1,7 +1,7 @@
 package com.adminplus.service;
 
 import com.adminplus.common.properties.FileStorageProperties;
-import com.adminplus.constants.StorageType;
+import com.adminplus.enums.StorageType;
 import com.adminplus.service.impl.LocalFileStorageServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

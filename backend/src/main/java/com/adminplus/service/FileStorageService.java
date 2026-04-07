@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.constants.StorageType;
+import com.adminplus.enums.StorageType;
 import org.springframework.web.multipart.MultipartFile;
 
 /**

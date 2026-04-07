@@ -2,7 +2,7 @@ package com.adminplus.service;
 
 import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.common.properties.FileStorageProperties.MinioConfig;
-import com.adminplus.constants.StorageType;
+import com.adminplus.enums.StorageType;
 import com.adminplus.service.impl.MinioFileStorageServiceImpl;
 import io.minio.MinioClient;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,6 +1,6 @@
 package com.adminplus.pojo.entity;
 
-import com.adminplus.constants.StorageType;
+import com.adminplus.enums.StorageType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

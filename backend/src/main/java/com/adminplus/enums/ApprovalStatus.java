@@ -1,22 +1,21 @@
-package com.adminplus.constants;
+package com.adminplus.enums;
 
 /**
- * 工作流实例状态枚举
+ * 工作流审批状态枚举
  *
  * @author AdminPlus
  * @since 2026-04-05
  */
-public enum WorkflowStatus {
-    DRAFT("draft", "草稿"),
-    RUNNING("running", "运行中"),
+public enum ApprovalStatus {
+    PENDING("pending", "待审批"),
     APPROVED("approved", "已批准"),
     REJECTED("rejected", "已拒绝"),
-    CANCELLED("cancelled", "已取消");
+    TRANSFERRED("transferred", "已转办");
 
     private final String code;
     private final String description;
 
-    WorkflowStatus(String code, String description) {
+    ApprovalStatus(String code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -29,12 +28,12 @@ public enum WorkflowStatus {
         return description;
     }
 
-    public static WorkflowStatus fromCode(String code) {
-        for (WorkflowStatus status : values()) {
+    public static ApprovalStatus fromCode(String code) {
+        for (ApprovalStatus status : values()) {
             if (status.code.equals(code)) {
                 return status;
             }
         }
-        throw new IllegalArgumentException("Unknown WorkflowStatus code: " + code);
+        throw new IllegalArgumentException("Unknown ApprovalStatus code: " + code);
     }
 }

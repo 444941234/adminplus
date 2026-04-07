@@ -2,7 +2,7 @@ package com.adminplus.service;
 
 import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.common.exception.BizException;
-import com.adminplus.constants.StorageType;
+import com.adminplus.enums.StorageType;
 import com.adminplus.pojo.entity.FileEntity;
 import com.adminplus.repository.FileRepository;
 import com.adminplus.service.impl.FileServiceImpl;

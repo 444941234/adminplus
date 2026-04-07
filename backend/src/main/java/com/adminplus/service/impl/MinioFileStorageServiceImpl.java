@@ -1,7 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.properties.FileStorageProperties;
-import com.adminplus.constants.StorageType;
+import com.adminplus.enums.StorageType;
 import com.adminplus.service.FileStorageService;
 import com.adminplus.utils.FileContentValidator;
 import com.adminplus.utils.XssUtils;

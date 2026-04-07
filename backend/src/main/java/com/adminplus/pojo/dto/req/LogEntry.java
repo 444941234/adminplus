@@ -1,6 +1,6 @@
 package com.adminplus.pojo.dto.req;
 
-import com.adminplus.constants.LogType;
+import com.adminplus.enums.LogType;
 
 /**
  * 日志条目 - 统一的日志记录参数

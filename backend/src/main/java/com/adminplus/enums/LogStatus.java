@@ -1,19 +1,19 @@
-package com.adminplus.constants;
+package com.adminplus.enums;
 
 /**
- * 用户状态枚举
+ * 日志状态枚举
  *
  * @author AdminPlus
  * @since 2026-02-07
  */
-public enum UserStatus {
-    DISABLED(0, "禁用"),
-    ENABLED(1, "启用");
+public enum LogStatus {
+    FAILED(0, "失败"),
+    SUCCESS(1, "成功");
 
     private final int code;
     private final String description;
 
-    UserStatus(int code, String description) {
+    LogStatus(int code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -26,12 +26,12 @@ public enum UserStatus {
         return description;
     }
 
-    public static UserStatus fromCode(int code) {
-        for (UserStatus status : values()) {
+    public static LogStatus fromCode(int code) {
+        for (LogStatus status : values()) {
             if (status.code == code) {
                 return status;
             }
         }
-        throw new IllegalArgumentException("Unknown UserStatus code: " + code);
+        throw new IllegalArgumentException("Unknown LogStatus code: " + code);
     }
 }

@@ -1,14 +1,12 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.constants.ApprovalStatus;
-import com.adminplus.constants.WorkflowStatus;
+import com.adminplus.enums.WorkflowStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.adminplus.pojo.dto.req.ApprovalActionReq;
 import com.adminplus.pojo.dto.req.WorkflowStartReq;
 import com.adminplus.pojo.dto.resp.WorkflowApprovalResp;
-import com.adminplus.pojo.dto.resp.WorkflowDefinitionResp;
 import com.adminplus.pojo.dto.resp.WorkflowDetailResp;
 import com.adminplus.pojo.dto.resp.WorkflowDraftDetailResp;
 import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;

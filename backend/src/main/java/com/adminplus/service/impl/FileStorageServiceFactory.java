@@ -1,7 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.properties.FileStorageProperties;
-import com.adminplus.constants.StorageType;
+import com.adminplus.enums.StorageType;
 import com.adminplus.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

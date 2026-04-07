@@ -3,8 +3,8 @@ package com.adminplus.service.impl;
 import com.adminplus.common.constant.SecurityConfigConstants;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.common.properties.AppProperties;
-import com.adminplus.constants.OperationType;
-import com.adminplus.constants.RedisConstants;
+import com.adminplus.enums.OperationType;
+import com.adminplus.constants.CacheConstants;
 import com.adminplus.pojo.dto.req.UserLoginReq;
 import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.LoginResp;
@@ -90,7 +90,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void validateCaptcha(String captchaId, String captchaCode, String username) {
-        String redisKey = RedisConstants.CAPTCHA_KEY_PREFIX + captchaId;
+        String redisKey = CacheConstants.CAPTCHA_KEY_PREFIX + captchaId;
         String storedCode = redisTemplate.opsForValue().get(redisKey);
 
         if (storedCode == null) {

@@ -1,4 +1,4 @@
-package com.adminplus.constants;
+package com.adminplus.enums;
 
 /**
  * 存储类型枚举

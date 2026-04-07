@@ -1,7 +1,6 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.constants.OperationType;
 import com.adminplus.pojo.dto.req.*;
 import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.*;

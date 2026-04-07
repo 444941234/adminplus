@@ -1,4 +1,4 @@
-package com.adminplus.constants;
+package com.adminplus.enums;
 
 /**
  * 操作类型枚举
