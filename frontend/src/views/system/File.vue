@@ -17,6 +17,7 @@ import { Download, FolderOpen, Trash2, Upload } from 'lucide-vue-next'
 import { ConfirmDialog, EmptyState, ListSearchBar } from '@/components/common'
 import { deleteManagedFile, getFilesByDirectory, getMyFiles, uploadManagedFile } from '@/api'
 import { downloadBlob } from '@/utils/request'
+import { formatDateTime } from '@/utils/format'
 import type { FileRecord } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
@@ -284,7 +285,7 @@ onMounted(fetchFiles)
                 </Badge>
               </td>
               <td class="p-4 text-sm text-muted-foreground">
-                {{ file.createTime || '-' }}
+                {{ formatDateTime(file.createTime) }}
               </td>
               <td class="p-4">
                 <div class="flex gap-2">

@@ -40,6 +40,7 @@ import type { Dict, DictItem } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { formatDateTime } from '@/utils/format'
 
 const { loading, searchQuery, tableData, fetchData, goToPage, handleSearch, handleReset } = usePageList<Dict>(
   (params) => getDictList(params),
@@ -366,9 +367,6 @@ onMounted(fetchData)
           <thead class="bg-muted/50 border-b">
             <tr>
               <th class="text-left p-4 font-medium">
-                ID
-              </th>
-              <th class="text-left p-4 font-medium">
                 字典名称
               </th>
               <th class="text-left p-4 font-medium">
@@ -391,7 +389,7 @@ onMounted(fetchData)
           <tbody class="divide-y">
             <tr v-if="loading">
               <td
-                colspan="7"
+                colspan="6"
                 class="p-8 text-center text-muted-foreground"
               >
                 加载中...
@@ -399,7 +397,7 @@ onMounted(fetchData)
             </tr>
             <tr v-else-if="tableData.records.length === 0">
               <td
-                colspan="7"
+                colspan="6"
                 class="p-0"
               >
                 <EmptyState
@@ -419,9 +417,6 @@ onMounted(fetchData)
               :key="dict.id"
               class="hover:bg-muted/30"
             >
-              <td class="p-4 text-muted-foreground">
-                {{ dict.id }}
-              </td>
               <td class="p-4 font-medium">
                 {{ dict.dictName }}
               </td>
@@ -438,8 +433,8 @@ onMounted(fetchData)
                   @toggle="handleStatusToggle(dict)"
                 />
               </td>
-              <td class="p-4 text-muted-foreground">
-                {{ dict.createTime }}
+              <td class="p-4 text-muted-foreground text-sm">
+                {{ formatDateTime(dict.createTime) }}
               </td>
               <td class="p-4">
                 <div class="flex gap-2">

@@ -35,6 +35,7 @@ import {
 } from '@/api'
 import type { Log } from '@/types'
 import { useUserStore } from '@/stores/user'
+import { formatDateTime } from '@/utils/format'
 import { toast } from 'vue-sonner'
 import { usePageList } from '@/composables/usePageList'
 import { useAsyncAction } from '@/composables/useAsyncAction'
@@ -548,7 +549,7 @@ onMounted(async () => {
                 />
               </td>
               <td class="p-4 text-sm text-muted-foreground">
-                {{ log.createTime }}
+                {{ formatDateTime(log.createTime) }}
               </td>
               <td class="p-4">
                 <div class="flex gap-2">
