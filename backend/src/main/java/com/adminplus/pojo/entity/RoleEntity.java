@@ -8,7 +8,7 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * 角色实体
@@ -28,7 +28,7 @@ import org.hibernate.annotations.Where;
            @Index(name = "idx_role_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_role SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class RoleEntity extends BaseEntity {
 
     /**

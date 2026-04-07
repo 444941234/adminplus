@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * 表单模板实体
@@ -26,7 +26,7 @@ import org.hibernate.annotations.Where;
            @Index(name = "idx_form_template_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_form_template SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class FormTemplateEntity extends BaseEntity {
 
     /**

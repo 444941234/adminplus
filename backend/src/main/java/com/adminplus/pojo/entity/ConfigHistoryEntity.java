@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * 配置历史实体
@@ -28,7 +28,7 @@ import org.hibernate.annotations.Where;
             @Index(name = "idx_config_history_deleted", columnList = "deleted")
         })
 @SQLDelete(sql = "UPDATE sys_config_history SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class ConfigHistoryEntity extends BaseEntity {
 
     /**

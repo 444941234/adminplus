@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * 字典实体
@@ -31,7 +31,7 @@ import org.hibernate.annotations.Where;
            @Index(name = "idx_dict_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_dict SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class DictEntity extends BaseEntity {
 
     /**

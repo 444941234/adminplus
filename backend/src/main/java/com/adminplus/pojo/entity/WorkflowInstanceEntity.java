@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.data.annotation.Version;
 
 import java.time.Instant;
@@ -30,7 +30,7 @@ import java.time.Instant;
            @Index(name = "idx_wf_inst_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_workflow_instance SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class WorkflowInstanceEntity extends BaseEntity {
 
     /**

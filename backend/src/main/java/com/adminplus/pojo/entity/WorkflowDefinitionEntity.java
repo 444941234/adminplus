@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * 工作流定义实体
@@ -25,7 +25,7 @@ import org.hibernate.annotations.Where;
            @Index(name = "idx_wf_def_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_workflow_definition SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class WorkflowDefinitionEntity extends BaseEntity {
 
     /**

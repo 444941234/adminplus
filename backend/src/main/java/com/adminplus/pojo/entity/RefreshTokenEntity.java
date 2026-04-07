@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.Instant;
 
@@ -36,7 +36,7 @@ import java.time.Instant;
            @Index(name = "idx_refresh_token_deleted", columnList = "deleted")
        })
 @SQLDelete(sql = "UPDATE sys_refresh_token SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class RefreshTokenEntity extends BaseEntity {
 
 

@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * 工作流审批记录实体
@@ -32,7 +32,7 @@ import org.hibernate.annotations.Where;
            @Index(name = "idx_wf_appr_pending", columnList = "approver_id, approval_status, instance_id")
        })
 @SQLDelete(sql = "UPDATE sys_workflow_approval SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class WorkflowApprovalEntity extends BaseEntity {
 
     /**

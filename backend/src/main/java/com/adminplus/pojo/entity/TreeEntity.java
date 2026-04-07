@@ -3,7 +3,7 @@ package com.adminplus.pojo.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import java.util.List;
  * 2. 使用 @ToString(exclude = {"parent", "children"}) 防止循环引用导致 StackOverflow
  * 3. 父子关系使用 LAZY 懒加载，避免 N+1 查询
  * 4. ancestors 字段使用 Materialized Path 模式优化查询性能
- * 5. 子类需要添加 @SQLDelete 和 @Where 注解实现逻辑删除
+ * 5. 子类需要添加 @SQLDelete 和 @SQLRestriction 注解实现逻辑删除
  * </p>
  *
  * @param <E> 子类类型 (用于 self-reference)
@@ -26,7 +26,7 @@ import java.util.List;
 @Getter
 @Setter
 @MappedSuperclass
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public abstract class TreeEntity<E extends TreeEntity<E>> extends BaseEntity {
 
     /**

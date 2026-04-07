@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 /**
  * 配置分组实体
@@ -32,7 +32,7 @@ import org.hibernate.annotations.Where;
             @Index(name = "idx_config_group_deleted", columnList = "deleted")
         })
 @SQLDelete(sql = "UPDATE sys_config_group SET deleted = true WHERE id = ?")
-@Where(clause = "deleted = false")
+@SQLRestriction("deleted = false")
 public class ConfigGroupEntity extends BaseEntity {
 
     /**
