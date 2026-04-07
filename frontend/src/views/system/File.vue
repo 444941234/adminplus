@@ -16,6 +16,7 @@ import {
 import { Download, FolderOpen, Trash2, Upload } from 'lucide-vue-next'
 import { ConfirmDialog, EmptyState, ListSearchBar } from '@/components/common'
 import { deleteManagedFile, getFilesByDirectory, getMyFiles, uploadManagedFile } from '@/api'
+import { downloadBlob } from '@/utils/request'
 import type { FileRecord } from '@/types'
 import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
@@ -94,8 +95,28 @@ const handleUpload = () => {
   )
 }
 
-const handleOpenFile = (file: FileRecord) => {
-    window.open(file.fileUrl, '_blank', 'noopener,noreferrer')
+const handleOpenFile = async (file: FileRecord) => {
+  try {
+    const blob = await downloadBlob(file.fileUrl)
+    const blobUrl = URL.createObjectURL(blob)
+    window.open(blobUrl, '_blank', 'noopener,noreferrer')
+  } catch {
+    toast.error('文件打开失败')
+  }
+}
+
+const handleDownloadFile = async (file: FileRecord) => {
+  try {
+    const blob = await downloadBlob(file.fileUrl)
+    const blobUrl = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = file.originalName
+    link.click()
+    URL.revokeObjectURL(blobUrl)
+  } catch {
+    toast.error('文件下载失败')
+  }
 }
 
 const handleDeleteConfirm = (id: string) => {
@@ -277,7 +298,7 @@ onMounted(fetchFiles)
                   <Button
                     size="sm"
                     variant="ghost"
-                    @click="handleOpenFile(file)"
+                    @click="handleDownloadFile(file)"
                   >
                     <Download class="h-4 w-4" />
                   </Button>

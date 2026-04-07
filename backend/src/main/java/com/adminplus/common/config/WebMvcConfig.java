@@ -2,12 +2,14 @@ package com.adminplus.common.config;
 
 import com.adminplus.common.filter.XssFilter;
 import com.adminplus.common.interceptor.RateLimitInterceptor;
+import com.adminplus.common.properties.FileStorageProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -21,6 +23,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final RateLimitInterceptor rateLimitInterceptor;
+    private final FileStorageProperties fileStorageProperties;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -52,5 +55,21 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
         registration.setName("xssFilter");
         return registration;
+    }
+
+    /**
+     * 配置静态资源映射 - 本地文件存储
+     */
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 映射 /uploads/** 到本地存储目录
+        String basePath = fileStorageProperties.getLocal().getBasePath();
+        String accessPrefix = fileStorageProperties.getLocal().getAccessPrefix();
+
+        // 确保 basePath 以 file: 协议开头
+        String location = basePath.startsWith("file:") ? basePath : "file:" + basePath + "/";
+
+        registry.addResourceHandler(accessPrefix + "/**")
+                .addResourceLocations(location);
     }
 }
