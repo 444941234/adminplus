@@ -5,6 +5,7 @@ import com.adminplus.constants.OperationType;
 import com.adminplus.constants.UserStatus;
 import com.adminplus.pojo.dto.req.UserCreateReq;
 import com.adminplus.pojo.dto.req.UserUpdateReq;
+import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.dto.resp.UserResp;
 import com.adminplus.pojo.entity.DeptEntity;
@@ -226,7 +227,7 @@ public class UserServiceImpl implements UserService {
         user = userRepository.save(user);
 
         // 记录审计日志
-        logService.log("用户管理", OperationType.CREATE.getCode(), "创建用户: " + user.getUsername());
+        logService.log(LogEntry.operation("用户管理", OperationType.CREATE.getCode(), "创建用户: " + user.getUsername()));
 
         // 查询部门名称
         String deptName = null;
@@ -270,7 +271,7 @@ public class UserServiceImpl implements UserService {
         user = userRepository.save(user);
 
         // 记录审计日志
-        logService.log("用户管理", OperationType.UPDATE.getCode(), "更新用户: " + user.getUsername());
+        logService.log(LogEntry.operation("用户管理", OperationType.UPDATE.getCode(), "更新用户: " + user.getUsername()));
 
         // 查询部门名称
         String deptName = null;
@@ -310,7 +311,7 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(user);
 
         // 记录审计日志
-        logService.log("用户管理", OperationType.DELETE.getCode(), "删除用户: " + user.getUsername());
+        logService.log(LogEntry.operation("用户管理", OperationType.DELETE.getCode(), "删除用户: " + user.getUsername()));
     }
 
     @Override
@@ -332,7 +333,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         // 记录审计日志
-        logService.log("用户管理", OperationType.UPDATE.getCode(), "更新用户状态: " + user.getUsername() + " -> " + status);
+        logService.log(LogEntry.operation("用户管理", OperationType.UPDATE.getCode(), "更新用户状态: " + user.getUsername() + " -> " + status));
     }
 
     @Override
@@ -347,7 +348,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         // 记录审计日志（使用掩码隐藏用户名）
-        logService.log("用户管理", OperationType.UPDATE.getCode(), "重置密码: " + LogMaskingUtils.maskUsername(user.getUsername()));
+        logService.log(LogEntry.operation("用户管理", OperationType.UPDATE.getCode(), "重置密码: " + LogMaskingUtils.maskUsername(user.getUsername())));
     }
 
     @Override
@@ -396,9 +397,9 @@ public class UserServiceImpl implements UserService {
                     roleRepository.findAllById(safeRoleIds).stream()
                             .map(RoleEntity::getName)
                             .collect(Collectors.joining(", "));
-            logService.log("用户管理", OperationType.UPDATE.getCode(),
+            logService.log(LogEntry.operation("用户管理", OperationType.UPDATE.getCode(),
                     "分配角色: " + user.getUsername() + " -> " + roleNames
-                    + " (新增" + result.added() + "个, 移除" + result.removed() + "个)");
+                    + " (新增" + result.added() + "个, 移除" + result.removed() + "个)"));
         }
     }
 

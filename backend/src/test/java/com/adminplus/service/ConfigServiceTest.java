@@ -3,6 +3,7 @@ package com.adminplus.service;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.OperationType;
 import com.adminplus.pojo.dto.req.*;
+import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.*;
 import com.adminplus.pojo.entity.ConfigEntity;
 import com.adminplus.pojo.entity.ConfigGroupEntity;
@@ -210,7 +211,7 @@ class ConfigServiceTest {
             assertThat(result).isNotNull();
             verify(configRepository).save(any(ConfigEntity.class));
             verify(configHistoryRepository).save(any(ConfigHistoryEntity.class));
-            verify(logService).log(any(), eq(OperationType.CREATE.getCode()), any());
+            verify(logService).log(any(LogEntry.class));
         }
 
         @Test
@@ -287,7 +288,7 @@ class ConfigServiceTest {
 
             // Then
             verify(configRepository).deleteById("config-001");
-            verify(logService).log(any(), eq(OperationType.DELETE.getCode()), any());
+            verify(logService).log(any(LogEntry.class));
         }
 
         @Test

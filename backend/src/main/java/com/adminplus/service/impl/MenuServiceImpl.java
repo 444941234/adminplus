@@ -6,6 +6,7 @@ import com.adminplus.pojo.dto.req.MenuBatchDeleteReq;
 import com.adminplus.pojo.dto.req.MenuBatchStatusReq;
 import com.adminplus.pojo.dto.req.MenuCreateReq;
 import com.adminplus.pojo.dto.req.MenuUpdateReq;
+import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.MenuResp;
 import com.adminplus.pojo.entity.MenuEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;
@@ -117,7 +118,7 @@ public class MenuServiceImpl implements MenuService {
         menu = menuRepository.save(menu);
 
         // 记录审计日志
-        logService.log("菜单管理", OperationType.CREATE.getCode(), "创建菜单: " + menu.getName());
+        logService.log(LogEntry.operation("菜单管理", OperationType.CREATE.getCode(), "创建菜单: " + menu.getName()));
 
         return toResp(menu);
     }
@@ -171,7 +172,7 @@ public class MenuServiceImpl implements MenuService {
         var savedMenu = menuRepository.save(menu);
 
         // 记录审计日志
-        logService.log("菜单管理", OperationType.UPDATE.getCode(), "更新菜单: " + savedMenu.getName());
+        logService.log(LogEntry.operation("菜单管理", OperationType.UPDATE.getCode(), "更新菜单: " + savedMenu.getName()));
 
         return toResp(savedMenu);
     }
@@ -190,7 +191,7 @@ public class MenuServiceImpl implements MenuService {
         menuRepository.delete(menu);
 
         // 记录审计日志
-        logService.log("菜单管理", OperationType.DELETE.getCode(), "删除菜单: " + menu.getName());
+        logService.log(LogEntry.operation("菜单管理", OperationType.DELETE.getCode(), "删除菜单: " + menu.getName()));
     }
 
     @Override
@@ -210,7 +211,7 @@ public class MenuServiceImpl implements MenuService {
         menuRepository.saveAll(menus);
 
         // 记录审计日志
-        logService.log("菜单管理", OperationType.UPDATE.getCode(), "批量更新菜单状态，数量: " + req.ids().size());
+        logService.log(LogEntry.operation("菜单管理", OperationType.UPDATE.getCode(), "批量更新菜单状态，数量: " + req.ids().size()));
     }
 
     @Override
@@ -233,7 +234,7 @@ public class MenuServiceImpl implements MenuService {
         menuRepository.deleteAll(menus);
 
         // 记录审计日志
-        logService.log("菜单管理", OperationType.DELETE.getCode(), "批量删除菜单，数量: " + req.ids().size());
+        logService.log(LogEntry.operation("菜单管理", OperationType.DELETE.getCode(), "批量删除菜单，数量: " + req.ids().size()));
     }
 
     @Override

@@ -4,6 +4,7 @@ import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.OperationType;
 import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
 import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
+import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.ConfigGroupResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.ConfigEntity;
@@ -114,8 +115,8 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("创建配置组成功: {}", group.getCode());
 
         // 记录审计日志
-        logService.log("配置管理", OperationType.CREATE.getCode(),
-                "创建配置组: " + group.getName() + " (" + group.getCode() + ")");
+        logService.log(LogEntry.operation("配置管理", OperationType.CREATE.getCode(),
+                "创建配置组: " + group.getName() + " (" + group.getCode() + ")"));
 
         return toVO(group);
     }
@@ -145,8 +146,8 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("更新配置组成功: {}", group.getCode());
 
         // 记录审计日志
-        logService.log("配置管理", OperationType.UPDATE.getCode(),
-                "更新配置组: " + group.getName() + " (" + group.getCode() + ")");
+        logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
+                "更新配置组: " + group.getName() + " (" + group.getCode() + ")"));
 
         return toVO(group);
     }
@@ -169,8 +170,8 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("删除配置组成功: {}", group.getCode());
 
         // 记录审计日志
-        logService.log("配置管理", OperationType.DELETE.getCode(),
-                "删除配置组: " + group.getName() + " (" + group.getCode() + ")");
+        logService.log(LogEntry.operation("配置管理", OperationType.DELETE.getCode(),
+                "删除配置组: " + group.getName() + " (" + group.getCode() + ")"));
     }
 
     @Override
@@ -186,8 +187,8 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("更新配置组状态成功: {} -> {}", group.getCode(), status);
 
         // 记录审计日志
-        logService.log("配置管理", OperationType.UPDATE.getCode(),
-                "更新配置组状态: " + group.getName() + " (" + group.getCode() + ") -> " + status);
+        logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
+                "更新配置组状态: " + group.getName() + " (" + group.getCode() + ") -> " + status));
     }
 
     @Override

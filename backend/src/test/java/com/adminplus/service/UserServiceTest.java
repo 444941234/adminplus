@@ -3,6 +3,7 @@ package com.adminplus.service;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.req.UserCreateReq;
 import com.adminplus.pojo.dto.req.UserUpdateReq;
+import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.UserResp;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
@@ -233,7 +234,7 @@ class UserServiceTest {
                 user.setId("new-user-id");
                 return user;
             });
-            doNothing().when(logService).log(any(), anyInt(), any());
+            doNothing().when(logService).log(any(LogEntry.class));
 
             // When
             UserResp result = userService.createUser(req);
@@ -242,7 +243,7 @@ class UserServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.username()).isEqualTo("newuser");
             verify(userRepository).save(any(UserEntity.class));
-            verify(logService).log(any(), anyInt(), any());
+            verify(logService).log(any(LogEntry.class));
         }
     }
 
@@ -390,14 +391,14 @@ class UserServiceTest {
             when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
             when(passwordEncoder.encode(any())).thenReturn("encoded-password");
             when(userRepository.save(any())).thenReturn(testUser);
-            doNothing().when(logService).log(any(), anyInt(), any());
+            doNothing().when(logService).log(any(LogEntry.class));
 
             // When
             userService.resetPassword("user-001", "NewStrongP@ss123");
 
             // Then
             verify(userRepository).save(any(UserEntity.class));
-            verify(logService).log(any(), anyInt(), any());
+            verify(logService).log(any(LogEntry.class));
         }
 
         @Test

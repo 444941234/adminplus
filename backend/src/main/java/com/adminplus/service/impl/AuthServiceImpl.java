@@ -2,9 +2,9 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.common.properties.AppProperties;
-import com.adminplus.constants.LogStatus;
 import com.adminplus.constants.OperationType;
 import com.adminplus.pojo.dto.req.UserLoginReq;
+import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.LoginResp;
 import com.adminplus.pojo.dto.resp.UserResp;
 import com.adminplus.pojo.entity.RoleEntity;
@@ -101,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
                     .toList();
             List<String> roleCodes = roles.stream()
                     .map(RoleEntity::getCode)
-                    .collect(Collectors.toList());
+                    .toList();
             List<String> roleNames = roles.stream()
                     .map(RoleEntity::getName)
                     .collect(Collectors.toList());
@@ -153,7 +153,7 @@ public class AuthServiceImpl implements AuthService {
             String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
             // 记录登录审计日志
-            logService.log("认证管理", OperationType.OTHER.getCode(), "用户登录成功: " + LogMaskingUtils.maskUsername(req.username()));
+            logService.log(LogEntry.operation("认证管理", OperationType.OTHER.getCode(), "用户登录成功: " + LogMaskingUtils.maskUsername(req.username())));
 
             return new LoginResp(token, refreshToken, "Bearer", userResp, permissions);
 
@@ -161,8 +161,9 @@ public class AuthServiceImpl implements AuthService {
             log.error("登录失败: username={}", LogMaskingUtils.maskUsername(req.username()));
 
             // 记录登录失败审计日志
-            logService.log("认证管理", OperationType.OTHER.getCode(), "用户登录失败: " + LogMaskingUtils.maskUsername(req.username()),
-                    LogStatus.FAILED.getCode(), "用户名或密码错误");
+            logService.log(LogEntry.operationBuilder("认证管理", OperationType.OTHER.getCode(), "用户登录失败: " + LogMaskingUtils.maskUsername(req.username()))
+                .failed("用户名或密码错误")
+                .build());
 
             throw new BizException("用户名或密码错误");
         }
@@ -242,7 +243,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 记录登出审计日志
-            logService.log("认证管理", OperationType.OTHER.getCode(), "用户退出: " + LogMaskingUtils.maskUsername(username));
+            logService.log(LogEntry.operation("认证管理", OperationType.OTHER.getCode(), "用户退出: " + LogMaskingUtils.maskUsername(username)));
 
         } catch (Exception e) {
             log.error("登出时处理 Token 黑名单失败", e);

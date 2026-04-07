@@ -4,6 +4,7 @@ import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.OperationType;
 import com.adminplus.pojo.dto.req.RoleCreateReq;
 import com.adminplus.pojo.dto.req.RoleUpdateReq;
+import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.RoleResp;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.RoleMenuEntity;
@@ -87,7 +88,7 @@ public class RoleServiceImpl implements RoleService {
         role = roleRepository.save(role);
 
         // 记录审计日志
-        logService.log("角色管理", OperationType.CREATE.getCode(), "创建角色: " + role.getName() + " (" + role.getCode() + ")");
+        logService.log(LogEntry.operation("角色管理", OperationType.CREATE.getCode(), "创建角色: " + role.getName() + " (" + role.getCode() + ")"));
 
         return toResp(role);
     }
@@ -121,7 +122,7 @@ public class RoleServiceImpl implements RoleService {
 
         role = roleRepository.save(role);
 
-        logService.log("角色管理", OperationType.UPDATE.getCode(), "更新角色: " + role.getName() + " (" + role.getCode() + ")");
+        logService.log(LogEntry.operation("角色管理", OperationType.UPDATE.getCode(), "更新角色: " + role.getName() + " (" + role.getCode() + ")"));
 
         return toResp(role);
     }
@@ -154,7 +155,7 @@ public class RoleServiceImpl implements RoleService {
         roleRepository.delete(role);
 
         // 记录审计日志
-        logService.log("角色管理", OperationType.DELETE.getCode(), "删除角色: " + role.getName() + " (" + role.getCode() + ")");
+        logService.log(LogEntry.operation("角色管理", OperationType.DELETE.getCode(), "删除角色: " + role.getName() + " (" + role.getCode() + ")"));
     }
 
     @Override
@@ -185,9 +186,9 @@ public class RoleServiceImpl implements RoleService {
 
         // 记录审计日志
         if (result.hasChanges()) {
-            logService.log("角色管理", OperationType.UPDATE.getCode(),
+            logService.log(LogEntry.operation("角色管理", OperationType.UPDATE.getCode(),
                     "分配菜单权限: " + role.getName() + " -> " + safeMenuIds.size() + " 个菜单"
-                            + " (新增" + result.added() + "个, 移除" + result.removed() + "个)");
+                            + " (新增" + result.added() + "个, 移除" + result.removed() + "个)"));
         }
     }
 
@@ -214,7 +215,7 @@ public class RoleServiceImpl implements RoleService {
         role.setStatus(status);
         roleRepository.save(role);
 
-        logService.log("角色管理", OperationType.UPDATE.getCode(), "更新角色状态: " + role.getName() + " -> " + (status == 1 ? "启用" : "禁用"));
+        logService.log(LogEntry.operation("角色管理", OperationType.UPDATE.getCode(), "更新角色状态: " + role.getName() + " -> " + (status == 1 ? "启用" : "禁用")));
     }
 
     private RoleResp toResp(RoleEntity role) {

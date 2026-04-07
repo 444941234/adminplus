@@ -4,6 +4,7 @@ import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.OperationType;
 import com.adminplus.pojo.dto.req.DictCreateReq;
 import com.adminplus.pojo.dto.req.DictUpdateReq;
+import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.DictItemResp;
 import com.adminplus.pojo.dto.resp.DictResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -111,7 +112,7 @@ public class DictServiceImpl implements DictService {
         log.info("创建字典成功: {}", dict.getDictType());
 
         // 记录审计日志
-        logService.log("字典管理", OperationType.CREATE.getCode(), "创建字典: " + dict.getDictName() + " (" + dict.getDictType() + ")");
+        logService.log(LogEntry.operation("字典管理", OperationType.CREATE.getCode(), "创建字典: " + dict.getDictName() + " (" + dict.getDictType() + ")"));
 
         return toVO(dict);
     }
@@ -132,7 +133,7 @@ public class DictServiceImpl implements DictService {
         log.info("更新字典成功: {}", dict.getDictType());
 
         // 记录审计日志
-        logService.log("字典管理", OperationType.UPDATE.getCode(), "更新字典: " + dict.getDictName() + " (" + dict.getDictType() + ")");
+        logService.log(LogEntry.operation("字典管理", OperationType.UPDATE.getCode(), "更新字典: " + dict.getDictName() + " (" + dict.getDictType() + ")"));
 
         return toVO(dict);
     }
@@ -154,7 +155,7 @@ public class DictServiceImpl implements DictService {
         log.info("删除字典成功: {}", dict.getDictType());
 
         // 记录审计日志
-        logService.log("字典管理", OperationType.DELETE.getCode(), "删除字典: " + dict.getDictName() + " (" + dict.getDictType() + ")");
+        logService.log(LogEntry.operation("字典管理", OperationType.DELETE.getCode(), "删除字典: " + dict.getDictName() + " (" + dict.getDictType() + ")"));
     }
 
     @Override

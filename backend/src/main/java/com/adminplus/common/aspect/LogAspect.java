@@ -2,6 +2,7 @@ package com.adminplus.common.aspect;
 
 import com.adminplus.common.annotation.LoginLog;
 import com.adminplus.common.annotation.OperationLog;
+import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.service.LogService;
 import com.adminplus.utils.IpUtils;
 import com.adminplus.utils.SecurityUtils;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 /**
  * 日志切面
- * 拦截带有 @OperationLog 或 @LoginLog 注解的方法，自动记录操作日志
+ * 拦截带有 @OperationLog 或 @LoginLog 注解的方法，自动记录日志
  *
  * @author AdminPlus
  * @since 2026-03-03
@@ -60,11 +61,43 @@ public class LogAspect {
         Method method = signature.getMethod();
         OperationLog operationLog = method.getAnnotation(OperationLog.class);
 
-        return executeWithLogging(joinPoint, new OperationLogContext(
-            operationLog.module(),
-            operationLog.operationType(),
-            parseDescription(operationLog.description(), joinPoint)
-        ));
+        HttpServletRequest request = WebUtils.getRequest();
+        String ip = IpUtils.getClientIp(request);
+        String methodName = request != null
+            ? request.getMethod() + " " + request.getRequestURI()
+            : signature.getName();
+        String params = getParams(joinPoint);
+        String description = parseDescription(operationLog.description(), joinPoint);
+
+        long startTime = System.currentTimeMillis();
+        Throwable error = null;
+
+        try {
+            return joinPoint.proceed();
+        } catch (Throwable e) {
+            error = e;
+            throw e;
+        } finally {
+            long costTime = System.currentTimeMillis() - startTime;
+
+            if (error != null) {
+                // 失败日志
+                logService.log(LogEntry.operationBuilder(operationLog.module(), operationLog.operationType(), description + " - 失败")
+                    .method(methodName)
+                    .params(params)
+                    .ip(ip)
+                    .failed(error.getMessage())
+                    .build());
+            } else {
+                // 成功日志
+                logService.log(LogEntry.operationBuilder(operationLog.module(), operationLog.operationType(), description)
+                    .method(methodName)
+                    .params(params)
+                    .ip(ip)
+                    .costTime(costTime)
+                    .build());
+            }
+        }
     }
 
     @Around("loginLogPointcut()")
@@ -73,118 +106,25 @@ public class LogAspect {
         Method method = signature.getMethod();
         LoginLog loginLog = method.getAnnotation(LoginLog.class);
 
-        String description = loginLog.description();
-        if (description.isEmpty()) {
-            description = loginLog.type() == 1 ? "用户登录" : "用户登出";
-        }
         String username = getUsernameFromArgs(joinPoint.getArgs(), method);
-
-        return executeWithLogging(joinPoint, new LoginLogContext(
-            loginLog.type(),
-            description,
-            username
-        ));
-    }
-
-    /**
-     * 日志执行模板方法
-     */
-    private Object executeWithLogging(ProceedingJoinPoint joinPoint, LogContext context) throws Throwable {
-        long startTime = System.currentTimeMillis();
-
-        HttpServletRequest request = getRequest();
-        String ip = getClientIp(request);
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String methodName = request != null ? request.getMethod() + " " + request.getRequestURI() : signature.getName();
-        String params = getParams(joinPoint);
+        String description = loginLog.description().isEmpty()
+            ? (loginLog.type() == 1 ? "用户登录" : "用户登出")
+            : loginLog.description();
 
         Throwable error = null;
+
         try {
             return joinPoint.proceed();
         } catch (Throwable e) {
             error = e;
             throw e;
         } finally {
-            long costTime = System.currentTimeMillis() - startTime;
-            context.recordLog(logService, methodName, params, ip, costTime, error);
+            boolean success = error == null;
+            String errorMsg = success ? null : error.getMessage();
+
+            // 登录日志（无需认证检查）
+            logService.log(LogEntry.login(username != null ? username : "未知用户", success, errorMsg));
         }
-    }
-
-    /**
-     * 日志上下文基类
-     */
-    private sealed abstract class LogContext permits OperationLogContext, LoginLogContext {
-        protected final String module;
-        protected final int operationType;
-        protected final String description;
-
-        protected LogContext(String module, int operationType, String description) {
-            this.module = module;
-            this.operationType = operationType;
-            this.description = description;
-        }
-
-        protected abstract void recordLog(LogService logService, String methodName, String params,
-                                         String ip, long costTime, Throwable error);
-    }
-
-    /**
-     * 操作日志上下文
-     */
-    private final class OperationLogContext extends LogContext {
-        private OperationLogContext(String module, int operationType, String description) {
-            super(module, operationType, description);
-        }
-
-        @Override
-        protected void recordLog(LogService logService, String methodName, String params,
-                                String ip, long costTime, Throwable error) {
-            try {
-                if (error != null) {
-                    logService.log(module, operationType, description, methodName, params, ip);
-                    logService.log(module, operationType, description + " - 失败", 0, error.getMessage());
-                } else {
-                    logService.log(module, operationType, description, costTime);
-                }
-            } catch (Exception e) {
-                log.error("记录操作日志失败", e);
-            }
-        }
-    }
-
-    /**
-     * 登录日志上下文
-     */
-    private final class LoginLogContext extends LogContext {
-        private final String username;
-
-        private LoginLogContext(int operationType, String description, String username) {
-            super("系统登录", operationType, description);
-            this.username = username;
-        }
-
-        @Override
-        protected void recordLog(LogService logService, String methodName, String params,
-                                String ip, long costTime, Throwable error) {
-            try {
-                // 使用 logLogin 方法记录登录日志，不受认证状态限制
-                if (error != null) {
-                    logService.logLogin(username != null ? username : "未知用户", 0, error.getMessage());
-                } else {
-                    logService.logLogin(username != null ? username : "未知用户", 1, null);
-                }
-            } catch (Exception e) {
-                log.error("记录登录日志失败", e);
-            }
-        }
-    }
-
-    private HttpServletRequest getRequest() {
-        return WebUtils.getRequest();
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        return IpUtils.getClientIp(request);
     }
 
     private String getParams(ProceedingJoinPoint joinPoint) {
@@ -203,7 +143,7 @@ public class LogAspect {
             for (int i = 0; i < parameters.length; i++) {
                 Parameter param = parameters[i];
                 if (param.getType().getName().contains("HttpServletRequest")
-                        || param.getType().getName().contains("HttpServletResponse")) {
+                    || param.getType().getName().contains("HttpServletResponse")) {
                     continue;
                 }
 
@@ -215,24 +155,21 @@ public class LogAspect {
                 RequestParam requestParam = param.getAnnotation(RequestParam.class);
                 if (requestParam != null) {
                     String paramName = requestParam.value().isEmpty() ? param.getName() : requestParam.value();
-                    // 处理 MultipartFile，避免序列化失败
                     if (args[i] instanceof MultipartFile fileValue) {
                         paramsMap.put(paramName, Map.of(
-                                "originalFilename", fileValue.getOriginalFilename(),
-                                "size", fileValue.getSize(),
-                                "contentType", fileValue.getContentType()
+                            "originalFilename", fileValue.getOriginalFilename(),
+                            "size", fileValue.getSize(),
+                            "contentType", fileValue.getContentType()
                         ));
                     } else {
                         paramsMap.put(paramName, args[i]);
                     }
                 } else if (args[i] instanceof MultipartFile fileValue) {
                     paramsMap.put(param.getName(), Map.of(
-                            "originalFilename", fileValue.getOriginalFilename(),
-                            "size", fileValue.getSize(),
-                            "contentType", fileValue.getContentType()
+                        "originalFilename", fileValue.getOriginalFilename(),
+                        "size", fileValue.getSize(),
+                        "contentType", fileValue.getContentType()
                     ));
-                } else if (args[i] != null && !param.getType().getName().startsWith("java.lang")) {
-                    paramsMap.put(param.getName(), args[i]);
                 } else {
                     paramsMap.put(param.getName(), args[i]);
                 }

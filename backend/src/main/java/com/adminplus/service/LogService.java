@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.req.LogQueryReq;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
@@ -16,66 +17,11 @@ import java.util.List;
 public interface LogService {
 
     /**
-     * 记录操作日志
+     * 记录日志（统一入口）
      *
-     * @param module        操作模块
-     * @param operationType 操作类型
-     * @param description   操作描述
+     * @param entry 日志条目
      */
-    void log(String module, Integer operationType, String description);
-
-    /**
-     * 记录操作日志（带请求信息）
-     *
-     * @param module        操作模块
-     * @param operationType 操作类型
-     * @param description   操作描述
-     * @param method        请求方法
-     * @param params        请求参数
-     * @param ip            请求IP
-     */
-    void log(String module, Integer operationType, String description,
-             String method, String params, String ip);
-
-    /**
-     * 记录操作日志（带执行时长）
-     *
-     * @param module        操作模块
-     * @param operationType 操作类型
-     * @param description   操作描述
-     * @param costTime      执行时长（毫秒）
-     */
-    void log(String module, Integer operationType, String description, Long costTime);
-
-    /**
-     * 记录操作日志（带状态）
-     *
-     * @param module        操作模块
-     * @param operationType 操作类型
-     * @param description   操作描述
-     * @param status        状态（1=成功，0=失败）
-     * @param errorMsg      异常信息
-     */
-    void log(String module, Integer operationType, String description,
-             Integer status, String errorMsg);
-
-    /**
-     * 记录登录日志
-     *
-     * @param username 用户名
-     * @param status   状态（1=成功，0=失败）
-     * @param errorMsg 异常信息
-     */
-    void logLogin(String username, Integer status, String errorMsg);
-
-    /**
-     * 记录系统日志
-     *
-     * @param module   模块
-     * @param message  日志消息
-     * @param errorMsg 异常信息（如有）
-     */
-    void logSystem(String module, String message, String errorMsg);
+    void log(LogEntry entry);
 
     /**
      * 分页查询日志列表

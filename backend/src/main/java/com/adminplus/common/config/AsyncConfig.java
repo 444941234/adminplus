@@ -75,6 +75,9 @@ public class AsyncConfig {
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("async-hook-");
 
+        // 关键：设置 TaskDecorator 传递 SecurityContext
+        executor.setTaskDecorator(securityContextTaskDecorator);
+
         // 拒绝策略：调用者运行（防止任务丢失）
         executor.setRejectedExecutionHandler(new java.util.concurrent.ThreadPoolExecutor.CallerRunsPolicy());
 
