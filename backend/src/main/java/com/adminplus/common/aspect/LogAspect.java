@@ -167,13 +167,11 @@ public class LogAspect {
         protected void recordLog(LogService logService, String methodName, String params,
                                 String ip, long costTime, Throwable error) {
             try {
-                String user = username != null ? username : "未知用户";
+                // 使用 logLogin 方法记录登录日志，不受认证状态限制
                 if (error != null) {
-                    logService.log(module, operationType, description + " - 失败", methodName, params, ip);
-                    logService.log(module, operationType, user + " 登录失败", 0, error.getMessage());
+                    logService.logLogin(username != null ? username : "未知用户", 0, error.getMessage());
                 } else {
-                    logService.log(module, operationType, description + " - 成功", methodName, params, ip);
-                    logService.log(module, operationType, user + " " + description, costTime);
+                    logService.logLogin(username != null ? username : "未知用户", 1, null);
                 }
             } catch (Exception e) {
                 log.error("记录登录日志失败", e);

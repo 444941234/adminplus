@@ -39,14 +39,12 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Async
-    @Transactional
     public void log(String module, Integer operationType, String description) {
         log(module, operationType, description, null, null, null);
     }
 
     @Override
     @Async
-    @Transactional
     public void log(String module, Integer operationType, String description,
                     String method, String params, String ip) {
         try {
@@ -76,7 +74,6 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Async
-    @Transactional
     public void log(String module, Integer operationType, String description, Long costTime) {
         try {
             if (!SecurityUtils.isAuthenticated()) {
@@ -102,7 +99,6 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Async
-    @Transactional
     public void log(String module, Integer operationType, String description,
                     Integer status, String errorMsg) {
         try {
@@ -129,7 +125,6 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Async
-    @Transactional
     public void logLogin(String username, Integer status, String errorMsg) {
         try {
             LogEntity logEntity = new LogEntity();
@@ -151,7 +146,6 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Async
-    @Transactional
     public void logSystem(String module, String message, String errorMsg) {
         try {
             LogEntity logEntity = new LogEntity();

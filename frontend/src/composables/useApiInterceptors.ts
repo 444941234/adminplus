@@ -173,11 +173,14 @@ export function setupResponseInterceptor(
       }
 
       // 业务错误处理 - 后端返回 HTTP 200 但 code 非 200
+      // 不在此处显示 toast，让调用者决定如何显示错误
       const data = response.data
       if (data && data.code && data.code !== 200) {
         const message = data.message || '请求失败'
-        toast.error(message)
-        return Promise.reject(new Error(message))
+        // 将错误信息附加到响应对象，供调用者使用
+        const error = new Error(message)
+        ;(error as any).response = { data }
+        return Promise.reject(error)
       }
 
       return response.data

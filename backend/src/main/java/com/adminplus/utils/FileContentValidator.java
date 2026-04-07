@@ -1,23 +1,23 @@
 package com.adminplus.utils;
 
+import org.apache.tika.Tika;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * 文件内容验证工具类
- * 通过 Magic Number 验证文件实际类型
+ * 使用 Apache Tika 验证文件实际类型
  *
  * @author AdminPlus
  */
 public class FileContentValidator {
 
-    // Magic Number 映射
-    private static final Map<String, byte[]> MAGIC_NUMBERS = new HashMap<>();
+    private static final Tika TIKA = new Tika();
 
     // 允许的图片类型
     private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
@@ -37,7 +37,10 @@ public class FileContentValidator {
             "text/csv",
             "application/zip",
             "application/x-rar-compressed",
-            "application/json"
+            "application/json",
+            // Tika 可能返回的其他 MIME 类型变体
+            "application/vnd.fdf", // PDF 相关
+            "application/x-pdf"
     );
 
     // 允许的文件扩展名（用于存储服务验证）
@@ -56,64 +59,26 @@ public class FileContentValidator {
     private static final Set<String> ALLOWED_ALL_TYPES;
 
     static {
-        // JPEG
-        MAGIC_NUMBERS.put("image/jpeg", new byte[]{(byte) 0xFF, (byte) 0xD8, (byte) 0xFF});
-        // PNG
-        MAGIC_NUMBERS.put("image/png", new byte[]{(byte) 0x89, 'P', 'N', 'G'});
-        // GIF
-        MAGIC_NUMBERS.put("image/gif", new byte[]{'G', 'I', 'F', '8'});
-        // WebP
-        MAGIC_NUMBERS.put("image/webp", new byte[]{'R', 'I', 'F', 'F'});
-        // PDF
-        MAGIC_NUMBERS.put("application/pdf", new byte[]{'%', 'P', 'D', 'F'});
-        // ZIP (also used for DOCX, XLSX, PPTX)
-        MAGIC_NUMBERS.put("application/zip", new byte[]{0x50, 0x4B});
-        MAGIC_NUMBERS.put("application/vnd.openxmlformats-officedocument.wordprocessingml.document", new byte[]{0x50, 0x4B});
-        MAGIC_NUMBERS.put("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", new byte[]{0x50, 0x4B});
-        MAGIC_NUMBERS.put("application/vnd.openxmlformats-officedocument.presentationml.presentation", new byte[]{0x50, 0x4B});
-
-        ALLOWED_ALL_TYPES = new java.util.HashSet<>();
+        ALLOWED_ALL_TYPES = new HashSet<>();
         ALLOWED_ALL_TYPES.addAll(ALLOWED_IMAGE_TYPES);
         ALLOWED_ALL_TYPES.addAll(ALLOWED_DOCUMENT_TYPES);
     }
 
-    // 读取的字节数
-    private static final int MAGIC_NUMBER_LENGTH = 4;
-
     /**
-     * 验证文件内容类型是否与声明的 MIME 类型匹配
+     * 使用 Tika 检测文件的实际 MIME 类型
      *
-     * @param file        上传的文件
-     * @param contentType 声明的 MIME 类型
-     * @return 是否匹配
+     * @param file 上传的文件
+     * @return 检测到的 MIME 类型，如果文件为空则返回 null
      */
-    public static boolean validateContentType(MultipartFile file, String contentType) {
-        if (file == null || contentType == null) {
-            return false;
+    public static String detectMimeType(MultipartFile file) {
+        // 先检查文件是否为空
+        if (file == null || file.isEmpty()) {
+            return null;
         }
-
-        byte[] magicBytes = MAGIC_NUMBERS.get(contentType);
-        if (magicBytes == null) {
-            // 未知的 MIME 类型，跳过 magic number 验证，只检查扩展名
-            return true;
-        }
-
         try (InputStream is = file.getInputStream()) {
-            byte[] fileBytes = new byte[MAGIC_NUMBER_LENGTH];
-            int read = is.read(fileBytes);
-            if (read < magicBytes.length) {
-                return false;
-            }
-
-            // 检查 magic number
-            for (int i = 0; i < magicBytes.length; i++) {
-                if (fileBytes[i] != magicBytes[i]) {
-                    return false;
-                }
-            }
-            return true;
+            return TIKA.detect(is, file.getOriginalFilename());
         } catch (IOException e) {
-            return false;
+            return null;
         }
     }
 
@@ -121,38 +86,68 @@ public class FileContentValidator {
      * 验证文件是否为允许的图片类型
      *
      * @param file        上传的文件
-     * @param contentType 声明的 MIME 类型
+     * @param contentType 声明的 MIME 类型（可选，用于参考）
      * @return 是否为允许的图片类型
      */
     public static boolean isAllowedImageType(MultipartFile file, String contentType) {
-        // 先检查 MIME 类型
-        if (contentType == null || !ALLOWED_IMAGE_TYPES.contains(contentType)) {
+        // 使用 Tika 检测实际类型
+        String detectedType = detectMimeType(file);
+        if (detectedType == null) {
             return false;
         }
 
-        // 验证文件内容
-        return validateContentType(file, contentType);
+        // 检查检测到的类型是否在允许列表中
+        return ALLOWED_IMAGE_TYPES.contains(detectedType);
     }
 
     /**
      * 验证文件是否为允许的类型（图片 + 文档）
      *
      * @param file        上传的文件
-     * @param contentType 声明的 MIME 类型
+     * @param contentType 声明的 MIME 类型（可选，用于参考）
      * @return 是否为允许的类型
      */
     public static boolean isAllowedFileType(MultipartFile file, String contentType) {
-        if (contentType == null) {
+        // 使用 Tika 检测实际类型
+        String detectedType = detectMimeType(file);
+        if (detectedType == null) {
             return false;
         }
 
-        // 检查是否为允许的类型
-        if (!ALLOWED_ALL_TYPES.contains(contentType)) {
-            return false;
+        // Tika 对于 Office 文档可能返回 application/zip 或更具体的类型
+        // 对于 PDF 可能返回 application/pdf 或 application/vnd.fdf 等
+        // 需要检查检测到的类型是否在允许列表中，或者是否是相关变体
+
+        // 检查检测到的类型是否在允许列表中
+        if (ALLOWED_ALL_TYPES.contains(detectedType)) {
+            return true;
         }
 
-        // 验证文件内容（magic number）
-        return validateContentType(file, contentType);
+        // 特殊处理：Office 文档（DOCX, XLSX, PPTX）实际上是 ZIP 格式
+        // 如果检测到 application/zip，需要检查文件名扩展名
+        if ("application/zip".equals(detectedType)) {
+            String filename = file.getOriginalFilename();
+            if (filename != null) {
+                String ext = filename.toLowerCase();
+                if (ext.endsWith(".docx") || ext.endsWith(".xlsx") || ext.endsWith(".pptx") || ext.endsWith(".zip")) {
+                    return true;
+                }
+            }
+        }
+
+        // 特殊处理：PDF 相关类型
+        if (detectedType.startsWith("application/") && detectedType.contains("pdf")) {
+            return true;
+        }
+
+        // 特殊处理：Office 旧版格式（DOC, XLS, PPT）
+        if ("application/msword".equals(detectedType) ||
+            "application/vnd.ms-excel".equals(detectedType) ||
+            "application/vnd.ms-powerpoint".equals(detectedType)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -182,7 +177,7 @@ public class FileContentValidator {
                 Map.entry("application/vnd.openxmlformats-officedocument.presentationml.presentation", Set.of("pptx")),
                 Map.entry("text/plain", Set.of("txt")),
                 Map.entry("text/csv", Set.of("csv")),
-                Map.entry("application/zip", Set.of("zip")),
+                Map.entry("application/zip", Set.of("zip", "docx", "xlsx", "pptx")),
                 Map.entry("application/json", Set.of("json"))
         );
 
