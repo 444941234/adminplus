@@ -3,6 +3,7 @@ import { ref, onUnmounted } from 'vue'
 import { Button, Switch } from '@/components/ui'
 import { Edit, Eye, EyeOff, History, Trash2, Copy, Check } from 'lucide-vue-next'
 import type { Config } from '@/types'
+import { formatDateTime } from '@/utils/format'
 
 const copiedId = ref<string | null>(null)
 const copyTimeout = ref<ReturnType<typeof setTimeout> | null>(null)
@@ -173,6 +174,9 @@ const shouldShowCopyButton = (config: Config) => {
             状态
           </th>
           <th class="p-4 text-left font-medium">
+            创建时间
+          </th>
+          <th class="p-4 text-left font-medium">
             操作
           </th>
         </tr>
@@ -180,7 +184,7 @@ const shouldShowCopyButton = (config: Config) => {
       <tbody class="divide-y">
         <tr v-if="loading">
           <td
-            colspan="7"
+            colspan="8"
             class="h-32 text-center text-muted-foreground"
           >
             加载中...
@@ -188,7 +192,7 @@ const shouldShowCopyButton = (config: Config) => {
         </tr>
         <tr v-else-if="configs.length === 0">
           <td
-            colspan="7"
+            colspan="8"
             class="h-32 text-center text-muted-foreground"
           >
             暂无配置项
@@ -267,6 +271,9 @@ const shouldShowCopyButton = (config: Config) => {
               :model-value="config.status === 1"
               @update:model-value="emit('toggleStatus', config)"
             />
+          </td>
+          <td class="p-4 text-sm text-muted-foreground">
+            {{ formatDateTime(config.createTime) }}
           </td>
           <td class="p-4">
             <div class="flex gap-2">

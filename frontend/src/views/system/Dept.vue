@@ -27,6 +27,7 @@ import { useCRUD } from '@/composables/useCRUD'
 import { useStatusToggle } from '@/composables/useStatusToggle'
 import { createDept, deleteDept, getDeptById, getDeptTree, updateDept, updateDeptStatus } from '@/api'
 import { useDict } from '@/composables/useDict'
+import { formatDateTime } from '@/utils/format'
 
 interface DeptFormState {
   parentId: string
@@ -336,6 +337,9 @@ onMounted(fetchList)
                 状态
               </th>
               <th class="text-left p-4 font-medium">
+                创建时间
+              </th>
+              <th class="text-left p-4 font-medium">
                 操作
               </th>
             </tr>
@@ -343,7 +347,7 @@ onMounted(fetchList)
           <tbody class="divide-y">
             <tr v-if="tableRows.length === 0">
               <td
-                colspan="7"
+                colspan="8"
                 class="p-0"
               >
                 <EmptyState
@@ -402,6 +406,9 @@ onMounted(fetchList)
                   :clickable="canEditDept"
                   @toggle="handleStatusClick(dept)"
                 />
+              </td>
+              <td class="p-4 text-sm text-muted-foreground">
+                {{ formatDateTime(dept.createTime) }}
               </td>
               <td class="p-4">
                 <div class="flex gap-2">

@@ -34,6 +34,7 @@ import { useTreeData } from '@/composables/useTreeData'
 import { createRole, deleteRole, getRoleById, getRoleList, updateRole } from '@/api'
 import { useDict } from '@/composables/useDict'
 import { toast } from 'vue-sonner'
+import { formatDateTime } from '@/utils/format'
 
 interface RoleFormState {
   name: string
@@ -511,6 +512,9 @@ onMounted(async () => {
                 排序
               </th>
               <th class="p-4 text-left font-medium">
+                创建时间
+              </th>
+              <th class="p-4 text-left font-medium">
                 操作
               </th>
             </tr>
@@ -518,7 +522,7 @@ onMounted(async () => {
           <tbody class="divide-y">
             <tr v-if="listLoading">
               <td
-                colspan="7"
+                colspan="8"
                 class="p-8 text-center text-muted-foreground"
               >
                 加载中...
@@ -526,7 +530,7 @@ onMounted(async () => {
             </tr>
             <tr v-else-if="filteredRoles.length === 0">
               <td
-                colspan="7"
+                colspan="8"
                 class="p-0"
               >
                 <EmptyState
@@ -567,6 +571,9 @@ onMounted(async () => {
               </td>
               <td class="p-4 text-muted-foreground">
                 {{ role.sortOrder }}
+              </td>
+              <td class="p-4 text-sm text-muted-foreground">
+                {{ formatDateTime(role.createTime) }}
               </td>
               <td class="p-4">
                 <div class="flex gap-2">
