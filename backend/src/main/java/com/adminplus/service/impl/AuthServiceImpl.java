@@ -1,8 +1,10 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.common.constant.SecurityConfigConstants;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.common.properties.AppProperties;
 import com.adminplus.constants.OperationType;
+import com.adminplus.constants.RedisConstants;
 import com.adminplus.pojo.dto.req.UserLoginReq;
 import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.LoginResp;
@@ -29,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 认证服务实现
@@ -56,93 +57,90 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public LoginResp login(UserLoginReq req) {
-        // 验证验证码
-        if (!captchaService.validateCaptcha(req.captchaId(), req.captchaCode())) {
-            log.warn("验证码验证失败: username={}", LogMaskingUtils.maskUsername(req.username()));
-            // 优化验证码错误提示，区分不同错误类型
-            String redisKey = "captcha:" + req.captchaId();
-            String storedCode = redisTemplate.opsForValue().get(redisKey);
-            if (storedCode == null) {
-                throw new BizException("验证码已过期，请重新获取");
-            } else {
-                throw new BizException("验证码错误，请重新输入");
-            }
-        }
+        validateCaptcha(req.captchaId(), req.captchaCode(), req.username());
 
         try {
-            // 认证用户
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(req.username(), req.password())
             );
 
-            // 获取用户信息
             UserEntity user = userService.getUserByUsername(req.username());
-
-            // 查询用户角色
             List<String> roleCodes = userService.getUserRoleCodes(user.getId());
             List<String> roleNames = userService.getUserRoleNames(user.getId());
 
-            // 生成 JWT Token
-            Instant now = Instant.now();
-            int expirationHours = appProperties.getJwt().getExpirationHours();
-            JwtClaimsSet.Builder claimsBuilder = JwtClaimsSet.builder()
-                    .issuer("adminplus")
-                    .issuedAt(now)
-                    .expiresAt(now.plus(expirationHours, ChronoUnit.HOURS))
-                    .subject(authentication.getName())
-                    .claim("userId", user.getId())
-                    .claim("username", user.getUsername())
-                    .claim("deptId", user.getDeptId());
+            String token = generateJwtToken(authentication, user, roleCodes);
 
-            // 添加角色到scope（去掉 ROLE_ 前缀，JwtGrantedAuthoritiesConverter 会统一加 ROLE_ 前缀）
-            List<String> scopes = roleCodes.stream()
-                    .map(code -> code.startsWith("ROLE_") ? code.substring(5) : code)
-                    .collect(Collectors.toList());
-            if (!scopes.isEmpty()) {
-                claimsBuilder.claim("scope", scopes);
-            } else {
-                claimsBuilder.claim("scope", "USER");
-            }
-
-            JwtClaimsSet claims = claimsBuilder.build();
-            String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-
-            UserResp userResp = new UserResp(
-                    user.getId(),
-                    user.getUsername(),
-                    user.getNickname(),
-                    user.getEmail(),
-                    user.getPhone(),
-                    user.getAvatar(),
-                    user.getStatus(),
-                    user.getDeptId(),
-                    null, // deptName - 登录时不需要查询部门名称
-                    roleNames,
-                    user.getCreateTime(),
-                    user.getUpdateTime()
-            );
-
-            // 查询用户权限
+            UserResp userResp = buildUserResp(user, roleNames);
             List<String> permissions = permissionService.getUserPermissions(user.getId());
-
-            // 生成 Refresh Token
             String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
-            // 记录登录审计日志
-            logService.log(LogEntry.operation("认证管理", OperationType.OTHER.getCode(), "用户登录成功: " + LogMaskingUtils.maskUsername(req.username())));
+            logService.log(LogEntry.operation("认证管理", OperationType.OTHER.getCode(),
+                    "用户登录成功: " + LogMaskingUtils.maskUsername(req.username())));
 
-            return new LoginResp(token, refreshToken, "Bearer", userResp, permissions);
+            return new LoginResp(token, refreshToken, SecurityConfigConstants.BEARER_PREFIX.trim(), userResp, permissions);
 
         } catch (AuthenticationException e) {
             log.error("登录失败: username={}", LogMaskingUtils.maskUsername(req.username()));
-
-            // 记录登录失败审计日志
-            logService.log(LogEntry.operationBuilder("认证管理", OperationType.OTHER.getCode(), "用户登录失败: " + LogMaskingUtils.maskUsername(req.username()))
-                .failed("用户名或密码错误")
-                .build());
-
+            logService.log(LogEntry.operationBuilder("认证管理", OperationType.OTHER.getCode(),
+                            "用户登录失败: " + LogMaskingUtils.maskUsername(req.username()))
+                    .failed("用户名或密码错误")
+                    .build());
             throw new BizException("用户名或密码错误");
         }
+    }
+
+    private void validateCaptcha(String captchaId, String captchaCode, String username) {
+        String redisKey = RedisConstants.CAPTCHA_KEY_PREFIX + captchaId;
+        String storedCode = redisTemplate.opsForValue().get(redisKey);
+
+        if (storedCode == null) {
+            log.warn("验证码已过期: username={}", LogMaskingUtils.maskUsername(username));
+            throw new BizException("验证码已过期，请重新获取");
+        }
+
+        if (!captchaService.validateCaptcha(captchaId, captchaCode)) {
+            log.warn("验证码验证失败: username={}", LogMaskingUtils.maskUsername(username));
+            throw new BizException("验证码错误，请重新输入");
+        }
+    }
+
+    private String generateJwtToken(Authentication authentication, UserEntity user, List<String> roleCodes) {
+        Instant now = Instant.now();
+        int expirationHours = appProperties.getJwt().getExpirationHours();
+
+        List<String> scopes = roleCodes.stream()
+                .map(code -> code.startsWith(SecurityConfigConstants.ROLE_PREFIX) ? code.substring(SecurityConfigConstants.ROLE_PREFIX.length()) : code)
+                .toList();
+
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("adminplus")
+                .issuedAt(now)
+                .expiresAt(now.plus(expirationHours, ChronoUnit.HOURS))
+                .subject(authentication.getName())
+                .claim("userId", user.getId())
+                .claim("username", user.getUsername())
+                .claim("deptId", user.getDeptId())
+                .claim("scope", scopes.isEmpty() ? SecurityConfigConstants.DEFAULT_SCOPE : scopes)
+                .build();
+
+        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    }
+
+    private UserResp buildUserResp(UserEntity user, List<String> roleNames) {
+        return new UserResp(
+                user.getId(),
+                user.getUsername(),
+                user.getNickname(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getAvatar(),
+                user.getStatus(),
+                user.getDeptId(),
+                null,
+                roleNames,
+                user.getCreateTime(),
+                user.getUpdateTime()
+        );
     }
 
     @Override
@@ -161,41 +159,39 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void logout() {
         try {
-            // 获取当前用户ID
             String userId = SecurityUtils.getCurrentUserId();
             String username = SecurityUtils.getCurrentUsername();
 
-            // 撤销用户的所有 Refresh Token
             refreshTokenService.revokeAllUserTokens(userId);
-
-            // 获取当前请求
-            HttpServletRequest request = WebUtils.getRequest();
-            if (request != null) {
-                String authHeader = request.getHeader("Authorization");
-
-                // 将 Token 加入黑名单
-                if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                    String token = authHeader.substring(7);
-                    tokenBlacklistService.blacklistToken(token, userId);
-                    log.info("用户登出，Token 已加入黑名单: userId={}", userId);
-                } else {
-                    // 如果没有 Token，将用户的所有 Token 加入黑名单
-                    tokenBlacklistService.blacklistAllUserTokens(userId);
-                    log.info("用户登出，所有 Token 已加入黑名单: userId={}", userId);
-                }
-            } else {
-                // 如果无法获取请求，将用户的所有 Token 加入黑名单
-                tokenBlacklistService.blacklistAllUserTokens(userId);
-                log.info("用户登出，所有 Token 已加入黑名单: userId={}", userId);
-            }
-
-            // 记录登出审计日志
-            logService.log(LogEntry.operation("认证管理", OperationType.OTHER.getCode(), "用户退出: " + LogMaskingUtils.maskUsername(username)));
+            blacklistCurrentToken(userId);
+            logService.log(LogEntry.operation("认证管理", OperationType.OTHER.getCode(),
+                    "用户退出: " + LogMaskingUtils.maskUsername(username)));
 
         } catch (Exception e) {
             log.error("登出时处理 Token 黑名单失败", e);
-            // 即使失败也不影响登出流程
         }
+    }
+
+    private void blacklistCurrentToken(String userId) {
+        HttpServletRequest request = WebUtils.getRequest();
+        if (request == null) {
+            blacklistAllUserTokens(userId);
+            return;
+        }
+
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith(SecurityConfigConstants.BEARER_PREFIX)) {
+            String token = authHeader.substring(SecurityConfigConstants.BEARER_PREFIX.length());
+            tokenBlacklistService.blacklistToken(token, userId);
+            log.info("用户登出，Token 已加入黑名单: userId={}", userId);
+        } else {
+            blacklistAllUserTokens(userId);
+        }
+    }
+
+    private void blacklistAllUserTokens(String userId) {
+        tokenBlacklistService.blacklistAllUserTokens(userId);
+        log.info("用户登出，所有 Token 已加入黑名单: userId={}", userId);
     }
 
     @Override

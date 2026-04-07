@@ -114,21 +114,36 @@ class AuthServiceTest {
         @Test
         @DisplayName("should throw exception when captcha is invalid")
         void login_WithInvalidCaptcha_ShouldThrowException() {
-            // Given
+            // Given - 验证码存在但错误
+            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+            when(valueOperations.get("captcha:captcha-id")).thenReturn("ABCD");
             when(captchaService.validateCaptcha("captcha-id", "ABCD")).thenReturn(false);
-            lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+
+            // When & Then
+            assertThatThrownBy(() -> authService.login(loginReq))
+                    .isInstanceOf(BizException.class)
+                    .hasMessageContaining("验证码错误");
+        }
+
+        @Test
+        @DisplayName("should throw exception when captcha is expired")
+        void login_WithExpiredCaptcha_ShouldThrowException() {
+            // Given - 验证码已过期（Redis 中不存在）
+            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
             when(valueOperations.get("captcha:captcha-id")).thenReturn(null);
 
             // When & Then
             assertThatThrownBy(() -> authService.login(loginReq))
                     .isInstanceOf(BizException.class)
-                    .hasMessageContaining("验证码");
+                    .hasMessageContaining("验证码已过期");
         }
 
         @Test
         @DisplayName("should throw exception when authentication fails")
         void login_WithInvalidCredentials_ShouldThrowException() {
             // Given
+            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+            when(valueOperations.get("captcha:captcha-id")).thenReturn("ABCD");
             when(captchaService.validateCaptcha("captcha-id", "ABCD")).thenReturn(true);
             when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                     .thenThrow(new AuthenticationException("Invalid credentials") {});

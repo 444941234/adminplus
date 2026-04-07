@@ -34,6 +34,16 @@ public final class SecurityConfigConstants {
      */
     public static final String AUTHORITIES_CLAIM_NAME = "scope";
 
+    /**
+     * JWT Token 类型前缀（HTTP Authorization Header）
+     */
+    public static final String BEARER_PREFIX = "Bearer ";
+
+    /**
+     * 默认用户角色（无角色时使用）
+     */
+    public static final String DEFAULT_SCOPE = "USER";
+
     // ==================== HSTS 相关 ====================
 
     /**
