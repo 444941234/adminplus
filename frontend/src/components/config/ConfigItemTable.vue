@@ -173,7 +173,7 @@ const shouldShowCopyButton = (config: Config) => {
           <th class="p-4 text-left font-medium">
             状态
           </th>
-          <th class="p-4 text-left font-medium">
+          <th class="p-4 text-center font-medium">
             创建时间
           </th>
           <th class="p-4 text-center font-medium">

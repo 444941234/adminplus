@@ -336,7 +336,7 @@ onMounted(fetchList)
               <th class="text-left p-4 font-medium">
                 状态
               </th>
-              <th class="text-left p-4 font-medium">
+              <th class="text-center p-4 font-medium">
                 创建时间
               </th>
               <th class="text-center p-4 font-medium">
