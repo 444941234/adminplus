@@ -1,6 +1,5 @@
 package com.adminplus.controller;
 
-import com.adminplus.common.config.SecurityConstants;
 import com.adminplus.service.PermissionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

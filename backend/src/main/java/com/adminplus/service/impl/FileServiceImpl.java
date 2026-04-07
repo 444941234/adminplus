@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.common.config.FileStorageConfig;
+import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.entity.FileEntity;
 import com.adminplus.repository.FileRepository;
@@ -28,7 +28,7 @@ public class FileServiceImpl implements FileService {
 
     private final FileRepository fileRepository;
     private final FileStorageService fileStorageService;
-    private final FileStorageConfig fileStorageConfig;
+    private final FileStorageProperties fileStorageConfig;
 
     @Override
     @Transactional

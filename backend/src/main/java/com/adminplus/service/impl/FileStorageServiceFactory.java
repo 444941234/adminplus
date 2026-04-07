@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.common.config.FileStorageConfig;
+import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.constants.StorageType;
 import com.adminplus.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 public class FileStorageServiceFactory {
 
-    private final FileStorageConfig fileStorageConfig;
+    private final FileStorageProperties fileStorageConfig;
 
     /**
      * 获取当前激活的文件存储服务

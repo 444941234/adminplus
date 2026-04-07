@@ -1,5 +1,6 @@
 package com.adminplus.common.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -21,7 +22,7 @@ import java.time.Duration;
  * 缓存配置
  *
  * 使用 Redis 作为分布式缓存。
- * GenericJackson2JsonRedisSerializer 无参构造函数会自动配置类型信息。
+ * 使用已配置 JavaTimeModule 的 ObjectMapper 进行序列化。
  *
  * @author AdminPlus
  * @since 2026-02-06
@@ -37,12 +38,14 @@ public class CacheConfig {
      * 用于 JWT 黑名单、限流等 Redis 操作
      */
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(
+            RedisConnectionFactory connectionFactory,
+            ObjectMapper objectMapper) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // 使用无参构造函数，自动启用类型信息
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
+        // 使用已配置 JavaTimeModule 的 ObjectMapper
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
@@ -58,9 +61,11 @@ public class CacheConfig {
      */
     @Bean
     @Primary
-    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        // 使用无参构造函数，自动启用类型信息
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer();
+    public CacheManager cacheManager(
+            RedisConnectionFactory connectionFactory,
+            ObjectMapper objectMapper) {
+        // 使用已配置 JavaTimeModule 的 ObjectMapper
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
@@ -68,7 +73,7 @@ public class CacheConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
                 .disableCachingNullValues();
 
-        log.info("使用 Redis 缓存管理器 (GenericJackson2JsonRedisSerializer)");
+        log.info("使用 Redis 缓存管理器 (GenericJackson2JsonRedisSerializer with JavaTimeModule)");
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)

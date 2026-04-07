@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.common.config.LogStorageProperties;
+import com.adminplus.common.properties.LogStorageProperties;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.req.LogQueryReq;
 import com.adminplus.pojo.dto.resp.LogPageResp;

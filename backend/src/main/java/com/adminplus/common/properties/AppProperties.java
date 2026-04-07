@@ -14,6 +14,7 @@ public class AppProperties {
     private Virus virus = new Virus();
     private RateLimit rateLimit = new RateLimit();
     private WorkflowHook workflowHook = new WorkflowHook();
+    private Elasticsearch elasticsearch = new Elasticsearch();
 
     @Data
     public static class Jwt {
@@ -57,5 +58,15 @@ public class AppProperties {
     public static class WorkflowHook {
         private boolean allowInternalUrls = false;  // 是否允许内网URL（默认禁用以防止SSRF）
         private String allowedUrlPatterns = "";     // 允许的URL模式（逗号分隔，如：https://api.example.com/*,https://hooks.example.com/*）
+    }
+
+    @Data
+    public static class Elasticsearch {
+        private boolean enabled = false;
+        private String urls = "http://localhost:9200";
+        private String username = "";
+        private String password = "";
+        private int connectionTimeout = 10;
+        private int socketTimeout = 30;
     }
 }

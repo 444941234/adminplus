@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.common.config.LogStorageProperties;
+import com.adminplus.common.properties.LogStorageProperties;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.LogStatus;
 import com.adminplus.constants.LogType;

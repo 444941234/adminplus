@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.common.config.LogStorageProperties;
+import com.adminplus.common.properties.LogStorageProperties;
 import com.adminplus.service.impl.DatabaseLogStorage;
 import com.adminplus.service.impl.LogStorageStrategySelector;
 import org.junit.jupiter.api.BeforeEach;

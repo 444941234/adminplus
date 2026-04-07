@@ -1,5 +1,7 @@
 package com.adminplus.common.config;
 
+import com.adminplus.common.constant.PublicEndpointConstants;
+import com.adminplus.common.constant.SecurityConfigConstants;
 import com.adminplus.common.filter.TokenBlacklistFilter;
 import com.adminplus.common.properties.AppProperties;
 import com.adminplus.service.PermissionService;
@@ -36,7 +38,6 @@ public class SecurityConfig {
     private final Environment env;
     private final JwtSecurityConfig jwtSecurityConfig;
     private final CorsSecurityConfig corsSecurityConfig;
-    private final SecurityConstants securityConstants;
 
     public SecurityConfig(TokenBlacklistFilter tokenBlacklistFilter,
                           Environment env,
@@ -46,7 +47,6 @@ public class SecurityConfig {
         this.env = env;
         this.jwtSecurityConfig = new JwtSecurityConfig(appProperties, permissionService);
         this.corsSecurityConfig = new CorsSecurityConfig(appProperties, env);
-        this.securityConstants = new SecurityConstants();
     }
 
     /**
@@ -88,7 +88,7 @@ public class SecurityConfig {
 
     private void configureAuthorization(org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry auth) {
         auth
-                .requestMatchers(securityConstants.PUBLIC_ENDPOINTS).permitAll()
+                .requestMatchers(PublicEndpointConstants.PUBLIC_ENDPOINTS).permitAll()
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/actuator/**").denyAll()
                 .anyRequest().authenticated();
@@ -100,7 +100,7 @@ public class SecurityConfig {
                 .frameOptions(org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 .httpStrictTransportSecurity(hsts -> hsts
                         .includeSubDomains(true)
-                        .maxAgeInSeconds(securityConstants.HSTS_MAX_AGE_SECONDS)
+                        .maxAgeInSeconds(SecurityConfigConstants.HSTS_MAX_AGE_SECONDS)
                         .preload(true)
                 );
     }
@@ -110,7 +110,7 @@ public class SecurityConfig {
             log.info("CSRF 保护已启用（Cookie 存储 JWT 模式）");
             http.csrf(csrf -> csrf
                     .csrfTokenRepository(org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse())
-                    .ignoringRequestMatchers(securityConstants.AUTH_ENDPOINTS)
+                    .ignoringRequestMatchers(PublicEndpointConstants.AUTH_ENDPOINTS)
             );
         } else {
             log.info("CRSF 保护已禁用（Bearer Token 模式）");

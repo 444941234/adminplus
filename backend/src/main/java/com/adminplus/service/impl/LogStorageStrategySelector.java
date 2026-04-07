@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.common.config.LogStorageProperties;
+import com.adminplus.common.properties.LogStorageProperties;
 import com.adminplus.service.LogStorageStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

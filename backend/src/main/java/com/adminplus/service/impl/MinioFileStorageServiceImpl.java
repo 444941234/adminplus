@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.common.config.FileStorageConfig;
+import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.constants.StorageType;
 import com.adminplus.service.FileStorageService;
 import com.adminplus.utils.FileContentValidator;
@@ -31,7 +31,7 @@ import java.util.UUID;
 public class MinioFileStorageServiceImpl implements FileStorageService {
 
     private final MinioClient minioClient;
-    private final FileStorageConfig config;
+    private final FileStorageProperties config;
 
     @Override
     public String uploadFile(MultipartFile file, String directory) {

@@ -1,5 +1,6 @@
 package com.adminplus.common.config;
 
+import com.adminplus.common.properties.FileStorageProperties;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
@@ -19,8 +20,8 @@ import org.springframework.context.annotation.Configuration;
 public class MinioClientConfig {
 
     @Bean
-    public MinioClient minioClient(FileStorageConfig fileStorageConfig) {
-        FileStorageConfig.MinioConfig minioConfig = fileStorageConfig.getMinio();
+    public MinioClient minioClient(FileStorageProperties fileStorageConfig) {
+        FileStorageProperties.MinioConfig minioConfig = fileStorageConfig.getMinio();
 
         MinioClient minioClient = MinioClient.builder()
                 .endpoint(minioConfig.getEndpoint())

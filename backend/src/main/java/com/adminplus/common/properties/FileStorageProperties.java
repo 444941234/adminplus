@@ -1,4 +1,4 @@
-package com.adminplus.common.config;
+package com.adminplus.common.properties;
 
 import com.adminplus.constants.StorageType;
 import lombok.Data;
@@ -16,7 +16,7 @@ import java.util.List;
 @Data
 @Component
 @ConfigurationProperties(prefix = "app.file-storage")
-public class FileStorageConfig {
+public class FileStorageProperties {
 
     /**
      * 存储类型: LOCAL 或 MINIO

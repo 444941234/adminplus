@@ -1,7 +1,7 @@
 package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
-import com.adminplus.common.config.SecurityConstants;
+import com.adminplus.common.constant.WorkflowExtensionPermissions;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.workflow.hook.WorkflowNodeHookReq;
 import com.adminplus.pojo.entity.WorkflowNodeHookEntity;
@@ -34,7 +34,7 @@ public class WorkflowNodeHookController {
     @PostMapping
     @Operation(summary = "创建钩子配置")
     @OperationLog(module = "工作流管理", operationType = 2, description = "创建钩子配置 {#req.hookName}")
-    @PreAuthorize("hasAuthority('" + SecurityConstants.WORKFLOW_HOOK_CREATE + "')")
+    @PreAuthorize("hasAuthority('" + WorkflowExtensionPermissions.HOOK_CREATE + "')")
     public ApiResponse<WorkflowNodeHookEntity> create(@Valid @RequestBody WorkflowNodeHookReq req) {
         log.info("创建钩子配置: nodeId={}, hookPoint={}", req.nodeId(), req.hookPoint());
         WorkflowNodeHookEntity entity = toEntity(req);
@@ -45,7 +45,7 @@ public class WorkflowNodeHookController {
     @PutMapping("/{id}")
     @Operation(summary = "更新钩子配置")
     @OperationLog(module = "工作流管理", operationType = 3, description = "更新钩子配置 {#id}")
-    @PreAuthorize("hasAuthority('" + SecurityConstants.WORKFLOW_HOOK_UPDATE + "')")
+    @PreAuthorize("hasAuthority('" + WorkflowExtensionPermissions.HOOK_UPDATE + "')")
     public ApiResponse<WorkflowNodeHookEntity> update(
             @PathVariable String id,
             @Valid @RequestBody WorkflowNodeHookReq req) {
@@ -59,7 +59,7 @@ public class WorkflowNodeHookController {
     @DeleteMapping("/{id}")
     @Operation(summary = "删除钩子配置")
     @OperationLog(module = "工作流管理", operationType = 4, description = "删除钩子配置 {#id}")
-    @PreAuthorize("hasAuthority('" + SecurityConstants.WORKFLOW_HOOK_DELETE + "')")
+    @PreAuthorize("hasAuthority('" + WorkflowExtensionPermissions.HOOK_DELETE + "')")
     public ApiResponse<Void> delete(@PathVariable String id) {
         log.info("删除钩子配置: id={}", id);
         hookRepository.deleteById(id);
@@ -68,7 +68,7 @@ public class WorkflowNodeHookController {
 
     @GetMapping("/{id}")
     @Operation(summary = "查询钩子配置详情")
-    @PreAuthorize("hasAuthority('" + SecurityConstants.WORKFLOW_HOOK_VIEW + "')")
+    @PreAuthorize("hasAuthority('" + WorkflowExtensionPermissions.HOOK_VIEW + "')")
     public ApiResponse<WorkflowNodeHookEntity> getById(@PathVariable String id) {
         return hookRepository.findById(id)
                 .map(ApiResponse::ok)
@@ -77,7 +77,7 @@ public class WorkflowNodeHookController {
 
     @GetMapping("/node/{nodeId}")
     @Operation(summary = "查询节点的所有钩子配置")
-    @PreAuthorize("hasAuthority('" + SecurityConstants.WORKFLOW_HOOK_VIEW + "')")
+    @PreAuthorize("hasAuthority('" + WorkflowExtensionPermissions.HOOK_VIEW + "')")
     public ApiResponse<List<WorkflowNodeHookEntity>> listByNodeId(@PathVariable String nodeId) {
         List<WorkflowNodeHookEntity> hooks = hookRepository
                 .findByNodeIdAndDeletedFalseOrderByPriorityAsc(nodeId);
@@ -86,7 +86,7 @@ public class WorkflowNodeHookController {
 
     @GetMapping("/node/{nodeId}/{hookPoint}")
     @Operation(summary = "查询节点指定钩子点的配置")
-    @PreAuthorize("hasAuthority('" + SecurityConstants.WORKFLOW_HOOK_VIEW + "')")
+    @PreAuthorize("hasAuthority('" + WorkflowExtensionPermissions.HOOK_VIEW + "')")
     public ApiResponse<List<WorkflowNodeHookEntity>> listByNodeIdAndHookPoint(
             @PathVariable String nodeId,
             @PathVariable String hookPoint) {

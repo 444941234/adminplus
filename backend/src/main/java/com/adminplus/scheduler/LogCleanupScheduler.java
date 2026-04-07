@@ -1,6 +1,6 @@
 package com.adminplus.scheduler;
 
-import com.adminplus.common.config.LogStorageProperties;
+import com.adminplus.common.properties.LogStorageProperties;
 import com.adminplus.repository.WorkflowHookLogRepository;
 import com.adminplus.service.LogService;
 import lombok.RequiredArgsConstructor;
