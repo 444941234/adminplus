@@ -198,24 +198,29 @@ onMounted(() => {
       </div>
 
       <!-- 菜单 -->
-      <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+      <nav :class="[
+        'flex-1 space-y-1 overflow-y-auto',
+        collapsed ? 'p-2' : 'p-3'
+      ]">
         <template v-if="collapsed">
-          <RouterLink
-            v-for="item in menuItems"
-            :key="item.path"
-            :to="item.path"
-            :class="[
-              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
-              route.path === item.path
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
-            ]"
-          >
-            <component
-              :is="item.icon"
-              class="w-5 h-5 flex-shrink-0"
-            />
-          </RouterLink>
+          <div class="flex flex-col space-y-1">
+            <RouterLink
+              v-for="item in menuItems"
+              :key="item.path"
+              :to="item.path"
+              :class="[
+                'flex items-center justify-center py-2.5 rounded-md text-sm font-medium transition-colors',
+                route.path === item.path
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+              ]"
+            >
+              <component
+                :is="item.icon"
+                class="w-5 h-5 flex-shrink-0"
+              />
+            </RouterLink>
+          </div>
         </template>
         <template v-else>
           <template
