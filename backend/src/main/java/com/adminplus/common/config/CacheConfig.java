@@ -25,10 +25,10 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 import java.time.Duration;
 
 /**
- * 缓存配置
+ * Redis 缓存配置
  *
- * 使用 Redis 作为分布式缓存。
- * 使用专用的 ObjectMapper 进行序列化（支持 record 类型）。
+ * 使用专用的 ObjectMapper 配置 DefaultTyping.EVERYTHING 支持 record 类型。
+ * 该 ObjectMapper 只用于 Redis 操作，不影响 HTTP 请求/响应。
  *
  * @author AdminPlus
  * @since 2026-02-06
@@ -40,17 +40,40 @@ import java.time.Duration;
 public class CacheConfig {
 
     /**
+     * 创建 Redis 专用的 ObjectMapper
+     *
+     * 配置 DefaultTyping.EVERYTHING 让所有类型（包括 final 的 record）都包含 @class 类型信息，
+     * 解决 record 类型反序列化返回 LinkedHashMap 的问题。
+     */
+    private ObjectMapper createRedisObjectMapper() {
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Object.class)
+                .build();
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.setPolymorphicTypeValidator(ptv);
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // 激活 default typing，使用 EVERYTHING 支持 record 类型
+        mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.EVERYTHING, JsonTypeInfo.As.PROPERTY);
+
+        return mapper;
+    }
+
+    /**
      * 配置 RedisTemplate
-     * 用于 JWT 黑名单、限流等 Redis 操作
+     *
+     * 用于 JWT 黑名单、限流计数等 Redis 操作。
+     * 使用专用的 ObjectMapper 确保类型信息正确保存。
      */
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(
-            RedisConnectionFactory connectionFactory,
-            ObjectMapper objectMapper) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(createRedisObjectMapper());
 
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
@@ -63,32 +86,11 @@ public class CacheConfig {
 
     /**
      * 配置 Redis 缓存管理器
-     *
-     * 使用专用的 ObjectMapper，配置 DefaultTyping.EVERYTHING 支持 record 类型。
-     * 注意：这个 ObjectMapper 只用于 Redis 缓存，不影响 HTTP 请求/响应。
      */
     @Bean
     @Primary
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        // 创建专用于 Redis 缓存的 ObjectMapper
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-                .allowIfBaseType(Object.class)
-                .build();
-
-        ObjectMapper cacheObjectMapper = new ObjectMapper();
-        cacheObjectMapper.setPolymorphicTypeValidator(ptv);
-        cacheObjectMapper.registerModule(new JavaTimeModule());
-        cacheObjectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        cacheObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        // 激活 default typing，使用 EVERYTHING 让所有类型（包括 final 的 record）都包含 @class 类型信息
-        cacheObjectMapper.activateDefaultTyping(
-                ptv,
-                ObjectMapper.DefaultTyping.EVERYTHING,
-                JsonTypeInfo.As.PROPERTY
-        );
-
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(cacheObjectMapper);
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(createRedisObjectMapper());
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
@@ -96,7 +98,7 @@ public class CacheConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
                 .disableCachingNullValues();
 
-        log.info("使用 Redis 缓存管理器（支持 record 类型）");
+        log.info("Redis 缓存管理器已初始化（支持 record 类型）");
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
