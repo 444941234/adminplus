@@ -1,4 +1,4 @@
-package com.adminplus.common.config;
+package com.adminplus.common.interceptor;
 
 import com.adminplus.common.properties.AppProperties;
 import com.adminplus.utils.IpUtils;
@@ -6,7 +6,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -20,7 +19,6 @@ import java.util.concurrent.TimeUnit;
  * @since 2026-02-07
  */
 @Slf4j
-@Configuration
 @RequiredArgsConstructor
 public class RateLimitInterceptor implements HandlerInterceptor {
 

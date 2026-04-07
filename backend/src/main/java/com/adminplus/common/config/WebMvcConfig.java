@@ -1,6 +1,7 @@
 package com.adminplus.common.config;
 
 import com.adminplus.common.filter.XssFilter;
+import com.adminplus.common.interceptor.RateLimitInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;

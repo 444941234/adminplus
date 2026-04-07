@@ -1,4 +1,4 @@
-package com.adminplus.common.config;
+package com.adminplus.common.interceptor;
 
 import com.adminplus.common.properties.AppProperties;
 import jakarta.servlet.http.HttpServletResponse;
