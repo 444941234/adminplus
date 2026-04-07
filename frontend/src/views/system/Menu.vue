@@ -29,6 +29,7 @@ import { toast } from 'vue-sonner'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useTreeData } from '@/composables/useTreeData'
 import { useStatusToggle } from '@/composables/useStatusToggle'
+import { useDict } from '@/composables/useDict'
 
 interface MenuFormState {
   parentId: string
@@ -58,6 +59,9 @@ const { loading: deleteLoading, run: runDelete } = useAsyncAction('删除菜单�
 const searchQuery = ref('')
 const menus = ref<Menu[]>([])
 const userStore = useUserStore()
+
+// 字典数据
+const { getLabel: getMenuTypeLabel, options: menuTypeOptions } = useDict('menu_type')
 
 // Use tree data composable for expand/collapse management
 const {
@@ -185,12 +189,6 @@ const resetForm = () => {
 
 const handleSearch = () => {
   expandAll()
-}
-
-const typeLabelMap: Record<number, string> = {
-  0: '目录',
-  1: '菜单',
-  2: '按钮'
 }
 
 const validateForm = () => {
@@ -521,7 +519,7 @@ onMounted(fetchData)
                         : 'outline'
                   "
                 >
-                  {{ typeLabelMap[row.menu.type] }}
+                  {{ getMenuTypeLabel(row.menu.type) }}
                 </Badge>
               </td>
               <td class="p-4">
@@ -622,14 +620,12 @@ onMounted(fetchData)
                   <SelectValue placeholder="请选择菜单类型" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="0">
-                    目录
-                  </SelectItem>
-                  <SelectItem value="1">
-                    菜单
-                  </SelectItem>
-                  <SelectItem value="2">
-                    按钮
+                  <SelectItem
+                    v-for="option in menuTypeOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
                   </SelectItem>
                 </SelectContent>
               </Select>

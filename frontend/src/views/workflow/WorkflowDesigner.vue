@@ -43,6 +43,7 @@ import {
 import type { WorkflowDefinition, WorkflowNode, WorkflowDefinitionReq, WorkflowNodeReq } from '@/types'
 import { toast } from 'vue-sonner'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useDict } from '@/composables/useDict'
 import { ConfirmDialog } from '@/components/common'
 
 // WorkflowVisualizer 返回的定义类型（内部定义的结构）
@@ -129,6 +130,10 @@ const editingDefinitionId = ref<string | null>(null)
 const editingNodeId = ref<string | null>(null)
 
 const userStore = useUserStore()
+
+// 字典数据
+const { getLabel: getStatusLabel } = useDict('common_status')
+
 const permissionState = computed(() => getWorkflowPermissionState(userStore.hasPermission))
 
 // Permissions
@@ -454,7 +459,7 @@ onMounted(() => {
                 </TableCell>
                 <TableCell>
                   <Badge :variant="definition.status === 1 ? 'default' : 'secondary'">
-                    {{ definition.status === 1 ? '启用' : '停用' }}
+                    {{ getStatusLabel(String(definition.status)) }}
                   </Badge>
                 </TableCell>
                 <TableCell>{{ formatDateTime(definition.updateTime) }}</TableCell>
@@ -509,7 +514,7 @@ onMounted(() => {
             </Button>
             <CardTitle>{{ selectedDefinition.definitionName }}</CardTitle>
             <Badge :variant="selectedDefinition.status === 1 ? 'default' : 'secondary'">
-              {{ selectedDefinition.status === 1 ? '启用' : '停用' }}
+              {{ getStatusLabel(String(selectedDefinition.status)) }}
             </Badge>
           </div>
           <Button

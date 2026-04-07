@@ -23,6 +23,7 @@ import { Play } from 'lucide-vue-next'
 import { useUserStore } from '@/stores/user'
 import { getWorkflowPermissionState } from '@/lib/page-permissions'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useDict } from '@/composables/useDict'
 
 const { loading, run: runFetch } = useAsyncAction('获取流程模板失败')
 const { loading: dialogLoading, run: runDialog } = useAsyncAction('操作失败')
@@ -31,6 +32,9 @@ const definitions = ref<WorkflowDefinition[]>([])
 const selectedDefinition = ref<WorkflowDefinition | null>(null)
 const startDialogOpen = ref(false)
 const userStore = useUserStore()
+
+// 字典数据
+const { getLabel: getStatusLabel } = useDict('common_status')
 const {
   formConfig,
   formValues,
@@ -231,7 +235,7 @@ onMounted(fetchDefinitions)
               <TableCell>v{{ definition.version }}</TableCell>
               <TableCell>
                 <Badge :variant="definition.status === 1 ? 'default' : 'secondary'">
-                  {{ definition.status === 1 ? '启用' : '停用' }}
+                  {{ getStatusLabel(String(definition.status)) }}
                 </Badge>
               </TableCell>
               <TableCell>{{ formatDateTime(definition.updateTime) }}</TableCell>

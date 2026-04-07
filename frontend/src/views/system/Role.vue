@@ -31,6 +31,7 @@ import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useCRUD } from '@/composables/useCRUD'
 import { useStatusToggle } from '@/composables/useStatusToggle'
 import { createRole, deleteRole, getRoleById, getRoleList, updateRole } from '@/api'
+import { useDict } from '@/composables/useDict'
 
 interface RoleFormState {
   name: string
@@ -49,6 +50,10 @@ interface MenuOption {
 }
 
 const userStore = useUserStore()
+
+// 字典数据
+const { options: statusOptions } = useDict('common_status')
+
 const searchQuery = ref('')
 const menus = ref<Menu[]>([])
 
@@ -467,11 +472,12 @@ onMounted(async () => {
                   <SelectValue placeholder="请选择状态" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">
-                    正常
-                  </SelectItem>
-                  <SelectItem value="0">
-                    禁用
+                  <SelectItem
+                    v-for="option in statusOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
                   </SelectItem>
                 </SelectContent>
               </Select>

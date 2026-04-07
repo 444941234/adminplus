@@ -26,6 +26,7 @@ import { useUserStore } from '@/stores/user'
 import { useCRUD } from '@/composables/useCRUD'
 import { useStatusToggle } from '@/composables/useStatusToggle'
 import { createDept, deleteDept, getDeptById, getDeptTree, updateDept, updateDeptStatus } from '@/api'
+import { useDict } from '@/composables/useDict'
 
 interface DeptFormState {
   parentId: string
@@ -51,6 +52,9 @@ const treeData = ref<Dept[]>([])
 const searchQuery = ref('')
 const expandedKeys = ref<Set<string>>(new Set())
 const userStore = useUserStore()
+
+// 字典数据
+const { options: statusOptions } = useDict('common_status')
 
 // Status toggle
 const {
@@ -473,11 +477,12 @@ onMounted(fetchList)
                   <SelectValue placeholder="选择状态" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">
-                    正常
-                  </SelectItem>
-                  <SelectItem value="0">
-                    禁用
+                  <SelectItem
+                    v-for="option in statusOptions"
+                    :key="option.value"
+                    :value="option.value"
+                  >
+                    {{ option.label }}
                   </SelectItem>
                 </SelectContent>
               </Select>

@@ -1,11 +1,11 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.constants.LogType;
 import com.adminplus.pojo.dto.req.LogQueryReq;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.LogExportService;
 import com.adminplus.service.LogService;
+import com.adminplus.utils.DictUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.Row;
@@ -36,6 +36,7 @@ import java.util.List;
 public class LogExportServiceImpl implements LogExportService {
 
     private final LogService logService;
+    private final DictUtils dictUtils;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
             .withZone(ZoneId.systemDefault());
@@ -138,26 +139,12 @@ public class LogExportServiceImpl implements LogExportService {
 
     private String getLogTypeDesc(Integer type) {
         if (type == null) return "未知";
-        for (LogType logType : LogType.values()) {
-            if (logType.getCode() == type) {
-                return logType.getDescription();
-            }
-        }
-        return "未知";
+        return dictUtils.getDictLabel("log_type", String.valueOf(type));
     }
 
     private String getOperationTypeDesc(Integer type) {
         if (type == null) return "未知";
-        return switch (type) {
-            case 1 -> "查询";
-            case 2 -> "新增";
-            case 3 -> "修改";
-            case 4 -> "删除";
-            case 5 -> "导出";
-            case 6 -> "导入";
-            case 7 -> "其他";
-            default -> "未知";
-        };
+        return dictUtils.getDictLabel("operation_type", String.valueOf(type));
     }
 
     private String formatDate(Instant instant) {

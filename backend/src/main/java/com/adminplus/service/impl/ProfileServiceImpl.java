@@ -1,6 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.utils.DictUtils;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.pojo.dto.req.PasswordChangeReq;
 import com.adminplus.pojo.dto.req.ProfileUpdateReq;
@@ -62,6 +63,7 @@ public class ProfileServiceImpl implements ProfileService {
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final LogRepository logRepository;
+    private final DictUtils dictUtils;
 
     // 允许的图片格式
     private static final String[] ALLOWED_IMAGE_TYPES = {
@@ -371,14 +373,16 @@ public class ProfileServiceImpl implements ProfileService {
      */
     private String mapOperationType(Integer operationType) {
         if (operationType == null) return "other";
-        return switch (operationType) {
-            case 1 -> "create";
-            case 2 -> "update";
-            case 3 -> "delete";
-            case 4 -> "query";
-            case 5 -> "login";
-            case 6 -> "logout";
-            case 7 -> "export";
+        // 使用字典获取操作类型描述
+        String desc = dictUtils.getDictLabel("operation_type", String.valueOf(operationType));
+        // 转换为英文活动类型（前端需要）
+        return switch (desc) {
+            case "新增" -> "create";
+            case "修改" -> "update";
+            case "删除" -> "delete";
+            case "查询" -> "query";
+            case "导出" -> "export";
+            case "导入" -> "import";
             default -> "other";
         };
     }

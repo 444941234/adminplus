@@ -8,6 +8,7 @@ import {
   SelectValue
 } from '@/components/ui'
 import { RefreshCw } from 'lucide-vue-next'
+import { useDict } from '@/composables/useDict'
 
 defineProps<{
   status: string
@@ -17,6 +18,18 @@ const emit = defineEmits<{
   (_e: 'update:status', _value: string): void
   (_e: 'refresh'): void
 }>()
+
+// 字典数据
+const { items: workflowStatusItems } = useDict('workflow_status')
+
+// 状态码映射（前端使用英文码）
+const statusCodeMap: Record<string, string> = {
+  '0': 'DRAFT',
+  '1': 'RUNNING',
+  '2': 'COMPLETED',
+  '3': 'REJECTED',
+  '4': 'CANCELLED'
+}
 </script>
 
 <template>
@@ -32,20 +45,12 @@ const emit = defineEmits<{
         <SelectItem value="ALL">
           全部状态
         </SelectItem>
-        <SelectItem value="DRAFT">
-          草稿
-        </SelectItem>
-        <SelectItem value="PENDING">
-          审批中
-        </SelectItem>
-        <SelectItem value="APPROVED">
-          已通过
-        </SelectItem>
-        <SelectItem value="REJECTED">
-          已驳回
-        </SelectItem>
-        <SelectItem value="CANCELLED">
-          已取消
+        <SelectItem
+          v-for="item in workflowStatusItems"
+          :key="item.value"
+          :value="statusCodeMap[item.value] || item.value"
+        >
+          {{ item.label }}
         </SelectItem>
       </SelectContent>
     </Select>

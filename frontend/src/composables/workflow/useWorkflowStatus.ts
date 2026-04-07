@@ -1,38 +1,48 @@
-type WorkflowStatusVariant = 'default' | 'secondary' | 'destructive' | 'outline'
+import { useDict } from '../useDict'
 
-const WORKFLOW_STATUS_LABELS: Record<string, string> = {
-  DRAFT: '草稿',
-  PENDING: '审批中',
-  PROCESSING: '进行中',
-  APPROVED: '已通过',
-  REJECTED: '已驳回',
-  CANCELLED: '已取消',
-  WITHDRAWN: '已撤回',
-  FINISHED: '已完成',
-  COMPLETED: '已完成'
+// 单例模式，只初始化一次字典
+let workflowStatusDict: ReturnType<typeof useDict> | null = null
+
+const getWorkflowStatusDict = () => {
+  if (!workflowStatusDict) {
+    workflowStatusDict = useDict('workflow_status')
+  }
+  return workflowStatusDict
 }
 
-const TERMINAL_STATUSES = new Set(['APPROVED', 'REJECTED', 'CANCELLED', 'WITHDRAWN', 'FINISHED', 'COMPLETED'])
+// 英文状态码到数字值的映射
+const STATUS_CODE_MAP: Record<string, string> = {
+  'DRAFT': '0',      // 草稿
+  'RUNNING': '1',    // 运行中
+  'COMPLETED': '2',  // 已完成
+  'REJECTED': '3',   // 已拒绝
+  'CANCELLED': '4'   // 已撤回
+}
+
+type WorkflowStatusVariant = 'default' | 'secondary' | 'destructive' | 'outline'
+
+const TERMINAL_STATUSES = new Set(['APPROVED', 'REJECTED', 'CANCELLED', 'WITHDRAWN', 'FINISHED', 'COMPLETED', '2', '3'])
 
 const WORKFLOW_STATUS_VARIANTS: Record<string, WorkflowStatusVariant> = {
-  DRAFT: 'outline',
-  PENDING: 'secondary',
-  PROCESSING: 'default',
-  APPROVED: 'default',
-  REJECTED: 'destructive',
-  CANCELLED: 'outline',
-  WITHDRAWN: 'outline',
-  FINISHED: 'default',
-  COMPLETED: 'default'
+  '0': 'outline',     // 草稿
+  '1': 'default',     // 运行中
+  '2': 'default',     // 已完成
+  '3': 'destructive', // 已拒绝
+  '4': 'outline'      // 已撤回
 }
 
 /**
  * 获取流程状态展示文案
- * @param {string | null | undefined} status - 流程状态
+ * @param {string | null | undefined} status - 流程状态（英文码或数字字符串）
  * @returns {string} 展示文案
  */
 export const getWorkflowStatusLabel = (status?: string | null) => {
-  return WORKFLOW_STATUS_LABELS[status || ''] || status || '-'
+  if (!status) return '-'
+
+  const dict = getWorkflowStatusDict()
+  // 尝试将英文状态码映射到数字
+  const dictValue = STATUS_CODE_MAP[status] || status
+  return dict.getLabel(dictValue, status)
 }
 
 /**
@@ -41,7 +51,10 @@ export const getWorkflowStatusLabel = (status?: string | null) => {
  * @returns {WorkflowStatusVariant} 徽标样式
  */
 export const getWorkflowStatusVariant = (status?: string | null): WorkflowStatusVariant => {
-  return WORKFLOW_STATUS_VARIANTS[status || ''] || 'secondary'
+  if (!status) return 'secondary'
+
+  const dictValue = STATUS_CODE_MAP[status] || status
+  return WORKFLOW_STATUS_VARIANTS[dictValue] || 'secondary'
 }
 
 /**
@@ -50,7 +63,9 @@ export const getWorkflowStatusVariant = (status?: string | null): WorkflowStatus
  * @returns {boolean} 是否终态
  */
 export const isWorkflowTerminalStatus = (status?: string | null) => {
-  return TERMINAL_STATUSES.has(status || '')
+  if (!status) return false
+  const dictValue = STATUS_CODE_MAP[status] || status
+  return TERMINAL_STATUSES.has(status) || dictValue === '2' || dictValue === '3' || dictValue === '4'
 }
 
 /**

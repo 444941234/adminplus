@@ -38,6 +38,7 @@ import { useUserStore } from '@/stores/user'
 import { toast } from 'vue-sonner'
 import { usePageList } from '@/composables/usePageList'
 import { useAsyncAction } from '@/composables/useAsyncAction'
+import { useDict } from '@/composables/useDict'
 
 interface LogStatisticsView {
   totalCount: number
@@ -50,6 +51,11 @@ interface LogStatisticsView {
 }
 
 const userStore = useUserStore()
+
+// 字典数据
+const { getLabel: getLogTypeLabel, options: logTypeOptions } = useDict('log_type')
+const { getLabel: getOperationLabel, options: operationTypeOptions } = useDict('operation_type')
+const { options: logStatusOptions } = useDict('log_status')
 
 const { loading: statisticsLoading, run: runStatistics } = useAsyncAction('获取日志统计失败')
 const { loading: detailLoading, run: runDetail } = useAsyncAction('获取日志详情失败')
@@ -125,28 +131,6 @@ const queryParams = computed(() => ({
 const getRequestMethod = (log: Log) => log.requestMethod ?? log.method ?? '-'
 const getRequestParams = (log: Log) => log.requestParams ?? log.params ?? ''
 const getDuration = (log: Log) => log.duration ?? log.costTime ?? 0
-
-const getLogTypeLabel = (type: number) => {
-  const types: Record<number, string> = {
-    1: '操作日志',
-    2: '登录日志',
-    3: '系统日志'
-  }
-  return types[type] || '未知'
-}
-
-const getOperationLabel = (type: number) => {
-  const types: Record<number, string> = {
-    1: '查询',
-    2: '新增',
-    3: '修改',
-    4: '删除',
-    5: '导出',
-    6: '导入',
-    7: '其他'
-  }
-  return types[type] || '其他'
-}
 
 const fetchStatistics = () => runStatistics(async () => {
   const res = await getLogStatistics()
@@ -345,14 +329,12 @@ onMounted(async () => {
               <SelectItem value="all">
                 全部类型
               </SelectItem>
-              <SelectItem value="1">
-                操作日志
-              </SelectItem>
-              <SelectItem value="2">
-                登录日志
-              </SelectItem>
-              <SelectItem value="3">
-                系统日志
+              <SelectItem
+                v-for="option in logTypeOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -364,26 +346,12 @@ onMounted(async () => {
               <SelectItem value="all">
                 全部操作
               </SelectItem>
-              <SelectItem value="1">
-                查询
-              </SelectItem>
-              <SelectItem value="2">
-                新增
-              </SelectItem>
-              <SelectItem value="3">
-                修改
-              </SelectItem>
-              <SelectItem value="4">
-                删除
-              </SelectItem>
-              <SelectItem value="5">
-                导出
-              </SelectItem>
-              <SelectItem value="6">
-                导入
-              </SelectItem>
-              <SelectItem value="7">
-                其他
+              <SelectItem
+                v-for="option in operationTypeOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -395,11 +363,12 @@ onMounted(async () => {
               <SelectItem value="all">
                 全部状态
               </SelectItem>
-              <SelectItem value="1">
-                成功
-              </SelectItem>
-              <SelectItem value="0">
-                失败
+              <SelectItem
+                v-for="option in logStatusOptions"
+                :key="option.value"
+                :value="option.value"
+              >
+                {{ option.label }}
               </SelectItem>
             </SelectContent>
           </Select>

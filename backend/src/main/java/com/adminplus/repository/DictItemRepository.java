@@ -57,4 +57,22 @@ public interface DictItemRepository extends JpaRepository<DictItemEntity, String
      */
     @Query("SELECT COUNT(d) FROM DictItemEntity d WHERE d.parent.id = :parentId AND d.dictId = :dictId")
     long countByParentIdAndDictId(@Param("parentId") String parentId, @Param("dictId") String dictId);
+
+    /**
+     * 根据字典类型查询字典项（通过子查询）
+     */
+    @Query("SELECT di FROM DictItemEntity di WHERE di.dictId = (SELECT d.id FROM DictEntity d WHERE d.dictType = :dictType AND d.status = 1) AND di.status = 1 ORDER BY di.sortOrder ASC")
+    List<DictItemEntity> findByDictType(@Param("dictType") String dictType);
+
+    /**
+     * 根据字典类型和值查询字典项
+     */
+    @Query("SELECT di FROM DictItemEntity di WHERE di.dictId = (SELECT d.id FROM DictEntity d WHERE d.dictType = :dictType AND d.status = 1) AND di.value = :value AND di.status = 1")
+    java.util.Optional<DictItemEntity> findByDictTypeAndValue(@Param("dictType") String dictType, @Param("value") String value);
+
+    /**
+     * 根据字典类型和名称查询字典项
+     */
+    @Query("SELECT di FROM DictItemEntity di WHERE di.dictId = (SELECT d.id FROM DictEntity d WHERE d.dictType = :dictType AND d.status = 1) AND di.name = :name AND di.status = 1")
+    java.util.Optional<DictItemEntity> findByDictTypeAndName(@Param("dictType") String dictType, @Param("name") String name);
 }

@@ -4,6 +4,7 @@ import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogH
 import { createUser, getUserById, updateUser } from '@/api'
 import { isValidChinaPhone, isValidEmail, isStrongPassword } from '@/lib/validators'
 import { toast } from 'vue-sonner'
+import { useDict } from '@/composables/useDict'
 
 interface Props {
   open: boolean
@@ -22,6 +23,9 @@ const emit = defineEmits<{
 
 const isEdit = computed(() => !!props.editId)
 const loading = ref(false)
+
+// 字典数据
+const { options: statusOptions } = useDict('common_status')
 
 const form = reactive({
   username: '',
@@ -230,11 +234,12 @@ const handleOpenChange = (value: boolean) => {
                 <SelectValue placeholder="请选择状态" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="1">
-                  正常
-                </SelectItem>
-                <SelectItem value="0">
-                  禁用
+                <SelectItem
+                  v-for="option in statusOptions"
+                  :key="option.value"
+                  :value="option.value"
+                >
+                  {{ option.label }}
                 </SelectItem>
               </SelectContent>
             </Select>

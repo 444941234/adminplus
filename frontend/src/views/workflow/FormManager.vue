@@ -34,6 +34,7 @@ import {
   type FormTemplateReq
 } from '@/api'
 import { useUserStore } from '@/stores/user'
+import { useDict } from '@/composables/useDict'
 
 // State
 const { loading, run: runList } = useAsyncAction('获取表单模板失败')
@@ -64,6 +65,9 @@ const deleteTarget = ref<FormTemplate | null>(null)
 
 // 用户权限
 const userStore = useUserStore()
+
+// 字典数据
+const { getLabel: getStatusLabel, options: statusOptions } = useDict('common_status')
 
 // 权限检查
 const canCreate = computed(() => userStore.hasPermission('workflow:form:create'))
@@ -292,7 +296,7 @@ onUnmounted(() => {
                 </div>
               </div>
               <Badge :variant="template.status === 1 ? 'default' : 'secondary'">
-                {{ template.status === 1 ? '启用' : '停用' }}
+                {{ getStatusLabel(String(template.status)) }}
               </Badge>
             </div>
           </CardHeader>
@@ -478,11 +482,12 @@ onUnmounted(() => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem :value="1">
-                    启用
-                  </SelectItem>
-                  <SelectItem :value="0">
-                    停用
+                  <SelectItem
+                    v-for="option in statusOptions"
+                    :key="Number(option.value)"
+                    :value="Number(option.value)"
+                  >
+                    {{ option.label }}
                   </SelectItem>
                 </SelectContent>
               </Select>

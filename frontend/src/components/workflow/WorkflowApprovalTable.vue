@@ -13,18 +13,23 @@ import {
 } from '@/components/ui'
 import type { WorkflowApproval } from '@/types'
 import { formatDateTime } from '@/utils/format'
+import { useDict } from '@/composables/useDict'
 
 defineProps<{
   approvals: WorkflowApproval[]
 }>()
 
+const { getLabel: getApprovalStatusLabel } = useDict('approval_status')
+
 const getStatusLabel = (status?: string) => {
-  switch (status) {
-    case 'pending': return '待审批'
-    case 'approved': return '已通过'
-    case 'rejected': return '已驳回'
-    default: return status || '-'
+  // 映射英文状态码到数字字典值
+  const statusMap: Record<string, string> = {
+    'pending': '0',
+    'approved': '1',
+    'rejected': '2'
   }
+  const dictValue = status ? statusMap[status] : undefined
+  return dictValue ? getApprovalStatusLabel(dictValue) : (status || '-')
 }
 
 const getStatusClass = (status?: string) => {
