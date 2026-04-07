@@ -1,7 +1,6 @@
 export { default as ActivityDashboard } from './ActivityDashboard.vue'
 export { default as CompletionBadge } from './CompletionBadge.vue'
 export { default as InlineEditField } from './InlineEditField.vue'
-export { default as ProfileHero } from './ProfileHero.vue'
 export { default as ProfileInfo } from './ProfileInfo.vue'
 export { default as ProfileSecurity } from './ProfileSecurity.vue'
 export { default as QuickSettings } from './QuickSettings.vue'

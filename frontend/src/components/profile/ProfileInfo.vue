@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Badge } from '@/components/ui/badge'
 import InlineEditField from './InlineEditField.vue'
 import type { Profile } from '@/types'
 
@@ -35,97 +34,66 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
 <template>
   <div class="profile-info">
     <div class="profile-info__header">
-      <div>
-        <h3 class="profile-info__title">
-          个人资料
-        </h3>
-        <p class="profile-info__subtitle">
-          点击编辑图标即可更新您的信息
-        </p>
-      </div>
+      <h3 class="profile-info__title">
+        个人资料
+      </h3>
     </div>
 
-    <div
-      v-if="loading"
-      class="profile-info__loading"
-    >
-      加载个人资料中...
-    </div>
+    <div class="profile-info__content">
+      <!-- Nickname -->
+      <InlineEditField
+        :model-value="profile.nickname || ''"
+        label="显示名称"
+        placeholder="请输入显示名称"
+        :loading="loading"
+        @save="handleSaveNickname"
+      />
 
-    <div
-      v-else
-      class="profile-info__content"
-    >
-      <!-- Display Name (Editable) -->
+      <!-- Email -->
+      <InlineEditField
+        :model-value="profile.email || ''"
+        label="邮箱"
+        type="email"
+        placeholder="请输入邮箱"
+        :loading="loading"
+        @save="handleSaveEmail"
+      />
+
+      <!-- Phone -->
+      <InlineEditField
+        :model-value="profile.phone || ''"
+        label="手机号"
+        type="tel"
+        placeholder="请输入手机号"
+        :loading="loading"
+        @save="handleSavePhone"
+      />
+
+      <!-- Department -->
+      <InlineEditField
+        :model-value="profile.deptName || ''"
+        label="部门"
+        placeholder="未分配"
+        readonly
+      />
+
+      <!-- Roles -->
       <div class="profile-info__field">
-        <InlineEditField
-          :model-value="profile.nickname || ''"
-          label="显示名称"
-          placeholder="请输入您的显示名称"
-          :loading="loading"
-          @save="handleSaveNickname"
-        />
-      </div>
-
-      <!-- Email (Editable) -->
-      <div class="profile-info__field">
-        <InlineEditField
-          :model-value="profile.email || ''"
-          label="邮箱"
-          type="email"
-          placeholder="请输入您的邮箱地址"
-          :loading="loading"
-          @save="handleSaveEmail"
-        />
-      </div>
-
-      <!-- Phone (Editable) -->
-      <div class="profile-info__field">
-        <InlineEditField
-          :model-value="profile.phone || ''"
-          label="手机号"
-          type="tel"
-          placeholder="请输入您的手机号码"
-          :loading="loading"
-          @save="handleSavePhone"
-        />
-      </div>
-
-      <!-- Department (Readonly) -->
-      <div class="profile-info__field">
-        <InlineEditField
-          :model-value="profile.deptName || ''"
-          label="部门"
-          placeholder="未分配部门"
-          readonly
-        />
-      </div>
-
-      <!-- Roles (Display only) -->
-      <div class="profile-info__field profile-info__field--roles">
+        <label class="profile-info__label">角色</label>
         <div class="profile-info__roles">
-          <label class="profile-info__roles-label">角色</label>
-          <div
+          <span
+            v-for="role in roleList"
+            :key="role"
+            class="profile-info__role"
+          >
+            {{ role }}
+          </span>
+          <span
             v-if="roleList.length === 0"
-            class="profile-info__roles-empty"
+            class="profile-info__role--empty"
           >
-            <Badge variant="outline">
-              未分配角色
-            </Badge>
-          </div>
-          <div
-            v-else
-            class="profile-info__roles-list"
-          >
-            <Badge
-              v-for="role in roleList"
-              :key="role"
-              variant="secondary"
-              class="role-badge"
-            >
-              {{ role }}
-            </Badge>
-          </div>
+            未分配
+          </span>
         </div>
       </div>
     </div>
@@ -134,117 +102,67 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
 
 <style scoped>
 .profile-info {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
   border: 1px solid rgb(226 232 240);
   border-radius: 16px;
   background: white;
-  padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .profile-info__header {
+  padding: 20px;
   border-bottom: 1px solid rgb(226 232 240);
-  padding-bottom: 16px;
 }
 
 .profile-info__title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: rgb(15 23 42);
   margin: 0;
-  line-height: 1.4;
-}
-
-.profile-info__subtitle {
-  font-size: 14px;
-  color: rgb(100 116 139);
-  margin: 4px 0 0 0;
-  line-height: 1.5;
-}
-
-.profile-info__loading {
-  padding: 40px 0;
-  text-align: center;
-  font-size: 14px;
-  color: rgb(148 163 184);
 }
 
 .profile-info__content {
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .profile-info__field {
   display: flex;
   flex-direction: column;
-}
-
-.profile-info__field--roles {
-  margin-top: 8px;
-}
-
-.profile-info__roles {
-  display: flex;
-  flex-direction: column;
   gap: 8px;
 }
 
-.profile-info__roles-label {
+.profile-info__label {
   font-size: 13px;
   font-weight: 500;
   color: rgb(100 116 139);
-  letter-spacing: 0.01em;
 }
 
-.profile-info__roles-empty {
-  display: flex;
-}
-
-.profile-info__roles-list {
+.profile-info__roles {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.role-badge {
+.profile-info__role {
+  padding: 6px 12px;
+  background: rgb(241 245 249);
+  border-radius: 6px;
   font-size: 13px;
-  padding: 4px 12px;
   font-weight: 500;
+  color: rgb(71 85 105);
 }
 
-/* Mobile Responsive */
+.profile-info__role--empty {
+  font-size: 13px;
+  color: rgb(148 163 184);
+}
+
 @media (max-width: 640px) {
-  .profile-info {
-    padding: 16px;
-    gap: 20px;
-  }
-
-  .profile-info__header {
-    padding-bottom: 12px;
-  }
-
-  .profile-info__title {
-    font-size: 16px;
-  }
-
-  .profile-info__subtitle {
-    font-size: 13px;
-  }
-
+  .profile-info__header,
   .profile-info__content {
-    gap: 16px;
-  }
-
-  .profile-info__roles-list {
-    gap: 6px;
-  }
-
-  .role-badge {
-    font-size: 12px;
-    padding: 3px 10px;
+    padding: 16px;
   }
 }
 </style>

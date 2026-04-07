@@ -3,29 +3,13 @@
  * ActivityDashboard Component
  *
  * Displays user activity statistics and recent activity timeline.
- * Shows login count, operation count, last login info, and recent activities.
- *
- * @author AdminPlus
- * @since 2026-03-20
- *
- * @example
- * <ActivityDashboard
- *   :activity="activityStats"
- *   :loading="false"
- * />
  */
 import { computed } from 'vue'
-import { Badge } from '@/components/ui'
-import { formatTime, getActivityColor } from '@/utils/activityUtils'
+import { formatTime } from '@/utils/activityUtils'
 import type { ActivityStats } from '@/types'
 
-/**
- * Component props
- */
 interface Props {
-  /** Activity statistics data including login count, operations, and recent activity */
   activity: ActivityStats
-  /** Shows loading skeleton when true */
   loading?: boolean
 }
 
@@ -33,11 +17,6 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false
 })
 
-/**
- * Returns an emoji icon for the given activity type
- * @param type - The activity type (create, update, delete, login)
- * @returns Emoji icon string
- */
 const getActivityIcon = (type: string): string => {
   const icons: Record<string, string> = {
     create: '✨',
@@ -48,9 +27,6 @@ const getActivityIcon = (type: string): string => {
   return icons[type] || '📌'
 }
 
-/**
- * Computed property that returns the 5 most recent activities
- */
 const displayActivities = computed(() => {
   return props.activity.recentActivity.slice(0, 5)
 })
@@ -58,240 +34,104 @@ const displayActivities = computed(() => {
 
 <template>
   <div class="activity-dashboard">
-    <!-- Stats Cards -->
-    <div class="activity-dashboard__stats">
-      <div class="stat-card">
-        <div class="stat-card__icon stat-card__icon--active">
+    <div class="activity-dashboard__header">
+      <h3 class="activity-dashboard__title">
+        活动统计
+      </h3>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="activity-stats">
+      <div class="activity-stat">
+        <div class="activity-stat__icon">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
           >
             <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
           </svg>
         </div>
-        <div class="stat-card__content">
-          <p class="stat-card__value">
-            {{ activity.daysActive }}
-          </p>
-          <p class="stat-card__label">
-            活跃天数
-          </p>
+        <div class="activity-stat__content">
+          <span class="activity-stat__value">{{ activity.daysActive }}</span>
+          <span class="activity-stat__label">活跃天数</span>
         </div>
       </div>
-
-      <div class="stat-card">
-        <div class="stat-card__icon stat-card__icon--actions">
+      <div class="activity-stat">
+        <div class="activity-stat__icon">
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
+            width="18"
+            height="18"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
             stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
           >
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
         </div>
-        <div class="stat-card__content">
-          <p class="stat-card__value">
-            {{ activity.totalActions }}
-          </p>
-          <p class="stat-card__label">
-            总操作数
-          </p>
+        <div class="activity-stat__content">
+          <span class="activity-stat__value">{{ activity.totalActions }}</span>
+          <span class="activity-stat__label">总操作数</span>
         </div>
       </div>
     </div>
 
-    <!-- Recent Activity Timeline -->
-    <div class="activity-dashboard__timeline">
-      <div class="activity-dashboard__header">
-        <h3 class="activity-dashboard__title">
-          最近活动
-        </h3>
-        <Badge variant="outline">
-          最近 5 条活动
-        </Badge>
-      </div>
-
+    <!-- Recent Activity -->
+    <div class="activity-list">
       <div
         v-if="loading"
-        class="activity-dashboard__loading"
+        class="activity-list__loading"
       >
-        加载活动数据中...
+        加载中...
       </div>
-
       <div
         v-else-if="displayActivities.length === 0"
-        class="activity-dashboard__empty"
+        class="activity-list__empty"
       >
-        <p>暂无最近活动</p>
+        暂无活动记录
       </div>
-
       <div
         v-else
-        class="activity-list"
+        class="activity-list__items"
       >
         <div
           v-for="item in displayActivities"
           :key="item.id"
           class="activity-item"
         >
-          <div class="activity-item__icon">
-            {{ getActivityIcon(item.type) }}
-          </div>
+          <span class="activity-item__icon">{{ getActivityIcon(item.type) }}</span>
           <div class="activity-item__content">
-            <div class="activity-item__header">
-              <span class="activity-item__action">{{ item.action }}</span>
-              <span
-                class="activity-item__badge"
-                :style="{
-                  backgroundColor: getActivityColor(item.type).bg,
-                  color: getActivityColor(item.type).text,
-                  borderColor: getActivityColor(item.type).border
-                }"
-              >
-                {{ item.type }}
-              </span>
-            </div>
-            <p class="activity-item__time">
-              {{ formatTime(item.timestamp) }}
-            </p>
+            <span class="activity-item__action">{{ item.action }}</span>
+            <span class="activity-item__time">{{ formatTime(item.timestamp) }}</span>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Last Login Info -->
-    <div class="activity-dashboard__login">
-      <div class="activity-dashboard__header">
-        <h3 class="activity-dashboard__title">
-          上次登录
-        </h3>
-      </div>
-
-      <div
-        v-if="loading"
-        class="activity-dashboard__loading"
-      >
-        加载登录信息中...
-      </div>
-
-      <div
-        v-else
-        class="login-info"
-      >
-        <div class="login-info__item">
-          <span class="login-info__label">登录时间</span>
-          <span class="login-info__value">{{ formatTime(activity.lastLogin) }}</span>
-        </div>
-        <div class="login-info__item">
-          <span class="login-info__label">IP 地址</span>
-          <span class="login-info__value">{{ activity.lastLoginIp }}</span>
-        </div>
-      </div>
+    <!-- Last Login -->
+    <div class="last-login">
+      <span class="last-login__label">上次登录</span>
+      <span class="last-login__value">{{ formatTime(activity.lastLogin) }}</span>
     </div>
   </div>
 </template>
 
 <style scoped>
 .activity-dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Stats Cards */
-.activity-dashboard__stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-}
-
-.stat-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  border-radius: 16px;
-  background: white;
-  border: 1px solid rgb(226 232 240);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  transition: all 0.2s ease;
-}
-
-.stat-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-}
-
-.stat-card__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-
-.stat-card__icon--active {
-  background: rgb(220 252 231);
-  color: rgb(22 101 52);
-}
-
-.stat-card__icon--actions {
-  background: rgb(219 234 254);
-  color: rgb(30 64 175);
-}
-
-.stat-card__content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.stat-card__value {
-  font-size: 28px;
-  font-weight: 700;
-  color: rgb(15 23 42);
-  line-height: 1;
-  margin: 0;
-}
-
-.stat-card__label {
-  font-size: 13px;
-  font-weight: 500;
-  color: rgb(100 116 139);
-  margin: 0;
-}
-
-/* Timeline Section */
-.activity-dashboard__timeline,
-.activity-dashboard__login {
   border: 1px solid rgb(226 232 240);
   border-radius: 16px;
   background: white;
-  padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .activity-dashboard__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
+  padding: 20px;
   border-bottom: 1px solid rgb(226 232 240);
 }
 
@@ -302,146 +142,135 @@ const displayActivities = computed(() => {
   margin: 0;
 }
 
-.activity-dashboard__loading,
-.activity-dashboard__empty {
-  padding: 32px 0;
-  text-align: center;
-  font-size: 14px;
-  color: rgb(148 163 184);
+/* Stats */
+.activity-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.activity-stat {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgb(248 250 252);
+  border-radius: 8px;
+}
+
+.activity-stat__icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 6px;
+  color: rgb(59 130 246);
+}
+
+.activity-stat__content {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-stat__value {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgb(15 23 42);
+}
+
+.activity-stat__label {
+  font-size: 12px;
+  color: rgb(100 116 139);
 }
 
 /* Activity List */
 .activity-list {
+  padding: 20px;
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.activity-list__loading,
+.activity-list__empty {
+  text-align: center;
+  font-size: 14px;
+  color: rgb(148 163 184);
+  padding: 20px 0;
+}
+
+.activity-list__items {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .activity-item {
   display: flex;
+  align-items: center;
   gap: 12px;
-  padding: 16px;
-  border-radius: 12px;
+  padding: 10px 12px;
   background: rgb(248 250 252);
-  border: 1px solid rgb(226 232 240);
-  transition: all 0.2s ease;
-}
-
-.activity-item:hover {
-  background: rgb(241 245 249);
-  border-color: rgb(203 213 225);
+  border-radius: 6px;
 }
 
 .activity-item__icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: white;
-  font-size: 18px;
-  flex-shrink: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-size: 16px;
 }
 
 .activity-item__content {
   display: flex;
   flex-direction: column;
-  gap: 6px;
   flex: 1;
   min-width: 0;
 }
 
-.activity-item__header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
 .activity-item__action {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   color: rgb(15 23 42);
-}
-
-.activity-item__badge {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border: 1px solid;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .activity-item__time {
   font-size: 12px;
   color: rgb(100 116 139);
-  margin: 0;
 }
 
-/* Login Info */
-.login-info {
+/* Last Login */
+.last-login {
+  padding: 20px;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.login-info__item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.login-info__label {
-  font-size: 12px;
-  font-weight: 600;
+.last-login__label {
+  font-size: 13px;
   color: rgb(100 116 139);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
-.login-info__value {
-  font-size: 14px;
+.last-login__value {
+  font-size: 13px;
   font-weight: 500;
   color: rgb(15 23 42);
-  word-break: break-all;
 }
 
-/* Mobile Responsive */
+/* Mobile */
 @media (max-width: 640px) {
-  .activity-dashboard__stats {
+  .activity-dashboard__header,
+  .activity-stats,
+  .activity-list,
+  .last-login {
+    padding: 16px;
+  }
+
+  .activity-stats {
     grid-template-columns: 1fr;
-  }
-
-  .stat-card {
-    padding: 16px;
-  }
-
-  .stat-card__icon {
-    width: 40px;
-    height: 40px;
-  }
-
-  .stat-card__value {
-    font-size: 24px;
-  }
-
-  .activity-dashboard__timeline,
-  .activity-dashboard__login {
-    padding: 16px;
-  }
-
-  .activity-item {
-    padding: 12px;
-  }
-
-  .activity-item__icon {
-    width: 32px;
-    height: 32px;
-    font-size: 16px;
   }
 }
 </style>
