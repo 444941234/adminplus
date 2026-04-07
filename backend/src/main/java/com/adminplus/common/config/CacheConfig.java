@@ -1,10 +1,6 @@
 package com.adminplus.common.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -26,7 +22,7 @@ import java.time.Duration;
  * 缓存配置
  *
  * 使用 Redis 作为分布式缓存。
- * 使用已配置 JavaTimeModule 的 ObjectMapper 进行序列化。
+ * 使用 Spring Boot 自动配置的 ObjectMapper（支持 record 序列化）。
  *
  * @author AdminPlus
  * @since 2026-02-06
@@ -62,24 +58,18 @@ public class CacheConfig {
     /**
      * 配置 Redis 缓存管理器
      *
-     * 使用 GenericJackson2JsonRedisSerializer 并配置 LaissezFaireSubTypeValidator
-     * 解决类加载器不一致导致的反序列化问题。
+     * 使用 Spring Boot 自动配置的全局 ObjectMapper，该 ObjectMapper 已经正确配置了：
+     * 1. JavaTimeModule 支持 Java 8 日期时间
+     * 2. record 类型的序列化/反序列化支持
+     * 3. BasicPolymorphicTypeValidator 支持多态类型
      */
     @Bean
     @Primary
-    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        ObjectMapper cacheObjectMapper = new ObjectMapper();
-        cacheObjectMapper.registerModule(new JavaTimeModule());
-        cacheObjectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    public CacheManager cacheManager(
+            RedisConnectionFactory connectionFactory,
+            ObjectMapper objectMapper) {
 
-        // 使用 LaissezFaireSubTypeValidator 允许所有类型，不验证类加载器
-        cacheObjectMapper.activateDefaultTyping(
-                LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.NON_FINAL,
-                JsonTypeInfo.As.PROPERTY
-        );
-
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(cacheObjectMapper);
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))

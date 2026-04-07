@@ -1,5 +1,6 @@
 package com.adminplus.common.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,6 +46,14 @@ public class JacksonConfig {
 
         // 允许非引号字段名
         objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+
+        // 激活默认类型处理，使用 EVERYTHING 让所有类型（包括 final 类型如 record）都包含类型信息
+        // GenericJackson2JsonRedisSerializer 使用 NON_FINAL，但 record 是 final 的，导致反序列化失败
+        objectMapper.activateDefaultTyping(
+                ptv,
+                ObjectMapper.DefaultTyping.EVERYTHING,
+                JsonTypeInfo.As.PROPERTY
+        );
 
         return objectMapper;
     }
