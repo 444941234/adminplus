@@ -87,24 +87,10 @@ public class AuthServiceImpl implements AuthService {
             UserEntity user = userService.getUserByUsername(req.username());
 
             // 查询用户角色 - 批量查询避免 N+1
-            List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
-            List<String> roleIds = userRoles.stream()
-                    .map(UserRoleEntity::getRoleId)
-                    .toList();
-            Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
-                    .collect(Collectors.toMap(RoleEntity::getId, r -> r));
-            List<RoleEntity> roles = userRoles.stream()
-                    .map(UserRoleEntity::getRoleId)
-                    .map(roleMap::get)
-                    .filter(Objects::nonNull)
-                    .filter(role -> role.getStatus() == 1)
-                    .toList();
-            List<String> roleCodes = roles.stream()
-                    .map(RoleEntity::getCode)
-                    .toList();
-            List<String> roleNames = roles.stream()
-                    .map(RoleEntity::getName)
-                    .collect(Collectors.toList());
+            var userRoles = getUserRoles(user.getId());
+            List<RoleEntity> roles = userRoles.roles();
+            List<String> roleCodes = roles.stream().map(RoleEntity::getCode).toList();
+            List<String> roleNames = roles.stream().map(RoleEntity::getName).collect(Collectors.toList());
 
             // 生成 JWT Token
             Instant now = Instant.now();
@@ -175,16 +161,7 @@ public class AuthServiceImpl implements AuthService {
         UserEntity user = userService.getUserByUsername(username);
 
         // 查询用户角色 - 批量查询避免 N+1
-        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
-        List<String> roleIds = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-        Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
-                .collect(Collectors.toMap(RoleEntity::getId, r -> r));
-        List<String> roleNames = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .map(roleMap::get)
-                .filter(Objects::nonNull)
+        List<String> roleNames = getUserRoles(user.getId()).roles().stream()
                 .map(RoleEntity::getName)
                 .collect(Collectors.toList());
 
@@ -255,4 +232,35 @@ public class AuthServiceImpl implements AuthService {
     public String refreshAccessToken(String refreshToken) {
         return refreshTokenService.refreshAccessToken(refreshToken);
     }
+
+    /**
+     * 获取用户的角色信息（批量查询避免 N+1）
+     */
+    private UserRoles getUserRoles(String userId) {
+        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(userId);
+        if (userRoles.isEmpty()) {
+            return new UserRoles(List.of());
+        }
+
+        List<String> roleIds = userRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .toList();
+
+        Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
+                .collect(Collectors.toMap(RoleEntity::getId, r -> r));
+
+        List<RoleEntity> roles = userRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .map(roleMap::get)
+                .filter(Objects::nonNull)
+                .filter(role -> role.getStatus() == 1)
+                .toList();
+
+        return new UserRoles(roles);
+    }
+
+    /**
+     * 用户角色信息封装
+     */
+    private record UserRoles(List<RoleEntity> roles) {}
 }
