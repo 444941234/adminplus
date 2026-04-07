@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.common.config.FileStorageConfig;
+import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.constants.StorageType;
 import com.adminplus.service.impl.LocalFileStorageServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,10 +31,10 @@ import static org.mockito.Mockito.*;
 class LocalFileStorageServiceTest {
 
     @Mock
-    private FileStorageConfig config;
+    private FileStorageProperties config;
 
     @Mock
-    private FileStorageConfig.LocalConfig localConfig;
+    private FileStorageProperties.LocalConfig localConfig;
 
     @InjectMocks
     private LocalFileStorageServiceImpl fileStorageService;

@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.common.config.FileStorageConfig;
+import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.constants.StorageType;
 import com.adminplus.service.impl.FileStorageServiceFactory;
 import com.adminplus.service.impl.LocalFileStorageServiceImpl;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.*;
 class FileStorageServiceFactoryTest {
 
     @Mock
-    private FileStorageConfig fileStorageConfig;
+    private FileStorageProperties fileStorageConfig;
 
     @Mock
     private LocalFileStorageServiceImpl localFileStorageService;

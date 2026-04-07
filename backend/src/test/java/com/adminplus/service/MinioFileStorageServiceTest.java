@@ -1,7 +1,7 @@
 package com.adminplus.service;
 
-import com.adminplus.common.config.FileStorageConfig;
-import com.adminplus.common.config.FileStorageConfig.MinioConfig;
+import com.adminplus.common.properties.FileStorageProperties;
+import com.adminplus.common.properties.FileStorageProperties.MinioConfig;
 import com.adminplus.constants.StorageType;
 import com.adminplus.service.impl.MinioFileStorageServiceImpl;
 import io.minio.MinioClient;
@@ -33,7 +33,7 @@ class MinioFileStorageServiceTest {
     private MinioClient minioClient;
 
     @Mock
-    private FileStorageConfig config;
+    private FileStorageProperties config;
 
     @Mock
     private MinioConfig minioConfig;

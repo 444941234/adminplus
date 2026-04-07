@@ -31,45 +31,45 @@ class WorkflowStatusTest {
         @Test
         @DisplayName("应验证 DRAFT 状态值")
         void shouldVerifyDraftValue() {
-            assertEquals("draft", WorkflowStatus.DRAFT,
+            assertEquals("draft", WorkflowStatus.DRAFT.getCode(),
                     "DRAFT 状态值应该是 'draft'");
-            assertEquals(5, WorkflowStatus.DRAFT.length(),
+            assertEquals(5, WorkflowStatus.DRAFT.getCode().length(),
                     "DRAFT 状态值长度应该是 5");
         }
 
         @Test
         @DisplayName("应验证 RUNNING 状态值")
         void shouldVerifyRunningValue() {
-            assertEquals("running", WorkflowStatus.RUNNING,
+            assertEquals("running", WorkflowStatus.RUNNING.getCode(),
                     "RUNNING 状态值应该是 'running'");
-            assertEquals(7, WorkflowStatus.RUNNING.length(),
+            assertEquals(7, WorkflowStatus.RUNNING.getCode().length(),
                     "RUNNING 状态值长度应该是 7");
         }
 
         @Test
         @DisplayName("应验证 APPROVED 状态值")
         void shouldVerifyApprovedValue() {
-            assertEquals("approved", WorkflowStatus.APPROVED,
+            assertEquals("approved", WorkflowStatus.APPROVED.getCode(),
                     "APPROVED 状态值应该是 'approved'");
-            assertEquals(8, WorkflowStatus.APPROVED.length(),
+            assertEquals(8, WorkflowStatus.APPROVED.getCode().length(),
                     "APPROVED 状态值长度应该是 8");
         }
 
         @Test
         @DisplayName("应验证 REJECTED 状态值")
         void shouldVerifyRejectedValue() {
-            assertEquals("rejected", WorkflowStatus.REJECTED,
+            assertEquals("rejected", WorkflowStatus.REJECTED.getCode(),
                     "REJECTED 状态值应该是 'rejected'");
-            assertEquals(8, WorkflowStatus.REJECTED.length(),
+            assertEquals(8, WorkflowStatus.REJECTED.getCode().length(),
                     "REJECTED 状态值长度应该是 8");
         }
 
         @Test
         @DisplayName("应验证 CANCELLED 状态值")
         void shouldVerifyCancelledValue() {
-            assertEquals("cancelled", WorkflowStatus.CANCELLED,
+            assertEquals("cancelled", WorkflowStatus.CANCELLED.getCode(),
                     "CANCELLED 状态值应该是 'cancelled'");
-            assertEquals(9, WorkflowStatus.CANCELLED.length(),
+            assertEquals(9, WorkflowStatus.CANCELLED.getCode().length(),
                     "CANCELLED 状态值长度应该是 9");
         }
 
@@ -78,34 +78,34 @@ class WorkflowStatusTest {
         void shouldVerifyAllLowerCase() {
             String lowerCaseRegex = "^[a-z]+$";
 
-            assertTrue(WorkflowStatus.DRAFT.matches(lowerCaseRegex),
+            assertTrue(WorkflowStatus.DRAFT.getCode().matches(lowerCaseRegex),
                     "DRAFT 应该全是小写字母");
-            assertTrue(WorkflowStatus.RUNNING.matches(lowerCaseRegex),
+            assertTrue(WorkflowStatus.RUNNING.getCode().matches(lowerCaseRegex),
                     "RUNNING 应该全是小写字母");
-            assertTrue(WorkflowStatus.APPROVED.matches(lowerCaseRegex),
+            assertTrue(WorkflowStatus.APPROVED.getCode().matches(lowerCaseRegex),
                     "APPROVED 应该全是小写字母");
-            assertTrue(WorkflowStatus.REJECTED.matches(lowerCaseRegex),
+            assertTrue(WorkflowStatus.REJECTED.getCode().matches(lowerCaseRegex),
                     "REJECTED 应该全是小写字母");
-            assertTrue(WorkflowStatus.CANCELLED.matches(lowerCaseRegex),
+            assertTrue(WorkflowStatus.CANCELLED.getCode().matches(lowerCaseRegex),
                     "CANCELLED 应该全是小写字母");
         }
 
         @Test
         @DisplayName("应验证所有状态值唯一")
         void shouldVerifyAllValuesUnique() {
-            assertNotEquals(WorkflowStatus.DRAFT, WorkflowStatus.RUNNING);
-            assertNotEquals(WorkflowStatus.DRAFT, WorkflowStatus.APPROVED);
-            assertNotEquals(WorkflowStatus.DRAFT, WorkflowStatus.REJECTED);
-            assertNotEquals(WorkflowStatus.DRAFT, WorkflowStatus.CANCELLED);
+            assertNotEquals(WorkflowStatus.DRAFT.getCode(), WorkflowStatus.RUNNING.getCode());
+            assertNotEquals(WorkflowStatus.DRAFT.getCode(), WorkflowStatus.APPROVED.getCode());
+            assertNotEquals(WorkflowStatus.DRAFT.getCode(), WorkflowStatus.REJECTED.getCode());
+            assertNotEquals(WorkflowStatus.DRAFT.getCode(), WorkflowStatus.CANCELLED.getCode());
 
-            assertNotEquals(WorkflowStatus.RUNNING, WorkflowStatus.APPROVED);
-            assertNotEquals(WorkflowStatus.RUNNING, WorkflowStatus.REJECTED);
-            assertNotEquals(WorkflowStatus.RUNNING, WorkflowStatus.CANCELLED);
+            assertNotEquals(WorkflowStatus.RUNNING.getCode(), WorkflowStatus.APPROVED.getCode());
+            assertNotEquals(WorkflowStatus.RUNNING.getCode(), WorkflowStatus.REJECTED.getCode());
+            assertNotEquals(WorkflowStatus.RUNNING.getCode(), WorkflowStatus.CANCELLED.getCode());
 
-            assertNotEquals(WorkflowStatus.APPROVED, WorkflowStatus.REJECTED);
-            assertNotEquals(WorkflowStatus.APPROVED, WorkflowStatus.CANCELLED);
+            assertNotEquals(WorkflowStatus.APPROVED.getCode(), WorkflowStatus.REJECTED.getCode());
+            assertNotEquals(WorkflowStatus.APPROVED.getCode(), WorkflowStatus.CANCELLED.getCode());
 
-            assertNotEquals(WorkflowStatus.REJECTED, WorkflowStatus.CANCELLED);
+            assertNotEquals(WorkflowStatus.REJECTED.getCode(), WorkflowStatus.CANCELLED.getCode());
         }
     }
 
@@ -128,15 +128,15 @@ class WorkflowStatusTest {
             };
 
             // 验证后端常量值与前端一致
-            assertEquals(frontendStatuses[0], WorkflowStatus.DRAFT,
+            assertEquals(frontendStatuses[0], WorkflowStatus.DRAFT.getCode(),
                     "DRAFT 与前端 draft 一致");
-            assertEquals(frontendStatuses[1], WorkflowStatus.RUNNING,
+            assertEquals(frontendStatuses[1], WorkflowStatus.RUNNING.getCode(),
                     "RUNNING 与前端 running 一致");
-            assertEquals(frontendStatuses[2], WorkflowStatus.APPROVED,
+            assertEquals(frontendStatuses[2], WorkflowStatus.APPROVED.getCode(),
                     "APPROVED 与前端 approved 一致");
-            assertEquals(frontendStatuses[3], WorkflowStatus.REJECTED,
+            assertEquals(frontendStatuses[3], WorkflowStatus.REJECTED.getCode(),
                     "REJECTED 与前端 rejected 一致");
-            assertEquals(frontendStatuses[4], WorkflowStatus.CANCELLED,
+            assertEquals(frontendStatuses[4], WorkflowStatus.CANCELLED.getCode(),
                     "CANCELLED 与前端 cancelled 一致");
         }
     }
@@ -151,25 +151,25 @@ class WorkflowStatusTest {
         @DisplayName("应验证有效状态转换")
         void shouldVerifyValidTransitions() {
             // 草稿 -> 进行中（提交）
-            assertTrue(isValidTransition(WorkflowStatus.DRAFT, WorkflowStatus.RUNNING),
+            assertTrue(isValidTransition(WorkflowStatus.DRAFT.getCode(), WorkflowStatus.RUNNING.getCode()),
                     "草稿可以提交为进行中");
 
             // 进行中 -> 已通过（最后节点审批通过）
-            assertTrue(isValidTransition(WorkflowStatus.RUNNING, WorkflowStatus.APPROVED),
+            assertTrue(isValidTransition(WorkflowStatus.RUNNING.getCode(), WorkflowStatus.APPROVED.getCode()),
                     "进行中可以转为已通过");
 
             // 进行中 -> 已拒绝（任意节点拒绝）
-            assertTrue(isValidTransition(WorkflowStatus.RUNNING, WorkflowStatus.REJECTED),
+            assertTrue(isValidTransition(WorkflowStatus.RUNNING.getCode(), WorkflowStatus.REJECTED.getCode()),
                     "进行中可以转为已拒绝");
 
             // 草稿/进行中 -> 已取消（发起人取消）
-            assertTrue(isValidTransition(WorkflowStatus.DRAFT, WorkflowStatus.CANCELLED),
+            assertTrue(isValidTransition(WorkflowStatus.DRAFT.getCode(), WorkflowStatus.CANCELLED.getCode()),
                     "草稿可以取消");
-            assertTrue(isValidTransition(WorkflowStatus.RUNNING, WorkflowStatus.CANCELLED),
+            assertTrue(isValidTransition(WorkflowStatus.RUNNING.getCode(), WorkflowStatus.CANCELLED.getCode()),
                     "进行中可以取消");
 
             // 已拒绝 -> 草稿（撤回后重新编辑）
-            assertTrue(isValidTransition(WorkflowStatus.REJECTED, WorkflowStatus.DRAFT),
+            assertTrue(isValidTransition(WorkflowStatus.REJECTED.getCode(), WorkflowStatus.DRAFT.getCode()),
                     "已拒绝可以撤回为草稿");
         }
 
@@ -177,15 +177,15 @@ class WorkflowStatusTest {
         @DisplayName("应验证无效状态转换")
         void shouldVerifyInvalidTransitions() {
             // 终态不能转换
-            assertFalse(isValidTransition(WorkflowStatus.APPROVED, WorkflowStatus.RUNNING),
+            assertFalse(isValidTransition(WorkflowStatus.APPROVED.getCode(), WorkflowStatus.RUNNING.getCode()),
                     "已通过不能转回进行中");
-            assertFalse(isValidTransition(WorkflowStatus.REJECTED, WorkflowStatus.APPROVED),
+            assertFalse(isValidTransition(WorkflowStatus.REJECTED.getCode(), WorkflowStatus.APPROVED.getCode()),
                     "已拒绝不能直接转已通过");
-            assertFalse(isValidTransition(WorkflowStatus.CANCELLED, WorkflowStatus.RUNNING),
+            assertFalse(isValidTransition(WorkflowStatus.CANCELLED.getCode(), WorkflowStatus.RUNNING.getCode()),
                     "已取消不能转回进行中");
 
             // 进行中不能直接转草稿（需要通过撤回操作）
-            assertFalse(isValidTransition(WorkflowStatus.RUNNING, WorkflowStatus.DRAFT),
+            assertFalse(isValidTransition(WorkflowStatus.RUNNING.getCode(), WorkflowStatus.DRAFT.getCode()),
                     "进行中不能直接转草稿");
         }
 
@@ -198,13 +198,10 @@ class WorkflowStatusTest {
             }
 
             return switch (from) {
-                case WorkflowStatus.DRAFT -> to.equals(WorkflowStatus.RUNNING)
-                        || to.equals(WorkflowStatus.CANCELLED);
-                case WorkflowStatus.RUNNING -> to.equals(WorkflowStatus.APPROVED)
-                        || to.equals(WorkflowStatus.REJECTED)
-                        || to.equals(WorkflowStatus.CANCELLED);
-                case WorkflowStatus.REJECTED -> to.equals(WorkflowStatus.DRAFT);
-                case WorkflowStatus.APPROVED, WorkflowStatus.CANCELLED -> false;
+                case "draft" -> to.equals("running") || to.equals("cancelled");
+                case "running" -> to.equals("approved") || to.equals("rejected") || to.equals("cancelled");
+                case "rejected" -> to.equals("draft");
+                case "approved", "cancelled" -> false;
                 default -> false;
             };
         }
@@ -221,9 +218,9 @@ class WorkflowStatusTest {
         void shouldVerifyFinalStates() {
             // APPROVED, REJECTED, CANCELLED 是终态，不能再次转换
             String[] finalStates = {
-                    WorkflowStatus.APPROVED,
-                    WorkflowStatus.REJECTED,
-                    WorkflowStatus.CANCELLED
+                    WorkflowStatus.APPROVED.getCode(),
+                    WorkflowStatus.REJECTED.getCode(),
+                    WorkflowStatus.CANCELLED.getCode()
             };
 
             for (String state : finalStates) {
@@ -231,17 +228,17 @@ class WorkflowStatusTest {
             }
 
             // DRAFT 和 RUNNING 不是终态
-            assertFalse(isFinalState(WorkflowStatus.DRAFT), "DRAFT 不是终态");
-            assertFalse(isFinalState(WorkflowStatus.RUNNING), "RUNNING 不是终态");
+            assertFalse(isFinalState(WorkflowStatus.DRAFT.getCode()), "DRAFT 不是终态");
+            assertFalse(isFinalState(WorkflowStatus.RUNNING.getCode()), "RUNNING 不是终态");
         }
 
         /**
          * 判断是否为终态
          */
         private boolean isFinalState(String state) {
-            return state.equals(WorkflowStatus.APPROVED)
-                    || state.equals(WorkflowStatus.REJECTED)
-                    || state.equals(WorkflowStatus.CANCELLED);
+            return state.equals(WorkflowStatus.APPROVED.getCode())
+                    || state.equals(WorkflowStatus.REJECTED.getCode())
+                    || state.equals(WorkflowStatus.CANCELLED.getCode());
         }
     }
 
@@ -255,31 +252,31 @@ class WorkflowStatusTest {
         @DisplayName("应验证常量与字符串字面量相等")
         void shouldVerifyConstantsEqualLiterals() {
             // 确保使用常量比较时，与字符串字面量相等
-            assertEquals("draft", WorkflowStatus.DRAFT);
-            assertEquals("running", WorkflowStatus.RUNNING);
-            assertEquals("approved", WorkflowStatus.APPROVED);
-            assertEquals("rejected", WorkflowStatus.REJECTED);
-            assertEquals("cancelled", WorkflowStatus.CANCELLED);
+            assertEquals("draft", WorkflowStatus.DRAFT.getCode());
+            assertEquals("running", WorkflowStatus.RUNNING.getCode());
+            assertEquals("approved", WorkflowStatus.APPROVED.getCode());
+            assertEquals("rejected", WorkflowStatus.REJECTED.getCode());
+            assertEquals("cancelled", WorkflowStatus.CANCELLED.getCode());
         }
 
         @Test
         @DisplayName("应验证常量可以用 equals 比较")
         void shouldVerifyConstantsComparableWithEquals() {
-            assertTrue("draft".equals(WorkflowStatus.DRAFT));
-            assertTrue("running".equals(WorkflowStatus.RUNNING));
-            assertTrue("approved".equals(WorkflowStatus.APPROVED));
-            assertTrue("rejected".equals(WorkflowStatus.REJECTED));
-            assertTrue("cancelled".equals(WorkflowStatus.CANCELLED));
+            assertTrue("draft".equals(WorkflowStatus.DRAFT.getCode()));
+            assertTrue("running".equals(WorkflowStatus.RUNNING.getCode()));
+            assertTrue("approved".equals(WorkflowStatus.APPROVED.getCode()));
+            assertTrue("rejected".equals(WorkflowStatus.REJECTED.getCode()));
+            assertTrue("cancelled".equals(WorkflowStatus.CANCELLED.getCode()));
         }
 
         @Test
         @DisplayName("应验证常量大小写敏感")
         void shouldVerifyConstantsAreCaseSensitive() {
-            assertNotEquals("DRAFT", WorkflowStatus.DRAFT,
+            assertNotEquals("DRAFT", WorkflowStatus.DRAFT.getCode(),
                     "大写 DRAFT 不应该等于常量");
-            assertNotEquals("Running", WorkflowStatus.RUNNING,
+            assertNotEquals("Running", WorkflowStatus.RUNNING.getCode(),
                     "混合大小写 Running 不应该等于常量");
-            assertNotEquals("APPROVED", WorkflowStatus.APPROVED,
+            assertNotEquals("APPROVED", WorkflowStatus.APPROVED.getCode(),
                     "大写 APPROVED 不应该等于常量");
         }
     }

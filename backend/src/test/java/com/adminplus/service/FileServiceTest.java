@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.common.config.FileStorageConfig;
+import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.StorageType;
 import com.adminplus.pojo.entity.FileEntity;
@@ -41,7 +41,7 @@ class FileServiceTest {
     private FileStorageService fileStorageService;
 
     @Mock
-    private FileStorageConfig fileStorageConfig;
+    private FileStorageProperties fileStorageConfig;
 
     @InjectMocks
     private FileServiceImpl fileService;
@@ -171,7 +171,7 @@ class FileServiceTest {
         @DisplayName("should throw exception for invalid file type")
         void uploadFile_WithInvalidFileType_ShouldThrowException() {
             // Given
-            FileStorageConfig.LocalConfig localConfig = new FileStorageConfig.LocalConfig();
+            FileStorageProperties.LocalConfig localConfig = new FileStorageProperties.LocalConfig();
             localConfig.setMaxSize(10);
             when(fileStorageConfig.getLocal()).thenReturn(localConfig);
 
@@ -188,7 +188,7 @@ class FileServiceTest {
         @DisplayName("should throw exception for file size exceeding limit")
         void uploadFile_WithExceededSize_ShouldThrowException() {
             // Given
-            FileStorageConfig.LocalConfig localConfig = new FileStorageConfig.LocalConfig();
+            FileStorageProperties.LocalConfig localConfig = new FileStorageProperties.LocalConfig();
             localConfig.setMaxSize(1);  // 1MB limit
             when(fileStorageConfig.getLocal()).thenReturn(localConfig);
 
