@@ -3,6 +3,7 @@ package com.adminplus.service;
 import com.adminplus.pojo.dto.req.NotificationSendReq;
 import com.adminplus.pojo.entity.NotificationEntity;
 import com.adminplus.repository.NotificationRepository;
+import com.adminplus.service.impl.NotificationServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,7 +28,7 @@ class NotificationServiceTest {
     private NotificationRepository notificationRepository;
 
     @InjectMocks
-    private NotificationService notificationService;
+    private NotificationServiceImpl notificationService;
 
     private NotificationSendReq notificationReq;
 

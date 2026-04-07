@@ -13,12 +13,12 @@ import com.adminplus.repository.ConfigRepository;
 import com.adminplus.service.ConfigGroupService;
 import com.adminplus.service.LogService;
 import com.adminplus.utils.EntityHelper;
+import com.adminplus.utils.PageUtils;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -46,7 +46,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     @Override
     @Transactional(readOnly = true)
     public PageResultResp<ConfigGroupResp> getConfigGroupList(Integer page, Integer size, String keyword) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("sortOrder").ascending());
+        Pageable pageable = PageUtils.toPageableAsc(page, size, "sortOrder");
 
         Specification<ConfigGroupEntity> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -62,16 +62,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         };
 
         var pageResult = configGroupRepository.findAll(spec, pageable);
-        var records = pageResult.getContent().stream()
-                .map(this::toVO)
-                .toList();
-
-        return new PageResultResp<>(
-                records,
-                pageResult.getTotalElements(),
-                pageResult.getNumber() + 1,
-                pageResult.getSize()
-        );
+        return PageResultResp.from(pageResult, this::toVO);
     }
 
     @Override

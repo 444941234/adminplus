@@ -2,6 +2,7 @@ package com.adminplus.controller;
 
 import com.adminplus.pojo.dto.req.RoleCreateReq;
 import com.adminplus.pojo.dto.req.RoleUpdateReq;
+import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.dto.resp.RoleResp;
 import com.adminplus.service.RoleService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +23,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -71,10 +73,11 @@ class RoleControllerTest {
     class GetRoleListTests {
 
         @Test
-        @DisplayName("should return role list")
+        @DisplayName("should return role list with pagination")
         void getRoleList_ShouldReturnRoleList() throws Exception {
             // Given
-            when(roleService.getRoleList()).thenReturn(List.of(testRole));
+            PageResultResp<RoleResp> pageResult = new PageResultResp<>(List.of(testRole), 1L, 1, 10);
+            when(roleService.getRoleList(eq(1), eq(10), any())).thenReturn(pageResult);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/roles"))
@@ -82,7 +85,7 @@ class RoleControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.records[0].name").value("管理员"));
 
-            verify(roleService).getRoleList();
+            verify(roleService).getRoleList(eq(1), eq(10), any());
         }
     }
 

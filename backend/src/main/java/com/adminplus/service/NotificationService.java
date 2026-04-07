@@ -2,8 +2,7 @@ package com.adminplus.service;
 
 import com.adminplus.pojo.dto.req.NotificationSendReq;
 import com.adminplus.pojo.dto.resp.NotificationResp;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import com.adminplus.pojo.dto.resp.PageResultResp;
 
 import java.util.List;
 
@@ -52,10 +51,11 @@ public interface NotificationService {
      *
      * @param userId 用户ID
      * @param status 状态筛选（可选）
-     * @param pageable 分页参数
+     * @param page 页码（1-based）
+     * @param size 每页大小
      * @return 通知列表
      */
-    Page<NotificationResp> getUserNotifications(String userId, Integer status, Pageable pageable);
+    PageResultResp<NotificationResp> getUserNotifications(String userId, Integer status, Integer page, Integer size);
 
     /**
      * 获取未读通知数量

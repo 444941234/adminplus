@@ -79,7 +79,7 @@ class DictItemControllerTest {
             mockMvc.perform(get("/v1/sys/dicts/dict-001/items"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
-                    .andExpect(jsonPath("$.data.records[0].label").value("启用"));
+                    .andExpect(jsonPath("$.data[0].label").value("启用"));
 
             verify(dictItemService).getDictItemsByDictId("dict-001");
         }

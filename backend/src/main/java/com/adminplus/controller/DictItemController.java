@@ -15,7 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 字典项控制器
@@ -36,12 +35,9 @@ public class DictItemController {
     @Operation(summary = "查询字典项列表")
     @OperationLog(module = "字典项管理", operationType = 1, description = "查询字典项列表 {#dictId}")
     @PreAuthorize("hasAuthority('dictitem:list')")
-    public ApiResponse<Map<String, Object>> getDictItems(@PathVariable String dictId) {
+    public ApiResponse<List<DictItemResp>> getDictItems(@PathVariable String dictId) {
         List<DictItemResp> items = dictItemService.getDictItemsByDictId(dictId);
-        return ApiResponse.ok(Map.of(
-                "records", items,
-                "total", items.size()
-        ));
+        return ApiResponse.ok(items);
     }
 
     @GetMapping("/tree")

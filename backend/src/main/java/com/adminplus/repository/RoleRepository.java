@@ -2,6 +2,7 @@ package com.adminplus.repository;
 
 import com.adminplus.pojo.entity.RoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.Optional;
  * @since 2026-02-06
  */
 @Repository
-public interface RoleRepository extends JpaRepository<RoleEntity, String> {
+public interface RoleRepository extends JpaRepository<RoleEntity, String>, JpaSpecificationExecutor<RoleEntity> {
 
     /**
      * 根据角色编码查询角色

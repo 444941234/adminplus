@@ -6,6 +6,7 @@ import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.repository.LogRepository;
 import com.adminplus.service.LogStorageStrategy;
+import com.adminplus.utils.PageUtils;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,22 +60,12 @@ public class DatabaseLogStorage implements LogStorageStrategy {
     @Override
     @Transactional(readOnly = true)
     public PageResultResp<LogPageResp> findPage(LogQueryReq query) {
-        var pageable = PageRequest.of(query.getPage() - 1, query.getSize(),
-                Sort.by(Sort.Direction.DESC, "createTime"));
+        var pageable = PageUtils.toPageableDesc(query.getPage(), query.getSize(), "createTime");
 
         Specification<LogEntity> spec = buildSpecification(query);
         Page<LogEntity> pageResult = logRepository.findAll(spec, pageable);
 
-        List<LogPageResp> records = pageResult.getContent().stream()
-                .map(this::toLogPageVO)
-                .toList();
-
-        return new PageResultResp<>(
-                records,
-                pageResult.getTotalElements(),
-                pageResult.getNumber() + 1,
-                pageResult.getSize()
-        );
+        return PageResultResp.from(pageResult, this::toLogPageVO);
     }
 
     @Override

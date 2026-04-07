@@ -5,6 +5,7 @@ import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.req.RoleCreateReq;
 import com.adminplus.pojo.dto.req.RoleUpdateReq;
 import com.adminplus.pojo.dto.req.LogEntry;
+import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.dto.resp.RoleResp;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.RoleMenuEntity;
@@ -15,15 +16,21 @@ import com.adminplus.service.LogService;
 import com.adminplus.service.RoleService;
 import com.adminplus.utils.AssociationDiffHelper;
 import com.adminplus.utils.EntityHelper;
+import com.adminplus.utils.PageUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -45,15 +52,43 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
+    public PageResultResp<RoleResp> getRoleList(Integer page, Integer size, String keyword) {
+        Pageable pageable = PageUtils.toPageableAsc(page, size, "sortOrder");
+
+        Specification<RoleEntity> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // 关键词搜索
+            if (keyword != null && !keyword.isEmpty()) {
+                predicates.add(cb.or(
+                        cb.like(root.get("name"), "%" + keyword + "%"),
+                        cb.like(root.get("code"), "%" + keyword + "%")
+                ));
+            }
+
+            // 非超级管理员不能查看超级管理员角色
+            if (!SecurityUtils.isAdmin()) {
+                predicates.add(cb.notEqual(root.get("code"), "ROLE_ADMIN"));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Page<RoleEntity> pageResult = roleRepository.findAll(spec, pageable);
+        return PageResultResp.from(pageResult, this::toResp);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     @Cacheable(value = "roles", key = "T(com.adminplus.utils.SecurityUtils).isAdmin() ? 'all' : 'nonAdmin'", unless = "#result == null || #result.isEmpty()")
-    public List<RoleResp> getRoleList() {
+    public List<RoleResp> getAllRoles() {
         List<RoleEntity> roles;
 
         // 超级管理员可以查看所有角色
         if (SecurityUtils.isAdmin()) {
             roles = roleRepository.findAll();
         } else {
-            // 非超级管理员不能查看超级管理员角色（数据库层面过滤）
+            // 非超级管理员不能查看超级管理员角色
             roles = roleRepository.findByDeletedFalseAndCodeNot("ROLE_ADMIN");
         }
 

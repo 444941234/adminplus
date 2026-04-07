@@ -99,17 +99,17 @@ class RoleServiceTest {
     }
 
     @Nested
-    @DisplayName("getRoleList Tests")
-    class GetRoleListTests {
+    @DisplayName("getAllRoles Tests")
+    class GetAllRolesTests {
 
         @Test
         @DisplayName("should return role list")
-        void getRoleList_ShouldReturnRoleList() {
+        void getAllRoles_ShouldReturnRoleList() {
             // Given — non-admin user, database-level filter
             when(roleRepository.findByDeletedFalseAndCodeNot("ROLE_ADMIN")).thenReturn(List.of(testRole));
 
             // When
-            List<RoleResp> result = roleService.getRoleList();
+            List<RoleResp> result = roleService.getAllRoles();
 
             // Then
             assertThat(result).hasSize(1);
@@ -117,12 +117,12 @@ class RoleServiceTest {
 
         @Test
         @DisplayName("should return empty list when no roles")
-        void getRoleList_WhenNoRoles_ShouldReturnEmptyList() {
+        void getAllRoles_WhenNoRoles_ShouldReturnEmptyList() {
             // Given
             when(roleRepository.findByDeletedFalseAndCodeNot("ROLE_ADMIN")).thenReturn(List.of());
 
             // When
-            List<RoleResp> result = roleService.getRoleList();
+            List<RoleResp> result = roleService.getAllRoles();
 
             // Then
             assertThat(result).isEmpty();

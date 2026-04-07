@@ -13,6 +13,7 @@ import com.adminplus.pojo.entity.DictItemEntity;
 import com.adminplus.repository.DictItemRepository;
 import com.adminplus.repository.DictRepository;
 import com.adminplus.utils.EntityHelper;
+import com.adminplus.utils.PageUtils;
 import com.adminplus.service.DictService;
 import com.adminplus.service.LogService;
 import jakarta.persistence.criteria.Predicate;
@@ -20,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -49,7 +49,7 @@ public class DictServiceImpl implements DictService {
     @Transactional(readOnly = true)
     // @Cacheable(value = "dict", key = "'list:' + #page + ':' + #size + ':' + (#keyword != null ? #keyword : '')")
     public PageResultResp<DictResp> getDictList(Integer page, Integer size, String keyword) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("createTime").descending());
+        Pageable pageable = PageUtils.toPageableDesc(page, size, "createTime");
 
         Specification<DictEntity> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -66,16 +66,7 @@ public class DictServiceImpl implements DictService {
         };
 
         var pageResult = dictRepository.findAll(spec, pageable);
-        var records = pageResult.getContent().stream()
-                .map(this::toVO)
-                .toList();
-
-        return new PageResultResp<>(
-                records,
-                pageResult.getTotalElements(),
-                pageResult.getNumber() + 1,
-                pageResult.getSize()
-        );
+        return PageResultResp.from(pageResult, this::toVO);
     }
 
     @Override

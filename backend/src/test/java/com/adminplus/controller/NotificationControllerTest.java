@@ -2,6 +2,7 @@ package com.adminplus.controller;
 
 import com.adminplus.pojo.dto.req.NotificationSendReq;
 import com.adminplus.pojo.dto.resp.NotificationResp;
+import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,8 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -63,18 +62,18 @@ class NotificationControllerTest {
     @Test
     @WithMockUser(username = "admin")
     void testGetMyNotifications() throws Exception {
-        Page<NotificationResp> emptyPage = new PageImpl<>(Collections.emptyList());
+        PageResultResp<NotificationResp> emptyPage = new PageResultResp<>(Collections.emptyList(), 0L, 1, 20);
 
-        when(notificationService.getUserNotifications(eq("admin"), any(), any()))
+        when(notificationService.getUserNotifications(eq("admin"), any(), eq(1), eq(20)))
                 .thenReturn(emptyPage);
 
         mockMvc.perform(get("/v1/notifications")
-                        .param("page", "0")
+                        .param("page", "1")
                         .param("size", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").exists());
 
-        verify(notificationService).getUserNotifications(eq("admin"), any(), any());
+        verify(notificationService).getUserNotifications(eq("admin"), any(), eq(1), eq(20));
     }
 
     @Test
@@ -156,19 +155,19 @@ class NotificationControllerTest {
     @Test
     @WithMockUser(username = "admin")
     void testGetMyNotifications_WithStatus() throws Exception {
-        Page<NotificationResp> emptyPage = new PageImpl<>(Collections.emptyList());
+        PageResultResp<NotificationResp> emptyPage = new PageResultResp<>(Collections.emptyList(), 0L, 1, 20);
 
-        when(notificationService.getUserNotifications(eq("admin"), eq(0), any()))
+        when(notificationService.getUserNotifications(eq("admin"), eq(0), eq(1), eq(20)))
                 .thenReturn(emptyPage);
 
         mockMvc.perform(get("/v1/notifications")
                         .param("status", "0")
-                        .param("page", "0")
+                        .param("page", "1")
                         .param("size", "20"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").exists());
 
-        verify(notificationService).getUserNotifications(eq("admin"), eq(0), any());
+        verify(notificationService).getUserNotifications(eq("admin"), eq(0), eq(1), eq(20));
     }
 
     @Test

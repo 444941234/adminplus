@@ -3,6 +3,7 @@ package com.adminplus.controller;
 import com.adminplus.common.annotation.LoginLog;
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.req.RefreshTokenReq;
 import com.adminplus.pojo.dto.req.UserLoginReq;
 import com.adminplus.pojo.dto.resp.LoginResp;
 import com.adminplus.pojo.dto.resp.UserResp;
@@ -11,7 +12,6 @@ import com.adminplus.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -79,11 +79,5 @@ public class AuthController {
     public ApiResponse<String> refreshAccessToken(@Valid @RequestBody RefreshTokenReq req) {
         String newToken = authService.refreshAccessToken(req.refreshToken());
         return ApiResponse.ok(newToken);
-    }
-
-    /**
-     * 刷新 Token 请求
-     */
-    public record RefreshTokenReq(@NotBlank String refreshToken) {
     }
 }

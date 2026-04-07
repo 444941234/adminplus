@@ -4,6 +4,7 @@ import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.req.RoleCreateReq;
 import com.adminplus.pojo.dto.req.RoleUpdateReq;
+import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.dto.resp.RoleResp;
 import com.adminplus.service.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +16,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 角色控制器
@@ -33,15 +33,24 @@ public class RoleController {
     private final RoleService roleService;
 
     @GetMapping
-    @Operation(summary = "查询角色列表")
+    @Operation(summary = "分页查询角色列表")
     @OperationLog(module = "角色管理", operationType = 1, description = "查询角色列表")
     @PreAuthorize("hasAuthority('role:list')")
-    public ApiResponse<Map<String, Object>> getRoleList() {
-        List<RoleResp> roles = roleService.getRoleList();
-        return ApiResponse.ok(Map.of(
-                "records", roles,
-                "total", roles.size()
-        ));
+    public ApiResponse<PageResultResp<RoleResp>> getRoleList(
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer size,
+            @RequestParam(required = false) String keyword
+    ) {
+        PageResultResp<RoleResp> result = roleService.getRoleList(page, size, keyword);
+        return ApiResponse.ok(result);
+    }
+
+    @GetMapping("/all")
+    @Operation(summary = "查询所有角色列表（用于下拉选择）")
+    @PreAuthorize("hasAuthority('role:list')")
+    public ApiResponse<List<RoleResp>> getAllRoles() {
+        List<RoleResp> roles = roleService.getAllRoles();
+        return ApiResponse.ok(roles);
     }
 
     @GetMapping("/{id}")

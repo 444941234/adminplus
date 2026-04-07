@@ -2,9 +2,11 @@ package com.adminplus.service.impl;
 
 import com.adminplus.pojo.dto.req.NotificationSendReq;
 import com.adminplus.pojo.dto.resp.NotificationResp;
+import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.NotificationEntity;
 import com.adminplus.repository.NotificationRepository;
 import com.adminplus.service.NotificationService;
+import com.adminplus.utils.PageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -97,16 +99,17 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public Page<NotificationResp> getUserNotifications(String userId, Integer status, Pageable pageable) {
-        Page<NotificationEntity> page;
+    public PageResultResp<NotificationResp> getUserNotifications(String userId, Integer status, Integer page, Integer size) {
+        Pageable pageable = PageUtils.toPageableDesc(page, size, "createTime");
 
+        Page<NotificationEntity> pageResult;
         if (status == null) {
-            page = notificationRepository.findByRecipientIdOrderByCreateTimeDesc(userId, pageable);
+            pageResult = notificationRepository.findByRecipientIdOrderByCreateTimeDesc(userId, pageable);
         } else {
-            page = notificationRepository.findByRecipientIdAndStatusOrderByCreateTimeDesc(userId, status, pageable);
+            pageResult = notificationRepository.findByRecipientIdAndStatusOrderByCreateTimeDesc(userId, status, pageable);
         }
 
-        return page.map(this::toResp);
+        return PageResultResp.from(pageResult, this::toResp);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.adminplus.service;
 
 import com.adminplus.pojo.dto.req.RoleCreateReq;
 import com.adminplus.pojo.dto.req.RoleUpdateReq;
+import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.dto.resp.RoleResp;
 
 import java.util.List;
@@ -15,9 +16,21 @@ import java.util.List;
 public interface RoleService {
 
     /**
-     * 查询角色列表
+     * 分页查询角色列表
+     *
+     * @param page    页码（1-based）
+     * @param size    每页大小
+     * @param keyword 关键词（可选）
+     * @return 分页结果
      */
-    List<RoleResp> getRoleList();
+    PageResultResp<RoleResp> getRoleList(Integer page, Integer size, String keyword);
+
+    /**
+     * 查询所有角色列表（用于下拉选择等场景）
+     *
+     * @return 角色列表
+     */
+    List<RoleResp> getAllRoles();
 
     /**
      * 根据ID查询角色

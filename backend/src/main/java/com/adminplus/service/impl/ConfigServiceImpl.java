@@ -15,6 +15,7 @@ import com.adminplus.repository.ConfigRepository;
 import com.adminplus.service.ConfigService;
 import com.adminplus.service.LogService;
 import com.adminplus.utils.EntityHelper;
+import com.adminplus.utils.PageUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -59,7 +59,7 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @Transactional(readOnly = true)
     public PageResultResp<ConfigResp> getConfigList(Integer page, Integer size, String groupId, String keyword, Integer status) {
-        Pageable pageable = PageRequest.of(page - 1, size, Sort.by("sortOrder").ascending());
+        Pageable pageable = PageUtils.toPageableAsc(page, size, "sortOrder");
 
         Specification<ConfigEntity> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -88,16 +88,7 @@ public class ConfigServiceImpl implements ConfigService {
         // Batch fetch group names to avoid N+1 queries
         Map<String, String> groupNameMap = batchGetGroupNames(configs);
 
-        var records = configs.stream()
-                .map(config -> toVOWithGroupName(config, groupNameMap.get(config.getGroupId())))
-                .toList();
-
-        return new PageResultResp<>(
-                records,
-                pageResult.getTotalElements(),
-                pageResult.getNumber() + 1,
-                pageResult.getSize()
-        );
+        return PageResultResp.from(pageResult, config -> toVOWithGroupName(config, groupNameMap.get(config.getGroupId())));
     }
 
     /**

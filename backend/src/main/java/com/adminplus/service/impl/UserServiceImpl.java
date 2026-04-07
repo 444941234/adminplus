@@ -22,13 +22,14 @@ import com.adminplus.service.UserService;
 import com.adminplus.utils.AssociationDiffHelper;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.LogMaskingUtils;
+import com.adminplus.utils.PageUtils;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,81 +59,80 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public PageResultResp<UserResp> getUserList(Integer page, Integer size, String keyword, String deptId) {
-        var pageable = PageRequest.of(page - 1, size);
+        var pageable = PageUtils.toPageable(page, size);
 
-        Page<UserEntity> pageResult;
+        Page<UserEntity> pageResult = queryUsers(pageable, keyword, deptId);
+        var batchData = prepareBatchData(pageResult.getContent());
 
-        // 判断是否为超级管理员
+        return PageUtils.toResp(pageResult, user -> toResp(user,
+                batchData.deptMap.getOrDefault(user.getDeptId(), null),
+                batchData.userRoleMap.getOrDefault(user.getId(), List.of())));
+    }
+
+    /**
+     * 根据条件查询用户
+     */
+    private Page<UserEntity> queryUsers(Pageable pageable, String keyword, String deptId) {
         boolean isAdmin = SecurityUtils.isAdmin();
-        // 是否有关键词搜索
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
 
         if (hasKeyword && deptId != null && !deptId.isEmpty()) {
-            // 关键词 + 部门搜索
             List<String> deptIds = deptService.getDeptAndChildrenIds(deptId);
-            pageResult = userRepository.findByKeywordAndDeptIdIn(keyword.trim(), deptIds, pageable);
+            return userRepository.findByKeywordAndDeptIdIn(keyword.trim(), deptIds, pageable);
         } else if (hasKeyword && !isAdmin) {
-            // 关键词搜索（非管理员，限定部门范围）
             String currentDeptId = SecurityUtils.getCurrentUserDeptId();
             if (currentDeptId != null) {
                 List<String> accessibleDeptIds = deptService.getDeptAndChildrenIds(currentDeptId);
-                pageResult = userRepository.findByKeywordAndDeptIdIn(keyword.trim(), accessibleDeptIds, pageable);
-            } else {
-                pageResult = Page.empty(pageable);
+                return userRepository.findByKeywordAndDeptIdIn(keyword.trim(), accessibleDeptIds, pageable);
             }
+            return Page.empty(pageable);
         } else if (hasKeyword) {
-            // 关键词搜索（管理员，全范围）
-            pageResult = userRepository.findByKeyword(keyword.trim(), pageable);
+            return userRepository.findByKeyword(keyword.trim(), pageable);
         } else if (deptId != null && !deptId.isEmpty()) {
-            // 仅部门搜索
             List<String> deptIds = deptService.getDeptAndChildrenIds(deptId);
-            pageResult = userRepository.findByDeptIdIn(deptIds, pageable);
+            return userRepository.findByDeptIdIn(deptIds, pageable);
         } else if (!isAdmin) {
-            // 非超级管理员只能查看本部门及以下部门的用户
             String currentDeptId = SecurityUtils.getCurrentUserDeptId();
             if (currentDeptId != null) {
                 List<String> accessibleDeptIds = deptService.getDeptAndChildrenIds(currentDeptId);
-                pageResult = userRepository.findByDeptIdIn(accessibleDeptIds, pageable);
-            } else {
-                pageResult = Page.empty(pageable);
+                return userRepository.findByDeptIdIn(accessibleDeptIds, pageable);
             }
+            return Page.empty(pageable);
         } else {
-            // 超级管理员可以查看所有用户
-            pageResult = userRepository.findAll(pageable);
+            return userRepository.findAll(pageable);
+        }
+    }
+
+    /**
+     * 准备批量查询数据（避免 N+1 查询）
+     */
+    private BatchUserData prepareBatchData(List<UserEntity> users) {
+        if (users.isEmpty()) {
+            return new BatchUserData(Map.of(), Map.of());
         }
 
-        // 批量查询所有用户角色
-        List<String> userIds = pageResult.getContent().stream()
-                .map(UserEntity::getId)
-                .toList();
-        List<UserRoleEntity> allUserRoles = userIds.isEmpty()
-                ? List.of()
-                : userRoleRepository.findByUserIdIn(userIds);
+        // 批量查询用户角色
+        List<String> userIds = users.stream().map(UserEntity::getId).toList();
+        List<UserRoleEntity> allUserRoles = userRoleRepository.findByUserIdIn(userIds);
 
-        // 批量查询所有角色
+        // 批量查询角色
         List<String> roleIds = allUserRoles.stream()
                 .map(UserRoleEntity::getRoleId)
                 .distinct()
                 .toList();
-        List<RoleEntity> allRoles = roleIds.isEmpty()
-                ? List.of()
-                : roleRepository.findAllById(roleIds);
+        Map<String, String> roleMap = roleIds.isEmpty() ? Map.of() :
+                roleRepository.findAllById(roleIds).stream()
+                        .collect(Collectors.toMap(RoleEntity::getId, RoleEntity::getName));
 
-        // 批量查询所有部门
-        List<String> allDeptIds = pageResult.getContent().stream()
+        // 批量查询部门
+        List<String> deptIds = users.stream()
                 .map(UserEntity::getDeptId)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
-        List<DeptEntity> allDepts = allDeptIds.isEmpty()
-                ? List.of()
-                : deptRepository.findAllById(allDeptIds);
-        Map<String, String> deptMap = allDepts.stream()
-                .collect(Collectors.toMap(DeptEntity::getId, DeptEntity::getName));
-
-        // 构建角色映射
-        Map<String, String> roleMap = allRoles.stream()
-                .collect(Collectors.toMap(RoleEntity::getId, RoleEntity::getName));
+        Map<String, String> deptMap = deptIds.isEmpty() ? Map.of() :
+                deptRepository.findAllById(deptIds).stream()
+                        .collect(Collectors.toMap(DeptEntity::getId, DeptEntity::getName));
 
         // 构建用户角色映射
         Map<String, List<String>> userRoleMap = new HashMap<>();
@@ -143,20 +143,13 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        var records = pageResult.getContent().stream().map(user -> {
-            List<String> roleNames = userRoleMap.getOrDefault(user.getId(), List.of());
-            String deptName = deptMap.getOrDefault(user.getDeptId(), null);
-
-            return toResp(user, deptName, roleNames);
-        }).toList();
-
-        return new PageResultResp<>(
-                records,
-                pageResult.getTotalElements(),
-                pageResult.getNumber() + 1,
-                pageResult.getSize()
-        );
+        return new BatchUserData(userRoleMap, deptMap);
     }
+
+    /**
+     * 批量数据容器
+     */
+    private record BatchUserData(Map<String, List<String>> userRoleMap, Map<String, String> deptMap) {}
 
     @Override
     @Transactional(readOnly = true)
