@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
@@ -79,5 +81,25 @@ public class CacheConfig {
                 .cacheDefaults(config)
                 .transactionAware()
                 .build();
+    }
+
+    /**
+     * 应用启动时清除所有缓存
+     *
+     * 解决 Spring Boot DevTools 热重载导致的 ClassCastException 问题。
+     * DevTools 使用双类加载器机制，缓存的对象在反序列化时会因类加载器不同而失败。
+     * 在应用启动（包括 DevTools 热重载）时清除缓存可彻底解决此问题。
+     */
+    @Bean
+    public ApplicationListener<ContextRefreshedEvent> cacheClearListener(CacheManager cacheManager) {
+        return event -> {
+            log.info("清除所有缓存（解决 DevTools 热重载类加载器问题）");
+            cacheManager.getCacheNames().forEach(cacheName -> {
+                var cache = cacheManager.getCache(cacheName);
+                if (cache != null) {
+                    cache.clear();
+                }
+            });
+        };
     }
 }
