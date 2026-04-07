@@ -1,7 +1,9 @@
 package com.adminplus.common.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
@@ -15,7 +17,6 @@ import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -47,7 +48,6 @@ public class CacheConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        // 使用已配置 JavaTimeModule 的 ObjectMapper
         GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         template.setKeySerializer(new StringRedisSerializer());
@@ -62,21 +62,24 @@ public class CacheConfig {
     /**
      * 配置 Redis 缓存管理器
      *
-     * 使用 Jackson2JsonRedisSerializer (不带类型信息) 彻底解决 DevTools 热重载问题。
-     * GenericJackson2JsonRedisSerializer 会在 JSON 中保存 @class 类型信息，
-     * DevTools 热重载后类加载器变化会导致反序列化失败返回 LinkedHashMap。
-     * Jackson2JsonRedisSerializer 不保存类型信息，由 Spring Cache 根据方法返回类型反序列化。
+     * 使用 GenericJackson2JsonRedisSerializer 并配置 LaissezFaireSubTypeValidator
+     * 解决类加载器不一致导致的反序列化问题。
      */
     @Bean
     @Primary
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        // 创建专门用于缓存的 ObjectMapper
         ObjectMapper cacheObjectMapper = new ObjectMapper();
         cacheObjectMapper.registerModule(new JavaTimeModule());
         cacheObjectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
-        // 使用 Jackson2JsonRedisSerializer，不保存类型信息
-        Jackson2JsonRedisSerializer<Object> jsonSerializer = new Jackson2JsonRedisSerializer<>(cacheObjectMapper, Object.class);
+        // 使用 LaissezFaireSubTypeValidator 允许所有类型，不验证类加载器
+        cacheObjectMapper.activateDefaultTyping(
+                LaissezFaireSubTypeValidator.instance,
+                ObjectMapper.DefaultTyping.NON_FINAL,
+                JsonTypeInfo.As.PROPERTY
+        );
+
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(cacheObjectMapper);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
@@ -84,7 +87,7 @@ public class CacheConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
                 .disableCachingNullValues();
 
-        log.info("使用 Redis 缓存管理器 (Jackson2JsonRedisSerializer 无类型信息，兼容 DevTools)");
+        log.info("使用 Redis 缓存管理器");
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)
