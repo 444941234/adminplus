@@ -26,14 +26,6 @@ spring:
   application:
     name: adminplus
 
-  # DevTools 配置：禁用重启功能，避免缓存序列化问题
-  # DevTools 双类加载器机制会导致缓存的类对象无法反序列化
-  devtools:
-    restart:
-      enabled: false
-    livereload:
-      enabled: true
-
   # 虚拟线程支持
   threads:
     virtual:
