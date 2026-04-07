@@ -1,6 +1,12 @@
 package com.adminplus.common.config;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -22,7 +28,7 @@ import java.time.Duration;
  * 缓存配置
  *
  * 使用 Redis 作为分布式缓存。
- * 使用 Spring Boot 自动配置的 ObjectMapper（支持 record 序列化）。
+ * 使用专用的 ObjectMapper 进行序列化（支持 record 类型）。
  *
  * @author AdminPlus
  * @since 2026-02-06
@@ -58,18 +64,31 @@ public class CacheConfig {
     /**
      * 配置 Redis 缓存管理器
      *
-     * 使用 Spring Boot 自动配置的全局 ObjectMapper，该 ObjectMapper 已经正确配置了：
-     * 1. JavaTimeModule 支持 Java 8 日期时间
-     * 2. record 类型的序列化/反序列化支持
-     * 3. BasicPolymorphicTypeValidator 支持多态类型
+     * 使用专用的 ObjectMapper，配置 DefaultTyping.EVERYTHING 支持 record 类型。
+     * 注意：这个 ObjectMapper 只用于 Redis 缓存，不影响 HTTP 请求/响应。
      */
     @Bean
     @Primary
-    public CacheManager cacheManager(
-            RedisConnectionFactory connectionFactory,
-            ObjectMapper objectMapper) {
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
+        // 创建专用于 Redis 缓存的 ObjectMapper
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Object.class)
+                .build();
 
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        ObjectMapper cacheObjectMapper = new ObjectMapper();
+        cacheObjectMapper.setPolymorphicTypeValidator(ptv);
+        cacheObjectMapper.registerModule(new JavaTimeModule());
+        cacheObjectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        cacheObjectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        // 激活 default typing，使用 EVERYTHING 让所有类型（包括 final 的 record）都包含 @class 类型信息
+        cacheObjectMapper.activateDefaultTyping(
+                ptv,
+                ObjectMapper.DefaultTyping.EVERYTHING,
+                JsonTypeInfo.As.PROPERTY
+        );
+
+        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(cacheObjectMapper);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
@@ -77,7 +96,7 @@ public class CacheConfig {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
                 .disableCachingNullValues();
 
-        log.info("使用 Redis 缓存管理器");
+        log.info("使用 Redis 缓存管理器（支持 record 类型）");
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)

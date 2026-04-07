@@ -1,6 +1,5 @@
 package com.adminplus.common.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,6 +21,10 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 @Configuration
 public class JacksonConfig {
 
+    /**
+     * 全局 ObjectMapper，用于 HTTP 请求/响应
+     * 不配置 default typing，避免请求体需要 @class 属性
+     */
     @Bean
     @Primary
     public ObjectMapper objectMapper(Jackson2ObjectMapperBuilder builder) {
@@ -47,13 +50,8 @@ public class JacksonConfig {
         // 允许非引号字段名
         objectMapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
 
-        // 激活默认类型处理，使用 EVERYTHING 让所有类型（包括 final 类型如 record）都包含类型信息
-        // GenericJackson2JsonRedisSerializer 使用 NON_FINAL，但 record 是 final 的，导致反序列化失败
-        objectMapper.activateDefaultTyping(
-                ptv,
-                ObjectMapper.DefaultTyping.EVERYTHING,
-                JsonTypeInfo.As.PROPERTY
-        );
+        // 注意：不配置 activateDefaultTyping，避免 HTTP 请求体需要 @class 属性
+        // Redis 缓存使用 CacheConfig 中配置的专用 ObjectMapper
 
         return objectMapper;
     }
