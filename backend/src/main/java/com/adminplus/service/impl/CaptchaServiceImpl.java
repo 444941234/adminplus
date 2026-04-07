@@ -1,5 +1,7 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.constants.CacheConstants;
+import com.adminplus.constants.CaptchaConstants;
 import com.adminplus.service.CaptchaService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,66 +14,33 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-/**
- * 验证码服务实现
- *
- * @author AdminPlus
- * @since 2026-02-07
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CaptchaServiceImpl implements CaptchaService {
 
     private final StringRedisTemplate redisTemplate;
-
-    // 验证码过期时间（5分钟）
-    private static final long CAPTCHA_EXPIRE_MINUTES = 5;
-
-    // 验证码 Redis 键前缀
-    private static final String CAPTCHA_KEY_PREFIX = "captcha:";
-
-    // 验证码字符集
-    private static final String CAPTCHA_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
-    // 验证码长度
-    private static final int CAPTCHA_LENGTH = 4;
-
-    // 图片宽度
-    private static final int IMAGE_WIDTH = 120;
-
-    // 图片高度
-    private static final int IMAGE_HEIGHT = 40;
-
     private final Random random = new Random();
 
     @Override
     public CaptchaResult generateCaptcha() {
-        // 生成验证码文本
         String captchaCode = generateCaptchaCode();
-
-        // 生成验证码ID
         String captchaId = UUID.randomUUID().toString();
 
-        // 保存到 Redis
-        String redisKey = CAPTCHA_KEY_PREFIX + captchaId;
-        redisTemplate.opsForValue().set(redisKey, captchaCode, CAPTCHA_EXPIRE_MINUTES, TimeUnit.MINUTES);
-
-        // 生成验证码图片
+        saveCaptchaToRedis(captchaId, captchaCode);
         BufferedImage image = generateCaptchaImage(captchaCode);
 
         log.info("生成验证码: ID={}, 代码={}", captchaId, captchaCode);
-
         return new CaptchaResult(captchaId, captchaCode, image);
     }
 
     @Override
     public boolean validateCaptcha(String captchaId, String captchaCode) {
-        if (captchaId == null || captchaId.isEmpty() || captchaCode == null || captchaCode.isEmpty()) {
+        if (isBlank(captchaId) || isBlank(captchaCode)) {
             return false;
         }
 
-        String redisKey = CAPTCHA_KEY_PREFIX + captchaId;
+        String redisKey = CacheConstants.CAPTCHA_KEY_PREFIX + captchaId;
         String storedCode = redisTemplate.opsForValue().get(redisKey);
 
         if (storedCode == null) {
@@ -79,7 +48,6 @@ public class CaptchaServiceImpl implements CaptchaService {
             return false;
         }
 
-        // 验证成功后删除验证码
         boolean isValid = storedCode.equalsIgnoreCase(captchaCode);
         if (isValid) {
             redisTemplate.delete(redisKey);
@@ -91,62 +59,72 @@ public class CaptchaServiceImpl implements CaptchaService {
         return isValid;
     }
 
-    /**
-     * 生成验证码文本
-     */
+    private void saveCaptchaToRedis(String captchaId, String captchaCode) {
+        String redisKey = CacheConstants.CAPTCHA_KEY_PREFIX + captchaId;
+        redisTemplate.opsForValue().set(redisKey, captchaCode, CaptchaConstants.CAPTCHA_EXPIRE_MINUTES, TimeUnit.MINUTES);
+    }
+
+    private static boolean isBlank(String str) {
+        return str == null || str.isEmpty();
+    }
+
     private String generateCaptchaCode() {
         StringBuilder code = new StringBuilder();
-        for (int i = 0; i < CAPTCHA_LENGTH; i++) {
-            code.append(CAPTCHA_CHARS.charAt(random.nextInt(CAPTCHA_CHARS.length())));
+        for (int i = 0; i < CaptchaConstants.CAPTCHA_LENGTH; i++) {
+            code.append(CaptchaConstants.CAPTCHA_CHARS.charAt(random.nextInt(CaptchaConstants.CAPTCHA_CHARS.length())));
         }
         return code.toString();
     }
 
-    /**
-     * 生成验证码图片
-     */
     private BufferedImage generateCaptchaImage(String code) {
-        BufferedImage image = new BufferedImage(IMAGE_WIDTH, IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(CaptchaConstants.IMAGE_WIDTH, CaptchaConstants.IMAGE_HEIGHT, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = image.createGraphics();
 
-        // 设置抗锯齿
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        // 填充背景
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, IMAGE_WIDTH, IMAGE_HEIGHT);
-
-        // 绘制干扰线
-        for (int i = 0; i < 5; i++) {
-            g.setColor(getRandomColor());
-            g.drawLine(random.nextInt(IMAGE_WIDTH), random.nextInt(IMAGE_HEIGHT),
-                    random.nextInt(IMAGE_WIDTH), random.nextInt(IMAGE_HEIGHT));
-        }
-
-        // 绘制干扰点
-        for (int i = 0; i < 50; i++) {
-            g.setColor(getRandomColor());
-            g.fillOval(random.nextInt(IMAGE_WIDTH), random.nextInt(IMAGE_HEIGHT), 2, 2);
-        }
-
-        // 绘制验证码
-        g.setFont(new Font("Arial", Font.BOLD, 28));
-        for (int i = 0; i < code.length(); i++) {
-            g.setColor(getRandomColor());
-            // 随机旋转和位移
-            double angle = (random.nextInt(30) - 15) * Math.PI / 180;
-            g.rotate(angle, 20 + i * 25, IMAGE_HEIGHT / 2);
-            g.drawString(String.valueOf(code.charAt(i)), 20 + i * 25, IMAGE_HEIGHT / 2 + 10);
-            g.rotate(-angle, 20 + i * 25, IMAGE_HEIGHT / 2);
-        }
+        fillBackground(g);
+        drawNoiseLines(g);
+        drawNoiseDots(g);
+        drawCaptchaCode(g, code);
 
         g.dispose();
         return image;
     }
 
-    /**
-     * 获取随机颜色
-     */
+    private void fillBackground(Graphics2D g) {
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, CaptchaConstants.IMAGE_WIDTH, CaptchaConstants.IMAGE_HEIGHT);
+    }
+
+    private void drawNoiseLines(Graphics2D g) {
+        for (int i = 0; i < CaptchaConstants.NOISE_LINE_COUNT; i++) {
+            g.setColor(getRandomColor());
+            g.drawLine(random.nextInt(CaptchaConstants.IMAGE_WIDTH), random.nextInt(CaptchaConstants.IMAGE_HEIGHT),
+                    random.nextInt(CaptchaConstants.IMAGE_WIDTH), random.nextInt(CaptchaConstants.IMAGE_HEIGHT));
+        }
+    }
+
+    private void drawNoiseDots(Graphics2D g) {
+        for (int i = 0; i < CaptchaConstants.NOISE_DOT_COUNT; i++) {
+            g.setColor(getRandomColor());
+            g.fillOval(random.nextInt(CaptchaConstants.IMAGE_WIDTH), random.nextInt(CaptchaConstants.IMAGE_HEIGHT), 2, 2);
+        }
+    }
+
+    private void drawCaptchaCode(Graphics2D g, String code) {
+        g.setFont(new Font("Arial", Font.BOLD, CaptchaConstants.FONT_SIZE));
+        int centerY = CaptchaConstants.IMAGE_HEIGHT / 2;
+
+        for (int i = 0; i < code.length(); i++) {
+            g.setColor(getRandomColor());
+            double angle = (random.nextInt(CaptchaConstants.MAX_ROTATION_DEGREES * 2) - CaptchaConstants.MAX_ROTATION_DEGREES) * Math.PI / 180;
+            int x = CaptchaConstants.CHAR_START_X + i * CaptchaConstants.CHAR_SPACING;
+
+            g.rotate(angle, x, centerY);
+            g.drawString(String.valueOf(code.charAt(i)), x, centerY + 10);
+            g.rotate(-angle, x, centerY);
+        }
+    }
+
     private Color getRandomColor() {
         return new Color(random.nextInt(256), random.nextInt(256), random.nextInt(256));
     }
