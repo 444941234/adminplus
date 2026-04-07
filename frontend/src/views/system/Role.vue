@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import {
   Button,
   Card,
@@ -13,14 +13,14 @@ import {
   DialogTitle,
   Input,
   Label,
-  ScrollArea,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
+  SelectValue,
+  Badge
 } from '@/components/ui'
-import { Edit, KeyRound, Plus, Trash2 } from 'lucide-vue-next'
+import { ChevronDown, ChevronRight, Edit, KeyRound, Plus, Trash2, Search, Check, X } from 'lucide-vue-next'
 import { ConfirmDialog, EmptyState, ListSearchBar, StatusBadge } from '@/components/common'
 import { assignMenus, getMenuTree, getRoleMenus, updateRoleStatus } from '@/api'
 import { getRolePagePermissionState } from '@/lib/page-permissions'
@@ -30,8 +30,10 @@ import { useUserStore } from '@/stores/user'
 import { useAsyncAction } from '@/composables/useAsyncAction'
 import { useCRUD } from '@/composables/useCRUD'
 import { useStatusToggle } from '@/composables/useStatusToggle'
+import { useTreeData } from '@/composables/useTreeData'
 import { createRole, deleteRole, getRoleById, getRoleList, updateRole } from '@/api'
 import { useDict } from '@/composables/useDict'
+import { toast } from 'vue-sonner'
 
 interface RoleFormState {
   name: string
@@ -42,12 +44,7 @@ interface RoleFormState {
   sortOrder: number
 }
 
-interface MenuOption {
-  id: string
-  label: string
-  level: number
-  disabled: boolean
-}
+// MenuOption interface removed - using tree structure instead
 
 const userStore = useUserStore()
 
@@ -61,6 +58,7 @@ const menus = ref<Menu[]>([])
 const assignDialogOpen = ref(false)
 const assignRole = ref<Role | null>(null)
 const selectedMenuIds = ref<string[]>([])
+const menuSearchQuery = ref('')
 const { loading: assignLoading, run: runAssign } = useAsyncAction('操作失败')
 
 // Status toggle
@@ -178,28 +176,260 @@ const filteredRoles = computed(() => {
   )
 })
 
-// Menu options for assign dialog
-const menuOptions = computed<MenuOption[]>(() => {
-  const options: MenuOption[] = []
+// ============ 改进：使用 useTreeData 管理菜单树形结构 ============
+const {
+  expandedKeys,
+  toggleExpand,
+  expandAll,
+  collapseAll,
+  getDescendantKeys,
+  getAllKeys
+} = useTreeData<Menu>(menus)
+
+// 改进：菜单搜索过滤功能
+const filterMenus = (menuList: Menu[], keyword: string): Menu[] => {
+  if (!keyword) return menuList
+
+  const lowerKeyword = keyword.toLowerCase()
+  const result: Menu[] = []
+
+  const walk = (items: Menu[]) => {
+    items.forEach((menu) => {
+      const matches = menu.name.toLowerCase().includes(lowerKeyword)
+      const children = menu.children ? filterMenus(menu.children, keyword) : []
+
+      if (matches || children.length > 0) {
+        result.push({
+          ...menu,
+          children: children.length > 0 ? children : menu.children
+        })
+      }
+    })
+  }
+
+  walk(menuList)
+  return result
+}
+
+const filteredMenus = computed(() => filterMenus(menus.value, menuSearchQuery.value.trim().toLowerCase()))
+
+// 当搜索时自动展开所有节点
+watch(menuSearchQuery, (newVal) => {
+  if (newVal.trim()) {
+    expandAll()
+  }
+})
+
+// 改进：获取过滤后的扁平化行（用于显示）
+const filteredFlattenedRows = computed(() => {
+  const rows: { id: string; level: number; hasChildren: boolean; isExpanded: boolean; menu: Menu }[] = []
+  const keyword = menuSearchQuery.value.trim().toLowerCase()
+
   const walk = (menuList: Menu[], level = 0) => {
     menuList.forEach((menu) => {
-      options.push({
-        id: menu.id,
-        label: menu.name,
-        level,
-        disabled: false
-      })
-      if (menu.children?.length) {
-        walk(menu.children, level + 1)
+      const hasChildren = Boolean(menu.children?.length)
+      const isExpanded = expandedKeys.value.has(menu.id)
+      const matchesSearch = !keyword || menu.name.toLowerCase().includes(keyword) ||
+        (menu.children && hasMatchingDescendant(menu.children, keyword))
+
+      // 只显示匹配的节点或其父节点
+      if (matchesSearch || hasChildren) {
+        rows.push({
+          id: menu.id,
+          level,
+          hasChildren,
+          isExpanded,
+          menu
+        })
+
+        if (hasChildren && isExpanded) {
+          walk(menu.children!, level + 1)
+        }
       }
-      if (menu.type === 1 && !menu.children?.length) {
-        options[options.length - 1].disabled = false
+    })
+  }
+
+  const hasMatchingDescendant = (children: Menu[], keyword: string): boolean => {
+    return children.some(child =>
+      child.name.toLowerCase().includes(keyword) ||
+      (child.children && hasMatchingDescendant(child.children, keyword))
+    )
+  }
+
+  walk(filteredMenus.value)
+  return rows
+})
+
+// 改进：父子联动 - 勾选父节点时自动勾选所有子节点
+const toggleMenuSelection = (menuId: string, checked: boolean) => {
+  const next = new Set(selectedMenuIds.value)
+
+  if (checked) {
+    // 勾选当前节点
+    next.add(menuId)
+
+    // 找到当前节点并勾选所有后代
+    const findAndCheckDescendants = (items: Menu[]): boolean => {
+      for (const menu of items) {
+        if (menu.id === menuId) {
+          // 勾选所有子孙节点
+          const descendants = getDescendantKeys(menu)
+          descendants.forEach(key => next.add(key))
+          return true
+        }
+        if (menu.children?.length && findAndCheckDescendants(menu.children)) {
+          return true
+        }
+      }
+      return false
+    }
+    findAndCheckDescendants(menus.value)
+  } else {
+    // 取消勾选当前节点和所有后代
+    const findAndUncheckDescendants = (items: Menu[]): boolean => {
+      for (const menu of items) {
+        if (menu.id === menuId) {
+          // 取消勾选所有子孙节点
+          const descendants = getDescendantKeys(menu)
+          descendants.forEach(key => next.delete(key))
+          return true
+        }
+        if (menu.children?.length && findAndUncheckDescendants(menu.children)) {
+          return true
+        }
+      }
+      return false
+    }
+    findAndUncheckDescendants(menus.value)
+  }
+
+  selectedMenuIds.value = Array.from(next)
+}
+
+// 改进：检查节点是否应该显示为选中状态（考虑父节点状态）
+const isNodeSelected = (menuId: string): boolean => {
+  return selectedMenuIds.value.includes(menuId)
+}
+
+// 改进：检查节点是否应该显示为半选状态（部分子节点选中）
+const isNodeIndeterminate = (menuId: string): boolean => {
+  if (selectedMenuIds.value.includes(menuId)) return false
+
+  const findChildren = (items: Menu[]): Menu[] | null => {
+    for (const menu of items) {
+      if (menu.id === menuId) {
+        return menu.children || null
+      }
+      if (menu.children?.length) {
+        const found = findChildren(menu.children)
+        if (found) return found
+      }
+    }
+    return null
+  }
+
+  const children = findChildren(menus.value)
+  if (!children || children.length === 0) return false
+
+  // 检查是否有任何子节点被选中
+  const hasSelectedChild = (items: Menu[]): boolean => {
+    return items.some(child =>
+      selectedMenuIds.value.includes(child.id) ||
+      (child.children?.length && hasSelectedChild(child.children))
+    )
+  }
+
+  return hasSelectedChild(children)
+}
+
+// 改进：全选/取消全选功能
+const isAllMenusSelected = computed(() => {
+  const allKeys = getAllKeys(menus.value)
+  return allKeys.length > 0 && allKeys.every(key => selectedMenuIds.value.includes(key))
+})
+
+const isSomeMenusSelected = computed(() =>
+  selectedMenuIds.value.length > 0 && !isAllMenusSelected.value
+)
+
+const toggleAllMenus = (checked: boolean | string) => {
+  const allKeys = getAllKeys(menus.value)
+  selectedMenuIds.value = checked ? allKeys : []
+}
+
+// 改进：统计信息
+const selectionStats = computed(() => {
+  const allKeys = getAllKeys(menus.value)
+  const selectedCount = selectedMenuIds.value.length
+  const totalCount = allKeys.length
+
+  // 统计各类型菜单
+  let menuCount = 0
+  let buttonCount = 0
+
+  const countByType = (items: Menu[]) => {
+    items.forEach(menu => {
+      if (selectedMenuIds.value.includes(menu.id)) {
+        if (menu.type === 2) {
+          buttonCount++
+        } else {
+          menuCount++
+        }
+      }
+      if (menu.children?.length) {
+        countByType(menu.children)
+      }
+    })
+  }
+  countByType(menus.value)
+
+  return {
+    selectedCount,
+    totalCount,
+    menuCount,
+    buttonCount
+  }
+})
+
+// 改进：快捷操作
+const selectOnlyMenus = () => {
+  const result: string[] = []
+  const walk = (items: Menu[]) => {
+    items.forEach(menu => {
+      if (menu.type !== 2) { // 非按钮类型
+        result.push(menu.id)
+      }
+      if (menu.children?.length) {
+        walk(menu.children)
       }
     })
   }
   walk(menus.value)
-  return options
-})
+  selectedMenuIds.value = result
+  toast.success(`已选中 ${result.length} 个菜单项`)
+}
+
+const selectOnlyButtons = () => {
+  const result: string[] = []
+  const walk = (items: Menu[]) => {
+    items.forEach(menu => {
+      if (menu.type === 2) { // 按钮类型
+        result.push(menu.id)
+      }
+      if (menu.children?.length) {
+        walk(menu.children)
+      }
+    })
+  }
+  walk(menus.value)
+  selectedMenuIds.value = result
+  toast.success(`已选中 ${result.length} 个按钮权限`)
+}
+
+const clearSelection = () => {
+  selectedMenuIds.value = []
+  toast.info('已清空所有选择')
+}
 
 // Fetch menus on mount
 const fetchMenus = () => runAssign(
@@ -207,37 +437,17 @@ const fetchMenus = () => runAssign(
   { errorMessage: '获取菜单列表失败' }
 )
 
-// Menu selection helpers
-const toggleMenuSelection = (menuId: string, checked: boolean) => {
-  const next = new Set(selectedMenuIds.value)
-  if (checked) {
-    next.add(menuId)
-  } else {
-    next.delete(menuId)
-  }
-  selectedMenuIds.value = Array.from(next)
-}
-
-const isAllMenusSelected = computed(() =>
-  menuOptions.value.length > 0 && menuOptions.value.every((item) => selectedMenuIds.value.includes(item.id))
-)
-
-const isSomeMenusSelected = computed(() =>
-  menuOptions.value.some((item) => selectedMenuIds.value.includes(item.id)) && !isAllMenusSelected.value
-)
-
-const toggleAllMenus = (checked: boolean | string) => {
-  selectedMenuIds.value = checked ? menuOptions.value.map((item) => item.id) : []
-}
-
 // Assign menus handlers
 const handleOpenAssign = (role: Role) => {
   assignRole.value = role
   assignDialogOpen.value = true
+  menuSearchQuery.value = ''
   runAssign(async () => {
     const [menuTreeRes, selectedRes] = await Promise.all([getMenuTree(), getRoleMenus(role.id)])
     menus.value = menuTreeRes.data
     selectedMenuIds.value = selectedRes.data
+    // 默认展开所有节点
+    expandAll()
   }, {
     errorMessage: '获取角色菜单权限失败',
     onError: () => { assignDialogOpen.value = false }
@@ -249,7 +459,7 @@ const handleAssignSubmit = () => {
   runAssign(async () => {
     await assignMenus(assignRole.value!.id, selectedMenuIds.value)
   }, {
-    successMessage: '菜单权限分配成功',
+    successMessage: `菜单权限分配成功，共分配 ${selectedMenuIds.value.length} 项权限`,
     errorMessage: '分配菜单权限失败',
     onSuccess: () => { assignDialogOpen.value = false }
   })
@@ -511,48 +721,190 @@ onMounted(async () => {
       </DialogContent>
     </Dialog>
 
+    <!-- 改进：更人性化的菜单权限分配对话框 -->
     <Dialog
       v-if="canAssignRole"
       v-model:open="assignDialogOpen"
     >
-      <DialogContent class="sm:max-w-[680px]">
+      <DialogContent class="sm:max-w-[720px]">
         <DialogHeader>
           <DialogTitle>分配菜单权限{{ assignRole ? ` - ${assignRole.name}` : '' }}</DialogTitle>
-          <DialogDescription>勾选菜单项为角色分配访问权限</DialogDescription>
+          <DialogDescription>
+            勾选菜单项为角色分配访问权限
+            <Badge
+              v-if="selectionStats.selectedCount > 0"
+              variant="secondary"
+              class="ml-2"
+            >
+              已选 {{ selectionStats.selectedCount }} / {{ selectionStats.totalCount }}
+            </Badge>
+          </DialogDescription>
         </DialogHeader>
+
         <div
           v-if="assignLoading"
           class="py-8 text-center text-muted-foreground"
         >
           加载中...
         </div>
-        <ScrollArea
+
+        <div
           v-else
-          class="max-h-[420px] rounded-md border"
+          class="space-y-4"
         >
-          <div class="space-y-1 p-4">
-            <label class="flex cursor-pointer items-center gap-3 rounded border-b px-3 py-2 mb-2 font-medium transition-colors hover:bg-muted/50">
-              <Checkbox
-                :model-value="isAllMenusSelected"
-                :indeterminate="isSomeMenusSelected"
-                @update:model-value="toggleAllMenus"
-              />
-              <span class="text-sm">全选</span>
-            </label>
-            <label
-              v-for="item in menuOptions"
-              :key="item.id"
-              class="flex cursor-pointer items-center gap-3 rounded px-3 py-2 transition-colors hover:bg-muted/50"
-              :style="{ paddingLeft: `${item.level * 20 + 12}px` }"
+          <!-- 改进：搜索框 -->
+          <div class="relative">
+            <Search class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              v-model="menuSearchQuery"
+              placeholder="搜索菜单名称..."
+              class="pl-9"
+            />
+            <Button
+              v-if="menuSearchQuery"
+              variant="ghost"
+              size="sm"
+              class="absolute right-1 top-1/2 h-6 -translate-y-1/2"
+              @click="menuSearchQuery = ''"
             >
-              <Checkbox
-                :model-value="selectedMenuIds.includes(item.id)"
-                @update:model-value="toggleMenuSelection(item.id, Boolean($event))"
-              />
-              <span class="text-sm">{{ item.label }}</span>
-            </label>
+              <X class="h-4 w-4" />
+            </Button>
           </div>
-        </ScrollArea>
+
+          <!-- 改进：快捷操作按钮 -->
+          <div class="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              @click="expandAll"
+            >
+              <ChevronDown class="mr-1 h-4 w-4" />
+              全部展开
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              @click="collapseAll"
+            >
+              <ChevronRight class="mr-1 h-4 w-4" />
+              全部收起
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              @click="selectOnlyMenus"
+            >
+              仅选菜单
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              @click="selectOnlyButtons"
+            >
+              仅选按钮
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              @click="clearSelection"
+            >
+              <X class="mr-1 h-4 w-4" />
+              清空
+            </Button>
+          </div>
+
+          <!-- 改进：树形结构菜单列表 - 使用原生滚动确保兼容性 -->
+          <div class="h-[400px] overflow-y-auto rounded-md border">
+            <div class="p-2">
+              <!-- 全选 -->
+              <label class="flex cursor-pointer items-center gap-3 rounded-md border-b px-3 py-2.5 mb-2 font-medium transition-colors hover:bg-muted/50">
+                <Checkbox
+                  :model-value="isAllMenusSelected"
+                  :indeterminate="isSomeMenusSelected"
+                  @update:model-value="toggleAllMenus"
+                />
+                <span class="text-sm">全选所有权限</span>
+              </label>
+
+              <!-- 菜单树 -->
+              <div
+                v-for="row in filteredFlattenedRows"
+                :key="row.id"
+                class="flex items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted/50"
+                :style="{ paddingLeft: `${row.level * 20 + 8}px` }"
+              >
+                <!-- 展开/收起按钮 -->
+                <button
+                  v-if="row.hasChildren"
+                  class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  :aria-label="row.isExpanded ? '收起' : '展开'"
+                  :aria-expanded="row.isExpanded"
+                  @click="toggleExpand(row.id)"
+                >
+                  <ChevronDown
+                    v-if="row.isExpanded"
+                    class="h-4 w-4"
+                  />
+                  <ChevronRight
+                    v-else
+                    class="h-4 w-4"
+                  />
+                </button>
+                <span
+                  v-else
+                  class="w-6 flex-shrink-0"
+                />
+
+                <!-- 复选框 -->
+                <Checkbox
+                  :model-value="isNodeSelected(row.id)"
+                  :indeterminate="isNodeIndeterminate(row.id)"
+                  @update:model-value="toggleMenuSelection(row.id, Boolean($event))"
+                />
+
+                <!-- 菜单名称和类型标识 -->
+                <span class="flex-1 text-sm truncate">
+                  {{ row.menu.name }}
+                  <Badge
+                    v-if="row.menu.type === 2"
+                    variant="outline"
+                    class="ml-1.5 text-[10px]"
+                  >
+                    按钮
+                  </Badge>
+                  <Badge
+                    v-else-if="row.menu.type === 1"
+                    variant="secondary"
+                    class="ml-1.5 text-[10px]"
+                  >
+                    菜单
+                  </Badge>
+                </span>
+              </div>
+
+              <!-- 空状态 -->
+              <div
+                v-if="filteredFlattenedRows.length === 0"
+                class="py-8 text-center text-muted-foreground"
+              >
+                {{ menuSearchQuery ? '未找到匹配的菜单' : '暂无菜单数据' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- 改进：统计信息 -->
+          <div
+            v-if="selectionStats.selectedCount > 0"
+            class="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm"
+          >
+            <span class="text-muted-foreground">
+              已选择 <span class="font-medium text-foreground">{{ selectionStats.selectedCount }}</span> 项权限
+              <span v-if="selectionStats.menuCount > 0">（{{ selectionStats.menuCount }} 个菜单）</span>
+              <span v-if="selectionStats.buttonCount > 0">（{{ selectionStats.buttonCount }} 个按钮）</span>
+            </span>
+          </div>
+        </div>
+
         <DialogFooter>
           <Button
             variant="outline"
@@ -564,7 +916,8 @@ onMounted(async () => {
             :disabled="assignLoading"
             @click="handleAssignSubmit"
           >
-            保存授权
+            <Check class="mr-1 h-4 w-4" />
+            保存授权 ({{ selectionStats.selectedCount }})
           </Button>
         </DialogFooter>
       </DialogContent>
