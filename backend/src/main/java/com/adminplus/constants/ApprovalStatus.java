@@ -1,30 +1,39 @@
 package com.adminplus.constants;
 
 /**
- * 工作流审批状态常量
+ * 工作流审批状态枚举
  *
  * @author AdminPlus
  * @since 2026-04-05
  */
-public interface ApprovalStatus {
+public enum ApprovalStatus {
+    PENDING("pending", "待审批"),
+    APPROVED("approved", "已批准"),
+    REJECTED("rejected", "已拒绝"),
+    TRANSFERRED("transferred", "已转办");
 
-    /**
-     * 待审批状态
-     */
-    String PENDING = "pending";
+    private final String code;
+    private final String description;
 
-    /**
-     * 已批准状态
-     */
-    String APPROVED = "approved";
+    ApprovalStatus(String code, String description) {
+        this.code = code;
+        this.description = description;
+    }
 
-    /**
-     * 已拒绝状态
-     */
-    String REJECTED = "rejected";
+    public String getCode() {
+        return code;
+    }
 
-    /**
-     * 已转办状态
-     */
-    String TRANSFERRED = "transferred";
+    public String getDescription() {
+        return description;
+    }
+
+    public static ApprovalStatus fromCode(String code) {
+        for (ApprovalStatus status : values()) {
+            if (status.code.equals(code)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Unknown ApprovalStatus code: " + code);
+    }
 }

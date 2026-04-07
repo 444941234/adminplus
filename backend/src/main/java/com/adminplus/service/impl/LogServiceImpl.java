@@ -59,13 +59,13 @@ public class LogServiceImpl implements LogService {
             logEntity.setUserId(SecurityUtils.getCurrentUserId());
             logEntity.setUsername(SecurityUtils.getCurrentUsername());
             logEntity.setModule(module);
-            logEntity.setLogType(LogType.OPERATION);
+            logEntity.setLogType(LogType.OPERATION.getCode());
             logEntity.setOperationType(operationType);
             logEntity.setDescription(description);
             logEntity.setMethod(method);
             logEntity.setParams(params);
             logEntity.setIp(ip);
-            logEntity.setStatus(LogStatus.SUCCESS);
+            logEntity.setStatus(LogStatus.SUCCESS.getCode());
             logEntity.setCostTime(0L);
 
             getStorageStrategy().save(logEntity);
@@ -88,11 +88,11 @@ public class LogServiceImpl implements LogService {
             logEntity.setUserId(SecurityUtils.getCurrentUserId());
             logEntity.setUsername(SecurityUtils.getCurrentUsername());
             logEntity.setModule(module);
-            logEntity.setLogType(LogType.OPERATION);
+            logEntity.setLogType(LogType.OPERATION.getCode());
             logEntity.setOperationType(operationType);
             logEntity.setDescription(description);
             logEntity.setCostTime(costTime);
-            logEntity.setStatus(LogStatus.SUCCESS);
+            logEntity.setStatus(LogStatus.SUCCESS.getCode());
 
             getStorageStrategy().save(logEntity);
         } catch (Exception e) {
@@ -115,7 +115,7 @@ public class LogServiceImpl implements LogService {
             logEntity.setUserId(SecurityUtils.getCurrentUserId());
             logEntity.setUsername(SecurityUtils.getCurrentUsername());
             logEntity.setModule(module);
-            logEntity.setLogType(LogType.OPERATION);
+            logEntity.setLogType(LogType.OPERATION.getCode());
             logEntity.setOperationType(operationType);
             logEntity.setDescription(description);
             logEntity.setStatus(status);
@@ -136,9 +136,9 @@ public class LogServiceImpl implements LogService {
             logEntity.setUserId(username);
             logEntity.setUsername(username);
             logEntity.setModule("用户登录");
-            logEntity.setLogType(LogType.LOGIN);
-            logEntity.setOperationType(status == LogStatus.SUCCESS ? 1 : 2);
-            logEntity.setDescription(status == LogStatus.SUCCESS ? "用户登录成功" : "用户登录失败");
+            logEntity.setLogType(LogType.LOGIN.getCode());
+            logEntity.setOperationType(status == LogStatus.SUCCESS.getCode() ? 1 : 2);
+            logEntity.setDescription(status == LogStatus.SUCCESS.getCode() ? "用户登录成功" : "用户登录失败");
             logEntity.setStatus(status);
             logEntity.setErrorMsg(errorMsg);
             logEntity.setCostTime(0L);
@@ -158,10 +158,10 @@ public class LogServiceImpl implements LogService {
             logEntity.setUserId("system");
             logEntity.setUsername("system");
             logEntity.setModule(module);
-            logEntity.setLogType(LogType.SYSTEM);
+            logEntity.setLogType(LogType.SYSTEM.getCode());
             logEntity.setOperationType(7); // 其他
             logEntity.setDescription(message);
-            logEntity.setStatus(errorMsg == null ? LogStatus.SUCCESS : LogStatus.FAILED);
+            logEntity.setStatus(errorMsg == null ? LogStatus.SUCCESS.getCode() : LogStatus.FAILED.getCode());
             logEntity.setErrorMsg(errorMsg);
             logEntity.setCostTime(0L);
 

@@ -42,14 +42,14 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
 
         // 按类型统计
         Map<Integer, Long> countByType = new HashMap<>();
-        countByType.put(LogType.OPERATION, countByTypeInternal(strategy, LogType.OPERATION));
-        countByType.put(LogType.LOGIN, countByTypeInternal(strategy, LogType.LOGIN));
-        countByType.put(LogType.SYSTEM, countByTypeInternal(strategy, LogType.SYSTEM));
+        countByType.put(LogType.OPERATION.getCode(), countByTypeInternal(strategy, LogType.OPERATION.getCode()));
+        countByType.put(LogType.LOGIN.getCode(), countByTypeInternal(strategy, LogType.LOGIN.getCode()));
+        countByType.put(LogType.SYSTEM.getCode(), countByTypeInternal(strategy, LogType.SYSTEM.getCode()));
 
         // 按状态统计
         Map<Integer, Long> countByStatus = new HashMap<>();
-        countByStatus.put(LogStatus.SUCCESS, countByStatusInternal(strategy, LogStatus.SUCCESS));
-        countByStatus.put(LogStatus.FAILED, countByStatusInternal(strategy, LogStatus.FAILED));
+        countByStatus.put(LogStatus.SUCCESS.getCode(), countByStatusInternal(strategy, LogStatus.SUCCESS.getCode()));
+        countByStatus.put(LogStatus.FAILED.getCode(), countByStatusInternal(strategy, LogStatus.FAILED.getCode()));
 
         // 今日统计
         long todayCount = countTodayInternal(strategy);
@@ -69,12 +69,12 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
 
         return new LogStatisticsResp(
                 totalCount,
-                countByType.get(LogType.OPERATION),
-                countByType.get(LogType.LOGIN),
-                countByType.get(LogType.SYSTEM),
+                countByType.get(LogType.OPERATION.getCode()),
+                countByType.get(LogType.LOGIN.getCode()),
+                countByType.get(LogType.SYSTEM.getCode()),
                 todayCount,
-                countByStatus.get(LogStatus.SUCCESS),
-                countByStatus.get(LogStatus.FAILED),
+                countByStatus.get(LogStatus.SUCCESS.getCode()),
+                countByStatus.get(LogStatus.FAILED.getCode()),
                 countByType,
                 countByStatus,
                 countByDate,

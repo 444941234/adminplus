@@ -153,7 +153,7 @@ public class AuthServiceImpl implements AuthService {
             String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
             // 记录登录审计日志
-            logService.log("认证管理", OperationType.OTHER, "用户登录成功: " + LogMaskingUtils.maskUsername(req.username()));
+            logService.log("认证管理", OperationType.OTHER.getCode(), "用户登录成功: " + LogMaskingUtils.maskUsername(req.username()));
 
             return new LoginResp(token, refreshToken, "Bearer", userResp, permissions);
 
@@ -161,8 +161,8 @@ public class AuthServiceImpl implements AuthService {
             log.error("登录失败: username={}", LogMaskingUtils.maskUsername(req.username()));
 
             // 记录登录失败审计日志
-            logService.log("认证管理", OperationType.OTHER, "用户登录失败: " + LogMaskingUtils.maskUsername(req.username()),
-                    LogStatus.FAILED, "用户名或密码错误");
+            logService.log("认证管理", OperationType.OTHER.getCode(), "用户登录失败: " + LogMaskingUtils.maskUsername(req.username()),
+                    LogStatus.FAILED.getCode(), "用户名或密码错误");
 
             throw new BizException("用户名或密码错误");
         }
@@ -242,7 +242,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 记录登出审计日志
-            logService.log("认证管理", OperationType.OTHER, "用户退出: " + LogMaskingUtils.maskUsername(username));
+            logService.log("认证管理", OperationType.OTHER.getCode(), "用户退出: " + LogMaskingUtils.maskUsername(username));
 
         } catch (Exception e) {
             log.error("登出时处理 Token 黑名单失败", e);

@@ -138,12 +138,12 @@ public class LogExportServiceImpl implements LogExportService {
 
     private String getLogTypeDesc(Integer type) {
         if (type == null) return "未知";
-        return switch (type) {
-            case LogType.OPERATION -> "操作日志";
-            case LogType.LOGIN -> "登录日志";
-            case LogType.SYSTEM -> "系统日志";
-            default -> "未知";
-        };
+        for (LogType logType : LogType.values()) {
+            if (logType.getCode() == type) {
+                return logType.getDescription();
+            }
+        }
+        return "未知";
     }
 
     private String getOperationTypeDesc(Integer type) {

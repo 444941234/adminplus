@@ -221,12 +221,12 @@ public class UserServiceImpl implements UserService {
         user.setPhone(XssUtils.escapeOrNull(req.phone()));
         user.setAvatar(req.avatar());
         user.setDeptId(req.deptId());
-        user.setStatus(UserStatus.ENABLED);
+        user.setStatus(UserStatus.ENABLED.getCode());
 
         user = userRepository.save(user);
 
         // 记录审计日志
-        logService.log("用户管理", OperationType.CREATE, "创建用户: " + user.getUsername());
+        logService.log("用户管理", OperationType.CREATE.getCode(), "创建用户: " + user.getUsername());
 
         // 查询部门名称
         String deptName = null;
@@ -270,7 +270,7 @@ public class UserServiceImpl implements UserService {
         user = userRepository.save(user);
 
         // 记录审计日志
-        logService.log("用户管理", OperationType.UPDATE, "更新用户: " + user.getUsername());
+        logService.log("用户管理", OperationType.UPDATE.getCode(), "更新用户: " + user.getUsername());
 
         // 查询部门名称
         String deptName = null;
@@ -310,7 +310,7 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(user);
 
         // 记录审计日志
-        logService.log("用户管理", OperationType.DELETE, "删除用户: " + user.getUsername());
+        logService.log("用户管理", OperationType.DELETE.getCode(), "删除用户: " + user.getUsername());
     }
 
     @Override
@@ -332,7 +332,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         // 记录审计日志
-        logService.log("用户管理", OperationType.UPDATE, "更新用户状态: " + user.getUsername() + " -> " + status);
+        logService.log("用户管理", OperationType.UPDATE.getCode(), "更新用户状态: " + user.getUsername() + " -> " + status);
     }
 
     @Override
@@ -347,7 +347,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         // 记录审计日志（使用掩码隐藏用户名）
-        logService.log("用户管理", OperationType.UPDATE, "重置密码: " + LogMaskingUtils.maskUsername(user.getUsername()));
+        logService.log("用户管理", OperationType.UPDATE.getCode(), "重置密码: " + LogMaskingUtils.maskUsername(user.getUsername()));
     }
 
     @Override
@@ -396,7 +396,7 @@ public class UserServiceImpl implements UserService {
                     roleRepository.findAllById(safeRoleIds).stream()
                             .map(RoleEntity::getName)
                             .collect(Collectors.joining(", "));
-            logService.log("用户管理", OperationType.UPDATE,
+            logService.log("用户管理", OperationType.UPDATE.getCode(),
                     "分配角色: " + user.getUsername() + " -> " + roleNames
                     + " (新增" + result.added() + "个, 移除" + result.removed() + "个)");
         }

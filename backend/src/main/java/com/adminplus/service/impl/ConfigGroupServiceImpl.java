@@ -114,7 +114,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("创建配置组成功: {}", group.getCode());
 
         // 记录审计日志
-        logService.log("配置管理", OperationType.CREATE,
+        logService.log("配置管理", OperationType.CREATE.getCode(),
                 "创建配置组: " + group.getName() + " (" + group.getCode() + ")");
 
         return toVO(group);
@@ -145,7 +145,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("更新配置组成功: {}", group.getCode());
 
         // 记录审计日志
-        logService.log("配置管理", OperationType.UPDATE,
+        logService.log("配置管理", OperationType.UPDATE.getCode(),
                 "更新配置组: " + group.getName() + " (" + group.getCode() + ")");
 
         return toVO(group);
@@ -169,7 +169,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("删除配置组成功: {}", group.getCode());
 
         // 记录审计日志
-        logService.log("配置管理", OperationType.DELETE,
+        logService.log("配置管理", OperationType.DELETE.getCode(),
                 "删除配置组: " + group.getName() + " (" + group.getCode() + ")");
     }
 
@@ -186,7 +186,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("更新配置组状态成功: {} -> {}", group.getCode(), status);
 
         // 记录审计日志
-        logService.log("配置管理", OperationType.UPDATE,
+        logService.log("配置管理", OperationType.UPDATE.getCode(),
                 "更新配置组状态: " + group.getName() + " (" + group.getCode() + ") -> " + status);
     }
 

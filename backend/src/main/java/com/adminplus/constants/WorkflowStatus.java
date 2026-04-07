@@ -1,35 +1,40 @@
 package com.adminplus.constants;
 
 /**
- * 工作流实例状态常量
+ * 工作流实例状态枚举
  *
  * @author AdminPlus
  * @since 2026-04-05
  */
-public interface WorkflowStatus {
+public enum WorkflowStatus {
+    DRAFT("draft", "草稿"),
+    RUNNING("running", "运行中"),
+    APPROVED("approved", "已批准"),
+    REJECTED("rejected", "已拒绝"),
+    CANCELLED("cancelled", "已取消");
 
-    /**
-     * 草稿状态
-     */
-    String DRAFT = "draft";
+    private final String code;
+    private final String description;
 
-    /**
-     * 运行中状态
-     */
-    String RUNNING = "running";
+    WorkflowStatus(String code, String description) {
+        this.code = code;
+        this.description = description;
+    }
 
-    /**
-     * 已批准状态
-     */
-    String APPROVED = "approved";
+    public String getCode() {
+        return code;
+    }
 
-    /**
-     * 已拒绝状态
-     */
-    String REJECTED = "rejected";
+    public String getDescription() {
+        return description;
+    }
 
-    /**
-     * 已取消状态
-     */
-    String CANCELLED = "cancelled";
+    public static WorkflowStatus fromCode(String code) {
+        for (WorkflowStatus status : values()) {
+            if (status.code.equals(code)) {
+                return status;
+            }
+        }
+        throw new IllegalArgumentException("Unknown WorkflowStatus code: " + code);
+    }
 }

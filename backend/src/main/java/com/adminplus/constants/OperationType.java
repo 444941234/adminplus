@@ -1,45 +1,42 @@
 package com.adminplus.constants;
 
 /**
- * 操作类型常量
+ * 操作类型枚举
  *
  * @author AdminPlus
  * @since 2026-02-07
  */
-public interface OperationType {
+public enum OperationType {
+    QUERY(1, "查询"),
+    CREATE(2, "新增"),
+    UPDATE(3, "修改"),
+    DELETE(4, "删除"),
+    EXPORT(5, "导出"),
+    IMPORT(6, "导入"),
+    OTHER(7, "其他");
 
-    /**
-     * 查询
-     */
-    int QUERY = 1;
+    private final int code;
+    private final String description;
 
-    /**
-     * 新增
-     */
-    int CREATE = 2;
+    OperationType(int code, String description) {
+        this.code = code;
+        this.description = description;
+    }
 
-    /**
-     * 修改
-     */
-    int UPDATE = 3;
+    public int getCode() {
+        return code;
+    }
 
-    /**
-     * 删除
-     */
-    int DELETE = 4;
+    public String getDescription() {
+        return description;
+    }
 
-    /**
-     * 导出
-     */
-    int EXPORT = 5;
-
-    /**
-     * 导入
-     */
-    int IMPORT = 6;
-
-    /**
-     * 其他
-     */
-    int OTHER = 7;
+    public static OperationType fromCode(int code) {
+        for (OperationType type : values()) {
+            if (type.code == code) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown OperationType code: " + code);
+    }
 }

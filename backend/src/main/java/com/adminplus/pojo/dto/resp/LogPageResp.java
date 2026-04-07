@@ -65,12 +65,12 @@ public record LogPageResp(
         if (logType == null) {
             return "未知";
         }
-        return switch (logType) {
-            case LogType.OPERATION -> "操作日志";
-            case LogType.LOGIN -> "登录日志";
-            case LogType.SYSTEM -> "系统日志";
-            default -> "未知";
-        };
+        for (LogType type : LogType.values()) {
+            if (type.getCode() == logType) {
+                return type.getDescription();
+            }
+        }
+        return "未知";
     }
 
     /**
@@ -80,16 +80,12 @@ public record LogPageResp(
         if (operationType == null) {
             return "未知";
         }
-        return switch (operationType) {
-            case OperationType.QUERY -> "查询";
-            case OperationType.CREATE -> "新增";
-            case OperationType.UPDATE -> "修改";
-            case OperationType.DELETE -> "删除";
-            case OperationType.EXPORT -> "导出";
-            case OperationType.IMPORT -> "导入";
-            case OperationType.OTHER -> "其他";
-            default -> "未知";
-        };
+        for (OperationType type : OperationType.values()) {
+            if (type.getCode() == operationType) {
+                return type.getDescription();
+            }
+        }
+        return "未知";
     }
 
     /**
@@ -99,10 +95,11 @@ public record LogPageResp(
         if (status == null) {
             return "未知";
         }
-        return switch (status) {
-            case LogStatus.SUCCESS -> "成功";
-            case LogStatus.FAILED -> "失败";
-            default -> "未知";
-        };
+        for (LogStatus logStatus : LogStatus.values()) {
+            if (logStatus.getCode() == status) {
+                return logStatus.getDescription();
+            }
+        }
+        return "未知";
     }
 }

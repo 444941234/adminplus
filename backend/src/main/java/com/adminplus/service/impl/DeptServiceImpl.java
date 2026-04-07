@@ -169,7 +169,7 @@ public class DeptServiceImpl implements DeptService {
         dept = deptRepository.save(dept);
 
         // 记录审计日志
-        logService.log("部门管理", OperationType.CREATE, "创建部门: " + dept.getName());
+        logService.log("部门管理", OperationType.CREATE.getCode(), "创建部门: " + dept.getName());
 
         return toResp(dept);
     }
@@ -243,7 +243,7 @@ public class DeptServiceImpl implements DeptService {
         var savedDept = deptRepository.save(dept);
 
         // 记录审计日志
-        logService.log("部门管理", OperationType.UPDATE, "更新部门: " + savedDept.getName());
+        logService.log("部门管理", OperationType.UPDATE.getCode(), "更新部门: " + savedDept.getName());
 
         return toResp(savedDept);
     }
@@ -262,7 +262,7 @@ public class DeptServiceImpl implements DeptService {
         deptRepository.delete(dept);
 
         // 记录审计日志
-        logService.log("部门管理", OperationType.DELETE, "删除部门: " + dept.getName());
+        logService.log("部门管理", OperationType.DELETE.getCode(), "删除部门: " + dept.getName());
     }
 
     /**
@@ -330,7 +330,7 @@ public class DeptServiceImpl implements DeptService {
         dept.setStatus(status);
         deptRepository.save(dept);
 
-        logService.log("部门管理", OperationType.UPDATE, "更新部门状态: " + dept.getName() + " -> " + (status == 1 ? "启用" : "禁用"));
+        logService.log("部门管理", OperationType.UPDATE.getCode(), "更新部门状态: " + dept.getName() + " -> " + (status == 1 ? "启用" : "禁用"));
     }
 
     /**

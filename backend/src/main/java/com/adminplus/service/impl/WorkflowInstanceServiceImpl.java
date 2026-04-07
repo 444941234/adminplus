@@ -80,7 +80,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         instance.setDeptId(user.getDeptId());
         instance.setTitle(XssUtils.escape(req.title()));
         instance.setBusinessData(serializeFormData(req.formData()));
-        instance.setStatus(WorkflowStatus.DRAFT);
+        instance.setStatus(WorkflowStatus.DRAFT.getCode());
         instance.setRemark(XssUtils.escape(req.remark()));
 
         instance = instanceRepository.save(instance);
@@ -111,7 +111,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             applyDraftChanges(instance, req);
         }
 
-        instance.setStatus(WorkflowStatus.RUNNING);
+        instance.setStatus(WorkflowStatus.RUNNING.getCode());
         instance.setSubmitTime(Instant.now());
 
         // 获取工作流定义的第一个节点
@@ -411,7 +411,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 preResult.blockingMessages().isEmpty() ? "取消前校验失败" : preResult.blockingMessages().get(0));
         }
 
-        instance.setStatus(WorkflowStatus.CANCELLED);
+        instance.setStatus(WorkflowStatus.CANCELLED.getCode());
         instance.setFinishTime(Instant.now());
         instanceRepository.save(instance);
 
@@ -470,7 +470,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         });
 
         // 重置为草稿
-        instance.setStatus(WorkflowStatus.DRAFT);
+        instance.setStatus(WorkflowStatus.DRAFT.getCode());
         instance.setCurrentNodeId(null);
         instance.setCurrentNodeName(null);
         instance.setSubmitTime(null);
@@ -563,7 +563,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         // 判断是否需要继续流转
         if (action.equals("rejected")) {
             // 拒绝则直接结束
-            instance.setStatus(WorkflowStatus.REJECTED);
+            instance.setStatus(WorkflowStatus.REJECTED.getCode());
             instance.setFinishTime(Instant.now());
             log.info("工作流被拒绝: id={}", instanceId);
 
@@ -636,7 +636,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             log.info("工作流流转到下一节点: instanceId={}, nodeName={}", instance.getId(), nextNode.getNodeName());
         } else {
             // 已是最后节点，流程结束
-            instance.setStatus(WorkflowStatus.APPROVED);
+            instance.setStatus(WorkflowStatus.APPROVED.getCode());
             instance.setFinishTime(Instant.now());
             instance.setCurrentNodeId(null);
             instance.setCurrentNodeName(null);

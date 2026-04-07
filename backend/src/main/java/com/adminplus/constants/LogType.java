@@ -1,25 +1,38 @@
 package com.adminplus.constants;
 
 /**
- * 日志类型常量
+ * 日志类型枚举
  *
  * @author AdminPlus
  * @since 2026-03-04
  */
-public interface LogType {
+public enum LogType {
+    OPERATION(1, "操作日志"),
+    LOGIN(2, "登录日志"),
+    SYSTEM(3, "系统日志");
 
-    /**
-     * 操作日志
-     */
-    int OPERATION = 1;
+    private final int code;
+    private final String description;
 
-    /**
-     * 登录日志
-     */
-    int LOGIN = 2;
+    LogType(int code, String description) {
+        this.code = code;
+        this.description = description;
+    }
 
-    /**
-     * 系统日志
-     */
-    int SYSTEM = 3;
+    public int getCode() {
+        return code;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public static LogType fromCode(int code) {
+        for (LogType type : values()) {
+            if (type.code == code) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown LogType code: " + code);
+    }
 }
