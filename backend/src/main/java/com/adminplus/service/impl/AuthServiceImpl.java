@@ -158,27 +158,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public UserResp getCurrentUser(String username) {
-        UserEntity user = userService.getUserByUsername(username);
-
-        // 查询用户角色 - 批量查询避免 N+1
-        List<String> roleNames = getUserRoles(user.getId()).roles().stream()
-                .map(RoleEntity::getName)
-                .collect(Collectors.toList());
-
-        return new UserResp(
-                user.getId(),
-                user.getUsername(),
-                user.getNickname(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAvatar(),
-                user.getStatus(),
-                user.getDeptId(),
-                null, // deptName - 获取当前用户时不需要查询部门名称
-                roleNames,
-                user.getCreateTime(),
-                user.getUpdateTime()
-        );
+        return userService.getUserRespByUsername(username);
     }
 
     @Override

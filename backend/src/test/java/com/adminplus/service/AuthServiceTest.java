@@ -148,13 +148,14 @@ class AuthServiceTest {
         @DisplayName("should return current user info")
         void getCurrentUser_ShouldReturnUserInfo() {
             // Given
-            UserRoleEntity userRole = new UserRoleEntity();
-            userRole.setUserId("user-001");
-            userRole.setRoleId("role-001");
+            UserResp userResp = new UserResp(
+                "user-001", "testuser", "Test User",
+                "test@example.com", "13800000000", null,
+                1, null, null, List.of("管理员"),
+                null, null
+            );
 
-            when(userService.getUserByUsername("testuser")).thenReturn(testUser);
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(userRole));
-            when(roleRepository.findAllById(any())).thenReturn(List.of(testRole));
+            when(userService.getUserRespByUsername("testuser")).thenReturn(userResp);
 
             // When
             UserResp result = authService.getCurrentUser("testuser");

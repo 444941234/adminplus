@@ -65,4 +65,12 @@ public interface UserService {
      * 查询用户的角色ID列表
      */
     List<String> getUserRoleIds(String userId);
+
+    /**
+     * 根据用户名查询用户完整信息（包含角色名称）
+     *
+     * @param username 用户名
+     * @return 用户信息
+     */
+    UserResp getUserRespByUsername(String username);
 }

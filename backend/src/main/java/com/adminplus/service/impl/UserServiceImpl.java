@@ -162,31 +162,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserResp getUserById(String id) {
         var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
-
-        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(id);
-
-        // 批量查询角色信息，避免 N+1 问题
-        List<String> roleIds = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-        Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
-                .collect(Collectors.toMap(RoleEntity::getId, r -> r));
-        List<String> roleNames = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .map(roleMap::get)
-                .filter(Objects::nonNull)
-                .map(RoleEntity::getName)
-                .toList();
-
-        // 查询部门名称
-        String deptName = null;
-        if (user.getDeptId() != null) {
-            deptName = deptRepository.findById(user.getDeptId())
-                    .map(DeptEntity::getName)
-                    .orElse(null);
-        }
-
-        return toResp(user, deptName, roleNames);
+        return buildUserRespWithRoles(user);
     }
 
     @Override
@@ -412,6 +388,45 @@ public class UserServiceImpl implements UserService {
         return userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserResp getUserRespByUsername(String username) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new BizException("用户不存在"));
+
+        return buildUserRespWithRoles(user);
+    }
+
+    /**
+     * 构建用户响应对象（包含角色信息）
+     */
+    private UserResp buildUserRespWithRoles(UserEntity user) {
+        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
+
+        // 批量查询角色信息，避免 N+1 问题
+        List<String> roleIds = userRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .toList();
+        Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
+                .collect(Collectors.toMap(RoleEntity::getId, r -> r));
+        List<String> roleNames = userRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .map(roleMap::get)
+                .filter(Objects::nonNull)
+                .map(RoleEntity::getName)
+                .toList();
+
+        // 查询部门名称
+        String deptName = null;
+        if (user.getDeptId() != null) {
+            deptName = deptRepository.findById(user.getDeptId())
+                    .map(DeptEntity::getName)
+                    .orElse(null);
+        }
+
+        return toResp(user, deptName, roleNames);
     }
 
     private UserResp toResp(UserEntity user, String deptName, List<String> roleNames) {
