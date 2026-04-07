@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +43,12 @@ class DashboardServiceTest {
     @Mock
     private UserRoleRepository userRoleRepository;
 
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    private DataSource dataSource;
+
     @InjectMocks
     private DashboardServiceImpl dashboardService;
 
@@ -56,7 +63,7 @@ class DashboardServiceTest {
             when(userRepository.countByDeletedFalse()).thenReturn(100L);
             when(roleRepository.countByDeletedFalse()).thenReturn(10L);
             when(menuRepository.countByDeletedFalse()).thenReturn(50L);
-            when(logRepository.countByDeletedFalse()).thenReturn(1000L);
+            when(logRepository.countByCreateTimeBetweenAndDeletedFalse(any(), any())).thenReturn(20L);  // 今日日志数
 
             // When
             DashboardStatsResp result = dashboardService.getStats();
@@ -66,12 +73,12 @@ class DashboardServiceTest {
             assertThat(result.userCount()).isEqualTo(100L);
             assertThat(result.roleCount()).isEqualTo(10L);
             assertThat(result.menuCount()).isEqualTo(50L);
-            assertThat(result.logCount()).isEqualTo(1000L);
+            assertThat(result.logCount()).isEqualTo(20L);  // 今日日志数
 
             verify(userRepository).countByDeletedFalse();
             verify(roleRepository).countByDeletedFalse();
             verify(menuRepository).countByDeletedFalse();
-            verify(logRepository).countByDeletedFalse();
+            verify(logRepository).countByCreateTimeBetweenAndDeletedFalse(any(), any());
         }
 
         @Test
@@ -81,7 +88,7 @@ class DashboardServiceTest {
             when(userRepository.countByDeletedFalse()).thenReturn(0L);
             when(roleRepository.countByDeletedFalse()).thenReturn(0L);
             when(menuRepository.countByDeletedFalse()).thenReturn(0L);
-            when(logRepository.countByDeletedFalse()).thenReturn(0L);
+            when(logRepository.countByCreateTimeBetweenAndDeletedFalse(any(), any())).thenReturn(0L);
 
             // When
             DashboardStatsResp result = dashboardService.getStats();
@@ -102,7 +109,6 @@ class DashboardServiceTest {
         @DisplayName("should return chart data with 7 days")
         void getUserGrowthData_ShouldReturn7DaysData() {
             // Given
-            when(userRepository.countByDeletedFalse()).thenReturn(100L);
             when(userRepository.countByCreateTimeBetweenAndDeletedFalse(any(), any())).thenReturn(0L);
 
             // When
@@ -180,13 +186,16 @@ class DashboardServiceTest {
     class GetSystemInfoTests {
 
         @Test
-        @DisplayName("should return system info")
+        @DisplayName("should return system info with fallback db version")
         void getSystemInfo_ShouldReturnInfo() {
-            // When
+            // When - DataSource 是 mock，无法获取真实连接，会返回 "Unknown"
             SystemInfoResp result = dashboardService.getSystemInfo();
 
             // Then
             assertThat(result).isNotNull();
+            assertThat(result.systemName()).isEqualTo("AdminPlus");
+            // 当 mock DataSource 无法获取连接时，返回 "Unknown"
+            assertThat(result.databaseVersion()).isNotNull();
         }
     }
 
@@ -197,11 +206,16 @@ class DashboardServiceTest {
         @Test
         @DisplayName("should return online users list")
         void getOnlineUsers_ShouldReturnList() {
+            // Given - Mock 返回空的 token 列表
+            when(refreshTokenRepository.findValidTokens(any())).thenReturn(List.of());
+
             // When
             List<OnlineUserResp> result = dashboardService.getOnlineUsers();
 
             // Then
             assertThat(result).isNotNull();
+            assertThat(result).isEmpty();
+            verify(refreshTokenRepository).findValidTokens(any());
         }
     }
 

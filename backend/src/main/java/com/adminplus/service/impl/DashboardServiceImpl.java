@@ -2,6 +2,7 @@ package com.adminplus.service.impl;
 
 import com.adminplus.pojo.dto.resp.*;
 import com.adminplus.pojo.entity.LogEntity;
+import com.adminplus.pojo.entity.RefreshTokenEntity;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.*;
@@ -9,13 +10,13 @@ import com.adminplus.service.DashboardService;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.OperatingSystemMXBean;
@@ -23,12 +24,13 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Dashboard 服务实现
+ * <p>
+ * 提供系统仪表板统计数据、图表数据、系统信息、在线用户等功能
  *
  * @author AdminPlus
  * @since 2026-02-07
@@ -38,12 +40,26 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class DashboardServiceImpl implements DashboardService {
 
+    // ==================== 常量定义 ====================
+
+    private static final int CHART_DAYS = 7;  // 图表显示天数
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
+    private static final ZoneId SYSTEM_ZONE = ZoneId.systemDefault();
+
+    // ==================== 依赖注入 ====================
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final MenuRepository menuRepository;
     private final LogRepository logRepository;
     private final UserRoleRepository userRoleRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final DataSource dataSource;
+
+    @Value("${info.app.version:1.0.0}")
+    private String appVersion;
+
+    // ==================== 统计数据 ====================
 
     @Override
     @Transactional(readOnly = true)
@@ -51,17 +67,15 @@ public class DashboardServiceImpl implements DashboardService {
     public DashboardStatsResp getStats() {
         log.debug("获取 Dashboard 统计数据");
 
-        // 统计用户数（未删除的）
         long userCount = userRepository.countByDeletedFalse();
-
-        // 统计角色数（未删除的）
         long roleCount = roleRepository.countByDeletedFalse();
-
-        // 统计菜单数（未删除的）
         long menuCount = menuRepository.countByDeletedFalse();
 
-        // 统计日志数（未删除���）
-        long logCount = logRepository.countByDeletedFalse();
+        // 统计今天的日志数量
+        LocalDate today = LocalDate.now();
+        Instant startOfToday = today.atStartOfDay(SYSTEM_ZONE).toInstant();
+        Instant endOfToday = today.plusDays(1).atStartOfDay(SYSTEM_ZONE).toInstant();
+        long logCount = logRepository.countByCreateTimeBetweenAndDeletedFalse(startOfToday, endOfToday);
 
         return new DashboardStatsResp(userCount, roleCount, menuCount, logCount);
     }
@@ -72,183 +86,126 @@ public class DashboardServiceImpl implements DashboardService {
         log.info("清除 Dashboard 统计数据缓存");
     }
 
+    // ==================== 图表数据 ====================
+
     @Override
     @Transactional(readOnly = true)
     public ChartDataResp getUserGrowthData() {
-        log.debug("获取用户增长趋势数据 - 开始");
-
-        // 获取最近7天的日期
-        List<String> dates = new ArrayList<>();
-        List<Long> values = new ArrayList<>();
+        log.debug("获取用户增长趋势数据");
 
         LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
+        List<LocalDate> dates = generateRecentDates(today, CHART_DAYS);
+        List<String> dateLabels = dates.stream()
+                .map(DATE_FORMATTER::format)
+                .collect(Collectors.toList());
+        List<Long> values = new ArrayList<>();
 
-        // 先统计总用户数
-        long totalUsers = userRepository.countByDeletedFalse();
-
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minusDays(i);
-            dates.add(date.format(formatter));
-
-            // 统计当天创建的用户数
-            Instant startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant();
-            Instant endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+        for (LocalDate date : dates) {
+            Instant startOfDay = date.atStartOfDay(SYSTEM_ZONE).toInstant();
+            Instant endOfDay = date.plusDays(1).atStartOfDay(SYSTEM_ZONE).toInstant();
             long count = userRepository.countByCreateTimeBetweenAndDeletedFalse(startOfDay, endOfDay);
             values.add(count);
-            log.debug("日期: {}, 新增用户数: {}", date, count);
         }
 
-        // 如果所有值都是0，但总用户数大于0，返回累计用户趋势
-        if (values.stream().allMatch(v -> v == 0) && totalUsers > 0) {
-            log.debug("最近7天无新增用户，返回累计用户趋势");
-            values = new ArrayList<>();
-            long cumulativeCount = 0;
-            for (int i = 6; i >= 0; i--) {
-                LocalDate date = today.minusDays(i);
-                Instant startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant();
-                Instant endOfDay = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-                long count = userRepository.countByCreateTimeBetweenAndDeletedFalse(
-                        LocalDate.of(2000, 1, 1).atStartOfDay(ZoneId.systemDefault()).toInstant(),
-                        endOfDay);
-                cumulativeCount = Math.max(cumulativeCount, count);
-                values.add(cumulativeCount > 0 ? cumulativeCount : totalUsers);
-            }
-        }
-
-        // 如果仍然是全0，返回一些示例数据用于演示
-        if (values.stream().allMatch(v -> v == 0)) {
-            log.debug("无用户数据，返回示例数据用于演示");
-            return getDemoUserGrowthData();
-        }
-
-        log.debug("获取用户增长趋势数据 - 完成, 日期数: {}, 值数: {}", dates.size(), values.size());
-        return new ChartDataResp(dates, values);
-    }
-
-    /**
-     * 返回演示用的用户增长数据
-     */
-    private ChartDataResp getDemoUserGrowthData() {
-        List<String> dates = new ArrayList<>();
-        List<Long> values = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
-
-        // 示例数据：模拟用户增长
-        long demoUsers = 10;
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minusDays(i);
-            dates.add(date.format(formatter));
-            // 模拟每天增加 1-3 个用户
-            demoUsers += (Math.random() * 3 + 1);
-            values.add(demoUsers);
-        }
-        return new ChartDataResp(dates, values);
-    }
-
-    /**
-     * 返回演示用的访问量数据
-     */
-    private ChartDataResp getDemoVisitTrendData() {
-        List<String> dates = new ArrayList<>();
-        List<Long> values = new ArrayList<>();
-        LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
-
-        // 示例数据：模拟每日访问量
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minusDays(i);
-            dates.add(date.format(formatter));
-            // 模拟每天 50-200 次访问
-            values.add((long) (Math.random() * 150 + 50));
-        }
-        return new ChartDataResp(dates, values);
+        log.debug("用户增长趋势数据: dates={}, values={}", dateLabels, values);
+        return new ChartDataResp(dateLabels, values);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ChartDataResp getRoleDistributionData() {
-        log.debug("获取角色分布数据 - 开始");
+        log.debug("获取角色分布数据");
 
-        List<String> roleNames = new ArrayList<>();
-        List<Long> userCounts = new ArrayList<>();
-
-        // 获取所有角色及其用户数 - 批量查询避免 N+1
+        // 获取所有角色
         List<RoleEntity> roles = roleRepository.findByDeletedFalse();
-        log.debug("找到角色数: {}", roles.size());
 
-        // 批量查询所有用户角色关系
+        // 批量查询用户角色关系，避免 N+1 问题
         List<UserRoleEntity> allUserRoles = userRoleRepository.findAll();
         Map<String, Long> roleUserCountMap = allUserRoles.stream()
-                .collect(java.util.stream.Collectors.groupingBy(
-                        UserRoleEntity::getRoleId,
-                        java.util.stream.Collectors.counting()));
+                .collect(Collectors.groupingBy(UserRoleEntity::getRoleId, Collectors.counting()));
 
-        for (RoleEntity role : roles) {
-            roleNames.add(role.getName());
-            userCounts.add(roleUserCountMap.getOrDefault(role.getId(), 0L));
-            log.debug("角色: {}, 用户数: {}", role.getName(), roleUserCountMap.getOrDefault(role.getId(), 0L));
-        }
+        List<String> roleNames = roles.stream()
+                .map(RoleEntity::getName)
+                .collect(Collectors.toList());
 
-        log.debug("获取角色分布数据 - 完成, 角色数: {}", roleNames.size());
+        List<Long> userCounts = roles.stream()
+                .map(role -> roleUserCountMap.getOrDefault(role.getId(), 0L))
+                .collect(Collectors.toList());
+
+        log.debug("角色分布数据: roles={}, counts={}", roleNames, userCounts);
         return new ChartDataResp(roleNames, userCounts);
     }
 
     @Override
     @Transactional(readOnly = true)
     public ChartDataResp getMenuDistributionData() {
-        log.debug("获取菜单类型分布数据 - 开始");
+        log.debug("获取菜单类型分布数据");
 
         List<String> types = List.of("目录", "菜单", "按钮");
-        List<Long> counts = new ArrayList<>();
-
-        // 统计各类型菜单数量
         long directoryCount = menuRepository.countByTypeAndDeletedFalse(0);
         long menuCount = menuRepository.countByTypeAndDeletedFalse(1);
         long buttonCount = menuRepository.countByTypeAndDeletedFalse(2);
 
-        counts.add(directoryCount);
-        counts.add(menuCount);
-        counts.add(buttonCount);
+        List<Long> counts = List.of(directoryCount, menuCount, buttonCount);
 
-        log.debug("获取菜单类型分布数据 - 完成, 目录: {}, 菜单: {}, 按钮: {}",
-                 directoryCount, menuCount, buttonCount);
+        log.debug("菜单类型分布: 目录={}, 菜单={}, 按钮={}", directoryCount, menuCount, buttonCount);
         return new ChartDataResp(types, counts);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ChartDataResp getVisitTrendData() {
+        log.debug("获取访问量趋势数据");
+
+        LocalDate today = LocalDate.now();
+        List<LocalDate> dates = generateRecentDates(today, CHART_DAYS);
+        List<String> dateLabels = dates.stream()
+                .map(DATE_FORMATTER::format)
+                .collect(Collectors.toList());
+        List<Long> values = new ArrayList<>();
+
+        for (LocalDate date : dates) {
+            Instant startOfDay = date.atStartOfDay(SYSTEM_ZONE).toInstant();
+            Instant endOfDay = date.plusDays(1).atStartOfDay(SYSTEM_ZONE).toInstant();
+            long count = logRepository.countByCreateTimeBetweenAndDeletedFalse(startOfDay, endOfDay);
+            values.add(count);
+        }
+
+        log.debug("访问量趋势数据: dates={}, values={}", dateLabels, values);
+        return new ChartDataResp(dateLabels, values);
+    }
+
+    // ==================== 操作日志 ====================
 
     @Override
     @Transactional(readOnly = true)
     public List<OperationLogResp> getRecentOperationLogs() {
         log.debug("获取最近操作日志");
 
-        // 获取最近10条操作日志
         List<LogEntity> logs = logRepository.findTop10ByDeletedFalseOrderByCreateTimeDesc();
 
-        List<OperationLogResp> result = new ArrayList<>();
-        for (LogEntity log : logs) {
-            result.add(new OperationLogResp(
-                    log.getId(),
-                    log.getUsername(),
-                    log.getModule(),
-                    log.getOperationType(),
-                    log.getDescription(),
-                    log.getIp(),
-                    log.getCreateTime(),
-                    log.getStatus(),
-                    log.getCostTime()
-            ));
-        }
-
-        return result;
+        return logs.stream()
+                .map(log -> new OperationLogResp(
+                        log.getId(),
+                        log.getUsername(),
+                        log.getModule(),
+                        log.getOperationType(),
+                        log.getDescription(),
+                        log.getIp(),
+                        log.getCreateTime(),
+                        log.getStatus(),
+                        log.getCostTime()
+                ))
+                .collect(Collectors.toList());
     }
+
+    // ==================== 系统信息 ====================
 
     @Override
     @Transactional(readOnly = true)
     public SystemInfoResp getSystemInfo() {
         log.debug("获取系统信息");
 
-        // 获取系统信息
         OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
         MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
 
@@ -257,95 +214,175 @@ public class DashboardServiceImpl implements DashboardService {
         long usedMemory = memoryBean.getHeapMemoryUsage().getUsed() / (1024 * 1024);
         long freeMemory = totalMemory - usedMemory;
 
-        // 获取JVM运行时间
-        long uptime = ManagementFactory.getRuntimeMXBean().getUptime() / 1000; // 转换为秒
+        // 计算内存使用率（百分比）
+        double memoryUsage = totalMemory > 0 ? (usedMemory * 100.0 / totalMemory) : 0.0;
 
-        // 获取JDK版本
+        // 计算CPU使用率（JVM进程的CPU使用率）
+        // com.sun.management.OperatingSystemMXBean 提供更详细的系统信息
+        double cpuUsage = 0.0;
+        if (osBean instanceof com.sun.management.OperatingSystemMXBean sunOsBean) {
+            // getProcessCpuLoad() 返回 -1.0 如果不可用，否则返回 0.0 到 1.0 之间的值
+            double processCpuLoad = sunOsBean.getProcessCpuLoad();
+            if (processCpuLoad >= 0) {
+                cpuUsage = processCpuLoad * 100.0;
+            }
+        }
+
+        // 计算磁盘使用率
+        double diskUsage = getDiskUsage();
+
+        // 获取 JVM 运行时间（秒）
+        long uptime = ManagementFactory.getRuntimeMXBean().getUptime() / 1000;
+
+        // 获取 JDK 版本
         String jdkVersion = System.getProperty("java.version");
 
         // 获取连接池大小
-        int poolSize = 10;  // 默认值
-        if (dataSource instanceof HikariDataSource hikari) {
-            poolSize = hikari.getMaximumPoolSize();
-        }
+        int poolSize = dataSource instanceof HikariDataSource hikari
+                ? hikari.getMaximumPoolSize()
+                : 20;  // 默认值与 application.yml 中的 DB_POOL_MAX 一致
+
+        // 获取数据库版本（PostgreSQL）
+        String dbVersion = getPostgreSQLVersion();
 
         return new SystemInfoResp(
                 "AdminPlus",
-                "1.0.0",
+                appVersion,
                 osBean.getName(),
                 jdkVersion,
                 totalMemory,
                 usedMemory,
                 freeMemory,
+                memoryUsage,
+                cpuUsage,
+                diskUsage,
                 "PostgreSQL",
-                "16+",
+                dbVersion,
                 poolSize,
                 uptime
         );
     }
+
+    /**
+     * 获取磁盘使用率（百分比）
+     * 基于应用运行目录所在磁盘
+     */
+    private double getDiskUsage() {
+        try {
+            // 获取应用运行目录
+            java.io.File root = new java.io.File("/").getAbsoluteFile();
+            if (!root.exists()) {
+                // Windows系统，使用当前目录所在盘符
+                root = new java.io.File(".").getAbsoluteFile();
+                while (root.getParentFile() != null) {
+                    root = root.getParentFile();
+                }
+            }
+
+            long totalSpace = root.getTotalSpace();
+            long usedSpace = totalSpace - root.getFreeSpace();
+
+            if (totalSpace > 0) {
+                return (usedSpace * 100.0 / totalSpace);
+            }
+        } catch (Exception e) {
+            log.warn("获取磁盘使用率失败", e);
+        }
+        return 0.0;
+    }
+
+    /**
+     * 获取 PostgreSQL 数据库版本
+     */
+    private String getPostgreSQLVersion() {
+        try {
+            return dataSource.getConnection().getMetaData().getDatabaseProductVersion();
+        } catch (Exception e) {
+            log.warn("获取数据库版本失败", e);
+            return "Unknown";
+        }
+    }
+
+    // ==================== 在线用户 ====================
 
     @Override
     @Transactional(readOnly = true)
     public List<OnlineUserResp> getOnlineUsers() {
         log.debug("获取在线用户列表");
 
-        // 获取最近登录的用户（模拟在线用户）
-        List<LogEntity> recentLogs = logRepository.findTop10ByStatusAndDeletedFalseOrderByCreateTimeDesc(1);
+        // 基于有效的 Refresh Token 获取真正的在线用户
+        Instant now = Instant.now();
+        List<RefreshTokenEntity> validTokens = refreshTokenRepository.findValidTokens(now);
 
-        List<OnlineUserResp> result = new ArrayList<>();
-        for (LogEntity log : recentLogs) {
-            if (log.getUserId() != null) {
-                result.add(new OnlineUserResp(
-                        log.getUserId(),
-                        log.getUsername(),
-                        log.getIp(),
-                        log.getCreateTime(),
-                        log.getBrowser(),
-                        log.getOs()
-                ));
+        // 去重并获取用户信息
+        Map<String, RefreshTokenEntity> latestTokenByUser = new HashMap<>();
+        for (RefreshTokenEntity token : validTokens) {
+            RefreshTokenEntity existing = latestTokenByUser.get(token.getUserId());
+            if (existing == null || token.getExpiryDate().isAfter(existing.getExpiryDate())) {
+                latestTokenByUser.put(token.getUserId(), token);
             }
         }
 
+        // 获取用户登录信息（从最近的登录日志）
+        List<OnlineUserResp> result = new ArrayList<>();
+        for (RefreshTokenEntity token : latestTokenByUser.values()) {
+            userRepository.findById(token.getUserId()).ifPresent(user -> {
+                // 获取该用户最近的登录日志
+                List<LogEntity> userLogs = logRepository.findTop5ByUserIdAndDeletedFalseOrderByCreateTimeDesc(token.getUserId());
+                LogEntity lastLoginLog = userLogs.stream()
+                        .filter(log -> log.getLogType() == 2 && log.getStatus() == 1)  // 登录类型且成功
+                        .findFirst()
+                        .orElse(null);
+
+                if (lastLoginLog != null) {
+                    result.add(new OnlineUserResp(
+                            user.getId(),
+                            user.getUsername(),
+                            lastLoginLog.getIp(),
+                            lastLoginLog.getCreateTime(),
+                            lastLoginLog.getBrowser(),
+                            lastLoginLog.getOs()
+                    ));
+                } else {
+                    // 如果没有登录日志，使用默认值
+                    result.add(new OnlineUserResp(
+                            user.getId(),
+                            user.getUsername(),
+                            "-",
+                            token.getCreateTime(),
+                            "-",
+                            "-"
+                    ));
+                }
+            });
+        }
+
+        log.debug("在线用户数量: {}", result.size());
         return result;
     }
+
+    // ==================== 统计汇总 ====================
 
     @Override
     @Transactional(readOnly = true)
     public StatisticsResp getStatistics() {
         log.debug("获取 Statistics 页面统计数据");
 
-        // 获取今天开始时间
         LocalDate today = LocalDate.now();
-        Instant startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant();
-        Instant endOfToday = today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
+        Instant startOfToday = today.atStartOfDay(SYSTEM_ZONE).toInstant();
+        Instant endOfToday = today.plusDays(1).atStartOfDay(SYSTEM_ZONE).toInstant();
 
         // 总用户数
         long totalUsers = userRepository.countByDeletedFalse();
-        log.debug("总用户数: {}", totalUsers);
 
         // 今日访问量
         long todayVisits = logRepository.countByCreateTimeBetweenAndDeletedFalse(startOfToday, endOfToday);
-        log.debug("今日访问量: {}", todayVisits);
 
         // 活跃用户数（今日有操作的用户）
-        long activeUsers = 0;
-        try {
-            activeUsers = logRepository.countDistinctUsersByTimeRange(startOfToday, endOfToday);
-        } catch (Exception e) {
-            log.warn("查询活跃用户失败，使用备用方案", e);
-            // 备用方案：获取今天有日志记录的用户
-            List<LogEntity> todayLogs = logRepository.findByCreateTimeBetweenAndDeletedFalseOrderByCreateTimeDesc(startOfToday, endOfToday);
-            activeUsers = todayLogs.stream()
-                    .filter(log -> log.getUserId() != null)
-                    .map(LogEntity::getUserId)
-                    .distinct()
-                    .count();
-        }
-        log.debug("活跃用户数: {}", activeUsers);
+        long activeUsers = logRepository.countDistinctUsersByTimeRange(startOfToday, endOfToday);
 
         // 今日新增注册
         long todayNewUsers = userRepository.countByCreateTimeBetweenAndDeletedFalse(startOfToday, endOfToday);
-        log.debug("今日新增用户: {}", todayNewUsers);
 
         // 用户增长趋势数据
         ChartDataResp userGrowthData = getUserGrowthData();
@@ -363,36 +400,20 @@ public class DashboardServiceImpl implements DashboardService {
         );
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    public ChartDataResp getVisitTrendData() {
-        log.debug("获取访问量趋势数据 - 开始");
+    // ==================== 私有辅助方法 ====================
 
-        List<String> dates = new ArrayList<>();
-        List<Long> values = new ArrayList<>();
-
-        LocalDate today = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
-
-        for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minusDays(i);
-            dates.add(date.format(formatter));
-
-            // 统计当天的访问量
-            Instant startOfDay = date.atStartOfDay(ZoneId.systemDefault()).toInstant();
-            Instant endOfDay = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant();
-            long count = logRepository.countByCreateTimeBetweenAndDeletedFalse(startOfDay, endOfDay);
-            values.add(count);
-            log.debug("日期: {}, 访问量: {}", date, count);
+    /**
+     * 生成最近 N 天的日期列表
+     *
+     * @param today     基准日期
+     * @param days      天数
+     * @return 日期列表，从最早到最近排序
+     */
+    private List<LocalDate> generateRecentDates(LocalDate today, int days) {
+        List<LocalDate> dates = new ArrayList<>();
+        for (int i = days - 1; i >= 0; i--) {
+            dates.add(today.minusDays(i));
         }
-
-        // 如果所有值都是0，返回示例数据用于演示
-        if (values.stream().allMatch(v -> v == 0)) {
-            log.debug("无访问量数据，返回示例数据用于演示");
-            return getDemoVisitTrendData();
-        }
-
-        log.debug("获取访问量趋势数据 - 完成, 日期数: {}, 值数: {}", dates.size(), values.size());
-        return new ChartDataResp(dates, values);
+        return dates;
     }
 }

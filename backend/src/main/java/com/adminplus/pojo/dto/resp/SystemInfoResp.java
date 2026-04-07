@@ -28,19 +28,36 @@ public record SystemInfoResp(
         String jdkVersion,
 
         /**
-         * 总内存（MB）
+         * JVM总内存（MB）
          */
         Long totalMemory,
 
         /**
-         * 已用内存（MB）
+         * JVM已用内存（MB）
          */
         Long usedMemory,
 
         /**
-         * 可用内存（MB）
+         * JVM可用内存（MB）
          */
         Long freeMemory,
+
+        /**
+         * JVM内存使用率（百分比）
+         */
+        Double memoryUsage,
+
+        /**
+         * CPU使用率（百分比，0-100）
+         * 注意：这是JVM进程的CPU使用率，不是系统整体的CPU使用率
+         */
+        Double cpuUsage,
+
+        /**
+         * 系统磁盘使用率（百分比）
+         * 基于应用运行目录所在磁盘
+         */
+        Double diskUsage,
 
         /**
          * 数据库类型
