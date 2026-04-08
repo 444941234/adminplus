@@ -2,6 +2,7 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.query.DictQuery;
 import com.adminplus.pojo.dto.req.DictCreateReq;
 import com.adminplus.pojo.dto.req.DictUpdateReq;
 import com.adminplus.pojo.dto.resp.DictItemResp;
@@ -37,12 +38,8 @@ public class DictController {
     @Operation(summary = "分页查询字典列表")
     @OperationLog(module = "字典管理", operationType = 1, description = "查询字典列表")
     @PreAuthorize("hasAuthority('dict:list')")
-    public ApiResponse<PageResultResp<DictResp>> getDictList(
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) String keyword
-    ) {
-        PageResultResp<DictResp> result = dictService.getDictList(page, size, keyword);
+    public ApiResponse<PageResultResp<DictResp>> getDictList(DictQuery req) {
+        PageResultResp<DictResp> result = dictService.getDictList(req);
         return ApiResponse.ok(result);
     }
 

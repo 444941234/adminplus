@@ -1,6 +1,7 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.pojo.dto.query.ConfigGroupQuery;
 import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
 import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
 import com.adminplus.pojo.dto.req.LogEntry;
@@ -107,7 +108,7 @@ class ConfigGroupServiceTest {
             doReturn(page).when(configGroupRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class));
 
             // When
-            PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(1, 10, null);
+            PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(any(ConfigGroupQuery.class));
 
             // Then
             assertThat(result.records()).hasSize(1);
@@ -125,7 +126,7 @@ class ConfigGroupServiceTest {
             doReturn(page).when(configGroupRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class));
 
             // When
-            PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(1, 10, "系统");
+            PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(any(ConfigGroupQuery.class));
 
             // Then
             assertThat(result.records()).hasSize(1);

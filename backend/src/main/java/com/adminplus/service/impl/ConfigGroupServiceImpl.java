@@ -2,6 +2,7 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
+import com.adminplus.pojo.dto.query.ConfigGroupQuery;
 import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
 import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
 import com.adminplus.pojo.dto.req.LogEntry;
@@ -45,16 +46,16 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<ConfigGroupResp> getConfigGroupList(Integer page, Integer size, String keyword) {
-        Pageable pageable = PageUtils.toPageableAsc(page, size, "sortOrder");
+    public PageResultResp<ConfigGroupResp> getConfigGroupList(ConfigGroupQuery req) {
+        Pageable pageable = PageUtils.toPageableAsc(req.getPage(), req.getSize(), "sortOrder");
 
         Specification<ConfigGroupEntity> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (keyword != null && !keyword.isEmpty()) {
+            if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
                 predicates.add(cb.or(
-                        cb.like(root.get("name"), "%" + keyword + "%"),
-                        cb.like(root.get("code"), "%" + keyword + "%")
+                        cb.like(root.get("name"), "%" + req.getKeyword() + "%"),
+                        cb.like(root.get("code"), "%" + req.getKeyword() + "%")
                 ));
             }
 

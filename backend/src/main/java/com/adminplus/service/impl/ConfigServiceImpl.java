@@ -2,6 +2,7 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
+import com.adminplus.pojo.dto.query.ConfigQuery;
 import com.adminplus.pojo.dto.req.*;
 import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.*;
@@ -58,25 +59,25 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<ConfigResp> getConfigList(Integer page, Integer size, String groupId, String keyword, Integer status) {
-        Pageable pageable = PageUtils.toPageableAsc(page, size, "sortOrder");
+    public PageResultResp<ConfigResp> getConfigList(ConfigQuery req) {
+        Pageable pageable = PageUtils.toPageableAsc(req.getPage(), req.getSize(), "sortOrder");
 
         Specification<ConfigEntity> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (groupId != null && !groupId.isEmpty()) {
-                predicates.add(cb.equal(root.get("groupId"), groupId));
+            if (req.getGroupId() != null && !req.getGroupId().isEmpty()) {
+                predicates.add(cb.equal(root.get("groupId"), req.getGroupId()));
             }
 
-            if (keyword != null && !keyword.isEmpty()) {
+            if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
                 predicates.add(cb.or(
-                        cb.like(root.get("name"), "%" + keyword + "%"),
-                        cb.like(root.get("key"), "%" + keyword + "%")
+                        cb.like(root.get("name"), "%" + req.getKeyword() + "%"),
+                        cb.like(root.get("key"), "%" + req.getKeyword() + "%")
                 ));
             }
 
-            if (status != null) {
-                predicates.add(cb.equal(root.get("status"), status));
+            if (req.getStatus() != null) {
+                predicates.add(cb.equal(root.get("status"), req.getStatus()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

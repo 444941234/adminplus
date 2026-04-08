@@ -8,7 +8,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.0</version>
+        <version>4.0.5</version>
         <relativePath/>
     </parent>
 
@@ -16,13 +16,13 @@
     <artifactId>adminplus-backend</artifactId>
     <version>1.0.0</version>
     <name>AdminPlus Backend</name>
-    <description>基于 Spring Boot 3.5 + JDK 21 的全栈 RBAC 管理系统后端</description>
+    <description>基于 Spring Boot 4.0 + JDK 25 的全栈 RBAC 管理系统后端</description>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
         <postgresql.version>42.7.10</postgresql.version>
         <lombok.version>1.18.34</lombok.version>
     </properties>
@@ -31,7 +31,7 @@
         <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <artifactId>spring-boot-starter-webmvc</artifactId>
         </dependency>
 
         <!-- Apache HttpClient for RestTemplate connection pooling -->
@@ -48,12 +48,19 @@
         <!-- Spring Security OAuth2 Resource Server (Native JWT) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+            <artifactId>spring-boot-starter-security-oauth2-resource-server</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!-- Properties Migrator for Spring Boot 4.0 migration -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-properties-migrator</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- PostgreSQL Driver -->
@@ -76,11 +83,17 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
 
+        <!-- Spring Boot Health (separate module in Spring Boot 4.0) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-health</artifactId>
+        </dependency>
+
         <!-- SpringDoc OpenAPI (Swagger) -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>2.8.6</version>
+            <version>3.0.0</version>
         </dependency>
 
         <!-- Spring Cache -->
@@ -91,12 +104,8 @@
 
         <!-- Flyway 数据库迁移 -->
         <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-flyway</artifactId>
         </dependency>
 
         <!-- Caffeine Cache -->
@@ -114,7 +123,7 @@
         <!-- Spring AOP -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-aop</artifactId>
+            <artifactId>spring-boot-starter-aspectj</artifactId>
         </dependency>
 
         <!-- Spring State Machine -->

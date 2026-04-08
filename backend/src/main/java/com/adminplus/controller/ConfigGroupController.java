@@ -2,6 +2,7 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.query.ConfigGroupQuery;
 import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
 import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
 import com.adminplus.pojo.dto.resp.ConfigGroupResp;
@@ -36,12 +37,8 @@ public class ConfigGroupController {
     @Operation(summary = "分页查询配置组列表")
     @OperationLog(module = "配置管理", operationType = 1, description = "查询配置组列表")
     @PreAuthorize("hasAuthority('config:group:list')")
-    public ApiResponse<PageResultResp<ConfigGroupResp>> getConfigGroupList(
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) String keyword
-    ) {
-        PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(page, size, keyword);
+    public ApiResponse<PageResultResp<ConfigGroupResp>> getConfigGroupList(ConfigGroupQuery req) {
+        PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(req);
         return ApiResponse.ok(result);
     }
 

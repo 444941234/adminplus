@@ -5,7 +5,6 @@ import com.adminplus.pojo.dto.req.DeptCreateReq;
 import com.adminplus.pojo.dto.req.DeptUpdateReq;
 import com.adminplus.service.DeptService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -55,7 +54,6 @@ class DeptControllerTest {
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(deptController).build();
         objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new Jdk8Module());
         testDept = new DeptResp("dept-001", null, "技术部", "TECH", "张三", "13800138000", "tech@example.com", 1, 1, null, null, null);
         createReq = new DeptCreateReq(null, "技术部", "TECH", "张三", "13800138000", "tech@example.com", 1, 1);
         updateReq = new DeptUpdateReq(Optional.empty(), Optional.of("技术部"), Optional.of("TECH"), Optional.of("张三"), Optional.of("13800138000"), Optional.of("tech@example.com"), Optional.of(1), Optional.of(1));

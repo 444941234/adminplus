@@ -193,7 +193,7 @@ class HttpHookExecutorTest {
         verify(restTemplate).exchange(
             anyString(),
             eq(HttpMethod.GET),
-            argThat(entity -> entity.getHeaders().containsKey("X-Custom-Header")),
+            argThat(entity -> entity.getHeaders().get("X-Custom-Header") != null),
             eq(Map.class)
         );
     }

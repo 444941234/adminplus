@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.LogExportService;
@@ -42,12 +42,21 @@ public class LogExportServiceImpl implements LogExportService {
             .withZone(ZoneId.systemDefault());
 
     @Override
-    public ResponseEntity<byte[]> exportToExcel(LogQueryReq query) throws IOException {
-        // 限制导出数量
-        query.setSize(10000);
-        query.setPage(1);
+    public ResponseEntity<byte[]> exportToExcel(LogQuery query) throws IOException {
+        // 限制导出数量，创建新的查询对象
+        LogQuery exportQuery = new LogQuery(
+                1,
+                10000,
+                query.username(),
+                query.module(),
+                query.logType(),
+                query.operationType(),
+                query.status(),
+                query.startTime(),
+                query.endTime()
+        );
 
-        PageResultResp<LogPageResp> result = logService.findPage(query);
+        PageResultResp<LogPageResp> result = logService.getLogList(exportQuery);
         List<LogPageResp> logs = result.records();
 
         try (Workbook workbook = new XSSFWorkbook()) {
@@ -100,12 +109,21 @@ public class LogExportServiceImpl implements LogExportService {
     }
 
     @Override
-    public ResponseEntity<byte[]> exportToCsv(LogQueryReq query) throws IOException {
-        // 限制导出数量
-        query.setSize(10000);
-        query.setPage(1);
+    public ResponseEntity<byte[]> exportToCsv(LogQuery query) throws IOException {
+        // 限制导出数量，创建新的查询对象
+        LogQuery exportQuery = new LogQuery(
+                1,
+                10000,
+                query.username(),
+                query.module(),
+                query.logType(),
+                query.operationType(),
+                query.status(),
+                query.startTime(),
+                query.endTime()
+        );
 
-        PageResultResp<LogPageResp> result = logService.findPage(query);
+        PageResultResp<LogPageResp> result = logService.getLogList(exportQuery);
         List<LogPageResp> logs = result.records();
 
         StringBuilder csv = new StringBuilder();

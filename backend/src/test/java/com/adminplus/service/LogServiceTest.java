@@ -2,7 +2,7 @@ package com.adminplus.service;
 
 import com.adminplus.common.properties.LogStorageProperties;
 import com.adminplus.common.exception.BizException;
-import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -52,7 +52,7 @@ class LogServiceTest {
     private LogServiceImpl logService;
 
     private LogEntity testLog;
-    private LogQueryReq query;
+    private LogQuery query;
 
     @BeforeEach
     void setUp() {
@@ -73,9 +73,7 @@ class LogServiceTest {
         testLog.setStatus(1);
         testLog.setCreateTime(Instant.now());
 
-        query = new LogQueryReq();
-        query.setPage(1);
-        query.setSize(10);
+        query = new LogQuery(1, 10, null, null, null, null, null, null, null);
     }
 
     @Nested
@@ -89,7 +87,7 @@ class LogServiceTest {
             when(storageStrategy.findById("log-001")).thenReturn(testLog);
 
             // When
-            LogPageResp result = logService.findById("log-001");
+            LogPageResp result = logService.getLogById("log-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -103,7 +101,7 @@ class LogServiceTest {
             when(storageStrategy.findById("non-existent")).thenReturn(null);
 
             // When & Then
-            assertThatThrownBy(() -> logService.findById("non-existent"))
+            assertThatThrownBy(() -> logService.getLogById("non-existent"))
                     .isInstanceOf(BizException.class)
                     .hasMessageContaining("日志不存在");
         }
@@ -120,14 +118,14 @@ class LogServiceTest {
             PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(), 0L, 1, 10
             );
-            when(storageStrategy.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
+            when(storageStrategy.findPage(any(LogQuery.class))).thenReturn(pageResult);
 
             // When
-            PageResultResp<LogPageResp> result = logService.findPage(query);
+            PageResultResp<LogPageResp> result = logService.getLogList(query);
 
             // Then
             assertThat(result).isNotNull();
-            verify(storageStrategy).findPage(any(LogQueryReq.class));
+            verify(storageStrategy).findPage(any(LogQuery.class));
         }
     }
 
@@ -176,14 +174,14 @@ class LogServiceTest {
         @DisplayName("should delete logs by condition")
         void deleteByCondition_ShouldDeleteLogs() {
             // Given
-            when(storageStrategy.deleteByCondition(any(LogQueryReq.class))).thenReturn(5);
+            when(storageStrategy.deleteByCondition(any(LogQuery.class))).thenReturn(5);
 
             // When
             Integer result = logService.deleteByCondition(query);
 
             // Then
             assertThat(result).isEqualTo(5);
-            verify(storageStrategy).deleteByCondition(any(LogQueryReq.class));
+            verify(storageStrategy).deleteByCondition(any(LogQuery.class));
         }
     }
 

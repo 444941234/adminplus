@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.pojo.dto.query.UserQuery;
 import com.adminplus.pojo.dto.req.UserCreateReq;
 import com.adminplus.pojo.dto.req.UserUpdateReq;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -18,8 +19,11 @@ public interface UserService {
 
     /**
      * 分页查询用户列表
+     *
+     * @param req 查询条件
+     * @return 分页结果
      */
-    PageResultResp<UserResp> getUserList(Integer page, Integer size, String keyword, String deptId);
+    PageResultResp<UserResp> getUserList(UserQuery req);
 
     /**
      * 根据ID查询用户

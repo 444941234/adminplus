@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.pojo.dto.query.RoleQuery;
 import com.adminplus.pojo.dto.req.RoleCreateReq;
 import com.adminplus.pojo.dto.req.RoleUpdateReq;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -77,7 +78,7 @@ class RoleControllerTest {
         void getRoleList_ShouldReturnRoleList() throws Exception {
             // Given
             PageResultResp<RoleResp> pageResult = new PageResultResp<>(List.of(testRole), 1L, 1, 10);
-            when(roleService.getRoleList(eq(1), eq(10), any())).thenReturn(pageResult);
+            when(roleService.getRoleList(any(RoleQuery.class))).thenReturn(pageResult);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/roles"))
@@ -85,7 +86,7 @@ class RoleControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.records[0].name").value("管理员"));
 
-            verify(roleService).getRoleList(eq(1), eq(10), any());
+            verify(roleService).getRoleList(any(RoleQuery.class));
         }
     }
 

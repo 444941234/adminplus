@@ -72,4 +72,39 @@ public interface UserRepository extends JpaRepository<UserEntity, String> {
     Page<UserEntity> findByKeywordAndDeptIdIn(@Param("keyword") String keyword,
                                                @Param("deptIds") List<String> deptIds,
                                                Pageable pageable);
+
+    /**
+     * 根据状态查询用户
+     */
+    Page<UserEntity> findByStatus(Integer status, Pageable pageable);
+
+    /**
+     * 根据部门和状态查询用户
+     */
+    Page<UserEntity> findByDeptIdInAndStatus(List<String> deptIds, Integer status, Pageable pageable);
+
+    /**
+     * 根据关键词和状态搜索用户
+     */
+    @Query("SELECT u FROM UserEntity u WHERE u.status = :status AND (" +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "u.phone LIKE CONCAT('%', :keyword, '%'))")
+    Page<UserEntity> findByKeywordAndStatus(@Param("keyword") String keyword,
+                                             @Param("status") Integer status,
+                                             Pageable pageable);
+
+    /**
+     * 根据关键词、部门ID列表和状态搜索用户
+     */
+    @Query("SELECT u FROM UserEntity u WHERE u.deptId IN :deptIds AND u.status = :status AND (" +
+           "LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
+           "u.phone LIKE CONCAT('%', :keyword, '%'))")
+    Page<UserEntity> findByKeywordAndDeptIdInAndStatus(@Param("keyword") String keyword,
+                                                        @Param("deptIds") List<String> deptIds,
+                                                        @Param("status") Integer status,
+                                                        Pageable pageable);
 }

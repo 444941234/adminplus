@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.pojo.dto.query.DictQuery;
 import com.adminplus.pojo.dto.req.DictCreateReq;
 import com.adminplus.pojo.dto.req.DictUpdateReq;
 import com.adminplus.pojo.dto.resp.DictItemResp;
@@ -18,8 +19,11 @@ public interface DictService {
 
     /**
      * 分页查询字典列表
+     *
+     * @param req 查询条件
+     * @return 分页结果
      */
-    PageResultResp<DictResp> getDictList(Integer page, Integer size, String keyword);
+    PageResultResp<DictResp> getDictList(DictQuery req);
 
     /**
      * 根据ID查询字典

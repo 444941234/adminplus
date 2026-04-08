@@ -1,6 +1,7 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.pojo.dto.query.ConfigQuery;
 import com.adminplus.pojo.dto.req.*;
 import com.adminplus.pojo.dto.req.LogEntry;
 import com.adminplus.pojo.dto.resp.*;
@@ -347,7 +348,7 @@ class ConfigServiceTest {
             when(configGroupRepository.findAllById(any(List.class))).thenReturn(List.of(testGroup));
 
             // When
-            PageResultResp<ConfigResp> result = configService.getConfigList(1, 10, null, null, null);
+            PageResultResp<ConfigResp> result = configService.getConfigList(any(ConfigQuery.class));
 
             // Then
             assertThat(result.records()).hasSize(1);

@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.pojo.dto.query.UserQuery;
 import com.adminplus.pojo.dto.resp.UserResp;
 import com.adminplus.pojo.dto.req.UserCreateReq;
 import com.adminplus.pojo.dto.req.UserUpdateReq;
@@ -79,7 +80,7 @@ class UserControllerTest {
         void getUserList_ShouldReturnUserList() throws Exception {
             // Given
             PageResultResp<UserResp> pageResult = new PageResultResp<>(List.of(testUser), 1L, 1, 10);
-            when(userService.getUserList(1, 10, null, null)).thenReturn(pageResult);
+            when(userService.getUserList(any(UserQuery.class))).thenReturn(pageResult);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/users")
@@ -89,7 +90,7 @@ class UserControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.records[0].username").value("testuser"));
 
-            verify(userService).getUserList(1, 10, null, null);
+            verify(userService).getUserList(any(UserQuery.class));
         }
     }
 

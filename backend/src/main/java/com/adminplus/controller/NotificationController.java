@@ -1,6 +1,7 @@
 package com.adminplus.controller;
 
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.query.NotificationQuery;
 import com.adminplus.pojo.dto.req.NotificationSendReq;
 import com.adminplus.pojo.dto.resp.NotificationResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -54,12 +55,9 @@ public class NotificationController {
      * 获取当前用户的通知列表
      */
     @GetMapping
-    public ApiResponse<PageResultResp<NotificationResp>> getMyNotifications(
-            @RequestParam(required = false) Integer status,
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "20") Integer size) {
+    public ApiResponse<PageResultResp<NotificationResp>> getMyNotifications(NotificationQuery req) {
         String userId = getCurrentUserId();
-        PageResultResp<NotificationResp> result = notificationService.getUserNotifications(userId, status, page, size);
+        PageResultResp<NotificationResp> result = notificationService.getUserNotifications(userId, req);
         return ApiResponse.ok(result);
     }
 

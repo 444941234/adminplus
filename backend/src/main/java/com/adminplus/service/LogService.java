@@ -1,7 +1,7 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -29,7 +29,7 @@ public interface LogService {
      * @param query 查询条件
      * @return 分页结果
      */
-    PageResultResp<LogPageResp> findPage(LogQueryReq query);
+    PageResultResp<LogPageResp> getLogList(LogQuery query);
 
     /**
      * 根据ID查询日志详情
@@ -37,7 +37,7 @@ public interface LogService {
      * @param id 日志ID
      * @return 日志详情
      */
-    LogPageResp findById(String id);
+    LogPageResp getLogById(String id);
 
     /**
      * 删除单条日志
@@ -59,7 +59,7 @@ public interface LogService {
      * @param query 查询条件
      * @return 删除的记录数
      */
-    Integer deleteByCondition(LogQueryReq query);
+    Integer deleteByCondition(LogQuery query);
 
     /**
      * 清理过期日志

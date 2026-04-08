@@ -2,6 +2,7 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
+import com.adminplus.pojo.dto.query.RoleQuery;
 import com.adminplus.pojo.dto.req.RoleCreateReq;
 import com.adminplus.pojo.dto.req.RoleUpdateReq;
 import com.adminplus.pojo.dto.req.LogEntry;
@@ -52,13 +53,14 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<RoleResp> getRoleList(Integer page, Integer size, String keyword) {
-        Pageable pageable = PageUtils.toPageableAsc(page, size, "sortOrder");
+    public PageResultResp<RoleResp> getRoleList(RoleQuery req) {
+        Pageable pageable = PageUtils.toPageableAsc(req.getPage(), req.getSize(), "sortOrder");
 
         Specification<RoleEntity> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             // 关键词搜索
+            String keyword = req.getKeyword();
             if (keyword != null && !keyword.isEmpty()) {
                 predicates.add(cb.or(
                         cb.like(root.get("name"), "%" + keyword + "%"),

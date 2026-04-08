@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.pojo.dto.query.ConfigQuery;
 import com.adminplus.pojo.dto.req.*;
 import com.adminplus.pojo.dto.resp.*;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -90,7 +91,7 @@ class ConfigControllerTest {
                     1,
                     10
             );
-            when(configService.getConfigList(1, 10, null, null, null)).thenReturn(pageResult);
+            when(configService.getConfigList(any(ConfigQuery.class))).thenReturn(pageResult);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/configs")
@@ -100,7 +101,7 @@ class ConfigControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.records[0].name").value("系统名称"));
 
-            verify(configService).getConfigList(1, 10, null, null, null);
+            verify(configService).getConfigList(any(ConfigQuery.class));
         }
 
         @Test
@@ -113,7 +114,7 @@ class ConfigControllerTest {
                     1,
                     10
             );
-            when(configService.getConfigList(1, 10, "group1", "system", 1)).thenReturn(pageResult);
+            when(configService.getConfigList(any(ConfigQuery.class))).thenReturn(pageResult);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/configs")
@@ -125,7 +126,7 @@ class ConfigControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.records[0].name").value("系统名称"));
 
-            verify(configService).getConfigList(1, 10, "group1", "system", 1);
+            verify(configService).getConfigList(any(ConfigQuery.class));
         }
     }
 

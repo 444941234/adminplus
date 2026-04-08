@@ -1,5 +1,6 @@
 package com.adminplus.controller;
 
+import com.adminplus.pojo.dto.query.DictQuery;
 import com.adminplus.pojo.dto.req.DictCreateReq;
 import com.adminplus.pojo.dto.req.DictUpdateReq;
 import com.adminplus.pojo.dto.resp.DictResp;
@@ -72,7 +73,7 @@ class DictControllerTest {
         void getDictList_ShouldReturnDictList() throws Exception {
             // Given
             PageResultResp<DictResp> pageResult = new PageResultResp<>(List.of(testDict), 1L, 1, 10);
-            when(dictService.getDictList(1, 10, null)).thenReturn(pageResult);
+            when(dictService.getDictList(any(DictQuery.class))).thenReturn(pageResult);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/dicts")
@@ -82,7 +83,7 @@ class DictControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.records[0].dictName").value("状态字典"));
 
-            verify(dictService).getDictList(1, 10, null);
+            verify(dictService).getDictList(any(DictQuery.class));
         }
     }
 

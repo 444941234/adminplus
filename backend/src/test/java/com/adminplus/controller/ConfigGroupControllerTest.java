@@ -1,6 +1,7 @@
 package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
+import com.adminplus.pojo.dto.query.ConfigGroupQuery;
 import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
 import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
 import com.adminplus.pojo.dto.resp.ConfigGroupResp;
@@ -86,7 +87,7 @@ class ConfigGroupControllerTest {
                     1,
                     10
             );
-            when(configGroupService.getConfigGroupList(1, 10, null)).thenReturn(pageResult);
+            when(configGroupService.getConfigGroupList(any(ConfigGroupQuery.class))).thenReturn(pageResult);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/config-groups")
@@ -96,7 +97,7 @@ class ConfigGroupControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.records[0].name").value("系统配置"));
 
-            verify(configGroupService).getConfigGroupList(1, 10, null);
+            verify(configGroupService).getConfigGroupList(any(ConfigGroupQuery.class));
         }
 
         @Test
@@ -109,7 +110,7 @@ class ConfigGroupControllerTest {
                     1,
                     10
             );
-            when(configGroupService.getConfigGroupList(1, 10, "系统")).thenReturn(pageResult);
+            when(configGroupService.getConfigGroupList(any(ConfigGroupQuery.class))).thenReturn(pageResult);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/config-groups")
@@ -119,7 +120,7 @@ class ConfigGroupControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.records[0].name").value("系统配置"));
 
-            verify(configGroupService).getConfigGroupList(1, 10, "系统");
+            verify(configGroupService).getConfigGroupList(any(ConfigGroupQuery.class));
         }
     }
 

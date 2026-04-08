@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.pojo.dto.query.ConfigGroupQuery;
 import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
 import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
 import com.adminplus.pojo.dto.resp.ConfigGroupResp;
@@ -16,12 +17,10 @@ public interface ConfigGroupService {
     /**
      * 分页查询配置组列表
      *
-     * @param page    页码
-     * @param size    每页大小
-     * @param keyword 关键字（搜索名称或编码）
+     * @param req 查询条件
      * @return 分页结果
      */
-    PageResultResp<ConfigGroupResp> getConfigGroupList(Integer page, Integer size, String keyword);
+    PageResultResp<ConfigGroupResp> getConfigGroupList(ConfigGroupQuery req);
 
     /**
      * 根据ID查询配置组

@@ -3,7 +3,7 @@ package com.adminplus.service.impl;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.common.properties.LogStorageProperties;
 import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -88,13 +88,13 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<LogPageResp> findPage(LogQueryReq query) {
+    public PageResultResp<LogPageResp> getLogList(LogQuery query) {
         return getStorageStrategy().findPage(query);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public LogPageResp findById(String id) {
+    public LogPageResp getLogById(String id) {
         LogEntity logEntity = getStorageStrategy().findById(id);
         if (logEntity == null) {
             throw new BizException("日志不存在");
@@ -116,7 +116,7 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Transactional
-    public Integer deleteByCondition(LogQueryReq query) {
+    public Integer deleteByCondition(LogQuery query) {
         return getStorageStrategy().deleteByCondition(query);
     }
 

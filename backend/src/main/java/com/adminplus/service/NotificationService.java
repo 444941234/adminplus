@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.pojo.dto.query.NotificationQuery;
 import com.adminplus.pojo.dto.req.NotificationSendReq;
 import com.adminplus.pojo.dto.resp.NotificationResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -50,12 +51,10 @@ public interface NotificationService {
      * 获取用户通知列表
      *
      * @param userId 用户ID
-     * @param status 状态筛选（可选）
-     * @param page 页码（1-based）
-     * @param size 每页大小
+     * @param req 查询条件
      * @return 通知列表
      */
-    PageResultResp<NotificationResp> getUserNotifications(String userId, Integer status, Integer page, Integer size);
+    PageResultResp<NotificationResp> getUserNotifications(String userId, NotificationQuery req);
 
     /**
      * 获取未读通知数量

@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.service.LogStatisticsService;
 import com.adminplus.service.LogStorageStrategy;
@@ -109,46 +109,30 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
     }
 
     private Long countByTypeInternal(LogStorageStrategy strategy, int logType) {
-        LogQueryReq query = new LogQueryReq();
-        query.setLogType(logType);
-        query.setPage(1);
-        query.setSize(1);
+        LogQuery query = new LogQuery(1, 1, null, null, logType, null, null, null, null);
         return strategy.countByCondition(query);
     }
 
     private Long countByStatusInternal(LogStorageStrategy strategy, int status) {
-        LogQueryReq query = new LogQueryReq();
-        query.setStatus(status);
-        query.setPage(1);
-        query.setSize(1);
+        LogQuery query = new LogQuery(1, 1, null, null, null, null, status, null, null);
         return strategy.countByCondition(query);
     }
 
     private Long countTodayInternal(LogStorageStrategy strategy) {
         String todayStart = getTodayStart();
-        LogQueryReq query = new LogQueryReq();
-        query.setStartTime(todayStart);
-        query.setPage(1);
-        query.setSize(1);
+        LogQuery query = new LogQuery(1, 1, null, null, null, null, null, todayStart, null);
         return strategy.countByCondition(query);
     }
 
     private Long countByDateInternal(LogStorageStrategy strategy, String date) {
         String startTime = date + " 00:00:00";
         String endTime = date + " 23:59:59";
-        LogQueryReq query = new LogQueryReq();
-        query.setStartTime(startTime);
-        query.setEndTime(endTime);
-        query.setPage(1);
-        query.setSize(1);
+        LogQuery query = new LogQuery(1, 1, null, null, null, null, null, startTime, endTime);
         return strategy.countByCondition(query);
     }
 
     private Long countByOperationTypeInternal(LogStorageStrategy strategy, int operationType) {
-        LogQueryReq query = new LogQueryReq();
-        query.setOperationType(operationType);
-        query.setPage(1);
-        query.setSize(1);
+        LogQuery query = new LogQuery(1, 1, null, null, null, operationType, null, null, null);
         return strategy.countByCondition(query);
     }
 

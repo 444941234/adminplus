@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.LogEntity;
@@ -59,7 +59,7 @@ public class DatabaseLogStorage implements LogStorageStrategy {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<LogPageResp> findPage(LogQueryReq query) {
+    public PageResultResp<LogPageResp> findPage(LogQuery query) {
         var pageable = PageUtils.toPageableDesc(query.getPage(), query.getSize(), "createTime");
 
         Specification<LogEntity> spec = buildSpecification(query);
@@ -76,7 +76,7 @@ public class DatabaseLogStorage implements LogStorageStrategy {
 
     @Override
     @Transactional(readOnly = true)
-    public Long countByCondition(LogQueryReq query) {
+    public Long countByCondition(LogQuery query) {
         Specification<LogEntity> spec = buildSpecification(query);
         return logRepository.count(spec);
     }
@@ -97,7 +97,7 @@ public class DatabaseLogStorage implements LogStorageStrategy {
 
     @Override
     @Transactional
-    public Integer deleteByCondition(LogQueryReq query) {
+    public Integer deleteByCondition(LogQuery query) {
         Specification<LogEntity> spec = buildSpecification(query);
         List<LogEntity> logs = logRepository.findAll(spec);
         logRepository.deleteAll(logs);
@@ -148,7 +148,7 @@ public class DatabaseLogStorage implements LogStorageStrategy {
     /**
      * 构建查询条件
      */
-    private Specification<LogEntity> buildSpecification(LogQueryReq query) {
+    private Specification<LogEntity> buildSpecification(LogQuery query) {
         return (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 

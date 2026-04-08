@@ -3,6 +3,7 @@ package com.adminplus.service.impl;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
 import com.adminplus.enums.UserStatus;
+import com.adminplus.pojo.dto.query.UserQuery;
 import com.adminplus.pojo.dto.req.UserCreateReq;
 import com.adminplus.pojo.dto.req.UserUpdateReq;
 import com.adminplus.pojo.dto.req.LogEntry;
@@ -58,10 +59,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<UserResp> getUserList(Integer page, Integer size, String keyword, String deptId) {
-        var pageable = PageUtils.toPageable(page, size);
+    public PageResultResp<UserResp> getUserList(UserQuery req) {
+        var pageable = PageUtils.toPageable(req.getPage(), req.getSize());
 
-        Page<UserEntity> pageResult = queryUsers(pageable, keyword, deptId);
+        Page<UserEntity> pageResult = queryUsers(pageable, req.getKeyword(), req.getDeptId(), req.getStatus());
         var batchData = prepareBatchData(pageResult.getContent());
 
         return PageUtils.toResp(pageResult, user -> toResp(user,
@@ -72,34 +73,70 @@ public class UserServiceImpl implements UserService {
     /**
      * 根据条件查询用户
      */
-    private Page<UserEntity> queryUsers(Pageable pageable, String keyword, String deptId) {
+    private Page<UserEntity> queryUsers(Pageable pageable, String keyword, String deptId, Integer status) {
         boolean isAdmin = SecurityUtils.isAdmin();
         boolean hasKeyword = keyword != null && !keyword.trim().isEmpty();
+        boolean hasDeptId = deptId != null && !deptId.isEmpty();
+        boolean hasStatus = status != null;
 
-        if (hasKeyword && deptId != null && !deptId.isEmpty()) {
+        // 管理员查询 - 有完整权限
+        if (isAdmin) {
+            return queryUsersAsAdmin(pageable, keyword, deptId, status, hasKeyword, hasDeptId, hasStatus);
+        }
+
+        // 非管理员查询 - 受当前用户部门权限限制
+        return queryUsersAsRegularUser(pageable, keyword, status, hasKeyword);
+    }
+
+    /**
+     * 管理员查询用户
+     */
+    private Page<UserEntity> queryUsersAsAdmin(Pageable pageable, String keyword, String deptId,
+                                                Integer status, boolean hasKeyword,
+                                                boolean hasDeptId, boolean hasStatus) {
+        if (hasKeyword && hasDeptId && hasStatus) {
+            List<String> deptIds = deptService.getDeptAndChildrenIds(deptId);
+            return userRepository.findByKeywordAndDeptIdInAndStatus(keyword.trim(), deptIds, status, pageable);
+        } else if (hasKeyword && hasDeptId) {
             List<String> deptIds = deptService.getDeptAndChildrenIds(deptId);
             return userRepository.findByKeywordAndDeptIdIn(keyword.trim(), deptIds, pageable);
-        } else if (hasKeyword && !isAdmin) {
-            String currentDeptId = SecurityUtils.getCurrentUserDeptId();
-            if (currentDeptId != null) {
-                List<String> accessibleDeptIds = deptService.getDeptAndChildrenIds(currentDeptId);
-                return userRepository.findByKeywordAndDeptIdIn(keyword.trim(), accessibleDeptIds, pageable);
-            }
-            return Page.empty(pageable);
+        } else if (hasKeyword && hasStatus) {
+            return userRepository.findByKeywordAndStatus(keyword.trim(), status, pageable);
         } else if (hasKeyword) {
             return userRepository.findByKeyword(keyword.trim(), pageable);
-        } else if (deptId != null && !deptId.isEmpty()) {
+        } else if (hasDeptId && hasStatus) {
+            List<String> deptIds = deptService.getDeptAndChildrenIds(deptId);
+            return userRepository.findByDeptIdInAndStatus(deptIds, status, pageable);
+        } else if (hasDeptId) {
             List<String> deptIds = deptService.getDeptAndChildrenIds(deptId);
             return userRepository.findByDeptIdIn(deptIds, pageable);
-        } else if (!isAdmin) {
-            String currentDeptId = SecurityUtils.getCurrentUserDeptId();
-            if (currentDeptId != null) {
-                List<String> accessibleDeptIds = deptService.getDeptAndChildrenIds(currentDeptId);
-                return userRepository.findByDeptIdIn(accessibleDeptIds, pageable);
-            }
-            return Page.empty(pageable);
+        } else if (hasStatus) {
+            return userRepository.findByStatus(status, pageable);
         } else {
             return userRepository.findAll(pageable);
+        }
+    }
+
+    /**
+     * 普通用户查询 - 只能查看本部门及子部门用户
+     */
+    private Page<UserEntity> queryUsersAsRegularUser(Pageable pageable, String keyword,
+                                                      Integer status, boolean hasKeyword) {
+        String currentDeptId = SecurityUtils.getCurrentUserDeptId();
+        if (currentDeptId == null) {
+            return Page.empty(pageable);
+        }
+
+        List<String> accessibleDeptIds = deptService.getDeptAndChildrenIds(currentDeptId);
+
+        if (hasKeyword && status != null) {
+            return userRepository.findByKeywordAndDeptIdInAndStatus(keyword.trim(), accessibleDeptIds, status, pageable);
+        } else if (hasKeyword) {
+            return userRepository.findByKeywordAndDeptIdIn(keyword.trim(), accessibleDeptIds, pageable);
+        } else if (status != null) {
+            return userRepository.findByDeptIdInAndStatus(accessibleDeptIds, status, pageable);
+        } else {
+            return userRepository.findByDeptIdIn(accessibleDeptIds, pageable);
         }
     }
 

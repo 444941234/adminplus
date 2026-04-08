@@ -6,7 +6,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import jakarta.persistence.EntityManager;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,7 +41,7 @@ import java.util.List;
 public abstract class AbstractRepositoryTest {
 
     @Autowired
-    protected TestEntityManager entityManager;
+    protected EntityManager entityManager;
 
     /**
      * Set up security context for JPA auditing

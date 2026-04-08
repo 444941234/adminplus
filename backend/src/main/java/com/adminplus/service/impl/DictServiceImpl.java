@@ -2,6 +2,7 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
+import com.adminplus.pojo.dto.query.DictQuery;
 import com.adminplus.pojo.dto.req.DictCreateReq;
 import com.adminplus.pojo.dto.req.DictUpdateReq;
 import com.adminplus.pojo.dto.req.LogEntry;
@@ -47,14 +48,15 @@ public class DictServiceImpl implements DictService {
 
     @Override
     @Transactional(readOnly = true)
-    // @Cacheable(value = "dict", key = "'list:' + #page + ':' + #size + ':' + (#keyword != null ? #keyword : '')")
-    public PageResultResp<DictResp> getDictList(Integer page, Integer size, String keyword) {
-        Pageable pageable = PageUtils.toPageableDesc(page, size, "createTime");
+    // @Cacheable(value = "dict", key = "'list:' + #req.page + ':' + #req.size + ':' + (#req.keyword != null ? #req.keyword : '')")
+    public PageResultResp<DictResp> getDictList(DictQuery req) {
+        Pageable pageable = PageUtils.toPageableDesc(req.getPage(), req.getSize(), "createTime");
 
         Specification<DictEntity> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             predicates.add(cb.equal(root.get("deleted"), false));
 
+            String keyword = req.getKeyword();
             if (keyword != null && !keyword.isEmpty()) {
                 predicates.add(cb.or(
                         cb.like(root.get("dictType"), "%" + keyword + "%"),

@@ -7,7 +7,7 @@ import com.adminplus.service.LogService;
 import com.adminplus.utils.IpUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.WebUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -40,11 +40,11 @@ public class LogAspect {
     private static final Logger log = LoggerFactory.getLogger(LogAspect.class);
 
     private final LogService logService;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
-    public LogAspect(LogService logService, ObjectMapper objectMapper) {
+    public LogAspect(LogService logService, JsonMapper jsonMapper) {
         this.logService = logService;
-        this.objectMapper = objectMapper;
+        this.jsonMapper = jsonMapper;
     }
 
     @Pointcut("@annotation(com.adminplus.common.annotation.OperationLog)")
@@ -149,7 +149,7 @@ public class LogAspect {
 
                 RequestBody requestBody = param.getAnnotation(RequestBody.class);
                 if (requestBody != null && args[i] != null) {
-                    return objectMapper.writeValueAsString(args[i]);
+                    return jsonMapper.writeValueAsString(args[i]);
                 }
 
                 RequestParam requestParam = param.getAnnotation(RequestParam.class);
@@ -179,7 +179,7 @@ public class LogAspect {
                 return "";
             }
 
-            return objectMapper.writeValueAsString(paramsMap);
+            return jsonMapper.writeValueAsString(paramsMap);
         } catch (Exception e) {
             log.warn("获取请求参数失败", e);
             return "";
@@ -239,7 +239,7 @@ public class LogAspect {
             RequestBody requestBody = parameters[i].getAnnotation(RequestBody.class);
             if (requestBody != null && args[i] != null) {
                 try {
-                    Map<String, Object> map = objectMapper.convertValue(args[i], Map.class);
+                    Map<String, Object> map = jsonMapper.convertValue(args[i], Map.class);
                     if (map != null) {
                         Object username = map.get("username");
                         if (username != null) {

@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.impl.LogExportServiceImpl;
@@ -39,7 +39,7 @@ class LogExportServiceTest {
     private LogExportServiceImpl logExportService;
 
     private LogPageResp testLog;
-    private LogQueryReq query;
+    private LogQuery query;
 
     @BeforeEach
     void setUp() {
@@ -60,9 +60,7 @@ class LogExportServiceTest {
                 Instant.now()
         );
 
-        query = new LogQueryReq();
-        query.setPage(1);
-        query.setSize(10);
+        query = new LogQuery(1, 10, null, null, null, null, null, null, null);
     }
 
     @Nested
@@ -76,7 +74,7 @@ class LogExportServiceTest {
             PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(testLog), 1L, 1, 10
             );
-            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
+            when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
 
             // When
             ResponseEntity<byte[]> result = logExportService.exportToExcel(query);
@@ -96,7 +94,7 @@ class LogExportServiceTest {
             PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(), 0L, 1, 10
             );
-            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
+            when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
 
             // When
             ResponseEntity<byte[]> result = logExportService.exportToExcel(query);
@@ -113,13 +111,13 @@ class LogExportServiceTest {
             PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(testLog), 1L, 1, 10
             );
-            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
+            when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
 
             // When
             logExportService.exportToExcel(query);
 
             // Then
-            verify(logService).findPage(argThat(q -> q.getSize() == 10000));
+            verify(logService).getLogList(argThat(q -> q.getSize() == 10000));
         }
     }
 
@@ -134,7 +132,7 @@ class LogExportServiceTest {
             PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(testLog), 1L, 1, 10
             );
-            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
+            when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
 
             // When
             ResponseEntity<byte[]> result = logExportService.exportToCsv(query);
@@ -153,7 +151,7 @@ class LogExportServiceTest {
             PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(), 0L, 1, 10
             );
-            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
+            when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
 
             // When
             ResponseEntity<byte[]> result = logExportService.exportToCsv(query);
@@ -173,7 +171,7 @@ class LogExportServiceTest {
             PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
                     List.of(logWithNulls), 1L, 1, 10
             );
-            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
+            when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
 
             // When
             ResponseEntity<byte[]> result = logExportService.exportToCsv(query);

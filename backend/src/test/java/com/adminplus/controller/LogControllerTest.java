@@ -1,6 +1,6 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -74,7 +74,7 @@ class LogControllerTest {
         void getLogList_ShouldReturnLogList() throws Exception {
             // Given
             PageResultResp<LogPageResp> pageResult = new PageResultResp<>(List.of(testLog), 1L, 1, 10);
-            when(logService.findPage(any(LogQueryReq.class))).thenReturn(pageResult);
+            when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/logs")
@@ -84,7 +84,7 @@ class LogControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.records[0].username").value("testuser"));
 
-            verify(logService).findPage(any(LogQueryReq.class));
+            verify(logService).getLogList(any(LogQuery.class));
         }
     }
 
@@ -96,7 +96,7 @@ class LogControllerTest {
         @DisplayName("should return log by id")
         void getLogById_ShouldReturnLog() throws Exception {
             // Given
-            when(logService.findById("log-001")).thenReturn(testLog);
+            when(logService.getLogById("log-001")).thenReturn(testLog);
 
             // When & Then
             mockMvc.perform(get("/v1/sys/logs/log-001"))
@@ -104,7 +104,7 @@ class LogControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.username").value("testuser"));
 
-            verify(logService).findById("log-001");
+            verify(logService).getLogById("log-001");
         }
     }
 

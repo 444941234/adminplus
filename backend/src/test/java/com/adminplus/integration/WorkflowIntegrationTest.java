@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import jakarta.persistence.EntityManager;
 
 import java.time.Instant;
 import java.util.List;
@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.*;
 class WorkflowIntegrationTest extends AbstractRepositoryTest {
 
     @Autowired
-    private TestEntityManager entityManager;
+    private EntityManager entityManager;
 
     @Autowired
     private WorkflowDefinitionRepository definitionRepository;
@@ -76,7 +76,8 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
         user.setPassword("hashed_password");
         user.setDeptId(deptId);
         user.setStatus(1);
-        return entityManager.persist(user);
+        entityManager.persist(user);
+        return user;
     }
 
     @Nested
@@ -96,7 +97,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             definition.setDescription("Employee leave request workflow");
             definition.setStatus(1);
             definition.setVersion(1);
-            definition = entityManager.persist(definition);
+            entityManager.persist(definition);
 
             // 2. Add workflow nodes
             WorkflowNodeEntity node1 = new WorkflowNodeEntity();
@@ -108,7 +109,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             node1.setApproverId(approver1.getId());
             node1.setIsCounterSign(false);
             node1.setAutoPassSameUser(false);
-            node1 = entityManager.persist(node1);
+            entityManager.persist(node1);
 
             WorkflowNodeEntity node2 = new WorkflowNodeEntity();
             node2.setDefinitionId(definition.getId());
@@ -119,7 +120,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             node2.setApproverId(approver2.getId());
             node2.setIsCounterSign(false);
             node2.setAutoPassSameUser(false);
-            node2 = entityManager.persist(node2);
+            entityManager.persist(node2);
 
             entityManager.flush();
             entityManager.clear();
@@ -138,7 +139,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             instance.setSubmitTime(Instant.now());
             instance.setCurrentNodeId(node1.getId());
             instance.setCurrentNodeName(node1.getNodeName());
-            instance = entityManager.persist(instance);
+            entityManager.persist(instance);
 
             // 4. Create approval records for first node
             WorkflowApprovalEntity approval1 = new WorkflowApprovalEntity();
@@ -220,7 +221,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             definition.setCategory("Finance");
             definition.setStatus(1);
             definition.setVersion(1);
-            definition = entityManager.persist(definition);
+            entityManager.persist(definition);
 
             WorkflowNodeEntity node1 = new WorkflowNodeEntity();
             node1.setDefinitionId(definition.getId());
@@ -228,7 +229,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             node1.setNodeOrder(1);
             node1.setApproverType("user");
             node1.setApproverId(approver1.getId());
-            node1 = entityManager.persist(node1);
+            entityManager.persist(node1);
 
             WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
             instance.setDefinitionId(definition.getId());
@@ -240,7 +241,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             instance.setSubmitTime(Instant.now());
             instance.setCurrentNodeId(node1.getId());
             instance.setCurrentNodeName(node1.getNodeName());
-            instance = entityManager.persist(instance);
+            entityManager.persist(instance);
 
             WorkflowApprovalEntity approval = new WorkflowApprovalEntity();
             approval.setInstanceId(instance.getId());
@@ -249,7 +250,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             approval.setApproverId(approver1.getId());
             approval.setApproverName(approver1.getNickname());
             approval.setApprovalStatus("pending");
-            approval = entityManager.persist(approval);
+            entityManager.persist(approval);
 
             entityManager.flush();
             entityManager.clear();
@@ -292,7 +293,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             definition.setCategory("Project");
             definition.setStatus(1);
             definition.setVersion(1);
-            definition = entityManager.persist(definition);
+            entityManager.persist(definition);
 
             WorkflowNodeEntity node1 = new WorkflowNodeEntity();
             node1.setDefinitionId(definition.getId());
@@ -300,7 +301,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             node1.setNodeOrder(1);
             node1.setApproverType("user");
             node1.setApproverId(approver1.getId());
-            node1 = entityManager.persist(node1);
+            entityManager.persist(node1);
 
             WorkflowNodeEntity node2 = new WorkflowNodeEntity();
             node2.setDefinitionId(definition.getId());
@@ -308,7 +309,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             node2.setNodeOrder(2);
             node2.setApproverType("user");
             node2.setApproverId(approver2.getId());
-            node2 = entityManager.persist(node2);
+            entityManager.persist(node2);
 
             WorkflowNodeEntity node3 = new WorkflowNodeEntity();
             node3.setDefinitionId(definition.getId());
@@ -316,7 +317,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             node3.setNodeOrder(3);
             node3.setApproverType("user");
             node3.setApproverId(approver3.getId());
-            node3 = entityManager.persist(node3);
+            entityManager.persist(node3);
 
             // Start workflow
             WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
@@ -329,7 +330,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             instance.setSubmitTime(Instant.now());
             instance.setCurrentNodeId(node1.getId());
             instance.setCurrentNodeName(node1.getNodeName());
-            instance = entityManager.persist(instance);
+            entityManager.persist(instance);
 
             // Create first approval
             WorkflowApprovalEntity approval1 = new WorkflowApprovalEntity();
@@ -369,14 +370,14 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             definition.setDefinitionName("Test Workflow");
             definition.setDefinitionKey("test_wf");
             definition.setStatus(1);
-            definition = entityManager.persist(definition);
+            entityManager.persist(definition);
 
             WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
             instance.setDefinitionId(definition.getId());
             instance.setUserId(initiator.getId());
             instance.setTitle("Test");
             instance.setStatus("draft");
-            instance = entityManager.persist(instance);
+            entityManager.persist(instance);
 
             // Cancel
             instance.setStatus("cancelled");
@@ -399,14 +400,14 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionKey("test_wf2");
             definition.setStatus(1);
-            definition = entityManager.persist(definition);
+            entityManager.persist(definition);
 
             WorkflowNodeEntity node1 = new WorkflowNodeEntity();
             node1.setDefinitionId(definition.getId());
             node1.setNodeName("Node 1");
             node1.setApproverType("user");
             node1.setApproverId(approver1.getId());
-            node1 = entityManager.persist(node1);
+            entityManager.persist(node1);
 
             WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
             instance.setDefinitionId(definition.getId());
@@ -415,7 +416,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             instance.setStatus("running");
             instance.setSubmitTime(Instant.now());
             instance.setCurrentNodeId(node1.getId());
-            instance = entityManager.persist(instance);
+            entityManager.persist(instance);
 
             // Cancel
             instance.setStatus("cancelled");
@@ -440,7 +441,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionKey("concurrent_wf");
             definition.setStatus(1);
-            definition = entityManager.persist(definition);
+            entityManager.persist(definition);
 
             // Create multiple instances
             for (int i = 0; i < 5; i++) {
@@ -477,14 +478,14 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             WorkflowDefinitionEntity definition = new WorkflowDefinitionEntity();
             definition.setDefinitionKey("integrity_wf");
             definition.setStatus(1);
-            definition = entityManager.persist(definition);
+            entityManager.persist(definition);
 
             WorkflowNodeEntity node = new WorkflowNodeEntity();
             node.setDefinitionId(definition.getId());
             node.setNodeName("Approval");
             node.setApproverType("user");
             node.setApproverId(approver1.getId());
-            node = entityManager.persist(node);
+            entityManager.persist(node);
 
             WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
             instance.setDefinitionId(definition.getId());
@@ -492,14 +493,14 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             instance.setTitle("Test");
             instance.setStatus("running");
             instance.setCurrentNodeId(node.getId());
-            instance = entityManager.persist(instance);
+            entityManager.persist(instance);
 
             WorkflowApprovalEntity approval = new WorkflowApprovalEntity();
             approval.setInstanceId(instance.getId());
             approval.setNodeId(node.getId());
             approval.setApproverId(approver1.getId());
             approval.setApprovalStatus("pending");
-            approval = entityManager.persist(approval);
+            entityManager.persist(approval);
 
             entityManager.flush();
             entityManager.clear();
@@ -524,7 +525,7 @@ class WorkflowIntegrationTest extends AbstractRepositoryTest {
             instance.setUserId(initiator.getId());
             instance.setTitle("Test");
             instance.setStatus("draft");
-            instance = entityManager.persist(instance);
+            entityManager.persist(instance);
 
             // Soft delete
             instance.setDeleted(true);

@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.entity.LogEntity;
@@ -139,9 +139,7 @@ class DatabaseLogStorageTest {
         @DisplayName("should return paginated results")
         void findPage_ShouldReturnPaginatedResults() {
             // Given
-            LogQueryReq query = new LogQueryReq();
-            query.setPage(1);
-            query.setSize(10);
+            LogQuery query = new LogQuery(1, 10, null, null, null, null, null, null, null);
             when(logRepository.findAll(any(Specification.class), any(Pageable.class)))
                     .thenReturn(new PageImpl<>(List.of(testLog)));
 
@@ -157,10 +155,7 @@ class DatabaseLogStorageTest {
         @DisplayName("should filter by log type")
         void findPage_ShouldFilterByLogType() {
             // Given
-            LogQueryReq query = new LogQueryReq();
-            query.setPage(1);
-            query.setSize(10);
-            query.setLogType(1);
+            LogQuery query = new LogQuery(1, 10, null, null, 1, null, null, null, null);
             when(logRepository.findAll(any(Specification.class), any(Pageable.class)))
                     .thenReturn(new PageImpl<>(List.of(testLog)));
 
@@ -175,10 +170,7 @@ class DatabaseLogStorageTest {
         @DisplayName("should filter by username")
         void findPage_ShouldFilterByUsername() {
             // Given
-            LogQueryReq query = new LogQueryReq();
-            query.setPage(1);
-            query.setSize(10);
-            query.setUsername("test");
+            LogQuery query = new LogQuery(1, 10, "test", null, null, null, null, null, null);
             when(logRepository.findAll(any(Specification.class), any(Pageable.class)))
                     .thenReturn(new PageImpl<>(List.of(testLog)));
 
@@ -193,10 +185,7 @@ class DatabaseLogStorageTest {
         @DisplayName("should filter by status")
         void findPage_ShouldFilterByStatus() {
             // Given
-            LogQueryReq query = new LogQueryReq();
-            query.setPage(1);
-            query.setSize(10);
-            query.setStatus(1);
+            LogQuery query = new LogQuery(1, 10, null, null, null, null, 1, null, null);
             when(logRepository.findAll(any(Specification.class), any(Pageable.class)))
                     .thenReturn(new PageImpl<>(List.of(testLog)));
 
@@ -234,8 +223,7 @@ class DatabaseLogStorageTest {
         @DisplayName("should return count by condition")
         void countByCondition_ShouldReturnCount() {
             // Given
-            LogQueryReq query = new LogQueryReq();
-            query.setLogType(1);
+            LogQuery query = new LogQuery(1, 10, null, null, 1, null, null, null, null);
             when(logRepository.count(any(Specification.class))).thenReturn(50L);
 
             // When
@@ -309,8 +297,7 @@ class DatabaseLogStorageTest {
         @DisplayName("should delete by condition and return count")
         void deleteByCondition_ShouldDeleteAndReturnCount() {
             // Given
-            LogQueryReq query = new LogQueryReq();
-            query.setStatus(0);
+            LogQuery query = new LogQuery(1, 10, null, null, null, null, 0, null, null);
             when(logRepository.findAll(any(Specification.class))).thenReturn(List.of(testLog));
             doNothing().when(logRepository).deleteAll(any());
 

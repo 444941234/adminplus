@@ -2,7 +2,7 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.req.LogQueryReq;
+import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.LogStatisticsResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -39,29 +39,8 @@ public class LogController {
     @GetMapping
     @Operation(summary = "分页查询日志列表")
     @PreAuthorize("hasAuthority('log:query')")
-    public ApiResponse<PageResultResp<LogPageResp>> getLogList(
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) Integer logType,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String module,
-            @RequestParam(required = false) Integer operationType,
-            @RequestParam(required = false) Integer status,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime
-    ) {
-        var query = new LogQueryReq();
-        query.setPage(page);
-        query.setSize(size);
-        query.setLogType(logType);
-        query.setUsername(username);
-        query.setModule(module);
-        query.setOperationType(operationType);
-        query.setStatus(status);
-        query.setStartTime(startTime);
-        query.setEndTime(endTime);
-
-        PageResultResp<LogPageResp> result = logService.findPage(query);
+    public ApiResponse<PageResultResp<LogPageResp>> getLogList(LogQuery query) {
+        PageResultResp<LogPageResp> result = logService.getLogList(query);
         return ApiResponse.ok(result);
     }
 
@@ -69,7 +48,7 @@ public class LogController {
     @Operation(summary = "根据ID查询日志详情")
     @PreAuthorize("hasAuthority('log:query')")
     public ApiResponse<LogPageResp> getLogById(@PathVariable String id) {
-        LogPageResp log = logService.findById(id);
+        LogPageResp log = logService.getLogById(id);
         return ApiResponse.ok(log);
     }
 
@@ -95,7 +74,7 @@ public class LogController {
     @Operation(summary = "根据条件删除日志")
     @OperationLog(module = "日志管理", operationType = 4, description = "根据条件删除日志")
     @PreAuthorize("hasAuthority('log:delete')")
-    public ApiResponse<Integer> deleteLogsByCondition(@Valid @RequestBody LogQueryReq query) {
+    public ApiResponse<Integer> deleteLogsByCondition(@Valid @RequestBody LogQuery query) {
         Integer count = logService.deleteByCondition(query);
         return ApiResponse.ok(count);
     }
@@ -130,17 +109,7 @@ public class LogController {
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime
     ) throws IOException {
-        var query = new LogQueryReq();
-        query.setPage(1);
-        query.setSize(10000);
-        query.setLogType(logType);
-        query.setUsername(username);
-        query.setModule(module);
-        query.setOperationType(operationType);
-        query.setStatus(status);
-        query.setStartTime(startTime);
-        query.setEndTime(endTime);
-
+        var query = new LogQuery(1, 10000, username, module, logType, operationType, status, startTime, endTime);
         return logExportService.exportToExcel(query);
     }
 
@@ -157,17 +126,7 @@ public class LogController {
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime
     ) throws IOException {
-        var query = new LogQueryReq();
-        query.setPage(1);
-        query.setSize(10000);
-        query.setLogType(logType);
-        query.setUsername(username);
-        query.setModule(module);
-        query.setOperationType(operationType);
-        query.setStatus(status);
-        query.setStartTime(startTime);
-        query.setEndTime(endTime);
-
+        var query = new LogQuery(1, 10000, username, module, logType, operationType, status, startTime, endTime);
         return logExportService.exportToCsv(query);
     }
 }

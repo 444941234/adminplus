@@ -2,6 +2,7 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.query.RoleQuery;
 import com.adminplus.pojo.dto.req.RoleCreateReq;
 import com.adminplus.pojo.dto.req.RoleUpdateReq;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -36,12 +37,8 @@ public class RoleController {
     @Operation(summary = "分页查询角色列表")
     @OperationLog(module = "角色管理", operationType = 1, description = "查询角色列表")
     @PreAuthorize("hasAuthority('role:list')")
-    public ApiResponse<PageResultResp<RoleResp>> getRoleList(
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) String keyword
-    ) {
-        PageResultResp<RoleResp> result = roleService.getRoleList(page, size, keyword);
+    public ApiResponse<PageResultResp<RoleResp>> getRoleList(RoleQuery req) {
+        PageResultResp<RoleResp> result = roleService.getRoleList(req);
         return ApiResponse.ok(result);
     }
 

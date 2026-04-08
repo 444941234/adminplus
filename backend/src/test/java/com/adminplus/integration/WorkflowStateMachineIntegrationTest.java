@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import jakarta.persistence.EntityManager;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.config.StateMachineFactory;
 import org.springframework.test.context.TestPropertySource;
@@ -49,7 +49,7 @@ import static org.assertj.core.api.Assertions.*;
 class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
-    private TestEntityManager entityManager;
+    private EntityManager entityManager;
 
     @Autowired
     private WorkflowDefinitionRepository definitionRepository;
@@ -96,7 +96,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         user.setPassword("hashed_password");
         user.setDeptId(deptId);
         user.setStatus(1);
-        return entityManager.persist(user);
+        entityManager.persist(user);
+        return user;
     }
 
     @Nested
@@ -565,7 +566,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         definition.setDescription("Test workflow");
         definition.setStatus(1);
         definition.setVersion(1);
-        return entityManager.persist(definition);
+        entityManager.persist(definition);
+        return definition;
     }
 
     private WorkflowNodeEntity createTestNode(String definitionId, String name, String approverId, int order) {
@@ -578,7 +580,8 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         node.setApproverId(approverId);
         node.setIsCounterSign(false);
         node.setAutoPassSameUser(false);
-        return entityManager.persist(node);
+        entityManager.persist(node);
+        return node;
     }
 
     private WorkflowInstanceEntity createTestInstance(String definitionId, String currentNodeId) {
@@ -593,6 +596,7 @@ class WorkflowStateMachineIntegrationTest extends AbstractIntegrationTest {
         instance.setStatus("draft");
         instance.setCurrentNodeId(currentNodeId);
         instance.setCurrentNodeName("Node 1");
-        return entityManager.persist(instance);
+        entityManager.persist(instance);
+        return instance;
     }
 }

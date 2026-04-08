@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.pojo.dto.query.NotificationQuery;
 import com.adminplus.pojo.dto.req.NotificationSendReq;
 import com.adminplus.pojo.dto.resp.NotificationResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
@@ -99,14 +100,14 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public PageResultResp<NotificationResp> getUserNotifications(String userId, Integer status, Integer page, Integer size) {
-        Pageable pageable = PageUtils.toPageableDesc(page, size, "createTime");
+    public PageResultResp<NotificationResp> getUserNotifications(String userId, NotificationQuery req) {
+        Pageable pageable = PageUtils.toPageableDesc(req.getPage(), req.getSize(), "createTime");
 
         Page<NotificationEntity> pageResult;
-        if (status == null) {
+        if (req.getStatus() == null) {
             pageResult = notificationRepository.findByRecipientIdOrderByCreateTimeDesc(userId, pageable);
         } else {
-            pageResult = notificationRepository.findByRecipientIdAndStatusOrderByCreateTimeDesc(userId, status, pageable);
+            pageResult = notificationRepository.findByRecipientIdAndStatusOrderByCreateTimeDesc(userId, req.getStatus(), pageable);
         }
 
         return PageResultResp.from(pageResult, this::toResp);

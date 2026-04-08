@@ -2,6 +2,7 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.query.UserQuery;
 import com.adminplus.pojo.dto.req.PasswordResetReq;
 import com.adminplus.pojo.dto.req.RoleAssignReq;
 import com.adminplus.pojo.dto.req.UserCreateReq;
@@ -38,13 +39,8 @@ public class UserController {
     @Operation(summary = "分页查询用户列表")
     @OperationLog(module = "用户管理", operationType = 1, description = "查询用户列表")
     @PreAuthorize("hasAuthority('user:query')")
-    public ApiResponse<PageResultResp<UserResp>> getUserList(
-            @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer size,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String deptId
-    ) {
-        PageResultResp<UserResp> result = userService.getUserList(page, size, keyword, deptId);
+    public ApiResponse<PageResultResp<UserResp>> getUserList(UserQuery req) {
+        PageResultResp<UserResp> result = userService.getUserList(req);
         return ApiResponse.ok(result);
     }
 
