@@ -181,7 +181,7 @@ onMounted(fetchSettings)
         <Select
           :model-value="settings.language"
           :disabled="updating['language']"
-          @update:model-value="(v: string) => updateSetting('language', v)"
+          @update:model-value="(v) => updateSetting('language', v as string)"
         >
           <SelectTrigger class="setting-item__select">
             <SelectValue />
