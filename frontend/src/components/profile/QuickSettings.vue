@@ -232,33 +232,37 @@ onMounted(fetchSettings)
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .setting-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  background: rgb(248 250 252);
-  border-radius: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(241 245 249);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
 }
 
 .setting-item__left {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: rgb(15 23 42);
 }
 
 .setting-item__left svg {
   color: rgb(100 116 139);
+  flex-shrink: 0;
 }
 
 .setting-item__select {
-  width: 100px;
+  width: 120px;
   font-size: 13px;
 }
 

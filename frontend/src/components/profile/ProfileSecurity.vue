@@ -243,36 +243,40 @@ const handleDialogOpenChange = (open: boolean) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px;
-  background: rgb(248 250 252);
-  border-radius: 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgb(241 245 249);
+}
+
+.security-item:last-child {
+  border-bottom: none;
 }
 
 .security-item__left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .security-item__left svg {
   color: rgb(100 116 139);
+  flex-shrink: 0;
 }
 
 .security-item__info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .security-item__label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: rgb(15 23 42);
 }
 
 .security-item__status {
   font-size: 12px;
-  color: rgb(100 116 139);
+  color: rgb(148 163 184);
 }
 
 /* Password Dialog Form */

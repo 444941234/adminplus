@@ -148,27 +148,29 @@ const displayActivities = computed(() => {
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   padding: 20px;
-  border-bottom: 1px solid rgb(226 232 240);
+  border-bottom: 1px solid rgb(241 245 249);
 }
 
 .activity-stat {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px;
-  background: rgb(248 250 252);
-  border-radius: 8px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgb(248 250 252) 0%, rgb(241 245 249) 100%);
+  border-radius: 12px;
+  border: 1px solid rgb(226 232 240);
 }
 
 .activity-stat__icon {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: white;
-  border-radius: 6px;
+  border-radius: 8px;
   color: rgb(59 130 246);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .activity-stat__content {
@@ -177,20 +179,22 @@ const displayActivities = computed(() => {
 }
 
 .activity-stat__value {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: rgb(15 23 42);
+  line-height: 1;
 }
 
 .activity-stat__label {
   font-size: 12px;
   color: rgb(100 116 139);
+  margin-top: 4px;
 }
 
 /* Activity List */
 .activity-list {
   padding: 20px;
-  border-bottom: 1px solid rgb(226 232 240);
+  border-bottom: 1px solid rgb(241 245 249);
 }
 
 .activity-list__loading,
@@ -204,20 +208,25 @@ const displayActivities = computed(() => {
 .activity-list__items {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .activity-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
+  padding: 12px;
+  border-radius: 8px;
+  transition: background-color 150ms ease-out;
+}
+
+.activity-item:hover {
   background: rgb(248 250 252);
-  border-radius: 6px;
 }
 
 .activity-item__icon {
   font-size: 16px;
+  flex-shrink: 0;
 }
 
 .activity-item__content {
@@ -238,7 +247,7 @@ const displayActivities = computed(() => {
 
 .activity-item__time {
   font-size: 12px;
-  color: rgb(100 116 139);
+  color: rgb(148 163 184);
 }
 
 /* Last Login */

@@ -124,13 +124,24 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
 }
 
 .profile-info__field {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(241 245 249);
+}
+
+.profile-info__field:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.profile-info__field:first-child {
+  padding-top: 0;
 }
 
 .profile-info__label {
@@ -147,7 +158,8 @@ const handleSavePhone = (value: string) => handleSave('phone', value)
 
 .profile-info__role {
   padding: 6px 12px;
-  background: rgb(241 245 249);
+  background: linear-gradient(135deg, rgb(241 245 249) 0%, rgb(235 241 246) 100%);
+  border: 1px solid rgb(226 232 240);
   border-radius: 6px;
   font-size: 13px;
   font-weight: 500;

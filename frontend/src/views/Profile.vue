@@ -207,8 +207,8 @@ onMounted(() => {
 /* User Card - Compact header */
 .user-card {
   display: flex;
-  align-items: center;
-  gap: 24px;
+  align-items: flex-start;
+  gap: 20px;
   padding: 24px;
   background: white;
   border: 1px solid rgb(226 232 240);
@@ -225,10 +225,12 @@ onMounted(() => {
   font-size: 24px;
   font-weight: 700;
   color: white;
+  flex-shrink: 0;
 }
 
 .user-card__info {
   flex: 1;
+  min-width: 0;
 }
 
 .user-card__name {
@@ -241,13 +243,14 @@ onMounted(() => {
 .user-card__username {
   font-size: 14px;
   color: rgb(100 116 139);
-  margin: 0 0 12px 0;
+  margin: 0 0 16px 0;
 }
 
 .user-card__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
+  margin-bottom: 12px;
 }
 
 .user-card__meta-item {
