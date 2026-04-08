@@ -188,7 +188,7 @@ public class ConfigServiceImpl implements ConfigService {
         config = configRepository.save(config);
 
         // 记录历史
-        saveHistory(config, "创建");
+        saveHistory(config, null, config.getValue(), "创建");
 
         log.info("创建配置成功: {}", config.getKey());
         logService.log(LogEntry.operation("配置管理", OperationType.CREATE.getCode(),
@@ -249,7 +249,7 @@ public class ConfigServiceImpl implements ConfigService {
 
         // 如果值发生变化，记录历史
         if (req.value() != null && !req.value().equals(oldValue)) {
-            saveHistory(config, "更新值");
+            saveHistory(config, oldValue, config.getValue(), "更新值");
         }
 
         log.info("更新配置成功: {}", config.getKey());
@@ -311,7 +311,7 @@ public class ConfigServiceImpl implements ConfigService {
                 configRepository.save(config);
 
                 // 记录历史
-                saveHistory(config, "批量更新");
+                saveHistory(config, oldValue, item.value(), "批量更新");
 
                 success++;
                 details.add(new ConfigImportResultResp.ImportDetail(
@@ -435,7 +435,7 @@ public class ConfigServiceImpl implements ConfigService {
                         configRepository.save(config);
 
                         // 记录历史
-                        saveHistory(config, "导入");
+                        saveHistory(config, oldValue, value, "导入");
 
                         success++;
                         details.add(new ConfigImportResultResp.ImportDetail(
@@ -491,7 +491,7 @@ public class ConfigServiceImpl implements ConfigService {
         configRepository.save(config);
 
         // 记录回滚历史
-        saveHistory(config, "回滚到版本: " + history.getId());
+        saveHistory(config, oldValue, history.getOldValue(), "回滚到版本: " + history.getId());
 
         log.info("回滚配置成功: {} -> {}", config.getKey(), history.getOldValue());
         logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
@@ -553,7 +553,8 @@ public class ConfigServiceImpl implements ConfigService {
         }
 
         // 手动生效：这里只是标记，实际生效逻辑由业务系统处理
-        saveHistory(config, "手动生效");
+        String currentValue = config.getValue();
+        saveHistory(config, currentValue, currentValue, "手动生效");
 
         log.info("手动生效配置成功: {}", config.getKey());
         logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
@@ -570,12 +571,12 @@ public class ConfigServiceImpl implements ConfigService {
     /**
      * 保存配置历史
      */
-    private void saveHistory(ConfigEntity config, String operation) {
+    private void saveHistory(ConfigEntity config, String oldValue, String newValue, String operation) {
         ConfigHistoryEntity history = new ConfigHistoryEntity();
         history.setConfigId(config.getId());
         history.setConfigKey(config.getKey());
-        history.setOldValue(config.getValue());
-        history.setNewValue(config.getValue());
+        history.setOldValue(oldValue);
+        history.setNewValue(newValue);
         history.setRemark("操作: " + operation);
 
         configHistoryRepository.save(history);

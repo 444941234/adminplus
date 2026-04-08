@@ -43,6 +43,20 @@ watch(
   }
 )
 
+// Also refetch history when config object changes (while dialog is open)
+watch(
+  () => props.config,
+  (newConfig, oldConfig) => {
+    // Only refetch if dialog is open and config actually changed (different id or value)
+    if (props.open && newConfig?.id && oldConfig?.id) {
+      if (newConfig.id !== oldConfig.id || newConfig.value !== oldConfig.value) {
+        fetchHistory()
+      }
+    }
+  },
+  { deep: true }
+)
+
 const fetchHistory = () =>
   runFetchHistory(async () => {
     if (!props.config?.id) return
