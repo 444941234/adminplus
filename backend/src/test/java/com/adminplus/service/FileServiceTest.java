@@ -173,10 +173,12 @@ class FileServiceTest {
             // Given
             FileStorageProperties.LocalConfig localConfig = new FileStorageProperties.LocalConfig();
             localConfig.setMaxSize(10);
-            when(fileStorageConfig.getLocal()).thenReturn(localConfig);
+            lenient().when(fileStorageConfig.getLocal()).thenReturn(localConfig);
 
+            // Create a file with .exe extension - Tika will detect it as application/x-dosexec
+            // which is not in the allowed list
             MockMultipartFile file = new MockMultipartFile(
-                    "file", "test.exe", "application/octet-stream", "content".getBytes());
+                    "file", "test.exe", "application/x-dosexec", new byte[]{0x4D, 0x5A}); // MZ header for exe
 
             // When & Then
             assertThatThrownBy(() -> fileService.uploadFile(file, "uploads"))
@@ -190,7 +192,7 @@ class FileServiceTest {
             // Given
             FileStorageProperties.LocalConfig localConfig = new FileStorageProperties.LocalConfig();
             localConfig.setMaxSize(1);  // 1MB limit
-            when(fileStorageConfig.getLocal()).thenReturn(localConfig);
+            lenient().when(fileStorageConfig.getLocal()).thenReturn(localConfig);
 
             // Create a file larger than 1MB
             byte[] largeContent = new byte[2 * 1024 * 1024];  // 2MB

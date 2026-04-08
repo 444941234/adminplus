@@ -73,7 +73,7 @@ public class MinioFileStorageServiceImpl implements FileStorageService {
                     PutObjectArgs.builder()
                             .bucket(config.getMinio().getBucketName())
                             .object(objectName)
-                            .stream(file.getInputStream(), file.getSize(), -1)
+                            .stream(file.getInputStream(), file.getSize(), -1L)
                             .contentType(Objects.requireNonNull(file.getContentType()))
                             .build()
             );

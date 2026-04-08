@@ -108,7 +108,8 @@ class ConfigGroupServiceTest {
             doReturn(page).when(configGroupRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class));
 
             // When
-            PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(any(ConfigGroupQuery.class));
+            ConfigGroupQuery query = new ConfigGroupQuery(1, 10, null);
+            PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(query);
 
             // Then
             assertThat(result.records()).hasSize(1);
@@ -126,7 +127,8 @@ class ConfigGroupServiceTest {
             doReturn(page).when(configGroupRepository).findAll(any(org.springframework.data.jpa.domain.Specification.class), any(Pageable.class));
 
             // When
-            PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(any(ConfigGroupQuery.class));
+            ConfigGroupQuery query = new ConfigGroupQuery(1, 10, "系统");
+            PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(query);
 
             // Then
             assertThat(result.records()).hasSize(1);

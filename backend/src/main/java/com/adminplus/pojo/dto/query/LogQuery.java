@@ -40,7 +40,7 @@ public record LogQuery(
     public LogQuery {
         if (page == null || page < 1) page = 1;
         if (size == null || size < 1) size = 10;
-        if (size > 100) size = 100;
+        if (size > 10000) size = 10000;  // Allow up to 10000 for export functionality
     }
 
     public Integer getPage() { return page; }

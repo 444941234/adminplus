@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.SetOperations;
 
+import java.time.Duration;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,7 +63,7 @@ class TokenBlacklistServiceTest {
             tokenBlacklistService.blacklistToken(token, userId);
 
             // Then
-            verify(valueOperations).set(anyString(), eq(userId), any());
+            verify(valueOperations).set(anyString(), eq(userId), any(Duration.class));
             verify(setOperations).add(anyString(), anyString());
         }
 
@@ -73,7 +74,7 @@ class TokenBlacklistServiceTest {
             tokenBlacklistService.blacklistToken(null, "user-001");
 
             // Then
-            verify(valueOperations, never()).set(anyString(), anyString(), any());
+            verify(valueOperations, never()).set(anyString(), anyString(), any(Duration.class));
         }
 
         @Test
@@ -83,7 +84,7 @@ class TokenBlacklistServiceTest {
             tokenBlacklistService.blacklistToken("", "user-001");
 
             // Then
-            verify(valueOperations, never()).set(anyString(), anyString(), any());
+            verify(valueOperations, never()).set(anyString(), anyString(), any(Duration.class));
         }
     }
 
@@ -156,7 +157,7 @@ class TokenBlacklistServiceTest {
             tokenBlacklistService.blacklistAllUserTokens(userId);
 
             // Then
-            verify(valueOperations, times(3)).set(anyString(), anyString(), any());
+            verify(valueOperations, times(3)).set(anyString(), anyString(), any(Duration.class));
         }
 
         @Test
@@ -180,7 +181,7 @@ class TokenBlacklistServiceTest {
             tokenBlacklistService.blacklistAllUserTokens(userId);
 
             // Then
-            verify(valueOperations, never()).set(anyString(), anyString(), any());
+            verify(valueOperations, never()).set(anyString(), anyString(), any(Duration.class));
         }
 
         @Test
@@ -194,7 +195,7 @@ class TokenBlacklistServiceTest {
             tokenBlacklistService.blacklistAllUserTokens(userId);
 
             // Then
-            verify(valueOperations, never()).set(anyString(), anyString(), any());
+            verify(valueOperations, never()).set(anyString(), anyString(), any(Duration.class));
         }
     }
 
