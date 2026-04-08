@@ -11,7 +11,7 @@ import {
   Textarea,
   Button
 } from '@/components/ui'
-import { Upload, X, Loader2 } from 'lucide-vue-next'
+import { Upload, X, Loader2 } from '@lucide/vue'
 import { UserSelector, DeptSelector } from '@/components/common'
 import { uploadManagedFile } from '@/api'
 import { toast } from 'vue-sonner'

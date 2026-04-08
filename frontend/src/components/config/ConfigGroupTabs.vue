@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui'
-import { Plus } from 'lucide-vue-next'
+import { Plus } from '@lucide/vue'
 import type { ConfigGroup } from '@/types'
 
 interface Props {

@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { Download, FolderOpen, Trash2, Upload } from 'lucide-vue-next'
+import { Download, FolderOpen, Trash2, Upload } from '@lucide/vue'
 import { ConfirmDialog, EmptyState, ListSearchBar } from '@/components/common'
 import { deleteManagedFile, getFilesByDirectory, getMyFiles, uploadManagedFile } from '@/api'
 import { downloadBlob } from '@/utils/request'

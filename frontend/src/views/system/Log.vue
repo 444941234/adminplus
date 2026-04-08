@@ -20,7 +20,7 @@ import {
   SelectValue,
   Textarea
 } from '@/components/ui'
-import { Download, Eye, RefreshCw, Search, Trash2 } from 'lucide-vue-next'
+import { Download, Eye, RefreshCw, Search, Trash2 } from '@lucide/vue'
 import { ConfirmDialog, EmptyState, Pagination, StatusBadge } from '@/components/common'
 import {
   cleanupExpiredLogs,

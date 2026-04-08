@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { Edit, Plus, Trash2 } from 'lucide-vue-next'
+import { Edit, Plus, Trash2 } from '@lucide/vue'
 import { ConfirmDialog, EmptyState, ListSearchBar, StatusBadge } from '@/components/common'
 import { isValidChinaPhone, isValidEmail } from '@/lib/validators'
 import type { Dept } from '@/types'

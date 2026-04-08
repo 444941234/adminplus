@@ -2,7 +2,7 @@
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Search } from 'lucide-vue-next'
+import { Search } from '@lucide/vue'
 
 defineProps<{
   /** 搜索关键词（v-model） */

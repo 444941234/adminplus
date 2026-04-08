@@ -20,7 +20,7 @@ import {
   SelectValue,
   Badge
 } from '@/components/ui'
-import { ChevronDown, ChevronRight, Edit, KeyRound, Plus, Trash2, Search, Check, X } from 'lucide-vue-next'
+import { ChevronDown, ChevronRight, Edit, KeyRound, Plus, Trash2, Search, Check, X } from '@lucide/vue'
 import { ConfirmDialog, EmptyState, ListSearchBar, StatusBadge } from '@/components/common'
 import { assignMenus, getMenuTree, getRoleMenus, updateRoleStatus } from '@/api'
 import { getRolePagePermissionState } from '@/lib/page-permissions'

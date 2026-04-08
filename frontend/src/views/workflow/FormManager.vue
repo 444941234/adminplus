@@ -18,7 +18,7 @@ import {
   TabsList,
   TabsTrigger
 } from '@/components/ui'
-import { Plus, Trash2, Eye, Save, FileText, Copy } from 'lucide-vue-next'
+import { Plus, Trash2, Eye, Save, FileText, Copy } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 import { ConfirmDialog } from '@/components/common'
 import WorkflowFormConfigEditor from '@/components/workflow/designer/WorkflowFormConfigEditor.vue'

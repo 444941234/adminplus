@@ -24,7 +24,7 @@ import {
   Clock3,
   GitBranch,
   ChevronDown
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 import { useUserStore } from '@/stores/user'
 import { resetDynamicRoutes } from '@/router'
 import { useWorkflowNoticeCounts } from '@/composables/workflow/useWorkflowNoticeCounts'

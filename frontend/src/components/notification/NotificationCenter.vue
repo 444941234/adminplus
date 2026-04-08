@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { getMyNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification } from '@/api/notification'
 import type { Notification } from '@/types'
 import { toast } from 'vue-sonner'
-import { Bell, BellRing, Check, Trash2, CheckCheck } from 'lucide-vue-next'
+import { Bell, BellRing, Check, Trash2, CheckCheck } from '@lucide/vue'
 import { formatDateTime } from '@/utils/format'
 import { logError } from '@/utils/logger'
 

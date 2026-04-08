@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onUnmounted } from 'vue'
 import { Button, Switch } from '@/components/ui'
-import { Edit, Eye, EyeOff, History, Trash2, Copy, Check } from 'lucide-vue-next'
+import { Edit, Eye, EyeOff, History, Trash2, Copy, Check } from '@lucide/vue'
 import type { Config } from '@/types'
 import { formatDateTime } from '@/utils/format'
 

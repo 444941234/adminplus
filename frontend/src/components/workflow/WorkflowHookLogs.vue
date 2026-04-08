@@ -3,7 +3,7 @@ import { ref, computed, watch } from 'vue'
 import { getInstanceHookLogs, type WorkflowHookLog } from '@/api/workflow'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ChevronDown, ChevronRight } from 'lucide-vue-next'
+import { ChevronDown, ChevronRight } from '@lucide/vue'
 import { formatDateTime } from '@/utils/format'
 
 const props = defineProps<{

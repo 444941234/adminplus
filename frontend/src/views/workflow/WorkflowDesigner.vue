@@ -68,7 +68,7 @@ interface VisualizerWorkflowDefinition {
   description?: string
   nodes: VisualizerWorkflowNode[]
 }
-import { Plus, Pencil, Trash2, Settings, ArrowLeft } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Settings, ArrowLeft } from '@lucide/vue'
 import WorkflowVisualizer from './WorkflowVisualizer.vue'
 import WorkflowNodeProperties from '@/components/workflow/designer/WorkflowNodeProperties.vue'
 import WorkflowFormConfigEditor from '@/components/workflow/designer/WorkflowFormConfigEditor.vue'

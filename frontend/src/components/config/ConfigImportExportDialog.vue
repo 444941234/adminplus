@@ -16,7 +16,7 @@ import {
   SelectValue,
   Label
 } from '@/components/ui'
-import { Download, Upload } from 'lucide-vue-next'
+import { Download, Upload } from '@lucide/vue'
 import { exportConfigs, importConfigs, getAllConfigGroups } from '@/api'
 import type { ConfigGroup, ConfigExport } from '@/types'
 import { useAsyncAction } from '@/composables/useAsyncAction'

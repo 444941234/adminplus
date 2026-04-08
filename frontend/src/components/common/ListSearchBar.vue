@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, RefreshCw } from 'lucide-vue-next'
+import { Search, RefreshCw } from '@lucide/vue'
 
 interface Props {
   /** 搜索关键词（v-model） */

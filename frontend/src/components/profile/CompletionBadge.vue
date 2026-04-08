@@ -20,7 +20,7 @@
 import { computed } from 'vue'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Trophy } from 'lucide-vue-next'
+import { Trophy } from '@lucide/vue'
 
 /**
  * Component props

@@ -15,7 +15,7 @@ import {
 import { getOnlineUsers, getStatistics, getSystemInfo } from '@/api'
 import type { ChartData, OnlineUser, StatisticsData, SystemInfo } from '@/types'
 import { useAsyncAction } from '@/composables/useAsyncAction'
-import { Activity, Eye, TrendingUp, UserPlus } from 'lucide-vue-next'
+import { Activity, Eye, TrendingUp, UserPlus } from '@lucide/vue'
 
 const { loading, run: runList } = useAsyncAction('获取统计信息失败')
 const statistics = ref<StatisticsData | null>(null)

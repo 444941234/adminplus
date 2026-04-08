@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { ChevronDown, ChevronRight, Edit, Plus, Trash2 } from 'lucide-vue-next'
+import { ChevronDown, ChevronRight, Edit, Plus, Trash2 } from '@lucide/vue'
 import { ConfirmDialog, EmptyState, ListSearchBar, StatusBadge } from '@/components/common'
 import { batchDelete, batchUpdateStatus, createMenu, deleteMenu, getMenuById, getMenuTree, updateMenu } from '@/api'
 import type { Menu } from '@/types'

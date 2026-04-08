@@ -20,7 +20,7 @@
 import { computed, nextTick, ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Check, X, Loader2, Pencil } from 'lucide-vue-next'
+import { Check, X, Loader2, Pencil } from '@lucide/vue'
 import { useInlineEdit } from '@/composables/useInlineEdit'
 
 /**

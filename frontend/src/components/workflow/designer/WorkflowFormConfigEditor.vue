@@ -28,7 +28,7 @@ import {
   AccordionItem,
   AccordionTrigger
 } from '@/components/ui'
-import { Plus, Pencil, Trash2, Code, List, Eye } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, Code, List, Eye } from '@lucide/vue'
 import type { WorkflowFormConfig, WorkflowFormSection, WorkflowFormField, WorkflowFormOption } from '@/types'
 import { toast } from 'vue-sonner'
 import { ConfirmDialog } from '@/components/common'

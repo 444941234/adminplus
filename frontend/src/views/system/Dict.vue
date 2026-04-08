@@ -20,7 +20,7 @@ import {
   SelectValue,
   Textarea
 } from '@/components/ui'
-import { Edit, ListTree, Plus, Trash2 } from 'lucide-vue-next'
+import { Edit, ListTree, Plus, Trash2 } from '@lucide/vue'
 import { ConfirmDialog, EmptyState, ListSearchBar, Pagination, StatusBadge } from '@/components/common'
 import {
   createDict,

@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { Edit, KeyRound, LockKeyhole, Plus, Trash2 } from 'lucide-vue-next'
+import { Edit, KeyRound, LockKeyhole, Plus, Trash2 } from '@lucide/vue'
 import { ConfirmDialog, EmptyState, ListSearchBar, Pagination, StatusBadge } from '@/components/common'
 import { getDeptTree, getRoleList, getUserList, updateUserStatus, deleteUser } from '@/api'
 import type { Dept, Role, User } from '@/types'

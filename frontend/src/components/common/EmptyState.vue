@@ -13,7 +13,7 @@ import {
   Bell,
   FileCode,
   type LucideIcon
-} from 'lucide-vue-next'
+} from '@lucide/vue'
 
 export type EmptyStateType =
   | 'default'

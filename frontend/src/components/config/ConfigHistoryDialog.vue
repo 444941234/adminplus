@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui'
-import { RotateCcw } from 'lucide-vue-next'
+import { RotateCcw } from '@lucide/vue'
 import { getConfigHistory, rollbackConfig } from '@/api'
 import type { Config, ConfigHistory } from '@/types'
 import { useAsyncAction } from '@/composables/useAsyncAction'

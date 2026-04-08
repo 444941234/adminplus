@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { Button, Card, CardContent } from '@/components/ui'
-import { Plus, RefreshCw } from 'lucide-vue-next'
+import { Plus, RefreshCw } from '@lucide/vue'
 import { ConfirmDialog, ListSearchBar } from '@/components/common'
 import { getAllConfigGroups, getConfigsByGroupCode, deleteConfigGroup, deleteConfig, refreshConfigCache, updateConfigStatus } from '@/api'
 import type { ConfigGroup, Config } from '@/types'

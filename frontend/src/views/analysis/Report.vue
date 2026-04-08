@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui'
-import { BarChart3, GitBranch, ListChecks } from 'lucide-vue-next'
+import { BarChart3, GitBranch, ListChecks } from '@lucide/vue'
 </script>
 
 <template>
