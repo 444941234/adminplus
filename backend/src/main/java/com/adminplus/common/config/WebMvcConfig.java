@@ -71,5 +71,13 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
         registry.addResourceHandler(accessPrefix + "/**")
                 .addResourceLocations(location);
+
+        // Swagger UI 静态资源（springdoc-openapi 需要这些资源）
+        registry.addResourceHandler("/swagger-ui/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/swagger-ui/");
+
+        // Webjars 资源
+        registry.addResourceHandler("/webjars/**")
+                .addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
 }

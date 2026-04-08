@@ -3,9 +3,9 @@ package com.adminplus.runner;
 import com.adminplus.runner.initializer.DataInitializer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
@@ -23,13 +23,12 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DataInitializationRunner implements CommandLineRunner {
+public class DataInitializationRunner implements ApplicationRunner {
 
     private final List<DataInitializer> dataInitializers;
 
     @Override
-    @Transactional
-    public void run(String... args) throws Exception {
+    public void run(ApplicationArguments args) throws Exception {
         log.info("开始执行数据初始化...");
 
         try {

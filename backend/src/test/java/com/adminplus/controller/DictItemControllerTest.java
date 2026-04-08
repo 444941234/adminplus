@@ -4,6 +4,7 @@ import com.adminplus.pojo.dto.req.DictItemCreateReq;
 import com.adminplus.pojo.dto.req.DictItemUpdateReq;
 import com.adminplus.pojo.dto.resp.DictItemResp;
 import com.adminplus.service.DictItemService;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,7 +54,7 @@ class DictItemControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(dictItemController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
         testDictItem = new DictItemResp(
                 "item-001", "dict-001", "status", null,
                 "启用", "1", 1, 1, null,

@@ -4,6 +4,7 @@ import com.adminplus.pojo.dto.req.PasswordChangeReq;
 import com.adminplus.pojo.dto.req.ProfileUpdateReq;
 import com.adminplus.pojo.dto.resp.ProfileResp;
 import com.adminplus.service.ProfileService;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,7 +52,7 @@ class ProfileControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(profileController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
         testProfile = new ProfileResp(
                 "user-001", "testuser", "Test User", "test@example.com",
                 "13800138000", "avatar.jpg", 1, "技术部",

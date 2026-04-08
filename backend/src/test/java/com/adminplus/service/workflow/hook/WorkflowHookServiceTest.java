@@ -8,8 +8,7 @@ import com.adminplus.pojo.entity.WorkflowNodeHookEntity;
 import com.adminplus.repository.WorkflowHookLogRepository;
 import com.adminplus.repository.WorkflowNodeHookRepository;
 import com.adminplus.service.workflow.hook.impl.WorkflowHookServiceImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -50,7 +49,7 @@ class WorkflowHookServiceTest {
     private WorkflowHookLogRepository hookLogRepository;
 
     @Mock
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     @Mock
     private ThreadPoolTaskExecutor asyncExecutor;
@@ -158,7 +157,7 @@ class WorkflowHookServiceTest {
 
         @Test
         @DisplayName("should execute hooks from table")
-        void shouldExecuteHooksFromTable() throws JsonProcessingException {
+        void shouldExecuteHooksFromTable() throws Exception {
             // Given
             when(hookRepository.findByNodeIdAndHookPointAndDeletedFalseOrderByPriorityAsc("node-001", "PRE_APPROVE"))
                 .thenReturn(List.of(testHook));
@@ -198,7 +197,7 @@ class WorkflowHookServiceTest {
 
         @Test
         @DisplayName("should execute asynchronously when asyncExecution is true")
-        void shouldExecuteAsynchronouslyWhenConfigured() throws JsonProcessingException {
+        void shouldExecuteAsynchronouslyWhenConfigured() throws Exception {
             // Given
             testHook.setAsyncExecution(true);
             when(hookRepository.findByNodeIdAndHookPointAndDeletedFalseOrderByPriorityAsc("node-001", "PRE_APPROVE"))
@@ -319,7 +318,7 @@ class WorkflowHookServiceTest {
 
         @Test
         @DisplayName("should retry on failure when retryCount is configured")
-        void shouldRetryOnFailureWhenRetryCountConfigured() throws JsonProcessingException {
+        void shouldRetryOnFailureWhenRetryCountConfigured() throws Exception {
             // Given
             testHook.setRetryCount(2);
             when(hookRepository.findByNodeIdAndHookPointAndDeletedFalseOrderByPriorityAsc("node-001", "PRE_APPROVE"))

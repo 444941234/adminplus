@@ -11,29 +11,24 @@ import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.*;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.web.client.RestClient;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
 /**
- * Unit tests for HttpHookExecutor
+ * Unit tests for HttpHookExecutor using MockRestServiceServer
  */
-@ExtendWith(MockitoExtension.class)
 @DisplayName("HttpHookExecutor Tests")
 class HttpHookExecutorTest {
 
-    @Mock
-    private RestTemplate restTemplate;
-
+    private RestClient restClient;
+    private MockRestServiceServer mockServer;
     private HttpHookExecutor executor;
     private JsonMapper objectMapper;
     private AppProperties appProperties;
@@ -44,7 +39,13 @@ class HttpHookExecutorTest {
     void setUp() {
         objectMapper = JsonMapper.builder().build();
         appProperties = new AppProperties();
-        executor = new HttpHookExecutor(restTemplate, objectMapper, appProperties);
+
+        // Create RestClient.Builder and bind MockRestServiceServer BEFORE building RestClient
+        RestClient.Builder builder = RestClient.builder();
+        mockServer = MockRestServiceServer.bindTo(builder).build();
+        restClient = builder.build();
+
+        executor = new HttpHookExecutor(restClient, objectMapper, appProperties);
 
         testInstance = new WorkflowInstanceEntity();
         testInstance.setId("inst-001");
@@ -70,16 +71,13 @@ class HttpHookExecutorTest {
             testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
         );
 
-        ResponseEntity<Map> response = new ResponseEntity<>(
-            Map.of("success", true, "message", "ok", "data", "result"),
-            HttpStatus.OK
-        );
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            eq(Map.class)
-        )).thenReturn(response);
+        // Mock server expects GET request and returns success response
+        mockServer.expect(requestTo("http://example.com/api"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(
+                    "{\"success\":true,\"message\":\"ok\",\"data\":\"result\"}",
+                    MediaType.APPLICATION_JSON
+                ));
 
         // When
         HookResult result = executor.execute(config, context);
@@ -87,33 +85,32 @@ class HttpHookExecutorTest {
         // Then
         assertThat(result.success()).isTrue();
         assertThat(result.message()).isEqualTo("ok");
+        mockServer.verify();
     }
 
     @Test
     @DisplayName("Should execute HTTP POST request with body")
     void shouldExecutePostRequest() {
         // Given
-        HttpConfig config = new HttpConfig("http://example.com/api", "POST", null, "{\"instanceId\":\"#instance.id\"}");
+        HttpConfig config = new HttpConfig("http://example.com/api", "POST", null, "{\"instanceId\":\"inst-001\"}");
         HookContext context = new HookContext(
             testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
         );
 
-        ResponseEntity<Map> response = new ResponseEntity<>(
-            Map.of("success", true, "created", true),
-            HttpStatus.CREATED
-        );
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.POST),
-            any(HttpEntity.class),
-            eq(Map.class)
-        )).thenReturn(response);
+        mockServer.expect(requestTo("http://example.com/api"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(jsonPath("$.instanceId").value("inst-001"))
+                .andRespond(withSuccess(
+                    "{\"success\":true,\"created\":true}",
+                    MediaType.APPLICATION_JSON
+                ));
 
         // When
         HookResult result = executor.execute(config, context);
 
         // Then
         assertThat(result.success()).isTrue();
+        mockServer.verify();
     }
 
     @Test
@@ -125,16 +122,11 @@ class HttpHookExecutorTest {
             testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
         );
 
-        ResponseEntity<Map> response = new ResponseEntity<>(
-            Map.of("error", "not found"),
-            HttpStatus.NOT_FOUND
-        );
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            eq(Map.class)
-        )).thenReturn(response);
+        mockServer.expect(requestTo("http://example.com/api"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withStatus(HttpStatus.NOT_FOUND)
+                    .body("{\"error\":\"not found\"}")
+                    .contentType(MediaType.APPLICATION_JSON));
 
         // When
         HookResult result = executor.execute(config, context);
@@ -142,30 +134,7 @@ class HttpHookExecutorTest {
         // Then
         assertThat(result.success()).isFalse();
         assertThat(result.code()).isEqualTo("HTTP_ERROR");
-    }
-
-    @Test
-    @DisplayName("Should handle connection error")
-    void shouldHandleConnectionError() {
-        // Given
-        HttpConfig config = new HttpConfig("http://nonexistent.example.com/api", "GET", null, null);
-        HookContext context = new HookContext(
-            testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
-        );
-
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            eq(Map.class)
-        )).thenThrow(new RestClientException("Connection refused"));
-
-        // When
-        HookResult result = executor.execute(config, context);
-
-        // Then
-        assertThat(result.success()).isFalse();
-        assertThat(result.message()).contains("执行失败");
+        mockServer.verify();
     }
 
     @Test
@@ -177,25 +146,17 @@ class HttpHookExecutorTest {
             testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
         );
 
-        ResponseEntity<Map> response = new ResponseEntity<>(Map.of("success", true), HttpStatus.OK);
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            eq(Map.class)
-        )).thenReturn(response);
+        mockServer.expect(requestTo("http://example.com/api"))
+                .andExpect(method(HttpMethod.GET))
+                .andExpect(header("X-Custom-Header", "test-value"))
+                .andRespond(withSuccess("{\"success\":true}", MediaType.APPLICATION_JSON));
 
         // When
         HookResult result = executor.execute(config, context);
 
         // Then
         assertThat(result.success()).isTrue();
-        verify(restTemplate).exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            argThat(entity -> entity.getHeaders().get("X-Custom-Header") != null),
-            eq(Map.class)
-        );
+        mockServer.verify();
     }
 
     @Test
@@ -244,19 +205,16 @@ class HttpHookExecutorTest {
             testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
         );
 
-        ResponseEntity<Map> response = new ResponseEntity<>(Map.of("success", true), HttpStatus.OK);
-        when(restTemplate.exchange(
-            anyString(),
-            eq(HttpMethod.GET),
-            any(HttpEntity.class),
-            eq(Map.class)
-        )).thenReturn(response);
+        mockServer.expect(requestTo("http://localhost/api"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess("{\"success\":true}", MediaType.APPLICATION_JSON));
 
         // When
         HookResult result = executor.execute(config, context);
 
         // Then
         assertThat(result.success()).isTrue();
+        mockServer.verify();
     }
 
     @Test
@@ -276,5 +234,50 @@ class HttpHookExecutorTest {
         assertThat(result.success()).isFalse();
         assertThat(result.code()).isEqualTo("INVALID_URL");
         assertThat(result.message()).contains("URL不在允许列表中");
+    }
+
+    @Test
+    @DisplayName("Should reject 127.0.0.1 internal URL")
+    void shouldRejectLocalhostIp() {
+        HttpConfig config = new HttpConfig("http://127.0.0.1/api", "GET", null, null);
+        HookContext context = new HookContext(
+            testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
+        );
+
+        HookResult result = executor.execute(config, context);
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.code()).isEqualTo("INVALID_URL");
+        assertThat(result.message()).contains("不允许访问内网地址");
+    }
+
+    @Test
+    @DisplayName("Should reject 10.x.x.x private IP")
+    void shouldRejectPrivateIp10() {
+        HttpConfig config = new HttpConfig("http://10.0.0.1/api", "GET", null, null);
+        HookContext context = new HookContext(
+            testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
+        );
+
+        HookResult result = executor.execute(config, context);
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.code()).isEqualTo("INVALID_URL");
+        assertThat(result.message()).contains("不允许访问内网地址");
+    }
+
+    @Test
+    @DisplayName("Should reject 192.168.x.x private IP")
+    void shouldRejectPrivateIp192() {
+        HttpConfig config = new HttpConfig("http://192.168.1.1/api", "GET", null, null);
+        HookContext context = new HookContext(
+            testInstance, testNode, Map.of(), "SUBMIT", "user-001", "Test User", Map.of()
+        );
+
+        HookResult result = executor.execute(config, context);
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.code()).isEqualTo("INVALID_URL");
+        assertThat(result.message()).contains("不允许访问内网地址");
     }
 }

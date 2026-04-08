@@ -347,8 +347,9 @@ class ConfigServiceTest {
                     .thenReturn(new PageImpl<>(List.of(testConfig)));
             when(configGroupRepository.findAllById(any(List.class))).thenReturn(List.of(testGroup));
 
-            // When
-            PageResultResp<ConfigResp> result = configService.getConfigList(any(ConfigQuery.class));
+            // When - use record constructor
+            ConfigQuery query = new ConfigQuery(1, 20, null, null, null);
+            PageResultResp<ConfigResp> result = configService.getConfigList(query);
 
             // Then
             assertThat(result.records()).hasSize(1);

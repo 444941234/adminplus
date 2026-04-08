@@ -20,11 +20,15 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 /**
  * Abstract base class for integration tests.
@@ -43,8 +47,10 @@ import java.util.List;
 @Disabled("Integration tests require Docker with TCP endpoint enabled. Enable in Docker Desktop > Settings > General > 'Expose daemon on tcp://localhost:2375'")
 public abstract class AbstractIntegrationTest {
 
-    @Autowired
     protected MockMvc mockMvc;
+
+    @Autowired
+    protected WebApplicationContext context;
 
     @Autowired
     protected JwtEncoder jwtEncoder;
@@ -56,10 +62,16 @@ public abstract class AbstractIntegrationTest {
     protected ObjectMapper objectMapper;
 
     /**
-     * Set up security context for JPA auditing
+     * Set up security context for JPA auditing and MockMvc
      */
     @BeforeEach
     void setUpSecurityContext() {
+        // Set up MockMvc with Spring Security
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
+
         Authentication auth = new UsernamePasswordAuthenticationToken(
                 "test-user",
                 null,

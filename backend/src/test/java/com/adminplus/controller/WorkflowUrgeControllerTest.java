@@ -4,6 +4,7 @@ import com.adminplus.pojo.dto.req.UrgeActionReq;
 import com.adminplus.pojo.dto.resp.WorkflowUrgeResp;
 import com.adminplus.service.WorkflowUrgeService;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,7 +59,7 @@ class WorkflowUrgeControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(urgeController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
         securityUtilsMock = mockStatic(SecurityUtils.class);
         securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("user-001");
 

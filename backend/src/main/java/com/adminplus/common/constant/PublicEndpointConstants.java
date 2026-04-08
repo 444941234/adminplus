@@ -20,7 +20,11 @@ public interface PublicEndpointConstants {
             "/v1/auth/login",
             "/v1/captcha/**",
             "/v1/verify/**",
-            "/v1/sys/cache/emergency-clear",  // 紧急缓存清理端点（用于解决序列化兼容问题）
+            "/v1/sys/cache/emergency-clear",
+            "/v3/api-docs/**",
+            "/swagger-ui.html",
+            "/swagger-ui/**",
+            "/webjars/**",
             "/actuator/health"
     };
 

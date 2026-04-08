@@ -96,7 +96,15 @@ public class SecurityConfig {
 
     private void configureSecurityHeaders(org.springframework.security.config.annotation.web.configurers.HeadersConfigurer<HttpSecurity> headersConfigurer) {
         headersConfigurer
-                .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'self'"))
+                // CSP 配置：允许 Swagger UI 和 API 文档正常工作
+                .contentSecurityPolicy(csp -> csp.policyDirectives(
+                        "default-src 'self'; " +
+                        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                        "style-src 'self' 'unsafe-inline'; " +
+                        "img-src 'self' data:; " +
+                        "font-src 'self' data:; " +
+                        "frame-ancestors 'self'; " +
+                        "form-action 'self'"))
                 .frameOptions(org.springframework.security.config.annotation.web.configurers.HeadersConfigurer.FrameOptionsConfig::sameOrigin)
                 .httpStrictTransportSecurity(hsts -> hsts
                         .includeSubDomains(true)

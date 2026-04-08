@@ -3,6 +3,7 @@ package com.adminplus.controller;
 import com.adminplus.pojo.dto.resp.WorkflowCcResp;
 import com.adminplus.service.WorkflowCcService;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +56,7 @@ class WorkflowCcControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(ccController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
         securityUtilsMock = mockStatic(SecurityUtils.class);
         securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("user-001");
 

@@ -13,7 +13,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import java.net.URI;
 import java.util.Map;
@@ -22,6 +22,7 @@ import java.util.Map;
  * HTTP 钩子执行器
  * <p>
  * 支持调用外部 HTTP 接口作为钩子
+ * 使用 Spring Boot 4 推荐的 RestClient 替代 RestTemplate
  * </p>
  *
  * @author AdminPlus
@@ -32,7 +33,7 @@ import java.util.Map;
 @Slf4j
 public class HttpHookExecutor implements HookExecutor {
 
-    private final RestTemplate restTemplate;
+    private final RestClient restClient;
     private final JsonMapper objectMapper;
     private final AppProperties appProperties;
 
@@ -50,20 +51,19 @@ public class HttpHookExecutor implements HookExecutor {
         try {
             String body = buildRequestBody(httpConfig.bodyTemplate(), context);
 
-            HttpHeaders headers = new HttpHeaders();
-            if (httpConfig.headers() != null) {
-                httpConfig.headers().forEach(headers::add);
-            }
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<String> entity = new HttpEntity<>(body, headers);
-
-            ResponseEntity<Map> response = restTemplate.exchange(
-                httpConfig.url(),
-                HttpMethod.valueOf(httpConfig.method()),
-                entity,
-                Map.class
-            );
+            // 使用 RestClient 的流畅 API
+            ResponseEntity<Map> response = restClient
+                    .method(HttpMethod.valueOf(httpConfig.method()))
+                    .uri(httpConfig.url())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .headers(headers -> {
+                        if (httpConfig.headers() != null) {
+                            httpConfig.headers().forEach(headers::add);
+                        }
+                    })
+                    .body(body)
+                    .retrieve()
+                    .toEntity(Map.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
                 Map<String, Object> bodyMap = response.getBody();

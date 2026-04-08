@@ -4,6 +4,7 @@ import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.resp.LogPageResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.impl.LogExportServiceImpl;
+import com.adminplus.utils.DictUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -35,6 +36,9 @@ class LogExportServiceTest {
     @Mock
     private LogService logService;
 
+    @Mock
+    private DictUtils dictUtils;
+
     @InjectMocks
     private LogExportServiceImpl logExportService;
 
@@ -61,6 +65,9 @@ class LogExportServiceTest {
         );
 
         query = new LogQuery(1, 10, null, null, null, null, null, null, null);
+
+        // Mock dictUtils for dictionary label translation
+        lenient().when(dictUtils.getDictLabel(anyString(), anyString())).thenAnswer(inv -> inv.getArgument(1));
     }
 
     @Nested

@@ -5,6 +5,7 @@ import com.adminplus.pojo.dto.req.WorkflowNodeReq;
 import com.adminplus.pojo.dto.resp.WorkflowDefinitionResp;
 import com.adminplus.pojo.dto.resp.WorkflowNodeResp;
 import com.adminplus.service.WorkflowDefinitionService;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,7 +56,7 @@ class WorkflowDefinitionControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(definitionController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
         testDefinition = new WorkflowDefinitionResp(
                 "def-001", "请假审批", "leave_approval",
                 "请假类别", "请假审批流程", 1, 1, null, 0, Instant.now(), Instant.now()

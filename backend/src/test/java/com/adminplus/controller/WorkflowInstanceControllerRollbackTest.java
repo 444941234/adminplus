@@ -7,6 +7,7 @@ import com.adminplus.pojo.dto.resp.WorkflowAddSignResp;
 import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
 import com.adminplus.pojo.dto.resp.WorkflowNodeResp;
 import com.adminplus.service.WorkflowInstanceService;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,7 +56,7 @@ class WorkflowInstanceControllerRollbackTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(instanceController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
 
         testInstance = new WorkflowInstanceResp(
                 "inst-001", "def-001", "请假审批", "user-001", "发起人",

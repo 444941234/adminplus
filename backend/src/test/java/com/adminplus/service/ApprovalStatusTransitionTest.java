@@ -86,7 +86,7 @@ class ApprovalStatusTransitionTest {
     private com.adminplus.service.workflow.hook.WorkflowHookService hookService;
 
     @Mock
-    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    private tools.jackson.databind.json.JsonMapper objectMapper;
 
     @InjectMocks
     private WorkflowInstanceServiceImpl service;
@@ -157,7 +157,7 @@ class ApprovalStatusTransitionTest {
         // Use lenient() because not all tests need this stubbing
         try {
             lenient().when(objectMapper.writeValueAsString(any())).thenReturn("{}");
-            lenient().when(objectMapper.readValue(any(String.class), any(com.fasterxml.jackson.core.type.TypeReference.class)))
+            lenient().when(objectMapper.readValue(any(String.class), any(tools.jackson.core.type.TypeReference.class)))
                     .thenReturn(java.util.Map.of());
         } catch (Exception e) {
             throw new RuntimeException(e);

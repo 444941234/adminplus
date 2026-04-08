@@ -3,6 +3,7 @@ package com.adminplus.controller;
 import com.adminplus.pojo.dto.workflow.hook.WorkflowNodeHookReq;
 import com.adminplus.pojo.entity.WorkflowNodeHookEntity;
 import com.adminplus.repository.WorkflowNodeHookRepository;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,7 +56,7 @@ class WorkflowNodeHookControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(hookController)
                 .setValidator(validator)
                 .build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
 
         testHook = new WorkflowNodeHookEntity();
         testHook.setId("hook-001");

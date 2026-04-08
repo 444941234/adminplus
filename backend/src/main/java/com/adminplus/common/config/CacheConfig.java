@@ -1,12 +1,5 @@
 package com.adminplus.common.config;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
@@ -18,20 +11,19 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
 
 /**
  * Redis 缓存配置
  *
- * 使用 Jackson 2 的 ObjectMapper 配置 DefaultTyping.EVERYTHING 支持 record 类型。
- * 该 ObjectMapper 只用于 Redis 操作，不影响 HTTP 请求/响应。
- *
- * 注意：Spring Data Redis 的 GenericJackson2JsonRedisSerializer 只支持 Jackson 2，
- * 所以这里使用 Jackson 2 的 ObjectMapper。
+ * 使用 Jackson 3 的 GenericJacksonJsonRedisSerializer 配置 Redis 序列化。
+ * Spring Data Redis 4.0 已迁移到 Jackson 3 (tools.jackson)。
  *
  * @author AdminPlus
  * @since 2026-02-06
@@ -43,40 +35,28 @@ import java.time.Duration;
 public class CacheConfig {
 
     /**
-     * 创建 Redis 专用的 ObjectMapper (Jackson 2)
+     * 配置 Jackson 3 ObjectMapper
      *
-     * 配置 DefaultTyping.EVERYTHING 让所有类型（包括 final 的 record）都包含 @class 类型信息，
-     * 解决 record 类型反序列化返回 LinkedHashMap 的问题。
+     * 用于 Redis 序列化。使用 JsonMapper.builder() 构建 Jackson 3 ObjectMapper。
      */
-    private ObjectMapper createRedisObjectMapper() {
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
-                .allowIfBaseType(Object.class)
-                .build();
-
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.setPolymorphicTypeValidator(ptv);
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-        // 激活 default typing，使用 EVERYTHING 支持 record 类型
-        mapper.activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.EVERYTHING, JsonTypeInfo.As.PROPERTY);
-
-        return mapper;
+    @Bean
+    public ObjectMapper redisObjectMapper() {
+        return JsonMapper.builder().build();
     }
 
     /**
      * 配置 RedisTemplate
      *
      * 用于 JWT 黑名单、限流计数等 Redis 操作。
-     * 使用专用的 ObjectMapper 确保类型信息正确保存。
+     * 使用 Jackson 3 的 GenericJacksonJsonRedisSerializer 确保类型信息正确保存。
      */
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
 
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(createRedisObjectMapper());
+        // 使用 Jackson 3 序列化器，注入 ObjectMapper
+        GenericJacksonJsonRedisSerializer jsonSerializer = new GenericJacksonJsonRedisSerializer(objectMapper);
 
         template.setKeySerializer(new StringRedisSerializer());
         template.setHashKeySerializer(new StringRedisSerializer());
@@ -92,16 +72,17 @@ public class CacheConfig {
      */
     @Bean
     @Primary
-    public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
-        GenericJackson2JsonRedisSerializer jsonSerializer = new GenericJackson2JsonRedisSerializer(createRedisObjectMapper());
+    public CacheManager cacheManager(RedisConnectionFactory connectionFactory, ObjectMapper objectMapper) {
+        // 使用 Jackson 3 序列化器，注入 ObjectMapper
+        GenericJacksonJsonRedisSerializer jsonSerializer = new GenericJacksonJsonRedisSerializer(objectMapper);
 
         RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofHours(1))
-                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(StringRedisSerializer.UTF_8))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jsonSerializer))
                 .disableCachingNullValues();
 
-        log.info("Redis 缓存管理器已初始化（支持 record 类型）");
+        log.info("Redis 缓存管理器已初始化（使用 Jackson 3 序列化器）");
 
         return RedisCacheManager.builder(connectionFactory)
                 .cacheDefaults(config)

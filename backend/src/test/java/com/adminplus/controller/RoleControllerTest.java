@@ -6,6 +6,7 @@ import com.adminplus.pojo.dto.req.RoleUpdateReq;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.pojo.dto.resp.RoleResp;
 import com.adminplus.service.RoleService;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +57,7 @@ class RoleControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(roleController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
         testRole = new RoleResp(
                 "role-001", "ADMIN", "管理员", "系统管理员角色",
                 1, 1, 1, Instant.now(), Instant.now()

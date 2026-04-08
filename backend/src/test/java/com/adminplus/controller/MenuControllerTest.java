@@ -4,6 +4,7 @@ import com.adminplus.pojo.dto.req.MenuCreateReq;
 import com.adminplus.pojo.dto.req.MenuUpdateReq;
 import com.adminplus.pojo.dto.resp.MenuResp;
 import com.adminplus.service.MenuService;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -54,7 +55,7 @@ class MenuControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(menuController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
         testMenu = new MenuResp(
                 "menu-001", null, 1, "系统管理", "/system",
                 "system/index", "system:view", "setting", 1, 1, 1,

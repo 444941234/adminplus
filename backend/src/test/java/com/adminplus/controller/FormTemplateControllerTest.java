@@ -3,6 +3,7 @@ package com.adminplus.controller;
 import com.adminplus.pojo.dto.req.FormTemplateReq;
 import com.adminplus.pojo.dto.resp.FormTemplateResp;
 import com.adminplus.service.FormTemplateService;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +57,7 @@ class FormTemplateControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(formTemplateController)
                 .setValidator(validator)
                 .build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
 
         testTemplate = new FormTemplateResp(
             "template-001",

@@ -24,7 +24,7 @@
         <maven.compiler.source>25</maven.compiler.source>
         <maven.compiler.target>25</maven.compiler.target>
         <postgresql.version>42.7.10</postgresql.version>
-        <lombok.version>1.18.34</lombok.version>
+        <lombok.version>1.18.44</lombok.version>
     </properties>
 
     <dependencies>
@@ -93,7 +93,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.2</version>
         </dependency>
 
         <!-- Spring Cache -->
@@ -147,11 +147,36 @@
             <version>1.6.2</version>
         </dependency>
 
+        <!-- Jackson 2 JDK8 support for Optional, etc. (required by libraries still using Jackson 2) -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
         <!-- MinIO SDK -->
         <dependency>
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
             <version>8.5.17</version>
+            <exclusions>
+                <!-- Exclude Jackson 2 - Spring Boot 4 uses Jackson 3 -->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-annotations</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-databind</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Apache Tika for file type detection -->
@@ -241,9 +266,16 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.14.0</version>
                 <configuration>
-                    <source>21</source>
-                    <target>21</target>
-                    <release>21</release>
+                    <source>25</source>
+                    <target>25</target>
+                    <release>25</release>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                     <compilerArgs>
                         <arg>--add-opens=java.base/java.lang=ALL-UNNAMED</arg>
                         <arg>--add-opens=java.base/java.lang.reflect=ALL-UNNAMED</arg>

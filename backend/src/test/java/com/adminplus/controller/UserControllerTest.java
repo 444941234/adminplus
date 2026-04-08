@@ -8,6 +8,7 @@ import com.adminplus.pojo.dto.req.PasswordResetReq;
 import com.adminplus.pojo.dto.req.RoleAssignReq;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.UserService;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +57,7 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
         testUser = new UserResp(
                 "user-001", "testuser", "Test User", "test@example.com",
                 "13800138000", "avatar.jpg", 1, "1", "技术部",

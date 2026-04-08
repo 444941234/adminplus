@@ -5,6 +5,7 @@ import com.adminplus.pojo.dto.req.UserLoginReq;
 import com.adminplus.pojo.dto.resp.LoginResp;
 import com.adminplus.pojo.dto.resp.UserResp;
 import com.adminplus.service.AuthService;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,7 +56,7 @@ class AuthControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
         loginReq = new UserLoginReq("testuser", "password", "captcha-id", "ABCD");
         userResp = new UserResp(
                 "user-001", "testuser", "Test User", "test@example.com",

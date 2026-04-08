@@ -6,6 +6,7 @@ import com.adminplus.pojo.dto.req.DictUpdateReq;
 import com.adminplus.pojo.dto.resp.DictResp;
 import com.adminplus.pojo.dto.resp.PageResultResp;
 import com.adminplus.service.DictService;
+import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -55,7 +56,7 @@ class DictControllerTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(dictController).build();
-        objectMapper = new ObjectMapper();
+        objectMapper = TestJacksonConfig.createObjectMapper();
         testDict = new DictResp(
                 "dict-001", "status", "状态字典", 1, "状态相关字典",
                 Instant.now(), Instant.now()
