@@ -13,14 +13,16 @@ describe('useWorkflowStatus', () => {
   describe('getWorkflowStatusLabel', () => {
     it('returns correct labels for known statuses', () => {
       expect(getWorkflowStatusLabel('DRAFT')).toBe('草稿')
-      expect(getWorkflowStatusLabel('PENDING')).toBe('审批中')
-      expect(getWorkflowStatusLabel('PROCESSING')).toBe('进行中')
-      expect(getWorkflowStatusLabel('APPROVED')).toBe('已通过')
-      expect(getWorkflowStatusLabel('REJECTED')).toBe('已驳回')
+      expect(getWorkflowStatusLabel('RUNNING')).toBe('运行中')
+      expect(getWorkflowStatusLabel('APPROVED')).toBe('已批准')
+      expect(getWorkflowStatusLabel('REJECTED')).toBe('已拒绝')
       expect(getWorkflowStatusLabel('CANCELLED')).toBe('已取消')
-      expect(getWorkflowStatusLabel('WITHDRAWN')).toBe('已撤回')
-      expect(getWorkflowStatusLabel('FINISHED')).toBe('已完成')
-      expect(getWorkflowStatusLabel('COMPLETED')).toBe('已完成')
+      // 兼容状态码
+      expect(getWorkflowStatusLabel('PENDING')).toBe('运行中')
+      expect(getWorkflowStatusLabel('PROCESSING')).toBe('运行中')
+      expect(getWorkflowStatusLabel('WITHDRAWN')).toBe('已取消')
+      expect(getWorkflowStatusLabel('FINISHED')).toBe('已批准')
+      expect(getWorkflowStatusLabel('COMPLETED')).toBe('已批准')
     })
 
     it('returns "-" for null or undefined status', () => {
@@ -151,7 +153,7 @@ describe('useWorkflowStatus', () => {
 
     it('correctly identifies approved workflow as terminal', () => {
       const status = 'APPROVED'
-      expect(getWorkflowStatusLabel(status)).toBe('已通过')
+      expect(getWorkflowStatusLabel(status)).toBe('已批准')
       expect(getWorkflowStatusVariant(status)).toBe('default')
       expect(isWorkflowTerminalStatus(status)).toBe(true)
       expect(canOperateWorkflow(status)).toBe(false)
@@ -159,16 +161,16 @@ describe('useWorkflowStatus', () => {
 
     it('correctly identifies rejected workflow as terminal', () => {
       const status = 'REJECTED'
-      expect(getWorkflowStatusLabel(status)).toBe('已驳回')
+      expect(getWorkflowStatusLabel(status)).toBe('已拒绝')
       expect(getWorkflowStatusVariant(status)).toBe('destructive')
       expect(isWorkflowTerminalStatus(status)).toBe(true)
       expect(canOperateWorkflow(status)).toBe(false)
     })
 
-    it('correctly identifies pending workflow as operable', () => {
-      const status = 'PENDING'
-      expect(getWorkflowStatusLabel(status)).toBe('审批中')
-      expect(getWorkflowStatusVariant(status)).toBe('secondary')
+    it('correctly identifies running workflow as operable', () => {
+      const status = 'RUNNING'
+      expect(getWorkflowStatusLabel(status)).toBe('运行中')
+      expect(getWorkflowStatusVariant(status)).toBe('default')
       expect(isWorkflowTerminalStatus(status)).toBe(false)
       expect(canOperateWorkflow(status)).toBe(true)
     })

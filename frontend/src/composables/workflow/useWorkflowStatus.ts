@@ -12,11 +12,23 @@ const getWorkflowStatusDict = () => {
 
 // 英文状态码到数字值的映射
 const STATUS_CODE_MAP: Record<string, string> = {
-  'DRAFT': '0',      // 草稿
-  'RUNNING': '1',    // 运行中
-  'COMPLETED': '2',  // 已完成
-  'REJECTED': '3',   // 已拒绝
-  'CANCELLED': '4'   // 已撤回
+  'draft': '0',      // 草稿
+  'running': '1',    // 运行中
+  'approved': '2',   // 已批准
+  'rejected': '3',   // 已拒绝
+  'cancelled': '4',  // 已取消
+  // 兼容大写状态码
+  'DRAFT': '0',
+  'RUNNING': '1',
+  'APPROVED': '2',
+  'REJECTED': '3',
+  'CANCELLED': '4',
+  // 兼容其他常见状态码
+  'PENDING': '1',    // 审批中 = 运行中
+  'PROCESSING': '1', // 进行中 = 运行中
+  'WITHDRAWN': '4',  // 已撤回 = 已取消
+  'FINISHED': '2',   // 已完成 = 已批准
+  'COMPLETED': '2'   // 已完成 = 已批准
 }
 
 type WorkflowStatusVariant = 'default' | 'secondary' | 'destructive' | 'outline'
