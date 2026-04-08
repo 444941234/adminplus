@@ -132,6 +132,12 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+  info:
+    env:
+      enabled: true
+    # 应用版本信息
+    app:
+      version: 1.0.0
 
 # 应用配置
 app:

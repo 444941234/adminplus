@@ -136,7 +136,7 @@ public class DictItemServiceImpl implements DictItemService {
         if (req.getParentId().isPresent()) {
             String newParentId = req.getParentId().get();
             if (!id.equals(newParentId)) {
-                if (newParentId != null && !newParentId.equals("0")) {
+                if (!newParentId.equals("0")) {
                     DictItemEntity parent = dictItemRepository.findById(newParentId)
                             .orElseThrow(() -> new BizException("父节点不存在"));
                     if (!parent.getDictId().equals(item.getDictId())) {

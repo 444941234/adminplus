@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -79,7 +80,7 @@ public class PermissionServiceImpl implements PermissionService {
         // 批量查询角色
         List<RoleEntity> roles = roleRepository.findAllById(roleIds);
         return roles.stream()
-                .filter(role -> role != null)
+                .filter(Objects::nonNull)
                 .map(RoleEntity::getCode)
                 .toList();
     }

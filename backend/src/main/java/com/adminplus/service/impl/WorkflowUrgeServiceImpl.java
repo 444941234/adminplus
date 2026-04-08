@@ -58,8 +58,8 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
         List<WorkflowApprovalEntity> pendingApprovals = approvalRepository
                 .findByInstanceIdAndNodeIdAndDeletedFalse(instanceId, instance.getCurrentNodeId())
                 .stream()
-                .filter(a -> a.isPending())
-                .collect(Collectors.toList());
+                .filter(WorkflowApprovalEntity::isPending)
+                .toList();
 
         if (pendingApprovals.isEmpty()) {
             throw new IllegalArgumentException("当前节点没有待审批人");

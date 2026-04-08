@@ -63,7 +63,7 @@ const deleteDictId = ref('')
 
 const itemDialogOpen = ref(false)
 const activeDict = ref<Dict | null>(null)
-const itemTableData = ref<{ records: DictItem[]; total: number }>({ records: [], total: 0 })
+const itemTableData = ref<DictItem[]>([])
 
 const itemFormDialogOpen = ref(false)
 const isEditItem = ref(false)
@@ -223,7 +223,7 @@ const openItemDialog = async (dict: Dict) => {
 }
 
 const itemParentOptions = computed(() => {
-  return itemTableData.value.records
+  return itemTableData.value
     .filter((item) => !isEditItem.value || item.id !== editItemId.value)
     .map((item) => ({
       id: item.id,
@@ -232,7 +232,7 @@ const itemParentOptions = computed(() => {
 })
 
 const itemLabelMap = computed(() => {
-  return itemTableData.value.records.reduce<Record<string, string>>((acc, item) => {
+  return itemTableData.value.reduce<Record<string, string>>((acc, item) => {
     acc[item.id] = item.label
     return acc
   }, {})
@@ -621,7 +621,7 @@ onMounted(fetchData)
                   加载中...
                 </td>
               </tr>
-              <tr v-else-if="itemTableData.records.length === 0">
+              <tr v-else-if="itemTableData.length === 0">
                 <td
                   colspan="7"
                   class="p-8 text-center text-muted-foreground"
@@ -630,7 +630,7 @@ onMounted(fetchData)
                 </td>
               </tr>
               <tr
-                v-for="item in itemTableData.records"
+                v-for="item in itemTableData"
                 :key="item.id"
                 class="hover:bg-muted/30"
               >

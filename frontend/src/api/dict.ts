@@ -43,7 +43,7 @@ export function updateDictStatus(id: string, status: number) {
 
 // 获取字典项列表
 export function getDictItemList(dictId: string) {
-  return get<{ records: DictItem[]; total: number }>(`/sys/dicts/${dictId}/items`)
+  return get<DictItem[]>(`/sys/dicts/${dictId}/items`)
 }
 
 // 获取字典项详情

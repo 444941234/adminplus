@@ -136,14 +136,14 @@ public class MenuServiceImpl implements MenuService {
             }
 
             // 检查是否将菜单设置为自己的子菜单（防止循环引用）
-            if (parentId != null && !parentId.equals("0") && isChildMenu(id, parentId)) {
+            if (!parentId.equals("0") && isChildMenu(id, parentId)) {
                 throw new BizException("不能将菜单设置为自己的子菜单");
             }
 
             // 记录旧 ancestors 用于级联更新
             String oldAncestors = menu.getAncestors() != null ? menu.getAncestors() : "";
 
-            if (parentId != null && !parentId.equals("0")) {
+            if (!parentId.equals("0")) {
                 MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, parentId, "父菜单不存在");
                 menu.setParent(parent);
                 // 更新 ancestors

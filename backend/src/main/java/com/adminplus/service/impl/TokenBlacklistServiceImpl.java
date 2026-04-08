@@ -63,7 +63,7 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
         String tokenHash = hashToken(token);
         String blacklistKey = BLACKLIST_KEY_PREFIX + tokenHash;
 
-        return Boolean.TRUE.equals(redisTemplate.hasKey(blacklistKey));
+        return redisTemplate.hasKey(blacklistKey);
     }
 
     @Override

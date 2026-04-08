@@ -95,10 +95,6 @@ public class MinioFileStorageServiceImpl implements FileStorageService {
         try {
             // 从URL提取objectName
             String objectName = extractObjectName(fileUrl);
-            if (objectName == null) {
-                log.warn("无法解析文件URL: {}", fileUrl);
-                return false;
-            }
 
             minioClient.removeObject(
                     RemoveObjectArgs.builder()

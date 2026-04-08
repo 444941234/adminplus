@@ -208,7 +208,7 @@ public class DeptServiceImpl implements DeptService {
             // 记录旧 ancestors 用于级联更新子孙
             String oldAncestors = dept.getAncestors() != null ? dept.getAncestors() : "";
 
-            if (parentId != null && !parentId.equals("0")) {
+            if (!parentId.equals("0")) {
                 DeptEntity parent = EntityHelper.findByIdOrThrow(deptRepository::findById, parentId, "父部门不存在");
                 dept.setParent(parent);
                 String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";

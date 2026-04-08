@@ -55,7 +55,7 @@ public class LogStorageStrategySelector {
             case ELASTICSEARCH -> {
                 // 强制使用 ES
                 LogStorageStrategy esStrategy = findStrategy("ELASTICSEARCH");
-                if (esStrategy != null && esStrategy.isAvailable()) {
+                if (esStrategy.isAvailable()) {
                     yield esStrategy;
                 }
                 log.warn("Elasticsearch 不可用，降级到数据库存储");
@@ -64,7 +64,7 @@ public class LogStorageStrategySelector {
             case AUTO -> {
                 // 自动选择：ES 可用时优先使用 ES
                 LogStorageStrategy esStrategy = findStrategy("ELASTICSEARCH");
-                if (esStrategy != null && esStrategy.isAvailable()) {
+                if (esStrategy.isAvailable()) {
                     log.info("Elasticsearch 可用，使用 ES 存储");
                     yield esStrategy;
                 }

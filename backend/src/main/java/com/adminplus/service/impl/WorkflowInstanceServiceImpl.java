@@ -580,7 +580,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         } else {
             // 同意，检查是否所有人都已审批
             boolean allApproved = pendingApprovals.stream()
-                    .allMatch(a -> a.isApproved());
+                    .allMatch(WorkflowApprovalEntity::isApproved);
 
             if (allApproved) {
                 // 当前节点所有审批人都已同意，流转到下一节点
@@ -779,8 +779,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         List<WorkflowApprovalEntity> pendingApprovals = approvalRepository
                 .findByInstanceIdAndNodeIdAndDeletedFalse(instance.getId(), instance.getCurrentNodeId())
                 .stream()
-                .filter(a -> a.isPending())
-                .collect(Collectors.toList());
+                .filter(WorkflowApprovalEntity::isPending)
+                .toList();
 
         return pendingApprovals.stream()
                 .anyMatch(a -> a.getApproverId().equals(userId));
@@ -1005,7 +1005,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 .filter(a -> a.isApproved() && !a.getIsRollback())
                 .map(WorkflowApprovalEntity::getNodeId)
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         // 只返回已审批通过的节点，且不是当前节点
         return allNodes.stream()
@@ -1028,7 +1028,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 .filter(a -> a.isApproved() && !a.getIsRollback())
                 .map(WorkflowApprovalEntity::getNodeId)
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         // 找到最近一个已审批通过的节点（不是当前节点）
         for (int i = approvedNodeIds.size() - 1; i >= 0; i--) {
@@ -1192,7 +1192,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         if (!preResult.allPassed()) {
             throw new BizException(400,
-                preResult.blockingMessages().isEmpty() ? "加签前校验失败" : preResult.blockingMessages().get(0));
+                preResult.blockingMessages().isEmpty() ? "加签前校验失败" : preResult.blockingMessages().getFirst());
         }
 
         // 处理转办
@@ -1445,7 +1445,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             case "approved" -> "APPROVED";
             case "rejected" -> "REJECTED";
             case "cancelled" -> "CANCELLED";
-            default -> status == null ? null : status.toUpperCase(Locale.ROOT);
+            default -> status.toUpperCase(Locale.ROOT);
         };
     }
 }
