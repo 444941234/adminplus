@@ -17,9 +17,9 @@ import com.adminplus.service.ConfigService;
 import com.adminplus.service.LogService;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.PageUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +55,7 @@ public class ConfigServiceImpl implements ConfigService {
     private final ConfigGroupRepository configGroupRepository;
     private final ConfigHistoryRepository configHistoryRepository;
     private final LogService logService;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     @Override
     @Transactional(readOnly = true)
@@ -460,7 +460,7 @@ public class ConfigServiceImpl implements ConfigService {
                 }
             }
 
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new BizException("JSON 解析失败: " + e.getMessage());
         }
 

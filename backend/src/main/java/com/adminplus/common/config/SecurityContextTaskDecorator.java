@@ -1,5 +1,6 @@
 package com.adminplus.common.config;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.task.TaskDecorator;
 import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Component;
 public class SecurityContextTaskDecorator implements TaskDecorator {
 
     @Override
-    public Runnable decorate(Runnable runnable) {
+    public @NonNull Runnable decorate(@NonNull Runnable runnable) {
         // 获取当前线程的 SecurityContext
         var securityContext = SecurityContextHolder.getContext();
 

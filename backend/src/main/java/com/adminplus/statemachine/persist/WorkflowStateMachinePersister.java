@@ -3,7 +3,7 @@ package com.adminplus.statemachine.persist;
 import com.adminplus.repository.StateMachineRepository;
 import com.adminplus.statemachine.enums.WorkflowEvent;
 import com.adminplus.statemachine.enums.WorkflowState;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.statemachine.StateMachine;
@@ -31,7 +31,7 @@ public class WorkflowStateMachinePersister
         implements StateMachinePersister<WorkflowState, WorkflowEvent, String> {
 
     private final StateMachineRepository repository;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     @Override
     public void persist(StateMachine<WorkflowState, WorkflowEvent> stateMachine,

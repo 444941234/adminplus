@@ -1,9 +1,9 @@
 package com.adminplus.common.config;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -27,8 +27,11 @@ import java.time.Duration;
 /**
  * Redis 缓存配置
  *
- * 使用专用的 ObjectMapper 配置 DefaultTyping.EVERYTHING 支持 record 类型。
+ * 使用 Jackson 2 的 ObjectMapper 配置 DefaultTyping.EVERYTHING 支持 record 类型。
  * 该 ObjectMapper 只用于 Redis 操作，不影响 HTTP 请求/响应。
+ *
+ * 注意：Spring Data Redis 的 GenericJackson2JsonRedisSerializer 只支持 Jackson 2，
+ * 所以这里使用 Jackson 2 的 ObjectMapper。
  *
  * @author AdminPlus
  * @since 2026-02-06
@@ -40,7 +43,7 @@ import java.time.Duration;
 public class CacheConfig {
 
     /**
-     * 创建 Redis 专用的 ObjectMapper
+     * 创建 Redis 专用的 ObjectMapper (Jackson 2)
      *
      * 配置 DefaultTyping.EVERYTHING 让所有类型（包括 final 的 record）都包含 @class 类型信息，
      * 解决 record 类型反序列化返回 LinkedHashMap 的问题。

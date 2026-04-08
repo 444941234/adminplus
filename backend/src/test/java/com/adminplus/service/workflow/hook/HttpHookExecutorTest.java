@@ -7,7 +7,7 @@ import com.adminplus.pojo.dto.workflow.hook.HttpConfig;
 import com.adminplus.pojo.entity.WorkflowInstanceEntity;
 import com.adminplus.pojo.entity.WorkflowNodeEntity;
 import com.adminplus.service.workflow.hook.impl.HttpHookExecutor;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -35,14 +35,14 @@ class HttpHookExecutorTest {
     private RestTemplate restTemplate;
 
     private HttpHookExecutor executor;
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
     private AppProperties appProperties;
     private WorkflowInstanceEntity testInstance;
     private WorkflowNodeEntity testNode;
 
     @BeforeEach
     void setUp() {
-        objectMapper = new ObjectMapper();
+        objectMapper = JsonMapper.builder().build();
         appProperties = new AppProperties();
         executor = new HttpHookExecutor(restTemplate, objectMapper, appProperties);
 

@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * 工作流状态机服务实现
@@ -48,7 +48,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
     private final WorkflowInstanceRepository instanceRepository;
     private final WorkflowApprovalRepository approvalRepository;
     private final WorkflowNodeRepository nodeRepository;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
 
     @Override
     @Transactional

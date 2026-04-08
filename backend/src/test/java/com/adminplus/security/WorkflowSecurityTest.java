@@ -19,7 +19,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -84,7 +84,7 @@ class WorkflowSecurityTest {
     private WorkflowAddSignRepository addSignRepository;
 
     @Mock
-    private ObjectMapper objectMapper;
+    private JsonMapper objectMapper;
 
     @Mock
     private com.adminplus.service.workflow.hook.WorkflowHookService mockHookService;
@@ -209,7 +209,7 @@ class WorkflowSecurityTest {
 
         // Mock objectMapper for deserializeFormData
         try {
-            lenient().when(objectMapper.readValue(any(String.class), any(com.fasterxml.jackson.core.type.TypeReference.class)))
+            lenient().when(objectMapper.readValue(any(String.class), any(tools.jackson.core.type.TypeReference.class)))
                     .thenReturn(java.util.Map.of());
         } catch (Exception e) {
             throw new RuntimeException(e);

@@ -10,7 +10,7 @@ import com.adminplus.repository.WorkflowNodeHookRepository;
 import com.adminplus.service.workflow.hook.HookExecutor;
 import com.adminplus.service.workflow.hook.WorkflowHookService;
 import com.adminplus.utils.SecurityUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.expression.Expression;
@@ -41,7 +41,7 @@ public class WorkflowHookServiceImpl implements WorkflowHookService {
     private final WorkflowNodeHookRepository hookRepository;
     private final WorkflowHookLogRepository hookLogRepository;
     private final Map<String, HookExecutor> executors;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
     private final ThreadPoolTaskExecutor asyncExecutor;
 
     // 钩子点类型映射

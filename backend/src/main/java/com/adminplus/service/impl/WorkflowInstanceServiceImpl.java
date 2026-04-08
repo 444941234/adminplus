@@ -1,9 +1,9 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.enums.WorkflowStatus;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.json.JsonMapper;
 import com.adminplus.pojo.dto.req.ApprovalActionReq;
 import com.adminplus.pojo.dto.req.WorkflowStartReq;
 import com.adminplus.pojo.dto.resp.WorkflowApprovalResp;
@@ -55,7 +55,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     private final WorkflowDefinitionService definitionService;
     private final WorkflowCcRepository ccRepository;
     private final WorkflowAddSignRepository addSignRepository;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
     private final WorkflowHookService hookService;
 
     @Override
@@ -1394,7 +1394,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     private String serializeFormData(Map<String, Object> formData) {
         try {
             return objectMapper.writeValueAsString(formData == null ? Collections.emptyMap() : formData);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("表单数据格式不正确", e);
         }
     }
@@ -1406,7 +1406,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         try {
             return objectMapper.readValue(businessData, new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new IllegalArgumentException("业务表单数据解析失败", e);
         }
     }

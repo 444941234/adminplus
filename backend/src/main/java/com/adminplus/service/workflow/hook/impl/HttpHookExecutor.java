@@ -6,7 +6,7 @@ import com.adminplus.pojo.dto.workflow.hook.HookExecutorConfig;
 import com.adminplus.pojo.dto.workflow.hook.HookResult;
 import com.adminplus.pojo.dto.workflow.hook.HttpConfig;
 import com.adminplus.service.workflow.hook.HookExecutor;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
@@ -33,7 +33,7 @@ import java.util.Map;
 public class HttpHookExecutor implements HookExecutor {
 
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
+    private final JsonMapper objectMapper;
     private final AppProperties appProperties;
 
     @Override
