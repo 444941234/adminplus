@@ -51,6 +51,7 @@ interface DeptRow extends Dept {
 
 const treeData = ref<Dept[]>([])
 const searchQuery = ref('')
+const activeSearchQuery = ref('')
 const expandedKeys = ref<Set<string>>(new Set())
 const userStore = useUserStore()
 
@@ -191,6 +192,15 @@ const toggleExpand = (id: string) => {
   expandedKeys.value = next
 }
 
+const handleSearch = () => {
+  activeSearchQuery.value = searchQuery.value.trim()
+}
+
+const handleReset = () => {
+  searchQuery.value = ''
+  activeSearchQuery.value = ''
+}
+
 const renderDepts = (deptList: Dept[], level = 0): DeptRow[] => {
   const rows: DeptRow[] = []
   for (const dept of deptList) {
@@ -200,8 +210,8 @@ const renderDepts = (deptList: Dept[], level = 0): DeptRow[] => {
     const displayName = dept.name
     const displayCode = dept.code
 
-    if (searchQuery.value.trim()) {
-      const keyword = searchQuery.value.trim().toLowerCase()
+    if (activeSearchQuery.value.trim()) {
+      const keyword = activeSearchQuery.value.trim().toLowerCase()
       const matchedSelf = [displayName, displayCode, dept.leader, dept.phone, dept.email]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(keyword))
@@ -292,6 +302,8 @@ onMounted(fetchList)
     <ListSearchBar
       v-model="searchQuery"
       placeholder="搜索部门名称/编码/负责人"
+      @search="handleSearch"
+      @reset="handleReset"
     >
       <template #actions>
         <Button
@@ -373,7 +385,7 @@ onMounted(fetchList)
                   :style="{ paddingLeft: `${dept.level * 24}px` }"
                 >
                   <button
-                    v-if="dept.hasChildren && !searchQuery.trim()"
+                    v-if="dept.hasChildren && !activeSearchQuery.trim()"
                     class="w-4 h-4 flex items-center justify-center text-muted-foreground hover:text-foreground"
                     :aria-label="dept.isExpanded ? '收起' : '展开'"
                     :aria-expanded="dept.isExpanded"
