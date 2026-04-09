@@ -55,4 +55,13 @@ public interface MenuService {
      * 获取用户的菜单树（根据用户权限过滤）
      */
     List<MenuResp> getUserMenuTree(String userId);
+
+    /**
+     * 复制菜单到指定父级
+     *
+     * @param id 原菜单ID
+     * @param targetParentId 目标父级ID，"0"表示顶级
+     * @return 复制后的菜单
+     */
+    MenuResp copyMenu(String id, String targetParentId);
 }
