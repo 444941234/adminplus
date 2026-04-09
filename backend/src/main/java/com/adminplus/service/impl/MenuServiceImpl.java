@@ -327,6 +327,68 @@ public class MenuServiceImpl implements MenuService {
         );
     }
 
+    @Override
+    @Transactional
+    @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
+    public MenuResp copyMenu(String id, String targetParentId) {
+        // 获取原菜单
+        MenuEntity sourceMenu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
+
+        // 不能复制到自己的子孙节点（防止循环引用）
+        if (!targetParentId.equals("0") && isChildMenu(id, targetParentId)) {
+            throw new BizException("不能将菜单复制到自己的子菜单下");
+        }
+
+        // 创建副本
+        MenuEntity copiedMenu = new MenuEntity();
+        copiedMenu.setType(sourceMenu.getType());
+        copiedMenu.setName(sourceMenu.getName() + " (副本)");
+        copiedMenu.setPath(sourceMenu.getPath());
+        copiedMenu.setComponent(sourceMenu.getComponent());
+        copiedMenu.setPermKey(sourceMenu.getPermKey());
+        copiedMenu.setIcon(sourceMenu.getIcon());
+        copiedMenu.setVisible(sourceMenu.getVisible());
+        copiedMenu.setStatus(sourceMenu.getStatus());
+
+        // 计算排序值：目标父级下最大值 + 10
+        int maxSortOrder = 0;
+        if (targetParentId.equals("0")) {
+            // 顶级菜单最大排序值
+            List<MenuEntity> topMenus = menuRepository.findAllByOrderBySortOrderAsc();
+            maxSortOrder = topMenus.stream()
+                    .filter(m -> m.getParent() == null)
+                    .mapToInt(MenuEntity::getSortOrder)
+                    .max()
+                    .orElse(0);
+        } else {
+            // 指定父级下最大排序值
+            MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, targetParentId, "父菜单不存在");
+            maxSortOrder = parent.getChildren().stream()
+                    .mapToInt(MenuEntity::getSortOrder)
+                    .max()
+                    .orElse(0);
+        }
+        copiedMenu.setSortOrder(maxSortOrder + 10);
+
+        // 设置父菜单关系
+        if (!targetParentId.equals("0")) {
+            MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, targetParentId, "父菜单不存在");
+            copiedMenu.setParent(parent);
+            String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
+            copiedMenu.setAncestors(parentAncestors + parent.getId() + ",");
+        } else {
+            copiedMenu.setAncestors("0,");
+        }
+
+        copiedMenu = menuRepository.save(copiedMenu);
+
+        // 记录审计日志
+        logService.log(LogEntry.operation("菜单管理", OperationType.CREATE.getCode(),
+                "复制菜单: " + sourceMenu.getName() + " -> " + copiedMenu.getName()));
+
+        return toResp(copiedMenu);
+    }
+
     /**
      * 转换为响应 VO
      */
