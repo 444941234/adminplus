@@ -15,6 +15,8 @@ import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializ
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
@@ -35,13 +37,20 @@ import java.time.Duration;
 public class CacheConfig {
 
     /**
-     * 配置 Jackson 3 ObjectMapper
+     * 配置 Jackson 3 ObjectMapper for Redis
      *
-     * 用于 Redis 序列化。使用 JsonMapper.builder() 构建 Jackson 3 ObjectMapper。
+     * 启用默认类型信息以支持 record 类型的正确反序列化。
+     * 修复: LinkedHashMap cannot be cast to DashboardStatsResp
      */
     @Bean
     public ObjectMapper redisObjectMapper() {
-        return JsonMapper.builder().build();
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Object.class)
+                .build();
+
+        return JsonMapper.builder()
+                .activateDefaultTyping(ptv)
+                .build();
     }
 
     /**
