@@ -11,6 +11,7 @@ import com.adminplus.repository.WorkflowNodeRepository;
 import com.adminplus.service.WorkflowDefinitionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
 
     private final WorkflowDefinitionRepository definitionRepository;
     private final WorkflowNodeRepository nodeRepository;
+    private final ConversionService conversionService;
 
     @Override
     @CacheEvict(value = "workflowEnabledDefinitions", allEntries = true)
@@ -57,7 +59,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         entity = definitionRepository.save(entity);
 
         log.info("工作流定义创建成功: id={}", entity.getId());
-        return toResponse(entity);
+        return toResponseWithNodeCount(entity, 0);
     }
 
     @Override
@@ -87,7 +89,8 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         entity = definitionRepository.save(entity);
 
         log.info("工作流定义更新成功: id={}", id);
-        return toResponse(entity);
+        long nodeCount = nodeRepository.countByDefinitionIdAndDeletedFalse(entity.getId());
+        return toResponseWithNodeCount(entity, (int) nodeCount);
     }
 
     @Override
@@ -110,9 +113,10 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @Override
     @Transactional(readOnly = true)
     public WorkflowDefinitionResponse getById(String id) {
-        return definitionRepository.findById(id)
-                .map(this::toResponse)
+        WorkflowDefinitionEntity entity = definitionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在: " + id));
+        long nodeCount = nodeRepository.countByDefinitionIdAndDeletedFalse(id);
+        return toResponseWithNodeCount(entity, (int) nodeCount);
     }
 
     @Override
@@ -124,7 +128,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         Map<String, Long> nodeCountMap = batchGetNodeCounts(definitions);
 
         return definitions.stream()
-                .map(entity -> toResponse(entity, nodeCountMap.getOrDefault(entity.getId(), 0L)))
+                .map(entity -> toResponseWithNodeCount(entity, nodeCountMap.getOrDefault(entity.getId(), 0L).intValue()))
                 .collect(Collectors.toList());
     }
 
@@ -138,7 +142,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         Map<String, Long> nodeCountMap = batchGetNodeCounts(definitions);
 
         return definitions.stream()
-                .map(entity -> toResponse(entity, nodeCountMap.getOrDefault(entity.getId(), 0L)))
+                .map(entity -> toResponseWithNodeCount(entity, nodeCountMap.getOrDefault(entity.getId(), 0L).intValue()))
                 .collect(Collectors.toList());
     }
 
@@ -185,7 +189,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         entity = nodeRepository.save(entity);
 
         log.info("工作流节点添加成功: id={}", entity.getId());
-        return toNodeResponse(entity);
+        return conversionService.convert(entity, WorkflowNodeResponse.class);
     }
 
     @Override
@@ -208,7 +212,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         entity = nodeRepository.save(entity);
 
         log.info("工作流节点更新成功: id={}", nodeId);
-        return toNodeResponse(entity);
+        return conversionService.convert(entity, WorkflowNodeResponse.class);
     }
 
     @Override
@@ -227,11 +231,14 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         List<WorkflowNodeEntity> nodes = nodeRepository.findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(definitionId);
         log.info("Service层查询结果: definitionId={}, 原始节点数={}", definitionId, nodes.size());
         return nodes.stream()
-                .map(this::toNodeResponse)
+                .map(node -> conversionService.convert(node, WorkflowNodeResponse.class))
                 .collect(Collectors.toList());
     }
 
-    private WorkflowDefinitionResponse toResponse(WorkflowDefinitionEntity entity, long nodeCount) {
+    /**
+     * 转换实体为响应对象，并设置节点数量
+     */
+    private WorkflowDefinitionResponse toResponseWithNodeCount(WorkflowDefinitionEntity entity, int nodeCount) {
         return new WorkflowDefinitionResponse(
                 entity.getId(),
                 entity.getDefinitionName(),
@@ -241,29 +248,9 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
                 entity.getStatus(),
                 entity.getVersion(),
                 entity.getFormConfig(),
-                (int) nodeCount,
+                nodeCount,
                 entity.getCreateTime(),
                 entity.getUpdateTime()
-        );
-    }
-
-    private WorkflowDefinitionResponse toResponse(WorkflowDefinitionEntity entity) {
-        return toResponse(entity, nodeRepository.countByDefinitionIdAndDeletedFalse(entity.getId()));
-    }
-
-    private WorkflowNodeResponse toNodeResponse(WorkflowNodeEntity entity) {
-        return new WorkflowNodeResponse(
-                entity.getId(),
-                entity.getDefinitionId(),
-                entity.getNodeName(),
-                entity.getNodeCode(),
-                entity.getNodeOrder(),
-                entity.getApproverType(),
-                entity.getApproverId(),
-                entity.getIsCounterSign(),
-                entity.getAutoPassSameUser(),
-                entity.getDescription(),
-                entity.getCreateTime()
         );
     }
 }

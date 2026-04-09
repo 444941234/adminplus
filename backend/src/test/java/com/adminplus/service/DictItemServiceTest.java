@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +25,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -42,11 +44,15 @@ class DictItemServiceTest {
     @Mock
     private DictRepository dictRepository;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private DictItemServiceImpl dictItemService;
 
     private DictEntity testDict;
     private DictItemEntity testItem;
+    private DictItemResponse testItemResponse;
 
     @BeforeEach
     void setUp() {
@@ -63,6 +69,25 @@ class DictItemServiceTest {
         testItem.setValue("1");
         testItem.setSortOrder(1);
         testItem.setStatus(1);
+
+        testItemResponse = new DictItemResponse(
+                testItem.getId(),
+                testItem.getDictId(),
+                testDict.getDictType(),
+                "0",
+                testItem.getLabel(),
+                testItem.getValue(),
+                testItem.getSortOrder(),
+                testItem.getStatus(),
+                null,
+                null,
+                testItem.getCreateTime(),
+                testItem.getUpdateTime()
+        );
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(DictItemEntity.class), eq(DictItemResponse.class)))
+                .thenReturn(testItemResponse);
     }
 
     @Nested

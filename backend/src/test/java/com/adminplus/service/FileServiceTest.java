@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.List;
@@ -23,6 +24,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -43,6 +45,9 @@ class FileServiceTest {
 
     @Mock
     private FileStorageProperties fileStorageConfig;
+
+    @Mock
+    private ConversionService conversionService;
 
     @InjectMocks
     private FileServiceImpl fileService;
@@ -81,6 +86,10 @@ class FileServiceTest {
                 testFile.getCreateTime(),
                 testFile.getUpdateTime()
         );
+
+        // Mock conversionService to convert FileEntity to FileResponse
+        lenient().when(conversionService.convert(any(FileEntity.class), eq(FileResponse.class)))
+                .thenReturn(testResponse);
     }
 
     @Nested

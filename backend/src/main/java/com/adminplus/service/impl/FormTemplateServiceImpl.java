@@ -7,6 +7,7 @@ import com.adminplus.repository.FormTemplateRepository;
 import com.adminplus.service.FormTemplateService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -27,13 +28,14 @@ import java.util.stream.Collectors;
 public class FormTemplateServiceImpl implements FormTemplateService {
 
     private final FormTemplateRepository templateRepository;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "formTemplates", key = "'all'")
     public List<FormTemplateResponse> getAllTemplates() {
         return templateRepository.findAll().stream()
-                .map(this::toResp)
+                .map(t -> conversionService.convert(t, FormTemplateResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -42,7 +44,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Cacheable(value = "formTemplates", key = "'enabled'")
     public List<FormTemplateResponse> getEnabledTemplates() {
         return templateRepository.findByStatusOrderByCreateTimeDesc(1).stream()
-                .map(this::toResp)
+                .map(t -> conversionService.convert(t, FormTemplateResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -51,7 +53,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Cacheable(value = "formTemplates", key = "'category:' + #category")
     public List<FormTemplateResponse> getTemplatesByCategory(String category) {
         return templateRepository.findByCategoryAndStatusOrderByCreateTimeDesc(category, 1).stream()
-                .map(this::toResp)
+                .map(t -> conversionService.convert(t, FormTemplateResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -60,7 +62,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Cacheable(value = "formTemplate", key = "#id")
     public FormTemplateResponse getTemplateById(String id) {
         return templateRepository.findById(id)
-                .map(this::toResp)
+                .map(t -> conversionService.convert(t, FormTemplateResponse.class))
                 .orElse(null);
     }
 
@@ -69,7 +71,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Cacheable(value = "formTemplate", key = "'code:' + #templateCode")
     public FormTemplateResponse getTemplateByCode(String templateCode) {
         return templateRepository.findByTemplateCode(templateCode)
-                .map(this::toResp)
+                .map(t -> conversionService.convert(t, FormTemplateResponse.class))
                 .orElse(null);
     }
 
@@ -93,7 +95,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
         entity = templateRepository.save(entity);
         log.info("创建表单模板成功: id={}, code={}", entity.getId(), entity.getTemplateCode());
 
-        return toResp(entity);
+        return conversionService.convert(entity, FormTemplateResponse.class);
     }
 
     @Override
@@ -119,7 +121,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
         entity = templateRepository.save(entity);
         log.info("更新表单模板成功: id={}, code={}", entity.getId(), entity.getTemplateCode());
 
-        return toResp(entity);
+        return conversionService.convert(entity, FormTemplateResponse.class);
     }
 
     @Override
@@ -138,19 +140,5 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Transactional(readOnly = true)
     public boolean existsByCode(String templateCode) {
         return templateRepository.existsByTemplateCode(templateCode);
-    }
-
-    private FormTemplateResponse toResp(FormTemplateEntity entity) {
-        return new FormTemplateResponse(
-                entity.getId(),
-                entity.getTemplateName(),
-                entity.getTemplateCode(),
-                entity.getCategory(),
-                entity.getDescription(),
-                entity.getFormConfig(),
-                entity.getStatus(),
-                entity.getCreateTime(),
-                entity.getUpdateTime()
-        );
     }
 }

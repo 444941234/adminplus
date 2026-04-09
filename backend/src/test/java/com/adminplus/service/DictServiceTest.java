@@ -16,12 +16,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -43,10 +45,14 @@ class DictServiceTest {
     @Mock
     private LogService logService;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private DictServiceImpl dictService;
 
     private DictEntity testDict;
+    private DictResponse testDictResponse;
 
     @BeforeEach
     void setUp() {
@@ -56,6 +62,23 @@ class DictServiceTest {
         testDict.setDictName("Status Dictionary");
         testDict.setStatus(1);
         testDict.setRemark("Status options");
+
+        testDictResponse = new DictResponse(
+                testDict.getId(),
+                testDict.getDictType(),
+                testDict.getDictName(),
+                testDict.getStatus(),
+                testDict.getRemark(),
+                testDict.getCreateTime(),
+                testDict.getUpdateTime()
+        );
+
+        // Mock conversionService to convert DictEntity to DictResponse
+        lenient().when(conversionService.convert(any(DictEntity.class), eq(DictResponse.class)))
+                .thenReturn(testDictResponse);
+        // Mock conversionService to convert DictCreateRequest to DictEntity
+        lenient().when(conversionService.convert(any(DictCreateRequest.class), eq(DictEntity.class)))
+                .thenReturn(testDict);
     }
 
     @Nested

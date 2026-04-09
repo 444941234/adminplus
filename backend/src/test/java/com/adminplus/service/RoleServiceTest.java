@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +26,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -49,10 +51,14 @@ class RoleServiceTest {
     @Mock
     private LogService logService;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private RoleServiceImpl roleService;
 
     private RoleEntity testRole;
+    private RoleResponse testRoleResponse;
 
     @BeforeEach
     void setUp() {
@@ -64,6 +70,24 @@ class RoleServiceTest {
         testRole.setDataScope(1);
         testRole.setStatus(1);
         testRole.setSortOrder(1);
+
+        testRoleResponse = new RoleResponse(
+                testRole.getId(),
+                testRole.getCode(),
+                testRole.getName(),
+                testRole.getDescription(),
+                testRole.getDataScope(),
+                testRole.getStatus(),
+                testRole.getSortOrder(),
+                testRole.getCreateTime(),
+                testRole.getUpdateTime()
+        );
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(RoleEntity.class), eq(RoleResponse.class)))
+                .thenReturn(testRoleResponse);
+        lenient().when(conversionService.convert(any(RoleCreateRequest.class), eq(RoleEntity.class)))
+                .thenReturn(testRole);
     }
 
     @Nested

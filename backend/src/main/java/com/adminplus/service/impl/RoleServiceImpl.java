@@ -23,6 +23,7 @@ import com.adminplus.utils.XssUtils;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -50,6 +51,7 @@ public class RoleServiceImpl implements RoleService {
     private final RoleMenuRepository roleMenuRepository;
     private final UserRoleRepository userRoleRepository;
     private final LogService logService;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -77,7 +79,7 @@ public class RoleServiceImpl implements RoleService {
         };
 
         Page<RoleEntity> pageResult = roleRepository.findAll(spec, pageable);
-        return PageResultResponse.from(pageResult, this::toResp);
+        return PageResultResponse.from(pageResult, e -> conversionService.convert(e, RoleResponse.class));
     }
 
     @Override
@@ -94,7 +96,7 @@ public class RoleServiceImpl implements RoleService {
             roles = roleRepository.findByDeletedFalseAndCodeNot("ROLE_ADMIN");
         }
 
-        return roles.stream().map(this::toResp).toList();
+        return roles.stream().map(e -> conversionService.convert(e, RoleResponse.class)).toList();
     }
 
     @Override
@@ -102,7 +104,7 @@ public class RoleServiceImpl implements RoleService {
     public RoleResponse getRoleById(String id) {
         var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
-        return toResp(role);
+        return conversionService.convert(role, RoleResponse.class);
     }
 
     @Override
@@ -127,7 +129,7 @@ public class RoleServiceImpl implements RoleService {
         // 记录审计日志
         logService.log(LogEntry.operation("角色管理", OperationType.CREATE.getCode(), "创建角色: " + role.getName() + " (" + role.getCode() + ")"));
 
-        return toResp(role);
+        return conversionService.convert(role, RoleResponse.class);
     }
 
     @Override
@@ -161,7 +163,7 @@ public class RoleServiceImpl implements RoleService {
 
         logService.log(LogEntry.operation("角色管理", OperationType.UPDATE.getCode(), "更新角色: " + role.getName() + " (" + role.getCode() + ")"));
 
-        return toResp(role);
+        return conversionService.convert(role, RoleResponse.class);
     }
 
     @Override
@@ -253,19 +255,5 @@ public class RoleServiceImpl implements RoleService {
         roleRepository.save(role);
 
         logService.log(LogEntry.operation("角色管理", OperationType.UPDATE.getCode(), "更新角色状态: " + role.getName() + " -> " + (status == 1 ? "启用" : "禁用")));
-    }
-
-    private RoleResponse toResp(RoleEntity role) {
-        return new RoleResponse(
-                role.getId(),
-                role.getCode(),
-                role.getName(),
-                role.getDescription(),
-                role.getDataScope(),
-                role.getStatus(),
-                role.getSortOrder(),
-                role.getCreateTime(),
-                role.getUpdateTime()
-        );
     }
 }

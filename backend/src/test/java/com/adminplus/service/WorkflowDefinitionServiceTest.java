@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -47,13 +49,18 @@ class WorkflowDefinitionServiceTest {
     @Mock
     private WorkflowNodeRepository nodeRepository;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private WorkflowDefinitionServiceImpl service;
 
     private WorkflowDefinitionRequest validDefinitionReq;
     private WorkflowDefinitionEntity testDefinitionEntity;
+    private WorkflowDefinitionResponse testDefinitionResponse;
     private WorkflowNodeRequest validNodeReq;
     private WorkflowNodeEntity testNodeEntity;
+    private WorkflowNodeResponse testNodeResponse;
 
     @BeforeEach
     void setUp() {
@@ -76,6 +83,20 @@ class WorkflowDefinitionServiceTest {
         testDefinitionEntity.setVersion(1);
         testDefinitionEntity.setFormConfig("{\"fields\":[]}");
 
+        testDefinitionResponse = new WorkflowDefinitionResponse(
+                testDefinitionEntity.getId(),
+                testDefinitionEntity.getDefinitionName(),
+                testDefinitionEntity.getDefinitionKey(),
+                testDefinitionEntity.getCategory(),
+                testDefinitionEntity.getDescription(),
+                testDefinitionEntity.getStatus(),
+                testDefinitionEntity.getVersion(),
+                testDefinitionEntity.getFormConfig(),
+                0,
+                testDefinitionEntity.getCreateTime(),
+                testDefinitionEntity.getUpdateTime()
+        );
+
         validNodeReq = new WorkflowNodeRequest(
                 "Manager Approval",
                 "manager_approve",
@@ -95,6 +116,30 @@ class WorkflowDefinitionServiceTest {
         testNodeEntity.setNodeOrder(1);
         testNodeEntity.setApproverType("user");
         testNodeEntity.setApproverId("user-001");
+
+        testNodeResponse = new WorkflowNodeResponse(
+                testNodeEntity.getId(),
+                testNodeEntity.getDefinitionId(),
+                testNodeEntity.getNodeName(),
+                testNodeEntity.getNodeCode(),
+                testNodeEntity.getNodeOrder(),
+                testNodeEntity.getApproverType(),
+                testNodeEntity.getApproverId(),
+                testNodeEntity.getIsCounterSign(),
+                testNodeEntity.getAutoPassSameUser(),
+                testNodeEntity.getDescription(),
+                testNodeEntity.getCreateTime()
+        );
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(WorkflowDefinitionEntity.class), eq(WorkflowDefinitionResponse.class)))
+                .thenReturn(testDefinitionResponse);
+        lenient().when(conversionService.convert(any(WorkflowDefinitionRequest.class), eq(WorkflowDefinitionEntity.class)))
+                .thenReturn(testDefinitionEntity);
+        lenient().when(conversionService.convert(any(WorkflowNodeEntity.class), eq(WorkflowNodeResponse.class)))
+                .thenReturn(testNodeResponse);
+        lenient().when(conversionService.convert(any(WorkflowNodeRequest.class), eq(WorkflowNodeEntity.class)))
+                .thenReturn(testNodeEntity);
     }
 
     @Nested

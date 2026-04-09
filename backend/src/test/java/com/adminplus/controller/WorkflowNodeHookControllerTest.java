@@ -1,7 +1,8 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.entity.WorkflowNodeHookEntity;
-import com.adminplus.repository.WorkflowNodeHookRepository;
+import com.adminplus.pojo.dto.workflow.hook.WorkflowNodeHookRequest;
+import com.adminplus.pojo.dto.response.WorkflowNodeHookResponse;
+import com.adminplus.service.WorkflowNodeHookService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +19,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -40,13 +40,13 @@ class WorkflowNodeHookControllerTest {
     private MockMvc mockMvc;
 
     @Mock
-    private WorkflowNodeHookRepository hookRepository;
+    private WorkflowNodeHookService hookService;
 
     @InjectMocks
     private WorkflowNodeHookController hookController;
 
     private ObjectMapper objectMapper;
-    private WorkflowNodeHookEntity testHook;
+    private WorkflowNodeHookResponse testHookResponse;
 
     @BeforeEach
     void setUp() {
@@ -57,16 +57,27 @@ class WorkflowNodeHookControllerTest {
                 .build();
         objectMapper = TestJacksonConfig.createObjectMapper();
 
-        testHook = new WorkflowNodeHookEntity();
-        testHook.setId("hook-001");
-        testHook.setNodeId("node-001");
-        testHook.setHookPoint("PRE_APPROVE");
-        testHook.setHookType("validate");
-        testHook.setExecutorType("spel");
-        testHook.setExecutorConfig("{\"expression\":\"#formData.amount > 100\"}");
-        testHook.setAsyncExecution(false);
-        testHook.setBlockOnFailure(true);
-        testHook.setPriority(0);
+        testHookResponse = new WorkflowNodeHookResponse(
+                "hook-001",
+                "node-001",
+                "PRE_APPROVE",
+                "validate",
+                "spel",
+                "{\"expression\":\"#formData.amount > 100\"}",
+                false,
+                true,
+                null,
+                0,
+                null,
+                0,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
     }
 
     @Nested
@@ -76,7 +87,7 @@ class WorkflowNodeHookControllerTest {
         @Test
         @DisplayName("should create hook successfully")
         void createHook_Success() throws Exception {
-            when(hookRepository.save(any())).thenReturn(testHook);
+            when(hookService.create(any(WorkflowNodeHookRequest.class))).thenReturn(testHookResponse);
 
             mockMvc.perform(post("/v1/workflow/hooks")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -96,7 +107,7 @@ class WorkflowNodeHookControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value("hook-001"));
 
-            verify(hookRepository).save(any(WorkflowNodeHookEntity.class));
+            verify(hookService).create(any(WorkflowNodeHookRequest.class));
         }
     }
 
@@ -107,19 +118,20 @@ class WorkflowNodeHookControllerTest {
         @Test
         @DisplayName("should return hook by id")
         void getHookById_Success() throws Exception {
-            when(hookRepository.findById("hook-001")).thenReturn(Optional.of(testHook));
+            when(hookService.getById("hook-001")).thenReturn(testHookResponse);
 
             mockMvc.perform(get("/v1/workflow/hooks/hook-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value("hook-001"));
 
-            verify(hookRepository).findById("hook-001");
+            verify(hookService).getById("hook-001");
         }
 
         @Test
         @DisplayName("should return error when hook not found")
         void getHookById_NotFound() throws Exception {
-            when(hookRepository.findById("non-existent")).thenReturn(Optional.empty());
+            when(hookService.getById("non-existent"))
+                .thenThrow(new com.adminplus.common.exception.BizException("钩子配置不存在"));
 
             mockMvc.perform(get("/v1/workflow/hooks/non-existent"))
                 .andExpect(status().isOk())
@@ -129,27 +141,27 @@ class WorkflowNodeHookControllerTest {
         @Test
         @DisplayName("should return hooks by node id")
         void listByNodeId_Success() throws Exception {
-            when(hookRepository.findByNodeIdAndDeletedFalseOrderByPriorityAsc("node-001"))
-                .thenReturn(List.of(testHook));
+            when(hookService.listByNodeId("node-001"))
+                .thenReturn(List.of(testHookResponse));
 
             mockMvc.perform(get("/v1/workflow/hooks/node/node-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].id").value("hook-001"));
 
-            verify(hookRepository).findByNodeIdAndDeletedFalseOrderByPriorityAsc("node-001");
+            verify(hookService).listByNodeId("node-001");
         }
 
         @Test
         @DisplayName("should return hooks by node id and hook point")
         void listByNodeIdAndHookPoint_Success() throws Exception {
-            when(hookRepository.findByNodeIdAndHookPointAndDeletedFalseOrderByPriorityAsc("node-001", "PRE_APPROVE"))
-                .thenReturn(List.of(testHook));
+            when(hookService.listByNodeIdAndHookPoint("node-001", "PRE_APPROVE"))
+                .thenReturn(List.of(testHookResponse));
 
             mockMvc.perform(get("/v1/workflow/hooks/node/node-001/PRE_APPROVE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].hookPoint").value("PRE_APPROVE"));
 
-            verify(hookRepository).findByNodeIdAndHookPointAndDeletedFalseOrderByPriorityAsc("node-001", "PRE_APPROVE");
+            verify(hookService).listByNodeIdAndHookPoint("node-001", "PRE_APPROVE");
         }
     }
 
@@ -160,7 +172,7 @@ class WorkflowNodeHookControllerTest {
         @Test
         @DisplayName("should update hook successfully")
         void updateHook_Success() throws Exception {
-            when(hookRepository.save(any())).thenReturn(testHook);
+            when(hookService.update(any(String.class), any(WorkflowNodeHookRequest.class))).thenReturn(testHookResponse);
 
             mockMvc.perform(put("/v1/workflow/hooks/hook-001")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -179,7 +191,7 @@ class WorkflowNodeHookControllerTest {
                         """))
                 .andExpect(status().isOk());
 
-            verify(hookRepository).save(any(WorkflowNodeHookEntity.class));
+            verify(hookService).update(any(String.class), any(WorkflowNodeHookRequest.class));
         }
     }
 
@@ -193,7 +205,7 @@ class WorkflowNodeHookControllerTest {
             mockMvc.perform(delete("/v1/workflow/hooks/hook-001"))
                 .andExpect(status().isOk());
 
-            verify(hookRepository).deleteById("hook-001");
+            verify(hookService).delete("hook-001");
         }
     }
 }

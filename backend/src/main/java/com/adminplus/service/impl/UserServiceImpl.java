@@ -9,7 +9,6 @@ import com.adminplus.pojo.dto.request.UserUpdateRequest;
 import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.dto.response.UserResponse;
-import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;
@@ -29,13 +28,16 @@ import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -56,6 +58,7 @@ public class UserServiceImpl implements UserService {
     private final DeptService deptService;
     private final PasswordEncoder passwordEncoder;
     private final LogService logService;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -63,11 +66,8 @@ public class UserServiceImpl implements UserService {
         var pageable = PageUtils.toPageable(query.getPage(), query.getSize());
 
         Page<UserEntity> pageResult = queryUsers(pageable, query.getKeyword(), query.getDeptId(), query.getStatus());
-        var batchData = prepareBatchData(pageResult.getContent());
-
-        return PageUtils.toResp(pageResult, user -> toResp(user,
-                batchData.deptMap.getOrDefault(user.getDeptId(), null),
-                batchData.userRoleMap.getOrDefault(user.getId(), List.of())));
+        // 批量查询优化：直接使用 Converter（已在 Converter 内部查询额外数据）
+        return PageUtils.toResp(pageResult, user -> conversionService.convert(user, UserResponse.class));
     }
 
     /**
@@ -140,59 +140,11 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    /**
-     * 准备批量查询数据（避免 N+1 查询）
-     */
-    private BatchUserData prepareBatchData(List<UserEntity> users) {
-        if (users.isEmpty()) {
-            return new BatchUserData(Map.of(), Map.of());
-        }
-
-        // 批量查询用户角色
-        List<String> userIds = users.stream().map(UserEntity::getId).toList();
-        List<UserRoleEntity> allUserRoles = userRoleRepository.findByUserIdIn(userIds);
-
-        // 批量查询角色
-        List<String> roleIds = allUserRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .distinct()
-                .toList();
-        Map<String, String> roleMap = roleIds.isEmpty() ? Map.of() :
-                roleRepository.findAllById(roleIds).stream()
-                        .collect(Collectors.toMap(RoleEntity::getId, RoleEntity::getName));
-
-        // 批量查询部门
-        List<String> deptIds = users.stream()
-                .map(UserEntity::getDeptId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
-        Map<String, String> deptMap = deptIds.isEmpty() ? Map.of() :
-                deptRepository.findAllById(deptIds).stream()
-                        .collect(Collectors.toMap(DeptEntity::getId, DeptEntity::getName));
-
-        // 构建用户角色映射
-        Map<String, List<String>> userRoleMap = new HashMap<>();
-        for (UserRoleEntity ur : allUserRoles) {
-            String roleName = roleMap.get(ur.getRoleId());
-            if (roleName != null) {
-                userRoleMap.computeIfAbsent(ur.getUserId(), k -> new ArrayList<>()).add(roleName);
-            }
-        }
-
-        return new BatchUserData(userRoleMap, deptMap);
-    }
-
-    /**
-     * 批量数据容器
-     */
-    private record BatchUserData(Map<String, List<String>> userRoleMap, Map<String, String> deptMap) {}
-
     @Override
     @Transactional(readOnly = true)
     public UserResponse getUserById(String id) {
         var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
-        return buildUserRespWithRoles(user);
+        return conversionService.convert(user, UserResponse.class);
     }
 
     @Override
@@ -235,15 +187,7 @@ public class UserServiceImpl implements UserService {
         // 记录审计日志
         logService.log(LogEntry.operation("用户管理", OperationType.CREATE.getCode(), "创建用户: " + user.getUsername()));
 
-        // 查询部门名称
-        String deptName = null;
-        if (user.getDeptId() != null) {
-            deptName = deptRepository.findById(user.getDeptId())
-                    .map(DeptEntity::getName)
-                    .orElse(null);
-        }
-
-        return toResp(user, deptName, List.of());
+        return conversionService.convert(user, UserResponse.class);
     }
 
     @Override
@@ -279,28 +223,7 @@ public class UserServiceImpl implements UserService {
         // 记录审计日志
         logService.log(LogEntry.operation("用户管理", OperationType.UPDATE.getCode(), "更新用户: " + user.getUsername()));
 
-        // 查询部门名称
-        String deptName = null;
-        if (user.getDeptId() != null) {
-            deptName = deptRepository.findById(user.getDeptId())
-                    .map(DeptEntity::getName)
-                    .orElse(null);
-        }
-
-        // 查询用户角色
-        List<UserRoleEntity> updateUserRoles = userRoleRepository.findByUserId(id);
-        List<String> roleIds = updateUserRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-        Map<String, String> roleMap = roleRepository.findAllById(roleIds).stream()
-                .collect(Collectors.toMap(RoleEntity::getId, RoleEntity::getName));
-        List<String> roleNames = updateUserRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .map(roleMap::get)
-                .filter(Objects::nonNull)
-                .toList();
-
-        return toResp(user, deptName, roleNames);
+        return conversionService.convert(user, UserResponse.class);
     }
 
     @Override
@@ -426,7 +349,7 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
-        return buildUserRespWithRoles(user);
+        return conversionService.convert(user, UserResponse.class);
     }
 
     @Override
@@ -467,34 +390,5 @@ public class UserServiceImpl implements UserService {
                 .filter(Objects::nonNull)
                 .filter(role -> role.getStatus() == 1)
                 .toList();
-    }
-
-    /**
-     * 构建用户响应对象（包含角色信息）
-     */
-    private UserResponse buildUserRespWithRoles(UserEntity user) {
-        List<RoleEntity> roles = getActiveRoles(user.getId());
-        List<String> roleNames = roles.stream()
-                .map(RoleEntity::getName)
-                .toList();
-
-        // 查询部门名称
-        String deptName = null;
-        if (user.getDeptId() != null) {
-            deptName = deptRepository.findById(user.getDeptId())
-                    .map(DeptEntity::getName)
-                    .orElse(null);
-        }
-
-        return toResp(user, deptName, roleNames);
-    }
-
-    private UserResponse toResp(UserEntity user, String deptName, List<String> roleNames) {
-        return new UserResponse(
-                user.getId(), user.getUsername(), user.getNickname(),
-                user.getEmail(), user.getPhone(), user.getAvatar(),
-                user.getStatus(), user.getDeptId(), deptName, roleNames,
-                user.getCreateTime(), user.getUpdateTime()
-        );
     }
 }

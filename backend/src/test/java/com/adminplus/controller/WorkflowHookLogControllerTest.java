@@ -1,7 +1,7 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.entity.WorkflowHookLogEntity;
-import com.adminplus.repository.WorkflowHookLogRepository;
+import com.adminplus.pojo.dto.response.WorkflowHookLogResponse;
+import com.adminplus.service.WorkflowHookLogService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,7 +14,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,26 +34,39 @@ class WorkflowHookLogControllerTest {
     private MockMvc mockMvc;
 
     @Mock
-    private WorkflowHookLogRepository hookLogRepository;
+    private WorkflowHookLogService hookLogService;
 
     @InjectMocks
     private WorkflowHookLogController hookLogController;
 
-    private WorkflowHookLogEntity testLog;
+    private WorkflowHookLogResponse testLogResponse;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(hookLogController).build();
 
-        testLog = new WorkflowHookLogEntity();
-        testLog.setId("log-001");
-        testLog.setInstanceId("instance-001");
-        testLog.setNodeId("node-001");
-        testLog.setHookPoint("PRE_APPROVE");
-        testLog.setExecutorType("spel");
-        testLog.setSuccess(true);
-        testLog.setResultCode("SUCCESS");
-        testLog.setResultMessage("校验通过");
+        testLogResponse = new WorkflowHookLogResponse(
+                "log-001",
+                "instance-001",
+                "node-001",
+                "hook-001",
+                null,
+                "PRE_APPROVE",
+                "spel",
+                null,
+                true,
+                "SUCCESS",
+                "校验通过",
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
     }
 
     @Nested
@@ -64,72 +76,72 @@ class WorkflowHookLogControllerTest {
         @Test
         @DisplayName("should return logs by instance id")
         void listByInstanceId_Success() throws Exception {
-            when(hookLogRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc("instance-001"))
-                .thenReturn(List.of(testLog));
+            when(hookLogService.listByInstanceId("instance-001"))
+                .thenReturn(List.of(testLogResponse));
 
             mockMvc.perform(get("/v1/workflow/hook-logs/instance/instance-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].id").value("log-001"));
 
-            verify(hookLogRepository).findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc("instance-001");
+            verify(hookLogService).listByInstanceId("instance-001");
         }
 
         @Test
         @DisplayName("should return logs by instance id and hook point")
         void listByInstanceIdAndHookPoint_Success() throws Exception {
-            when(hookLogRepository.findByInstanceIdAndHookPointAndDeletedFalseOrderByCreateTimeDesc("instance-001", "PRE_APPROVE"))
-                .thenReturn(List.of(testLog));
+            when(hookLogService.listByInstanceIdAndHookPoint("instance-001", "PRE_APPROVE"))
+                .thenReturn(List.of(testLogResponse));
 
             mockMvc.perform(get("/v1/workflow/hook-logs/instance/instance-001/PRE_APPROVE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].hookPoint").value("PRE_APPROVE"));
 
-            verify(hookLogRepository).findByInstanceIdAndHookPointAndDeletedFalseOrderByCreateTimeDesc("instance-001", "PRE_APPROVE");
+            verify(hookLogService).listByInstanceIdAndHookPoint("instance-001", "PRE_APPROVE");
         }
 
         @Test
         @DisplayName("should return logs by instance id and node id")
         void listByInstanceIdAndNodeId_Success() throws Exception {
-            when(hookLogRepository.findByInstanceIdAndNodeIdAndDeletedFalseOrderByCreateTimeDesc("instance-001", "node-001"))
-                .thenReturn(List.of(testLog));
+            when(hookLogService.listByInstanceIdAndNodeId("instance-001", "node-001"))
+                .thenReturn(List.of(testLogResponse));
 
             mockMvc.perform(get("/v1/workflow/hook-logs/instance/instance-001/node/node-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].nodeId").value("node-001"));
 
-            verify(hookLogRepository).findByInstanceIdAndNodeIdAndDeletedFalseOrderByCreateTimeDesc("instance-001", "node-001");
+            verify(hookLogService).listByInstanceIdAndNodeId("instance-001", "node-001");
         }
 
         @Test
         @DisplayName("should return logs by hook id")
         void listByHookId_Success() throws Exception {
-            testLog.setHookId("hook-001");
-            when(hookLogRepository.findByHookIdAndDeletedFalseOrderByCreateTimeDesc("hook-001"))
-                .thenReturn(List.of(testLog));
+            when(hookLogService.listByHookId("hook-001"))
+                .thenReturn(List.of(testLogResponse));
 
             mockMvc.perform(get("/v1/workflow/hook-logs/hook/hook-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].hookId").value("hook-001"));
 
-            verify(hookLogRepository).findByHookIdAndDeletedFalseOrderByCreateTimeDesc("hook-001");
+            verify(hookLogService).listByHookId("hook-001");
         }
 
         @Test
         @DisplayName("should return log by id")
         void getById_Success() throws Exception {
-            when(hookLogRepository.findById("log-001")).thenReturn(Optional.of(testLog));
+            when(hookLogService.getById("log-001")).thenReturn(testLogResponse);
 
             mockMvc.perform(get("/v1/workflow/hook-logs/log-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value("log-001"));
 
-            verify(hookLogRepository).findById("log-001");
+            verify(hookLogService).getById("log-001");
         }
 
         @Test
         @DisplayName("should return error when log not found")
         void getById_NotFound() throws Exception {
-            when(hookLogRepository.findById("non-existent")).thenReturn(Optional.empty());
+            when(hookLogService.getById("non-existent"))
+                .thenThrow(new com.adminplus.common.exception.BizException("日志不存在"));
 
             mockMvc.perform(get("/v1/workflow/hook-logs/non-existent"))
                 .andExpect(status().isOk())

@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -49,6 +51,9 @@ class WorkflowUrgeServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private WorkflowUrgeServiceImpl urgeService;
 
@@ -56,6 +61,7 @@ class WorkflowUrgeServiceTest {
     private WorkflowInstanceEntity testInstance;
     private WorkflowNodeEntity testNode;
     private UserEntity testUser;
+    private WorkflowUrgeResponse testUrgeResponse;
     private String testUserId = "user-001";
 
     @BeforeEach
@@ -86,6 +92,25 @@ class WorkflowUrgeServiceTest {
         testUrge.setUrgeContent("请尽快审批");
         testUrge.setIsRead(false);
         testUrge.setCreateTime(Instant.now());
+
+        testUrgeResponse = new WorkflowUrgeResponse(
+                testUrge.getId(),
+                testUrge.getInstanceId(),
+                testUrge.getNodeId(),
+                testUrge.getNodeName(),
+                testUrge.getUrgeUserId(),
+                testUrge.getUrgeUserName(),
+                testUrge.getUrgeTargetId(),
+                testUrge.getUrgeTargetName(),
+                testUrge.getUrgeContent(),
+                testUrge.getIsRead(),
+                testUrge.getReadTime(),
+                testUrge.getCreateTime()
+        );
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(WorkflowUrgeEntity.class), eq(WorkflowUrgeResponse.class)))
+                .thenReturn(testUrgeResponse);
     }
 
     @Nested

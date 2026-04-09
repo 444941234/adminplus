@@ -26,6 +26,7 @@ import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +58,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     private final WorkflowAddSignRepository addSignRepository;
     private final JsonMapper objectMapper;
     private final WorkflowHookService hookService;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional
@@ -246,14 +248,14 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         // 查询审批记录
         List<WorkflowApprovalResponse> approvals = approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
                 .stream()
-                .map(this::toApprovalResponse)
+                .map(a -> conversionService.convert(a, WorkflowApprovalResponse.class))
                 .collect(Collectors.toList());
 
         // 查询所有节点
         List<WorkflowNodeResponse> nodes = nodeRepository
                 .findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(instance.getDefinitionId())
                 .stream()
-                .map(this::toNodeResponse)
+                .map(n -> conversionService.convert(n, WorkflowNodeResponse.class))
                 .collect(Collectors.toList());
 
         // 查询当前节点
@@ -261,7 +263,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         if (instance.getCurrentNodeId() != null) {
             WorkflowNodeEntity nodeEntity = nodeRepository.findById(instance.getCurrentNodeId()).orElse(null);
             if (nodeEntity != null) {
-                currentNode = toNodeResponse(nodeEntity);
+                currentNode = conversionService.convert(nodeEntity, WorkflowNodeResponse.class);
             }
         }
 
@@ -273,12 +275,12 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         List<WorkflowCcResponse> ccRecords = ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
                 .stream()
-                .map(this::toCcResponse)
+                .map(cc -> conversionService.convert(cc, WorkflowCcResponse.class))
                 .collect(Collectors.toList());
 
         List<WorkflowAddSignResponse> addSignRecords = addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId)
                 .stream()
-                .map(this::toAddSignResponse)
+                .map(as -> conversionService.convert(as, WorkflowAddSignResponse.class))
                 .collect(Collectors.toList());
 
         return new WorkflowDetailResponse(
@@ -501,7 +503,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         return approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
                 .stream()
-                .map(this::toApprovalResponse)
+                .map(a -> conversionService.convert(a, WorkflowApprovalResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -869,22 +871,6 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         );
     }
 
-    private WorkflowApprovalResponse toApprovalResponse(WorkflowApprovalEntity entity) {
-        return new WorkflowApprovalResponse(
-                entity.getId(),
-                entity.getInstanceId(),
-                entity.getNodeId(),
-                entity.getNodeName(),
-                entity.getApproverId(),
-                entity.getApproverName(),
-                entity.getApprovalStatus(),
-                entity.getComment(),
-                entity.getAttachments(),
-                entity.getApprovalTime(),
-                entity.getCreateTime()
-        );
-    }
-
     @Override
     @Transactional
     public WorkflowInstanceResponse rollback(String instanceId, ApprovalActionRequest request) {
@@ -1010,7 +996,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         // 只返回已审批通过的节点，且不是当前节点
         return allNodes.stream()
                 .filter(n -> approvedNodeIds.contains(n.getId()) && !n.getId().equals(instance.getCurrentNodeId()))
-                .map(this::toNodeResponse)
+                .map(n -> conversionService.convert(n, WorkflowNodeResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -1057,22 +1043,6 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         // 重新创建审批记录
         createApprovalRecords(instance, targetNode);
-    }
-
-    private WorkflowNodeResponse toNodeResponse(WorkflowNodeEntity entity) {
-        return new WorkflowNodeResponse(
-                entity.getId(),
-                entity.getDefinitionId(),
-                entity.getNodeName(),
-                entity.getNodeCode(),
-                entity.getNodeOrder(),
-                entity.getApproverType(),
-                entity.getApproverId(),
-                entity.getIsCounterSign(),
-                entity.getAutoPassSameUser(),
-                entity.getDescription(),
-                entity.getCreateTime()
-        );
     }
 
     /**
@@ -1275,7 +1245,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         log.info("转办完成: instanceId={}, original={}, new={}",
                 instance.getId(), initiator.getNickname(), addUser.getNickname());
 
-        return toAddSignResponse(addSign);
+        return conversionService.convert(addSign, WorkflowAddSignResponse.class);
     }
 
     /**
@@ -1324,7 +1294,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         log.info("加签完成: instanceId={}, addType={}, addUser={}",
                 instance.getId(), req.addType(), addUser.getNickname());
 
-        return toAddSignResponse(addSign);
+        return conversionService.convert(addSign, WorkflowAddSignResponse.class);
     }
 
     @Override
@@ -1341,41 +1311,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         return addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId)
                 .stream()
-                .map(this::toAddSignResponse)
+                .map(as -> conversionService.convert(as, WorkflowAddSignResponse.class))
                 .collect(Collectors.toList());
-    }
-
-    private WorkflowAddSignResponse toAddSignResponse(WorkflowAddSignEntity entity) {
-        return new WorkflowAddSignResponse(
-                entity.getId(),
-                entity.getInstanceId(),
-                entity.getNodeId(),
-                entity.getNodeName(),
-                entity.getInitiatorId(),
-                entity.getInitiatorName(),
-                entity.getAddUserId(),
-                entity.getAddUserName(),
-                entity.getAddType(),
-                entity.getAddReason(),
-                entity.getOriginalApproverId(),
-                entity.getCreateTime()
-        );
-    }
-
-    private WorkflowCcResponse toCcResponse(WorkflowCcEntity entity) {
-        return new WorkflowCcResponse(
-                entity.getId(),
-                entity.getInstanceId(),
-                entity.getNodeId(),
-                entity.getNodeName(),
-                entity.getUserId(),
-                entity.getUserName(),
-                entity.getCcType(),
-                entity.getCcContent(),
-                entity.getIsRead(),
-                entity.getReadTime(),
-                entity.getCreateTime()
-        );
     }
 
     private void applyDraftChanges(WorkflowInstanceEntity instance, WorkflowStartRequest req) {

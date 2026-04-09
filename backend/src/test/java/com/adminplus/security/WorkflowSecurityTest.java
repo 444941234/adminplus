@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import tools.jackson.databind.json.JsonMapper;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -86,6 +87,9 @@ class WorkflowSecurityTest {
     @Mock
     private com.adminplus.service.workflow.hook.WorkflowHookService mockHookService;
 
+    @Mock
+    private ConversionService conversionService;
+
     private WorkflowInstanceService instanceService;
 
     // Test users
@@ -112,11 +116,11 @@ class WorkflowSecurityTest {
                 instanceRepository, approvalRepository, definitionRepository,
                 nodeRepository, userRepository, deptRepository, userRoleRepository, roleRepository,
                 mockDefinitionService, ccRepository, addSignRepository, objectMapper,
-                mockHookService
+                mockHookService, conversionService
         );
 
         mockDefinitionService = new WorkflowDefinitionServiceImpl(
-                definitionRepository, nodeRepository
+                definitionRepository, nodeRepository, conversionService
         );
 
         // Setup test users

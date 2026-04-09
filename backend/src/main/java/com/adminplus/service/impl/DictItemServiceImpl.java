@@ -12,6 +12,7 @@ import com.adminplus.service.DictItemService;
 import com.adminplus.utils.TreeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class DictItemServiceImpl implements DictItemService {
 
     private final DictItemRepository dictItemRepository;
     private final DictRepository dictRepository;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -41,7 +43,7 @@ public class DictItemServiceImpl implements DictItemService {
         String dictType = dict != null ? dict.getDictType() : null;
 
         return dictItemRepository.findByDictIdOrderBySortOrderAsc(dictId).stream()
-                .map(item -> toResp(item, dictType))
+                .map(item -> toRespWithDictType(item, dictType))
                 .toList();
     }
 
@@ -51,12 +53,10 @@ public class DictItemServiceImpl implements DictItemService {
     public List<DictItemResponse> getDictItemTreeByDictId(String dictId) {
         List<DictItemEntity> items = dictItemRepository.findByDictIdOrderBySortOrderAsc(dictId);
 
-        // 转换为 VO（扁平结构，children 为 null）
         List<DictItemResponse> itemResps = items.stream()
-                .map(item -> toResp(item, null))
+                .map(item -> toRespWithDictType(item, null))
                 .toList();
 
-        // 使用 TreeUtils.buildTreeForRecord 构建树形结构
         return TreeUtils.buildTreeForRecord(itemResps, this::createWithChildren);
     }
 
@@ -215,44 +215,24 @@ public class DictItemServiceImpl implements DictItemService {
     }
 
     /**
-     * 转换为响应 VO
-     */
-    private DictItemResponse toResp(DictItemEntity item, String dictType) {
-        String parentId = item.getParent() != null ? item.getParent().getId() : "0";
-        return new DictItemResponse(
-                item.getId(),
-                item.getDictId(),
-                dictType,
-                parentId,
-                item.getLabel(),
-                item.getValue(),
-                item.getSortOrder(),
-                item.getStatus(),
-                item.getRemark(),
-                null, // children 在构建树时填充
-                item.getCreateTime(),
-                item.getUpdateTime()
-        );
-    }
-
-    /**
      * 转换为响应 VO（带字典类型）
      */
     private DictItemResponse toRespWithDictType(DictItemEntity item, String dictType) {
-        String parentId = item.getParent() != null ? item.getParent().getId() : "0";
+        DictItemResponse base = conversionService.convert(item, DictItemResponse.class);
+        // 使用转换后的基础响应，只替换 dictType 字段
         return new DictItemResponse(
-                item.getId(),
-                item.getDictId(),
+                base.id(),
+                base.dictId(),
                 dictType,
-                parentId,
-                item.getLabel(),
-                item.getValue(),
-                item.getSortOrder(),
-                item.getStatus(),
-                item.getRemark(),
-                null,
-                item.getCreateTime(),
-                item.getUpdateTime()
+                base.parentId(),
+                base.label(),
+                base.value(),
+                base.sortOrder(),
+                base.status(),
+                base.remark(),
+                base.children(),
+                base.createTime(),
+                base.updateTime()
         );
     }
 

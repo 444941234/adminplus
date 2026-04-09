@@ -21,6 +21,7 @@ import com.adminplus.utils.TreeUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -45,6 +46,7 @@ public class MenuServiceImpl implements MenuService {
     private final LogService logService;
     private final UserRoleRepository userRoleRepository;
     private final RoleMenuRepository roleMenuRepository;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -52,10 +54,10 @@ public class MenuServiceImpl implements MenuService {
     public List<MenuResponse> getMenuTree() {
         List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
 
-        // 转换为 VO（扁平结构，children 为 null）
-        List<MenuResponse> menuResponses = allMenus.stream().map(this::toResp).toList();
+        List<MenuResponse> menuResponses = allMenus.stream()
+                .map(e -> conversionService.convert(e, MenuResponse.class))
+                .toList();
 
-        // 使用 TreeUtils.buildTreeForRecord 构建树形结构
         return TreeUtils.buildTreeForRecord(menuResponses, this::createWithChildren);
     }
 
@@ -86,7 +88,7 @@ public class MenuServiceImpl implements MenuService {
     public MenuResponse getMenuById(String id) {
         var menu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
-        return toResp(menu);
+        return conversionService.convert(menu, MenuResponse.class);
     }
 
     @Override
@@ -120,7 +122,7 @@ public class MenuServiceImpl implements MenuService {
         // 记录审计日志
         logService.log(LogEntry.operation("菜单管理", OperationType.CREATE.getCode(), "创建菜单: " + menu.getName()));
 
-        return toResp(menu);
+        return conversionService.convert(menu, MenuResponse.class);
     }
 
     @Override
@@ -174,7 +176,7 @@ public class MenuServiceImpl implements MenuService {
         // 记录审计日志
         logService.log(LogEntry.operation("菜单管理", OperationType.UPDATE.getCode(), "更新菜单: " + savedMenu.getName()));
 
-        return toResp(savedMenu);
+        return conversionService.convert(savedMenu, MenuResponse.class);
     }
 
     @Override
@@ -278,7 +280,7 @@ public class MenuServiceImpl implements MenuService {
                 .toList();
 
         // 6. 转换为 VO 并构建树形结构
-        List<MenuResponse> menuResponses = userMenus.stream().map(this::toResp).toList();
+        List<MenuResponse> menuResponses = userMenus.stream().map(m -> conversionService.convert(m, MenuResponse.class)).toList();
 
         // 7. 使用 TreeUtils.buildTreeForRecord 构建树形结构
         return TreeUtils.buildTreeForRecord(menuResponses, this::createWithChildren);
@@ -386,29 +388,6 @@ public class MenuServiceImpl implements MenuService {
         logService.log(LogEntry.operation("菜单管理", OperationType.CREATE.getCode(),
                 "复制菜单: " + sourceMenu.getName() + " -> " + copiedMenu.getName()));
 
-        return toResp(copiedMenu);
-    }
-
-    /**
-     * 转换为响应 VO
-     */
-    private MenuResponse toResp(MenuEntity menu) {
-        String parentId = menu.getParent() != null ? menu.getParent().getId() : "0";
-        return new MenuResponse(
-                menu.getId(),
-                parentId,
-                menu.getType(),
-                menu.getName(),
-                menu.getPath(),
-                menu.getComponent(),
-                menu.getPermKey(),
-                menu.getIcon(),
-                menu.getSortOrder(),
-                menu.getVisible(),
-                menu.getStatus(),
-                null, // children 在构建树时填充
-                menu.getCreateTime(),
-                menu.getUpdateTime()
-        );
+        return conversionService.convert(copiedMenu, MenuResponse.class);
     }
 }

@@ -10,6 +10,7 @@ import com.adminplus.service.NotificationService;
 import com.adminplus.utils.PageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ import java.util.List;
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional
@@ -48,7 +50,7 @@ public class NotificationServiceImpl implements NotificationService {
 
         log.info("通知发送成功: id={}", notification.getId());
 
-        return toResp(notification);
+        return conversionService.convert(notification, NotificationResponse.class);
     }
 
     @Override
@@ -110,7 +112,7 @@ public class NotificationServiceImpl implements NotificationService {
             pageResult = notificationRepository.findByRecipientIdAndStatusOrderByCreateTimeDesc(userId, query.getStatus(), pageable);
         }
 
-        return PageResultResponse.from(pageResult, this::toResp);
+        return PageResultResponse.from(pageResult, e -> conversionService.convert(e, NotificationResponse.class));
     }
 
     @Override
@@ -131,20 +133,5 @@ public class NotificationServiceImpl implements NotificationService {
         notificationRepository.delete(notification);
 
         log.info("通知已删除: id={}", notificationId);
-    }
-
-    private NotificationResponse toResp(NotificationEntity entity) {
-        NotificationResponse resp = new NotificationResponse();
-        resp.setId(entity.getId());
-        resp.setType(entity.getType());
-        resp.setRecipientId(entity.getRecipientId());
-        resp.setTitle(entity.getTitle());
-        resp.setContent(entity.getContent());
-        resp.setRelatedId(entity.getRelatedId());
-        resp.setRelatedType(entity.getRelatedType());
-        resp.setStatus(entity.getStatus());
-        resp.setCreateTime(entity.getCreateTime().toString());
-        resp.setUpdateTime(entity.getUpdateTime().toString());
-        return resp;
     }
 }

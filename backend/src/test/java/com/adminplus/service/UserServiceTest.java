@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -64,12 +66,16 @@ class UserServiceTest {
     @Mock
     private LogService logService;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private UserServiceImpl userService;
 
     private UserEntity testUser;
     private RoleEntity testRole;
     private DeptEntity testDept;
+    private UserResponse testUserResponse;
 
     @BeforeEach
     void setUp() {
@@ -90,6 +96,25 @@ class UserServiceTest {
         testDept = new DeptEntity();
         testDept.setId("dept-001");
         testDept.setName("IT Department");
+
+        testUserResponse = new UserResponse(
+                testUser.getId(),
+                testUser.getUsername(),
+                testUser.getNickname(),
+                testUser.getEmail(),
+                testUser.getPhone(),
+                null,
+                testUser.getStatus(),
+                testUser.getDeptId(),
+                testDept.getName(),
+                List.of(),
+                testUser.getCreateTime(),
+                testUser.getUpdateTime()
+        );
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(UserEntity.class), eq(UserResponse.class)))
+                .thenReturn(testUserResponse);
     }
 
     private UserRoleEntity createUserRoleEntity(String userId, String roleId) {
@@ -108,8 +133,6 @@ class UserServiceTest {
         void getUserById_WhenExists_ShouldReturnUser() {
             // Given
             when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of());
-            when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
 
             // When
             UserResponse result = userService.getUserById("user-001");
@@ -436,7 +459,6 @@ class UserServiceTest {
             );
             when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
             when(userRepository.save(any())).thenReturn(testUser);
-            when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
 
             // When
             UserResponse result = userService.updateUser("user-001", req);

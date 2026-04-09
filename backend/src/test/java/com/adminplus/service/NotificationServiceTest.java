@@ -1,6 +1,7 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.dto.request.NotificationSendRequest;
+import com.adminplus.pojo.dto.response.NotificationResponse;
 import com.adminplus.pojo.entity.NotificationEntity;
 import com.adminplus.repository.NotificationRepository;
 import com.adminplus.service.impl.NotificationServiceImpl;
@@ -10,12 +11,14 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -27,10 +30,14 @@ class NotificationServiceTest {
     @Mock
     private NotificationRepository notificationRepository;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private NotificationServiceImpl notificationService;
 
     private NotificationSendRequest notificationReq;
+    private NotificationResponse testResponse;
 
     @BeforeEach
     void setUp() {
@@ -39,6 +46,18 @@ class NotificationServiceTest {
         notificationReq.setRecipientId("user-001");
         notificationReq.setTitle("测试通知");
         notificationReq.setContent("这是一条测试通知");
+
+        testResponse = new NotificationResponse();
+        testResponse.setId("notif-001");
+        testResponse.setType("workflow_approve");
+        testResponse.setRecipientId("user-001");
+        testResponse.setTitle("测试通知");
+        testResponse.setContent("这是一条测试通知");
+        testResponse.setStatus(0);
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(NotificationEntity.class), eq(NotificationResponse.class)))
+                .thenReturn(testResponse);
     }
 
     @Test

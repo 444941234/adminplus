@@ -7,6 +7,7 @@ import com.adminplus.service.WorkflowCcService;
 import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,13 +26,14 @@ import java.util.stream.Collectors;
 public class WorkflowCcServiceImpl implements WorkflowCcService {
 
     private final WorkflowCcRepository ccRepository;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional(readOnly = true)
     public List<WorkflowCcResponse> getUserCcRecords(String userId) {
         log.info("查询用户抄送记录: userId={}", userId);
         return ccRepository.findByUserId(userId).stream()
-                .map(this::toCcResponse)
+                .map(cc -> conversionService.convert(cc, WorkflowCcResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -40,7 +42,7 @@ public class WorkflowCcServiceImpl implements WorkflowCcService {
     public List<WorkflowCcResponse> getUnreadCcRecords(String userId) {
         log.info("查询用户未读抄送记录: userId={}", userId);
         return ccRepository.findUnreadByUserId(userId).stream()
-                .map(this::toCcResponse)
+                .map(cc -> conversionService.convert(cc, WorkflowCcResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -95,24 +97,8 @@ public class WorkflowCcServiceImpl implements WorkflowCcService {
     public List<WorkflowCcResponse> getInstanceCcRecords(String instanceId) {
         log.info("查询工作流实例抄送记录: instanceId={}", instanceId);
         return ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId).stream()
-                .map(this::toCcResponse)
+                .map(cc -> conversionService.convert(cc, WorkflowCcResponse.class))
                 .collect(Collectors.toList());
-    }
-
-    private WorkflowCcResponse toCcResponse(WorkflowCcEntity entity) {
-        return new WorkflowCcResponse(
-                entity.getId(),
-                entity.getInstanceId(),
-                entity.getNodeId(),
-                entity.getNodeName(),
-                entity.getUserId(),
-                entity.getUserName(),
-                entity.getCcType(),
-                entity.getCcContent(),
-                entity.getIsRead(),
-                entity.getReadTime(),
-                entity.getCreateTime()
-        );
     }
 
     private String getCurrentUserId() {

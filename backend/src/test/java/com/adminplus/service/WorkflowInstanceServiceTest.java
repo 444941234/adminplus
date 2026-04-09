@@ -2,9 +2,12 @@ package com.adminplus.service;
 
 import com.adminplus.pojo.dto.request.ApprovalActionRequest;
 import com.adminplus.pojo.dto.request.WorkflowStartRequest;
+import com.adminplus.pojo.dto.response.WorkflowAddSignResponse;
 import com.adminplus.pojo.dto.response.WorkflowApprovalResponse;
+import com.adminplus.pojo.dto.response.WorkflowCcResponse;
 import com.adminplus.pojo.dto.response.WorkflowDetailResponse;
 import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
+import com.adminplus.pojo.dto.response.WorkflowNodeResponse;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
 import com.adminplus.service.impl.WorkflowInstanceServiceImpl;
@@ -18,6 +21,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.adminplus.common.security.AppUserDetails;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -84,6 +88,9 @@ class WorkflowInstanceServiceTest {
 
     @Mock
     private tools.jackson.databind.json.JsonMapper objectMapper;
+
+    @Mock
+    private ConversionService conversionService;
 
     @InjectMocks
     private WorkflowInstanceServiceImpl service;
@@ -171,6 +178,79 @@ class WorkflowInstanceServiceTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(WorkflowInstanceEntity.class), eq(WorkflowInstanceResponse.class)))
+                .thenAnswer(invocation -> {
+                    WorkflowInstanceEntity entity = invocation.getArgument(0);
+                    String status = entity.getStatus();
+                    // Normalize status for display
+                    String normalizedStatus = switch (status) {
+                        case "running" -> "PROCESSING";
+                        case "draft" -> "DRAFT";
+                        case "approved" -> "APPROVED";
+                        case "rejected" -> "REJECTED";
+                        case "cancelled" -> "CANCELLED";
+                        default -> status.toUpperCase();
+                    };
+                    return new WorkflowInstanceResponse(
+                            entity.getId(),
+                            entity.getDefinitionId(),
+                            entity.getDefinitionName(),
+                            entity.getUserId(),
+                            entity.getUserName(),
+                            entity.getDeptId(),
+                            null,
+                            entity.getTitle(),
+                            entity.getBusinessData(),
+                            entity.getCurrentNodeId(),
+                            null,
+                            normalizedStatus,
+                            entity.getSubmitTime(),
+                            entity.getFinishTime(),
+                            entity.getRemark(),
+                            entity.getCreateTime(),
+                            null, null, null, null, null, null, null
+                    );
+                });
+        lenient().when(conversionService.convert(any(WorkflowApprovalEntity.class), eq(WorkflowApprovalResponse.class)))
+                .thenAnswer(invocation -> {
+                    WorkflowApprovalEntity entity = invocation.getArgument(0);
+                    return new WorkflowApprovalResponse(
+                            entity.getId(),
+                            entity.getInstanceId(),
+                            entity.getNodeId(),
+                            entity.getNodeName(),
+                            entity.getApproverId(),
+                            entity.getApproverName(),
+                            entity.getApprovalStatus(),
+                            entity.getComment(),
+                            entity.getAttachments(),
+                            entity.getApprovalTime(),
+                            entity.getCreateTime()
+                    );
+                });
+        lenient().when(conversionService.convert(any(WorkflowNodeEntity.class), eq(WorkflowNodeResponse.class)))
+                .thenAnswer(invocation -> {
+                    WorkflowNodeEntity entity = invocation.getArgument(0);
+                    return new WorkflowNodeResponse(
+                            entity.getId(),
+                            entity.getDefinitionId(),
+                            entity.getNodeName(),
+                            entity.getNodeCode(),
+                            entity.getNodeOrder(),
+                            entity.getApproverType(),
+                            entity.getApproverId(),
+                            entity.getIsCounterSign(),
+                            entity.getAutoPassSameUser(),
+                            entity.getDescription(),
+                            entity.getCreateTime()
+                    );
+                });
+        lenient().when(conversionService.convert(any(WorkflowCcEntity.class), eq(WorkflowCcResponse.class)))
+                .thenReturn(null);
+        lenient().when(conversionService.convert(any(WorkflowAddSignEntity.class), eq(WorkflowAddSignResponse.class)))
+                .thenReturn(null);
 
         // Mock hookService to return passing results by default
         // Create a reusable hook result that passes all validations

@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.time.Instant;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -37,10 +39,14 @@ class WorkflowCcServiceTest {
     @Mock
     private WorkflowCcRepository ccRepository;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private WorkflowCcServiceImpl ccService;
 
     private WorkflowCcEntity testCc;
+    private WorkflowCcResponse testCcResponse;
     private String testUserId = "user-001";
 
     @BeforeEach
@@ -56,6 +62,24 @@ class WorkflowCcServiceTest {
         testCc.setCcContent("审批通过通知");
         testCc.setIsRead(false);
         testCc.setCreateTime(Instant.now());
+
+        testCcResponse = new WorkflowCcResponse(
+                testCc.getId(),
+                testCc.getInstanceId(),
+                testCc.getNodeId(),
+                testCc.getNodeName(),
+                testCc.getUserId(),
+                testCc.getUserName(),
+                testCc.getCcType(),
+                testCc.getCcContent(),
+                testCc.getIsRead(),
+                testCc.getReadTime(),
+                testCc.getCreateTime()
+        );
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(WorkflowCcEntity.class), eq(WorkflowCcResponse.class)))
+                .thenReturn(testCcResponse);
     }
 
     @Nested

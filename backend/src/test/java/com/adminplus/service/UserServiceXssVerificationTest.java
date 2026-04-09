@@ -2,6 +2,7 @@ package com.adminplus.service;
 
 import com.adminplus.pojo.dto.request.UserCreateRequest;
 import com.adminplus.pojo.dto.request.UserUpdateRequest;
+import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.repository.DeptRepository;
 import com.adminplus.repository.RoleRepository;
@@ -16,13 +17,16 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -58,10 +62,14 @@ class UserServiceXssVerificationTest {
     @Mock
     private com.adminplus.service.LogService logService;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private UserServiceImpl userService;
 
     private UserEntity testUser;
+    private UserResponse testUserResponse;
 
     @BeforeEach
     void setUp() {
@@ -73,6 +81,25 @@ class UserServiceXssVerificationTest {
         testUser.setEmail("test@example.com");
         testUser.setPhone("13800138000");
         testUser.setStatus(1);
+
+        testUserResponse = new UserResponse(
+                testUser.getId(),
+                testUser.getUsername(),
+                testUser.getNickname(),
+                testUser.getEmail(),
+                testUser.getPhone(),
+                null,
+                testUser.getStatus(),
+                testUser.getDeptId(),
+                null,
+                List.of(),
+                testUser.getCreateTime(),
+                testUser.getUpdateTime()
+        );
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(UserEntity.class), eq(UserResponse.class)))
+                .thenReturn(testUserResponse);
     }
 
     @Nested

@@ -19,6 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,9 +34,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -58,6 +59,9 @@ class ConfigGroupServiceTest {
 
     @Mock
     private LogService logService;
+
+    @Mock
+    private ConversionService conversionService;
 
     @InjectMocks
     private ConfigGroupServiceImpl configGroupService;
@@ -90,6 +94,12 @@ class ConfigGroupServiceTest {
                 testGroup.getCreateTime(),
                 testGroup.getUpdateTime()
         );
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(ConfigGroupEntity.class), eq(ConfigGroupResponse.class)))
+                .thenReturn(testGroupResp);
+        lenient().when(conversionService.convert(any(ConfigGroupCreateRequest.class), eq(ConfigGroupEntity.class)))
+                .thenReturn(testGroup);
     }
 
     @Nested

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -47,11 +49,15 @@ class MenuServiceTest {
     @Mock
     private RoleMenuRepository roleMenuRepository;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private MenuServiceImpl menuService;
 
     private MenuEntity testMenu;
     private MenuEntity parentMenu;
+    private MenuResponse testMenuResponse;
 
     @BeforeEach
     void setUp() {
@@ -76,6 +82,73 @@ class MenuServiceTest {
         testMenu.setVisible(1);
         testMenu.setStatus(1);
         testMenu.setParent(parentMenu);
+
+        testMenuResponse = new MenuResponse(
+                testMenu.getId(),
+                testMenu.getParentId(),
+                testMenu.getType(),
+                testMenu.getName(),
+                testMenu.getPath(),
+                testMenu.getComponent(),
+                testMenu.getPermKey(),
+                testMenu.getIcon(),
+                testMenu.getSortOrder(),
+                testMenu.getVisible(),
+                testMenu.getStatus(),
+                null,
+                testMenu.getCreateTime(),
+                testMenu.getUpdateTime()
+        );
+
+        // Mock conversionService - use Answer to dynamically create Response
+        lenient().when(conversionService.convert(any(MenuEntity.class), eq(MenuResponse.class)))
+                .thenAnswer(invocation -> {
+                    MenuEntity entity = invocation.getArgument(0);
+                    // Use parent's id if parent is set, otherwise use parentId field
+                    // For top-level menus (parent is null), return "0" as parentId
+                    String actualParentId;
+                    if (entity.getParent() != null) {
+                        actualParentId = entity.getParent().getId();
+                    } else if (entity.getParentId() != null) {
+                        actualParentId = entity.getParentId();
+                    } else {
+                        // Top-level menu with no parent
+                        actualParentId = "0";
+                    }
+                    return new MenuResponse(
+                            entity.getId(),
+                            actualParentId,
+                            entity.getType(),
+                            entity.getName(),
+                            entity.getPath(),
+                            entity.getComponent(),
+                            entity.getPermKey(),
+                            entity.getIcon(),
+                            entity.getSortOrder(),
+                            entity.getVisible(),
+                            entity.getStatus(),
+                            null,
+                            entity.getCreateTime(),
+                            entity.getUpdateTime()
+                    );
+                });
+        lenient().when(conversionService.convert(any(MenuCreateRequest.class), eq(MenuEntity.class)))
+                .thenAnswer(invocation -> {
+                    MenuCreateRequest req = invocation.getArgument(0);
+                    MenuEntity entity = new MenuEntity();
+                    entity.setId(testMenu.getId());
+                    entity.setParentId(req.parentId());
+                    entity.setType(req.type());
+                    entity.setName(req.name());
+                    entity.setPath(req.path());
+                    entity.setComponent(req.component());
+                    entity.setPermKey(req.permKey());
+                    entity.setIcon(req.icon());
+                    entity.setSortOrder(req.sortOrder());
+                    entity.setVisible(req.visible());
+                    entity.setStatus(req.status());
+                    return entity;
+                });
     }
 
     @Nested

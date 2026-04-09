@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,6 +22,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -39,11 +41,15 @@ class DeptServiceTest {
     @Mock
     private LogService logService;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private DeptServiceImpl deptService;
 
     private DeptEntity testDept;
     private DeptEntity parentDept;
+    private DeptResponse testDeptResponse;
 
     @BeforeEach
     void setUp() {
@@ -65,6 +71,25 @@ class DeptServiceTest {
         testDept.setSortOrder(1);
         testDept.setStatus(1);
         testDept.setParent(parentDept);
+
+        testDeptResponse = new DeptResponse(
+                testDept.getId(),
+                null,
+                testDept.getName(),
+                testDept.getCode(),
+                testDept.getLeader(),
+                testDept.getPhone(),
+                testDept.getEmail(),
+                testDept.getSortOrder(),
+                testDept.getStatus(),
+                null,
+                testDept.getCreateTime(),
+                testDept.getUpdateTime()
+        );
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(DeptEntity.class), eq(DeptResponse.class)))
+                .thenReturn(testDeptResponse);
     }
 
     @Nested

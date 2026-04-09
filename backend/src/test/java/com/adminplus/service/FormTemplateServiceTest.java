@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 /**
@@ -35,10 +37,14 @@ class FormTemplateServiceTest {
     @Mock
     private FormTemplateRepository templateRepository;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private FormTemplateServiceImpl templateService;
 
     private FormTemplateEntity testTemplate;
+    private FormTemplateResponse testTemplateResponse;
 
     @BeforeEach
     void setUp() {
@@ -50,6 +56,48 @@ class FormTemplateServiceTest {
         testTemplate.setDescription("员工请假申请表单");
         testTemplate.setFormConfig("{\"fields\":[]}");
         testTemplate.setStatus(1);
+
+        testTemplateResponse = new FormTemplateResponse(
+                testTemplate.getId(),
+                testTemplate.getTemplateName(),
+                testTemplate.getTemplateCode(),
+                testTemplate.getCategory(),
+                testTemplate.getDescription(),
+                testTemplate.getFormConfig(),
+                testTemplate.getStatus(),
+                testTemplate.getCreateTime(),
+                testTemplate.getUpdateTime()
+        );
+
+        // Mock conversionService - use Answer to dynamically create Response
+        lenient().when(conversionService.convert(any(FormTemplateEntity.class), eq(FormTemplateResponse.class)))
+                .thenAnswer(invocation -> {
+                    FormTemplateEntity entity = invocation.getArgument(0);
+                    return new FormTemplateResponse(
+                            entity.getId(),
+                            entity.getTemplateName(),
+                            entity.getTemplateCode(),
+                            entity.getCategory(),
+                            entity.getDescription(),
+                            entity.getFormConfig(),
+                            entity.getStatus(),
+                            entity.getCreateTime(),
+                            entity.getUpdateTime()
+                    );
+                });
+        lenient().when(conversionService.convert(any(FormTemplateRequest.class), eq(FormTemplateEntity.class)))
+                .thenAnswer(invocation -> {
+                    FormTemplateRequest req = invocation.getArgument(0);
+                    FormTemplateEntity entity = new FormTemplateEntity();
+                    entity.setId(testTemplate.getId()); // Use test template ID as default
+                    entity.setTemplateName(req.templateName());
+                    entity.setTemplateCode(req.templateCode());
+                    entity.setCategory(req.category());
+                    entity.setDescription(req.description());
+                    entity.setFormConfig(req.formConfig());
+                    entity.setStatus(req.status());
+                    return entity;
+                });
     }
 
     @Nested

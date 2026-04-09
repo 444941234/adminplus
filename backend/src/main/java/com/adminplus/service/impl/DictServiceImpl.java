@@ -20,6 +20,7 @@ import com.adminplus.service.LogService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
@@ -44,10 +45,10 @@ public class DictServiceImpl implements DictService {
     private final DictRepository dictRepository;
     private final DictItemRepository dictItemRepository;
     private final LogService logService;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional(readOnly = true)
-    // @Cacheable(value = "dict", key = "'list:' + #req.page + ':' + #req.size + ':' + (#req.keyword != null ? #req.keyword : '')")
     public PageResultResponse<DictResponse> getDictList(DictQuery query) {
         Pageable pageable = PageUtils.toPageableDesc(query.getPage(), query.getSize(), "createTime");
 
@@ -67,7 +68,7 @@ public class DictServiceImpl implements DictService {
         };
 
         var pageResult = dictRepository.findAll(spec, pageable);
-        return PageResultResponse.from(pageResult, this::toVO);
+        return PageResultResponse.from(pageResult, e -> conversionService.convert(e, DictResponse.class));
     }
 
     @Override
@@ -75,7 +76,7 @@ public class DictServiceImpl implements DictService {
     @Cacheable(value = "dict", key = "'id:' + #id")
     public DictResponse getDictById(String id) {
         DictEntity dict = EntityHelper.findByIdOrThrow(dictRepository::findById, id, "字典不存在");
-        return toVO(dict);
+        return conversionService.convert(dict, DictResponse.class);
     }
 
     @Override
@@ -84,7 +85,7 @@ public class DictServiceImpl implements DictService {
     public DictResponse getDictByType(String dictType) {
         DictEntity dict = dictRepository.findByDictType(dictType)
                 .orElseThrow(() -> new BizException("字典不存在"));
-        return toVO(dict);
+        return conversionService.convert(dict, DictResponse.class);
     }
 
     @Override
@@ -95,18 +96,13 @@ public class DictServiceImpl implements DictService {
             throw new BizException("字典类型已存在");
         }
 
-        DictEntity dict = new DictEntity();
-        dict.setDictType(request.dictType());
-        dict.setDictName(request.dictName());
-        dict.setRemark(request.remark());
-
+        DictEntity dict = conversionService.convert(request, DictEntity.class);
         dict = dictRepository.save(dict);
         log.info("创建字典成功: {}", dict.getDictType());
 
-        // 记录审计日志
         logService.log(LogEntry.operation("字典管理", OperationType.CREATE.getCode(), "创建字典: " + dict.getDictName() + " (" + dict.getDictType() + ")"));
 
-        return toVO(dict);
+        return conversionService.convert(dict, DictResponse.class);
     }
 
     @Override
@@ -124,10 +120,9 @@ public class DictServiceImpl implements DictService {
         dict = dictRepository.save(dict);
         log.info("更新字典成功: {}", dict.getDictType());
 
-        // 记录审计日志
         logService.log(LogEntry.operation("字典管理", OperationType.UPDATE.getCode(), "更新字典: " + dict.getDictName() + " (" + dict.getDictType() + ")"));
 
-        return toVO(dict);
+        return conversionService.convert(dict, DictResponse.class);
     }
 
     @Override
@@ -136,7 +131,6 @@ public class DictServiceImpl implements DictService {
     public void deleteDict(String id) {
         DictEntity dict = EntityHelper.findByIdOrThrow(dictRepository::findById, id, "字典不存在");
 
-        // 检查是否有字典项
         List<DictItemEntity> items = dictItemRepository.findByDictIdOrderBySortOrderAsc(id);
         if (!items.isEmpty()) {
             throw new BizException("该字典下存在字典项，无法删除");
@@ -146,7 +140,6 @@ public class DictServiceImpl implements DictService {
         dictRepository.save(dict);
         log.info("删除字典成功: {}", dict.getDictType());
 
-        // 记录审计日志
         logService.log(LogEntry.operation("字典管理", OperationType.DELETE.getCode(), "删除字典: " + dict.getDictName() + " (" + dict.getDictType() + ")"));
     }
 
@@ -173,18 +166,6 @@ public class DictServiceImpl implements DictService {
                 .toList();
     }
 
-    private DictResponse toVO(DictEntity dict) {
-        return new DictResponse(
-                dict.getId(),
-                dict.getDictType(),
-                dict.getDictName(),
-                dict.getStatus(),
-                dict.getRemark(),
-                dict.getCreateTime(),
-                dict.getUpdateTime()
-        );
-    }
-
     private DictItemResponse toItemVO(DictItemEntity item, DictEntity dict) {
         String parentId = item.getParent() != null ? item.getParent().getId() : "0";
         return new DictItemResponse(
@@ -197,7 +178,7 @@ public class DictServiceImpl implements DictService {
                 item.getSortOrder(),
                 item.getStatus(),
                 item.getRemark(),
-                null, // children - 在构建树形结构时填充
+                null,
                 item.getCreateTime(),
                 item.getUpdateTime()
         );

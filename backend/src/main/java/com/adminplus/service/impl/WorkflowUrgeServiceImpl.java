@@ -8,6 +8,7 @@ import com.adminplus.service.WorkflowUrgeService;
 import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
     private final WorkflowApprovalRepository approvalRepository;
     private final WorkflowNodeRepository nodeRepository;
     private final UserRepository userRepository;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional
@@ -104,7 +106,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
     public List<WorkflowUrgeResponse> getReceivedUrgeRecords(String userId) {
         log.info("查询用户收到的催办记录: userId={}", userId);
         return urgeRepository.findByUrgeTargetId(userId).stream()
-                .map(this::toUrgeResponse)
+                .map(urge -> conversionService.convert(urge, WorkflowUrgeResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -113,7 +115,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
     public List<WorkflowUrgeResponse> getSentUrgeRecords(String userId) {
         log.info("查询用户发送的催办记录: userId={}", userId);
         return urgeRepository.findByUrgeUserId(userId).stream()
-                .map(this::toUrgeResponse)
+                .map(urge -> conversionService.convert(urge, WorkflowUrgeResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -122,7 +124,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
     public List<WorkflowUrgeResponse> getUnreadUrgeRecords(String userId) {
         log.info("查询用户未读催办记录: userId={}", userId);
         return urgeRepository.findUnreadByUrgeTargetId(userId).stream()
-                .map(this::toUrgeResponse)
+                .map(urge -> conversionService.convert(urge, WorkflowUrgeResponse.class))
                 .collect(Collectors.toList());
     }
 
@@ -177,25 +179,8 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
     public List<WorkflowUrgeResponse> getInstanceUrgeRecords(String instanceId) {
         log.info("查询工作流实例催办记录: instanceId={}", instanceId);
         return urgeRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId).stream()
-                .map(this::toUrgeResponse)
+                .map(urge -> conversionService.convert(urge, WorkflowUrgeResponse.class))
                 .collect(Collectors.toList());
-    }
-
-    private WorkflowUrgeResponse toUrgeResponse(WorkflowUrgeEntity entity) {
-        return new WorkflowUrgeResponse(
-                entity.getId(),
-                entity.getInstanceId(),
-                entity.getNodeId(),
-                entity.getNodeName(),
-                entity.getUrgeUserId(),
-                entity.getUrgeUserName(),
-                entity.getUrgeTargetId(),
-                entity.getUrgeTargetName(),
-                entity.getUrgeContent(),
-                entity.getIsRead(),
-                entity.getReadTime(),
-                entity.getCreateTime()
-        );
     }
 
     /**

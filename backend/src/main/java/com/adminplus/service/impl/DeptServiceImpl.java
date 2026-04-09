@@ -17,6 +17,7 @@ import com.adminplus.utils.TreeUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,7 @@ public class DeptServiceImpl implements DeptService {
 
     private final DeptRepository deptRepository;
     private final LogService logService;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -74,7 +76,7 @@ public class DeptServiceImpl implements DeptService {
         // 转换为 VO（扁平结构，children 为 null）
         List<DeptResponse> deptResponses = allDepts.stream()
                 .map(dept -> {
-                    DeptResponse resp = toResp(dept);
+                    DeptResponse resp = conversionService.convert(dept, DeptResponse.class);
                     // 对于非管理员用户，如果当前部门不是根部门（parentId != "0"），
                     // 则将其 parentId 改为 "0"，使其成为树的根节点
                     if (!SecurityUtils.isAdmin() && dept.getId().equals(SecurityUtils.getCurrentUserDeptId())) {
@@ -129,7 +131,7 @@ public class DeptServiceImpl implements DeptService {
     public DeptResponse getDeptById(String id) {
         var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
 
-        return toResp(dept);
+        return conversionService.convert(dept, DeptResponse.class);
     }
 
     @Override
@@ -172,7 +174,7 @@ public class DeptServiceImpl implements DeptService {
         // 记录审计日志
         logService.log(LogEntry.operation("部门管理", OperationType.CREATE.getCode(), "创建部门: " + dept.getName()));
 
-        return toResp(dept);
+        return conversionService.convert(dept, DeptResponse.class);
     }
 
     @Override
@@ -246,7 +248,7 @@ public class DeptServiceImpl implements DeptService {
         // 记录审计日志
         logService.log(LogEntry.operation("部门管理", OperationType.UPDATE.getCode(), "更新部门: " + savedDept.getName()));
 
-        return toResp(savedDept);
+        return conversionService.convert(savedDept, DeptResponse.class);
     }
 
     @Override
@@ -332,26 +334,5 @@ public class DeptServiceImpl implements DeptService {
         deptRepository.save(dept);
 
         logService.log(LogEntry.operation("部门管理", OperationType.UPDATE.getCode(), "更新部门状态: " + dept.getName() + " -> " + (status == 1 ? "启用" : "禁用")));
-    }
-
-    /**
-     * 转换为响应 VO
-     */
-    private DeptResponse toResp(DeptEntity dept) {
-        String parentId = dept.getParent() != null ? dept.getParent().getId() : "0";
-        return new DeptResponse(
-                dept.getId(),
-                parentId,
-                dept.getName(),
-                dept.getCode(),
-                dept.getLeader(),
-                dept.getPhone(),
-                dept.getEmail(),
-                dept.getSortOrder(),
-                dept.getStatus(),
-                null, // children 在构建树时填充
-                dept.getCreateTime(),
-                dept.getUpdateTime()
-        );
     }
 }

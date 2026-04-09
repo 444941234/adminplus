@@ -23,6 +23,7 @@ import tools.jackson.databind.json.JsonMapper;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
@@ -55,6 +56,7 @@ public class ConfigServiceImpl implements ConfigService {
     private final ConfigHistoryRepository configHistoryRepository;
     private final LogService logService;
     private final JsonMapper objectMapper;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -88,7 +90,7 @@ public class ConfigServiceImpl implements ConfigService {
         // Batch fetch group names to avoid N+1 queries
         Map<String, String> groupNameMap = batchGetGroupNames(configs);
 
-        return PageResultResponse.from(pageResult, config -> toVOWithGroupName(config, groupNameMap.get(config.getGroupId())));
+        return PageResultResponse.from(pageResult, config -> toResponseWithGroupName(config, groupNameMap.get(config.getGroupId())));
     }
 
     /**
@@ -116,7 +118,7 @@ public class ConfigServiceImpl implements ConfigService {
         ConfigEntity config = EntityHelper.findByIdOrThrow(
                 configRepository::findById, id, "配置不存在"
         );
-        return toVO(config);
+        return conversionService.convert(config, ConfigResponse.class);
     }
 
     @Override
@@ -125,7 +127,7 @@ public class ConfigServiceImpl implements ConfigService {
     public ConfigResponse getConfigByKey(String key) {
         ConfigEntity config = configRepository.findByKey(key)
                 .orElseThrow(() -> new BizException("配置不存在"));
-        return toVO(config);
+        return conversionService.convert(config, ConfigResponse.class);
     }
 
     @Override
@@ -137,7 +139,7 @@ public class ConfigServiceImpl implements ConfigService {
         );
 
         return configRepository.findByGroupIdOrderBySortOrderAsc(groupId).stream()
-                .map(this::toVO)
+                .map(config -> conversionService.convert(config, ConfigResponse.class))
                 .toList();
     }
 
@@ -150,7 +152,7 @@ public class ConfigServiceImpl implements ConfigService {
                 .orElseThrow(() -> new BizException("配置组不存在"));
 
         return configRepository.findByGroupIdOrderBySortOrderAsc(group.getId()).stream()
-                .map(this::toVO)
+                .map(config -> conversionService.convert(config, ConfigResponse.class))
                 .toList();
     }
 
@@ -194,7 +196,7 @@ public class ConfigServiceImpl implements ConfigService {
         logService.log(LogEntry.operation("配置管理", OperationType.CREATE.getCode(),
                 "创建配置: " + config.getName() + " (" + config.getKey() + ")"));
 
-        return toVO(config);
+        return conversionService.convert(config, ConfigResponse.class);
     }
 
     @Override
@@ -256,7 +258,7 @@ public class ConfigServiceImpl implements ConfigService {
         logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
                 "更新配置: " + config.getName() + " (" + config.getKey() + ")"));
 
-        return toVO(config);
+        return conversionService.convert(config, ConfigResponse.class);
     }
 
     @Override
@@ -497,7 +499,7 @@ public class ConfigServiceImpl implements ConfigService {
         logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
                 "回滚配置: " + config.getName() + " (" + config.getKey() + ") 到版本 " + history.getId()));
 
-        return toVO(config);
+        return conversionService.convert(config, ConfigResponse.class);
     }
 
     @Override
@@ -508,7 +510,7 @@ public class ConfigServiceImpl implements ConfigService {
         );
 
         return configHistoryRepository.findByConfigIdOrderByCreateTimeDesc(id).stream()
-                .map(this::toHistoryVO)
+                .map(h -> conversionService.convert(h, ConfigHistoryResponse.class))
                 .toList();
     }
 
@@ -583,24 +585,10 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     /**
-     * 实体转换为 VO
+     * 转换实体为响应对象（带预先查询的组名）
+     * 用于批量查询场景，避免 N+1 问题
      */
-    private ConfigResponse toVO(ConfigEntity entity) {
-        String groupName = null;
-        if (entity.getGroupId() != null) {
-            ConfigGroupEntity group = configGroupRepository.findById(entity.getGroupId()).orElse(null);
-            if (group != null) {
-                groupName = group.getName();
-            }
-        }
-
-        return toVOWithGroupName(entity, groupName);
-    }
-
-    /**
-     * 实体转换为 VO（带预先查询的组名，避免 N+1 问题）
-     */
-    private ConfigResponse toVOWithGroupName(ConfigEntity entity, String groupName) {
+    private ConfigResponse toResponseWithGroupName(ConfigEntity entity, String groupName) {
         return new ConfigResponse(
                 entity.getId(),
                 entity.getGroupId(),
@@ -618,22 +606,6 @@ public class ConfigServiceImpl implements ConfigService {
                 entity.getStatus(),
                 entity.getCreateTime(),
                 entity.getUpdateTime()
-        );
-    }
-
-    /**
-     * 历史记录转换为 VO
-     */
-    private ConfigHistoryResponse toHistoryVO(ConfigHistoryEntity entity) {
-        return new ConfigHistoryResponse(
-                entity.getId(),
-                entity.getConfigId(),
-                entity.getConfigKey(),
-                entity.getOldValue(),
-                entity.getNewValue(),
-                entity.getRemark(),
-                null, // operatorName - 从当前用户上下文获取
-                entity.getCreateTime()
         );
     }
 

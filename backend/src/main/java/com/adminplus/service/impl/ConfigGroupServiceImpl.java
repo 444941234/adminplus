@@ -18,6 +18,7 @@ import com.adminplus.utils.PageUtils;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
@@ -43,6 +44,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     private final ConfigGroupRepository configGroupRepository;
     private final ConfigRepository configRepository;
     private final LogService logService;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional(readOnly = true)
@@ -63,7 +65,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         };
 
         var pageResult = configGroupRepository.findAll(spec, pageable);
-        return PageResultResponse.from(pageResult, this::toVO);
+        return PageResultResponse.from(pageResult, this::toResponseWithConfigCount);
     }
 
     @Override
@@ -73,7 +75,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
                 configGroupRepository::findById, id, "配置组不存在"
         );
-        return toVO(group);
+        return toResponseWithConfigCount(group);
     }
 
     @Override
@@ -82,7 +84,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     public ConfigGroupResponse getConfigGroupByCode(String code) {
         ConfigGroupEntity group = configGroupRepository.findByCode(code)
                 .orElseThrow(() -> new BizException("配置组不存在"));
-        return toVO(group);
+        return toResponseWithConfigCount(group);
     }
 
     @Override
@@ -109,7 +111,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         logService.log(LogEntry.operation("配置管理", OperationType.CREATE.getCode(),
                 "创建配置组: " + group.getName() + " (" + group.getCode() + ")"));
 
-        return toVO(group);
+        return toResponseWithConfigCount(group);
     }
 
     @Override
@@ -140,7 +142,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
                 "更新配置组: " + group.getName() + " (" + group.getCode() + ")"));
 
-        return toVO(group);
+        return toResponseWithConfigCount(group);
     }
 
     @Override
@@ -187,7 +189,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     @Cacheable(value = "configGroup", key = "'active'")
     public List<ConfigGroupResponse> getActiveConfigGroups() {
         return configGroupRepository.findByStatusOrderBySortOrderAsc(1).stream()
-                .map(this::toVO)
+                .map(this::toResponseWithConfigCount)
                 .toList();
     }
 
@@ -196,14 +198,14 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     @Cacheable(value = "configGroup", key = "'all'")
     public List<ConfigGroupResponse> getAllConfigGroups() {
         return configGroupRepository.findAll(Sort.by(Sort.Direction.ASC, "sortOrder")).stream()
-                .map(this::toVO)
+                .map(this::toResponseWithConfigCount)
                 .toList();
     }
 
     /**
-     * 实体转换为 VO
+     * 实体转换为响应对象，包含配置项数量
      */
-    private ConfigGroupResponse toVO(ConfigGroupEntity entity) {
+    private ConfigGroupResponse toResponseWithConfigCount(ConfigGroupEntity entity) {
         long configCount = configRepository.countByGroupId(entity.getId());
         return new ConfigGroupResponse(
                 entity.getId(),

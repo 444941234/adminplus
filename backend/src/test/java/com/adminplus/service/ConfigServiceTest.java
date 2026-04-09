@@ -21,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -59,11 +60,15 @@ class ConfigServiceTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    @Mock
+    private ConversionService conversionService;
+
     @InjectMocks
     private ConfigServiceImpl configService;
 
     private ConfigEntity testConfig;
     private ConfigGroupEntity testGroup;
+    private ConfigResponse testConfigResponse;
 
     @BeforeEach
     void setUp() {
@@ -85,6 +90,31 @@ class ConfigServiceTest {
         testConfig.setDescription("测试配置项");
         testConfig.setSortOrder(1);
         testConfig.setStatus(1);
+
+        testConfigResponse = new ConfigResponse(
+                testConfig.getId(),
+                testConfig.getGroupId(),
+                testGroup.getName(),
+                testConfig.getName(),
+                testConfig.getKey(),
+                testConfig.getValue(),
+                testConfig.getValueType(),
+                testConfig.getEffectType(),
+                testConfig.getDefaultValue(),
+                testConfig.getDescription(),
+                testConfig.getIsRequired(),
+                testConfig.getValidationRule(),
+                testConfig.getSortOrder(),
+                testConfig.getStatus(),
+                testConfig.getCreateTime(),
+                testConfig.getUpdateTime()
+        );
+
+        // Mock conversionService
+        lenient().when(conversionService.convert(any(ConfigEntity.class), eq(ConfigResponse.class)))
+                .thenReturn(testConfigResponse);
+        lenient().when(conversionService.convert(any(ConfigCreateRequest.class), eq(ConfigEntity.class)))
+                .thenReturn(testConfig);
     }
 
     @Nested
@@ -96,7 +126,6 @@ class ConfigServiceTest {
         void getConfigById_WhenExists_ShouldReturnConfig() {
             // Given
             when(configRepository.findById("config-001")).thenReturn(Optional.of(testConfig));
-            when(configGroupRepository.findById("group-001")).thenReturn(Optional.of(testGroup));
 
             // When
             ConfigResponse result = configService.getConfigById("config-001");
@@ -104,7 +133,6 @@ class ConfigServiceTest {
             // Then
             assertThat(result).isNotNull();
             assertThat(result.key()).isEqualTo("test.key");
-            assertThat(result.groupName()).isEqualTo("系统配置");
         }
 
         @Test
@@ -129,7 +157,6 @@ class ConfigServiceTest {
         void getConfigByKey_WhenExists_ShouldReturnConfig() {
             // Given
             when(configRepository.findByKey("test.key")).thenReturn(Optional.of(testConfig));
-            when(configGroupRepository.findById("group-001")).thenReturn(Optional.of(testGroup));
 
             // When
             ConfigResponse result = configService.getConfigByKey("test.key");
