@@ -265,4 +265,64 @@ class MenuServiceTest {
             assertThat(result).isEmpty();
         }
     }
+
+    @Nested
+    @DisplayName("copyMenu Tests")
+    class CopyMenuTests {
+
+        @Test
+        @DisplayName("should copy menu to top level when targetParentId is 0")
+        void copyMenu_WhenTargetIsTopLevel_ShouldCopySuccessfully() {
+            // Given
+            when(menuRepository.findById("menu-001")).thenReturn(Optional.of(testMenu));
+            when(menuRepository.findAllByOrderBySortOrderAsc()).thenReturn(List.of(parentMenu, testMenu));
+            when(menuRepository.save(any(MenuEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            // When
+            MenuResp result = menuService.copyMenu("menu-001", "0");
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.name()).isEqualTo("Test Menu (副本)");
+            assertThat(result.parentId()).isEqualTo("0");
+            verify(menuRepository).save(any(MenuEntity.class));
+        }
+
+        @Test
+        @DisplayName("should throw exception when copying to child menu")
+        void copyMenu_WhenTargetIsChild_ShouldThrowException() {
+            // Given - setup a child relationship
+            MenuEntity childMenu = new MenuEntity();
+            childMenu.setId("child-001");
+            childMenu.setParent(testMenu);
+            childMenu.setAncestors("0,parent-001,menu-001,");  // Set ancestors properly
+
+            // Mock findById to return appropriate menu based on ID
+            when(menuRepository.findById("menu-001")).thenReturn(Optional.of(testMenu));
+            when(menuRepository.findById("child-001")).thenReturn(Optional.of(childMenu));
+
+            // When & Then
+            assertThatThrownBy(() -> menuService.copyMenu("menu-001", "child-001"))
+                    .isInstanceOf(BizException.class)
+                    .hasMessageContaining("不能将菜单复制到自己的子菜单下");
+        }
+
+        @Test
+        @DisplayName("should copy to specified parent when targetParentId is provided")
+        void copyMenu_WhenTargetIsProvided_ShouldCopyToParent() {
+            // Given
+            when(menuRepository.findById("menu-001")).thenReturn(Optional.of(testMenu));
+            when(menuRepository.findById("parent-001")).thenReturn(Optional.of(parentMenu));
+            when(menuRepository.save(any(MenuEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            // When
+            MenuResp result = menuService.copyMenu("menu-001", "parent-001");
+
+            // Then
+            assertThat(result).isNotNull();
+            assertThat(result.name()).isEqualTo("Test Menu (副本)");
+            assertThat(result.parentId()).isEqualTo("parent-001");
+            verify(menuRepository).save(any(MenuEntity.class));
+        }
+    }
 }
