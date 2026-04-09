@@ -1,9 +1,8 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.pojo.dto.req.DeptCreateReq;
-import com.adminplus.pojo.dto.req.DeptUpdateReq;
-import com.adminplus.pojo.dto.resp.DeptResp;
+import com.adminplus.pojo.dto.request.DeptCreateRequest;
+import com.adminplus.pojo.dto.response.DeptResponse;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.repository.DeptRepository;
 import com.adminplus.service.impl.DeptServiceImpl;
@@ -79,7 +78,7 @@ class DeptServiceTest {
             when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
 
             // When
-            DeptResp result = deptService.getDeptById("dept-001");
+            DeptResponse result = deptService.getDeptById("dept-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -107,7 +106,7 @@ class DeptServiceTest {
         @DisplayName("should create department without parent")
         void createDept_WithoutParent_ShouldCreateDept() {
             // Given
-            DeptCreateReq req = new DeptCreateReq(
+            DeptCreateRequest req = new DeptCreateRequest(
                     null, "Root Department", "ROOT", "Jane Doe",
                     "9876543210", "root@example.com", 1, 1
             );
@@ -118,7 +117,7 @@ class DeptServiceTest {
             when(deptRepository.save(any())).thenReturn(newDept);
 
             // When
-            DeptResp result = deptService.createDept(req);
+            DeptResponse result = deptService.createDept(req);
 
             // Then
             assertThat(result).isNotNull();
@@ -129,7 +128,7 @@ class DeptServiceTest {
         @DisplayName("should throw exception when department name exists")
         void createDept_WhenNameExists_ShouldThrowException() {
             // Given
-            DeptCreateReq req = new DeptCreateReq(
+            DeptCreateRequest req = new DeptCreateRequest(
                     null, "Existing Dept", "EXISTING", "Jane Doe",
                     "9876543210", "existing@example.com", 1, 1
             );
@@ -145,7 +144,7 @@ class DeptServiceTest {
         @DisplayName("should throw exception when parent not found")
         void createDept_WithNonExistentParent_ShouldThrowException() {
             // Given
-            DeptCreateReq req = new DeptCreateReq(
+            DeptCreateRequest req = new DeptCreateRequest(
                     "non-existent", "Child Department", "CHILD", "Jane Doe",
                     "9876543210", "child@example.com", 1, 1
             );

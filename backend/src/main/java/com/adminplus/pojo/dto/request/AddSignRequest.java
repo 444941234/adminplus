@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotNull;
  * @author AdminPlus
  * @since 2026-03-26
  */
-public record AddSignReq(
+public record AddSignRequest(
         @NotBlank(message = "被加签人ID不能为空")
         String addUserId,
 

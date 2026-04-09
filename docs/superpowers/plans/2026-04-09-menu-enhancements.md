@@ -44,7 +44,7 @@ frontend/
 - [ ] **Step 1: 创建 CopyMenuRequest record 类**
 
 ```java
-package com.adminplus.pojo.dto.req;
+package com.adminplus.pojo.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 
@@ -216,7 +216,7 @@ git commit -m "feat: implement copyMenu logic in MenuServiceImpl"
 在 `MenuUpdateReq` 导入后添加：
 
 ```java
-import com.adminplus.pojo.dto.req.CopyMenuRequest;
+import com.adminplus.pojo.dto.request.CopyMenuRequest;
 ```
 
 - [ ] **Step 2: 在 Controller 类中添加 copyMenu 端点**

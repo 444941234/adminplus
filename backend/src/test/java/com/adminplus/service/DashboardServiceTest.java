@@ -1,9 +1,8 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.resp.*;
+import com.adminplus.pojo.dto.response.*;
 import com.adminplus.repository.*;
 import com.adminplus.service.impl.DashboardServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -66,7 +65,7 @@ class DashboardServiceTest {
             when(logRepository.countByCreateTimeBetweenAndDeletedFalse(any(), any())).thenReturn(20L);  // 今日日志数
 
             // When
-            DashboardStatsResp result = dashboardService.getStats();
+            DashboardStatsResponse result = dashboardService.getStats();
 
             // Then
             assertThat(result).isNotNull();
@@ -91,7 +90,7 @@ class DashboardServiceTest {
             when(logRepository.countByCreateTimeBetweenAndDeletedFalse(any(), any())).thenReturn(0L);
 
             // When
-            DashboardStatsResp result = dashboardService.getStats();
+            DashboardStatsResponse result = dashboardService.getStats();
 
             // Then
             assertThat(result.userCount()).isEqualTo(0L);
@@ -112,7 +111,7 @@ class DashboardServiceTest {
             when(userRepository.countByCreateTimeBetweenAndDeletedFalse(any(), any())).thenReturn(0L);
 
             // When
-            ChartDataResp result = dashboardService.getUserGrowthData();
+            ChartDataResponse result = dashboardService.getUserGrowthData();
 
             // Then
             assertThat(result).isNotNull();
@@ -133,7 +132,7 @@ class DashboardServiceTest {
             when(userRoleRepository.findAll()).thenReturn(List.of());
 
             // When
-            ChartDataResp result = dashboardService.getRoleDistributionData();
+            ChartDataResponse result = dashboardService.getRoleDistributionData();
 
             // Then
             assertThat(result).isNotNull();
@@ -153,7 +152,7 @@ class DashboardServiceTest {
             when(menuRepository.countByTypeAndDeletedFalse(anyInt())).thenReturn(0L);
 
             // When
-            ChartDataResp result = dashboardService.getMenuDistributionData();
+            ChartDataResponse result = dashboardService.getMenuDistributionData();
 
             // Then
             assertThat(result).isNotNull();
@@ -174,7 +173,7 @@ class DashboardServiceTest {
                     .thenReturn(List.of());
 
             // When
-            List<OperationLogResp> result = dashboardService.getRecentOperationLogs();
+            List<OperationLogResponse> result = dashboardService.getRecentOperationLogs();
 
             // Then
             assertThat(result).isNotNull();
@@ -189,7 +188,7 @@ class DashboardServiceTest {
         @DisplayName("should return system info with fallback db version")
         void getSystemInfo_ShouldReturnInfo() {
             // When - DataSource 是 mock，无法获取真实连接，会返回 "Unknown"
-            SystemInfoResp result = dashboardService.getSystemInfo();
+            SystemInfoResponse result = dashboardService.getSystemInfo();
 
             // Then
             assertThat(result).isNotNull();
@@ -210,7 +209,7 @@ class DashboardServiceTest {
             when(refreshTokenRepository.findValidTokens(any())).thenReturn(List.of());
 
             // When
-            List<OnlineUserResp> result = dashboardService.getOnlineUsers();
+            List<OnlineUserResponse> result = dashboardService.getOnlineUsers();
 
             // Then
             assertThat(result).isNotNull();
@@ -232,7 +231,7 @@ class DashboardServiceTest {
             when(logRepository.countDistinctUsersByTimeRange(any(), any())).thenReturn(30L);
 
             // When
-            StatisticsResp result = dashboardService.getStatistics();
+            StatisticsResponse result = dashboardService.getStatistics();
 
             // Then
             assertThat(result).isNotNull();
@@ -250,7 +249,7 @@ class DashboardServiceTest {
             when(logRepository.countByCreateTimeBetweenAndDeletedFalse(any(), any())).thenReturn(0L);
 
             // When
-            ChartDataResp result = dashboardService.getVisitTrendData();
+            ChartDataResponse result = dashboardService.getVisitTrendData();
 
             // Then
             assertThat(result).isNotNull();

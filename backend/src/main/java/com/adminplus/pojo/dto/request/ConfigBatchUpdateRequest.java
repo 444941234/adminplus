@@ -11,7 +11,7 @@ import java.util.List;
  * @author AdminPlus
  * @since 2026-03-30
  */
-public record ConfigBatchUpdateReq(
+public record ConfigBatchUpdateRequest(
         @NotEmpty(message = "更新项列表不能为空")
         @Valid
         List<ConfigItemUpdate> items

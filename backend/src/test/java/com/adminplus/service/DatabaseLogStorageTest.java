@@ -1,8 +1,8 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogPageResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.LogPageResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.repository.LogRepository;
 import com.adminplus.service.impl.DatabaseLogStorage;
@@ -144,7 +144,7 @@ class DatabaseLogStorageTest {
                     .thenReturn(new PageImpl<>(List.of(testLog)));
 
             // When
-            PageResultResp<LogPageResp> result = storage.findPage(query);
+            PageResultResponse<LogPageResponse> result = storage.findPage(query);
 
             // Then
             assertThat(result.records()).hasSize(1);
@@ -160,7 +160,7 @@ class DatabaseLogStorageTest {
                     .thenReturn(new PageImpl<>(List.of(testLog)));
 
             // When
-            PageResultResp<LogPageResp> result = storage.findPage(query);
+            PageResultResponse<LogPageResponse> result = storage.findPage(query);
 
             // Then
             assertThat(result.records()).hasSize(1);
@@ -175,7 +175,7 @@ class DatabaseLogStorageTest {
                     .thenReturn(new PageImpl<>(List.of(testLog)));
 
             // When
-            PageResultResp<LogPageResp> result = storage.findPage(query);
+            PageResultResponse<LogPageResponse> result = storage.findPage(query);
 
             // Then
             assertThat(result.records()).hasSize(1);
@@ -190,7 +190,7 @@ class DatabaseLogStorageTest {
                     .thenReturn(new PageImpl<>(List.of(testLog)));
 
             // When
-            PageResultResp<LogPageResp> result = storage.findPage(query);
+            PageResultResponse<LogPageResponse> result = storage.findPage(query);
 
             // Then
             assertThat(result.records()).hasSize(1);

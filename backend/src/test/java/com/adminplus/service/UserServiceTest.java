@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.pojo.dto.req.UserCreateReq;
-import com.adminplus.pojo.dto.req.UserUpdateReq;
-import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.dto.request.UserCreateRequest;
+import com.adminplus.pojo.dto.request.UserUpdateRequest;
+import com.adminplus.pojo.dto.request.LogEntry;
+import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserEntity;
@@ -22,9 +22,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
@@ -115,7 +112,7 @@ class UserServiceTest {
             when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
 
             // When
-            UserResp result = userService.getUserById("user-001");
+            UserResponse result = userService.getUserById("user-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -174,7 +171,7 @@ class UserServiceTest {
         @DisplayName("should throw exception when username exists")
         void createUser_WhenUsernameExists_ShouldThrowException() {
             // Given
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "testuser", "StrongP@ss123", "Test", "test@test.com",
                     "13800000000", null, null
             );
@@ -190,7 +187,7 @@ class UserServiceTest {
         @DisplayName("should throw exception when department not found")
         void createUser_WhenDeptNotFound_ShouldThrowException() {
             // Given
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "newuser", "StrongP@ss123", "New User", "new@test.com",
                     "13800000001", null, "non-existent-dept"
             );
@@ -207,7 +204,7 @@ class UserServiceTest {
         @DisplayName("should throw exception when password is too weak")
         void createUser_WithWeakPassword_ShouldThrowException() {
             // Given - 密码强度验证已移到 Service 层
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "newuser", "weak", "New User", "new@test.com",
                     "13800000001", null, null
             );
@@ -223,7 +220,7 @@ class UserServiceTest {
         @DisplayName("should create user successfully with valid data")
         void createUser_WithValidData_ShouldSucceed() {
             // Given
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "newuser", "StrongP@ss123", "New User", "new@test.com",
                     "13800000001", null, null
             );
@@ -237,7 +234,7 @@ class UserServiceTest {
             doNothing().when(logService).log(any(LogEntry.class));
 
             // When
-            UserResp result = userService.createUser(req);
+            UserResponse result = userService.createUser(req);
 
             // Then
             assertThat(result).isNotNull();
@@ -434,7 +431,7 @@ class UserServiceTest {
         @DisplayName("should update user successfully")
         void updateUser_ShouldUpdateUser() {
             // Given
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     "Updated Nick", "updated@test.com", "13900000000", null, 1, null
             );
             when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
@@ -442,7 +439,7 @@ class UserServiceTest {
             when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
 
             // When
-            UserResp result = userService.updateUser("user-001", req);
+            UserResponse result = userService.updateUser("user-001", req);
 
             // Then
             assertThat(result).isNotNull();
@@ -453,7 +450,7 @@ class UserServiceTest {
         @DisplayName("should throw exception when user not found")
         void updateUser_WhenNotFound_ShouldThrowException() {
             // Given
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     "Updated", null, null, null, null, null
             );
             when(userRepository.findById("non-existent")).thenReturn(Optional.empty());
@@ -468,7 +465,7 @@ class UserServiceTest {
         @DisplayName("should throw exception when department not found")
         void updateUser_WithInvalidDept_ShouldThrowException() {
             // Given
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     null, null, null, null, null, "invalid-dept"
             );
             when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));

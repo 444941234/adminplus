@@ -1,8 +1,8 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.req.PasswordChangeReq;
-import com.adminplus.pojo.dto.req.ProfileUpdateReq;
-import com.adminplus.pojo.dto.resp.ProfileResp;
+import com.adminplus.pojo.dto.request.PasswordChangeRequest;
+import com.adminplus.pojo.dto.request.ProfileUpdateRequest;
+import com.adminplus.pojo.dto.response.ProfileResponse;
 import com.adminplus.service.ProfileService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -46,19 +46,19 @@ class ProfileControllerTest {
     private ProfileController profileController;
 
     private ObjectMapper objectMapper;
-    private ProfileResp testProfile;
-    private ProfileUpdateReq updateReq;
+    private ProfileResponse testProfile;
+    private ProfileUpdateRequest updateReq;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(profileController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
-        testProfile = new ProfileResp(
+        testProfile = new ProfileResponse(
                 "user-001", "testuser", "Test User", "test@example.com",
                 "13800138000", "avatar.jpg", 1, "技术部",
                 List.of("管理员"), Instant.now(), Instant.now()
         );
-        updateReq = new ProfileUpdateReq("Test User", "test@example.com", "13800138000", "avatar.jpg");
+        updateReq = new ProfileUpdateRequest("Test User", "test@example.com", "13800138000", "avatar.jpg");
     }
 
     @Nested
@@ -89,7 +89,7 @@ class ProfileControllerTest {
         @DisplayName("should update profile")
         void updateProfile_ShouldUpdateProfile() throws Exception {
             // Given
-            when(profileService.updateCurrentProfile(any(ProfileUpdateReq.class))).thenReturn(testProfile);
+            when(profileService.updateCurrentProfile(any(ProfileUpdateRequest.class))).thenReturn(testProfile);
 
             // When & Then
             mockMvc.perform(put("/v1/profile")
@@ -98,7 +98,7 @@ class ProfileControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(profileService).updateCurrentProfile(any(ProfileUpdateReq.class));
+            verify(profileService).updateCurrentProfile(any(ProfileUpdateRequest.class));
         }
     }
 
@@ -110,7 +110,7 @@ class ProfileControllerTest {
         @DisplayName("should change password")
         void changePassword_ShouldChangePassword() throws Exception {
             // Given
-            PasswordChangeReq req = new PasswordChangeReq("OldPass123!", "NewTestPass123!", "NewTestPass123!");
+            PasswordChangeRequest req = new PasswordChangeRequest("OldPass123!", "NewTestPass123!", "NewTestPass123!");
 
             // When & Then
             mockMvc.perform(post("/v1/profile/password")
@@ -119,7 +119,7 @@ class ProfileControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(profileService).changePassword(any(PasswordChangeReq.class));
+            verify(profileService).changePassword(any(PasswordChangeRequest.class));
         }
     }
 }

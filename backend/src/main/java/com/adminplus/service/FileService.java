@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.entity.FileEntity;
+import com.adminplus.pojo.dto.response.FileResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -17,9 +17,9 @@ public interface FileService {
      *
      * @param file      要上传的文件
      * @param directory 子目录
-     * @return 文件实体
+     * @return 文件响应对象
      */
-    FileEntity uploadFile(MultipartFile file, String directory);
+    FileResponse uploadFile(MultipartFile file, String directory);
 
     /**
      * 删除文件（物理删除）
@@ -41,24 +41,24 @@ public interface FileService {
      * 获取文件信息
      *
      * @param fileId 文件ID
-     * @return 文件实体
+     * @return 文件响应对象
      */
-    FileEntity getFileById(String fileId);
+    FileResponse getFileById(String fileId);
 
     /**
      * 带权限验证的获取文件信息
      *
      * @param fileId 文件ID
-     * @return 文件实体
+     * @return 文件响应对象
      */
-    FileEntity getFileWithAuth(String fileId);
+    FileResponse getFileWithAuth(String fileId);
 
     /**
      * 获取当前用户上传的文件列表
      *
      * @return 文件列表
      */
-    List<FileEntity> getUserFiles();
+    List<FileResponse> getUserFiles();
 
     /**
      * 根据目录获取文件列表
@@ -66,5 +66,5 @@ public interface FileService {
      * @param directory 目录
      * @return 文件列表
      */
-    List<FileEntity> getFilesByDirectory(String directory);
+    List<FileResponse> getFilesByDirectory(String directory);
 }

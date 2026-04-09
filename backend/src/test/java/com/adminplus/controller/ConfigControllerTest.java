@@ -1,9 +1,9 @@
 package com.adminplus.controller;
 
 import com.adminplus.pojo.dto.query.ConfigQuery;
-import com.adminplus.pojo.dto.req.*;
-import com.adminplus.pojo.dto.resp.*;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.*;
+import com.adminplus.pojo.dto.response.*;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.ConfigService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -57,8 +57,8 @@ class ConfigControllerTest {
         objectMapper = TestJacksonConfig.createObjectMapper();
     }
 
-    private ConfigResp createTestConfigResp() {
-        return new ConfigResp(
+    private ConfigResponse createTestConfigResp() {
+        return new ConfigResponse(
                 "1",
                 "group1",
                 "系统配置",
@@ -86,7 +86,7 @@ class ConfigControllerTest {
         @DisplayName("成功查询配置列表")
         void shouldReturnConfigList() throws Exception {
             // Given
-            PageResultResp<ConfigResp> pageResult = new PageResultResp<>(
+            PageResultResponse<ConfigResponse> pageResult = new PageResultResponse<>(
                     Collections.singletonList(createTestConfigResp()),
                     1L,
                     1,
@@ -109,7 +109,7 @@ class ConfigControllerTest {
         @DisplayName("成功按配置组和关键字搜索")
         void shouldSearchConfigsByGroupAndKeyword() throws Exception {
             // Given
-            PageResultResp<ConfigResp> pageResult = new PageResultResp<>(
+            PageResultResponse<ConfigResponse> pageResult = new PageResultResponse<>(
                     Collections.singletonList(createTestConfigResp()),
                     1L,
                     1,
@@ -139,7 +139,7 @@ class ConfigControllerTest {
         @DisplayName("成功根据配置组ID查询配置列表")
         void shouldReturnConfigsByGroupId() throws Exception {
             // Given
-            List<ConfigResp> configs = Collections.singletonList(createTestConfigResp());
+            List<ConfigResponse> configs = Collections.singletonList(createTestConfigResp());
             when(configService.getConfigsByGroupId("group1")).thenReturn(configs);
 
             // When & Then
@@ -159,7 +159,7 @@ class ConfigControllerTest {
         @DisplayName("成功根据配置组编码查询配置列表")
         void shouldReturnConfigsByGroupCode() throws Exception {
             // Given
-            List<ConfigResp> configs = Collections.singletonList(createTestConfigResp());
+            List<ConfigResponse> configs = Collections.singletonList(createTestConfigResp());
             when(configService.getConfigsByGroupCode("basic")).thenReturn(configs);
 
             // When & Then
@@ -179,7 +179,7 @@ class ConfigControllerTest {
         @DisplayName("成功根据配置键查询")
         void shouldReturnConfigByKey() throws Exception {
             // Given
-            ConfigResp config = createTestConfigResp();
+            ConfigResponse config = createTestConfigResp();
             when(configService.getConfigByKey("system.name")).thenReturn(config);
 
             // When & Then
@@ -200,7 +200,7 @@ class ConfigControllerTest {
         @DisplayName("成功根据ID查询配置")
         void shouldReturnConfigById() throws Exception {
             // Given
-            ConfigResp config = createTestConfigResp();
+            ConfigResponse config = createTestConfigResp();
             when(configService.getConfigById("1")).thenReturn(config);
 
             // When & Then
@@ -221,7 +221,7 @@ class ConfigControllerTest {
         @DisplayName("成功创建配置")
         void shouldCreateConfig() throws Exception {
             // Given
-            ConfigCreateReq req = new ConfigCreateReq(
+            ConfigCreateRequest req = new ConfigCreateRequest(
                     "group1",
                     "数据库URL",
                     "database.url",
@@ -234,8 +234,8 @@ class ConfigControllerTest {
                     null,
                     2
             );
-            ConfigResp result = createTestConfigResp();
-            when(configService.createConfig(any(ConfigCreateReq.class))).thenReturn(result);
+            ConfigResponse result = createTestConfigResp();
+            when(configService.createConfig(any(ConfigCreateRequest.class))).thenReturn(result);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/configs")
@@ -244,7 +244,7 @@ class ConfigControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.name").value("系统名称"));
 
-            verify(configService).createConfig(any(ConfigCreateReq.class));
+            verify(configService).createConfig(any(ConfigCreateRequest.class));
         }
     }
 
@@ -256,7 +256,7 @@ class ConfigControllerTest {
         @DisplayName("成功更新配置")
         void shouldUpdateConfig() throws Exception {
             // Given
-            ConfigUpdateReq req = new ConfigUpdateReq(
+            ConfigUpdateRequest req = new ConfigUpdateRequest(
                     "系统名称（已更新）",
                     "AdminPlus V2",
                     null,
@@ -268,8 +268,8 @@ class ConfigControllerTest {
                     null,
                     null
             );
-            ConfigResp result = createTestConfigResp();
-            when(configService.updateConfig(eq("1"), any(ConfigUpdateReq.class))).thenReturn(result);
+            ConfigResponse result = createTestConfigResp();
+            when(configService.updateConfig(eq("1"), any(ConfigUpdateRequest.class))).thenReturn(result);
 
             // When & Then
             mockMvc.perform(put("/v1/sys/configs/1")
@@ -278,7 +278,7 @@ class ConfigControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.name").value("系统名称"));
 
-            verify(configService).updateConfig(eq("1"), any(ConfigUpdateReq.class));
+            verify(configService).updateConfig(eq("1"), any(ConfigUpdateRequest.class));
         }
     }
 
@@ -323,18 +323,18 @@ class ConfigControllerTest {
         @DisplayName("成功批量更新配置值")
         void shouldBatchUpdateConfigs() throws Exception {
             // Given
-            ConfigBatchUpdateReq req = new ConfigBatchUpdateReq(
+            ConfigBatchUpdateRequest req = new ConfigBatchUpdateRequest(
                     Collections.singletonList(
-                            new ConfigBatchUpdateReq.ConfigItemUpdate("1", "new value")
+                            new ConfigBatchUpdateRequest.ConfigItemUpdate("1", "new value")
                     )
             );
-            ConfigImportResultResp result = new ConfigImportResultResp(
+            ConfigImportResultResponse result = new ConfigImportResultResponse(
                     1, 1, 0, 0,
                     Collections.singletonList(
-                            new ConfigImportResultResp.ImportDetail("system.name", "success", null)
+                            new ConfigImportResultResponse.ImportDetail("system.name", "success", null)
                     )
             );
-            when(configService.batchUpdateConfigs(any(ConfigBatchUpdateReq.class))).thenReturn(result);
+            when(configService.batchUpdateConfigs(any(ConfigBatchUpdateRequest.class))).thenReturn(result);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/configs/batch")
@@ -344,7 +344,7 @@ class ConfigControllerTest {
                     .andExpect(jsonPath("$.data.total").value(1))
                     .andExpect(jsonPath("$.data.success").value(1));
 
-            verify(configService).batchUpdateConfigs(any(ConfigBatchUpdateReq.class));
+            verify(configService).batchUpdateConfigs(any(ConfigBatchUpdateRequest.class));
         }
     }
 
@@ -356,16 +356,16 @@ class ConfigControllerTest {
         @DisplayName("成功导出配置")
         void shouldExportConfigs() throws Exception {
             // Given
-            ConfigExportResp result = new ConfigExportResp(
+            ConfigExportResponse result = new ConfigExportResponse(
                     "1.0",
                     "2026-03-30 12:00:00",
                     Collections.singletonList(
-                            new ConfigExportResp.ExportGroup(
+                            new ConfigExportResponse.ExportGroup(
                                     "system",
                                     "系统配置",
                                     "Settings",
                                     Collections.singletonList(
-                                            new ConfigExportResp.ExportConfig(
+                                            new ConfigExportResponse.ExportConfig(
                                                     "system.name",
                                                     "系统名称",
                                                     "AdminPlus",
@@ -396,18 +396,18 @@ class ConfigControllerTest {
         @DisplayName("成功导入配置")
         void shouldImportConfigs() throws Exception {
             // Given
-            ConfigImportReq req = new ConfigImportReq(
+            ConfigImportRequest req = new ConfigImportRequest(
                     "{\"items\":[{\"key\":\"system.name\",\"value\":\"AdminPlus\"}]}",
                     "JSON",
                     "OVERWRITE"
             );
-            ConfigImportResultResp result = new ConfigImportResultResp(
+            ConfigImportResultResponse result = new ConfigImportResultResponse(
                     1, 1, 0, 0,
                     Collections.singletonList(
-                            new ConfigImportResultResp.ImportDetail("system.name", "success", null)
+                            new ConfigImportResultResponse.ImportDetail("system.name", "success", null)
                     )
             );
-            when(configService.importConfigs(any(ConfigImportReq.class))).thenReturn(result);
+            when(configService.importConfigs(any(ConfigImportRequest.class))).thenReturn(result);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/configs/import")
@@ -417,7 +417,7 @@ class ConfigControllerTest {
                     .andExpect(jsonPath("$.data.total").value(1))
                     .andExpect(jsonPath("$.data.success").value(1));
 
-            verify(configService).importConfigs(any(ConfigImportReq.class));
+            verify(configService).importConfigs(any(ConfigImportRequest.class));
         }
     }
 
@@ -429,9 +429,9 @@ class ConfigControllerTest {
         @DisplayName("成功回滚配置")
         void shouldRollbackConfig() throws Exception {
             // Given
-            ConfigRollbackReq req = new ConfigRollbackReq("history123", "回滚测试");
-            ConfigResp result = createTestConfigResp();
-            when(configService.rollbackConfig(eq("1"), any(ConfigRollbackReq.class))).thenReturn(result);
+            ConfigRollbackRequest req = new ConfigRollbackRequest("history123", "回滚测试");
+            ConfigResponse result = createTestConfigResp();
+            when(configService.rollbackConfig(eq("1"), any(ConfigRollbackRequest.class))).thenReturn(result);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/configs/1/rollback")
@@ -440,7 +440,7 @@ class ConfigControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.name").value("系统名称"));
 
-            verify(configService).rollbackConfig(eq("1"), any(ConfigRollbackReq.class));
+            verify(configService).rollbackConfig(eq("1"), any(ConfigRollbackRequest.class));
         }
     }
 
@@ -452,8 +452,8 @@ class ConfigControllerTest {
         @DisplayName("成功查询配置历史记录")
         void shouldReturnConfigHistory() throws Exception {
             // Given
-            List<ConfigHistoryResp> history = Collections.singletonList(
-                    new ConfigHistoryResp(
+            List<ConfigHistoryResponse> history = Collections.singletonList(
+                    new ConfigHistoryResponse(
                             "h1",
                             "1",
                             "system.name",
@@ -483,9 +483,9 @@ class ConfigControllerTest {
         @DisplayName("成功获取配置生效信息")
         void shouldReturnConfigEffectInfo() throws Exception {
             // Given
-            ConfigEffectInfoResp result = new ConfigEffectInfoResp(
+            ConfigEffectInfoResponse result = new ConfigEffectInfoResponse(
                     Collections.singletonList(
-                            new ConfigEffectInfoResp.PendingEffect(
+                            new ConfigEffectInfoResponse.PendingEffect(
                                     "system.name",
                                     "系统名称",
                                     "AdminPlus",

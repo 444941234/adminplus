@@ -1,8 +1,8 @@
 package com.adminplus.integration;
 
 import com.adminplus.base.AbstractIntegrationTest;
-import com.adminplus.pojo.dto.req.UserCreateReq;
-import com.adminplus.pojo.dto.req.UserUpdateReq;
+import com.adminplus.pojo.dto.request.UserCreateRequest;
+import com.adminplus.pojo.dto.request.UserUpdateRequest;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserEntity;
@@ -135,7 +135,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void createUser_WithValidData_ShouldSucceed() throws Exception {
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "newuser",
                     "NewUser@123456",
                     "New User",
@@ -161,7 +161,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void createUser_WithExistingUsername_ShouldFail() throws Exception {
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "testuser", // Existing username
                     "NewUser@123456",
                     "New User",
@@ -189,7 +189,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void updateUser_WithValidData_ShouldSucceed() throws Exception {
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     "Updated Nickname",
                     "updated@example.com",
                     null,

@@ -2,10 +2,10 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
-import com.adminplus.pojo.dto.req.DeptCreateReq;
-import com.adminplus.pojo.dto.req.DeptUpdateReq;
-import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.resp.DeptResp;
+import com.adminplus.pojo.dto.request.DeptCreateRequest;
+import com.adminplus.pojo.dto.request.DeptUpdateRequest;
+import com.adminplus.pojo.dto.request.LogEntry;
+import com.adminplus.pojo.dto.response.DeptResponse;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.repository.DeptRepository;
 import com.adminplus.service.DeptService;
@@ -42,7 +42,7 @@ public class DeptServiceImpl implements DeptService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "deptTree", key = "T(com.adminplus.utils.SecurityUtils).getCurrentUserDeptId() ?: 'admin'", unless = "#result == null || #result.isEmpty()")
-    public List<DeptResp> getDeptTree() {
+    public List<DeptResponse> getDeptTree() {
         List<DeptEntity> allDepts;
 
         // 超级管理员可以查看所有部门
@@ -72,15 +72,15 @@ public class DeptServiceImpl implements DeptService {
         }
 
         // 转换为 VO（扁平结构，children 为 null）
-        List<DeptResp> deptResps = allDepts.stream()
+        List<DeptResponse> deptResponses = allDepts.stream()
                 .map(dept -> {
-                    DeptResp resp = toResp(dept);
+                    DeptResponse resp = toResp(dept);
                     // 对于非管理员用户，如果当前部门不是根部门（parentId != "0"），
                     // 则将其 parentId 改为 "0"，使其成为树的根节点
                     if (!SecurityUtils.isAdmin() && dept.getId().equals(SecurityUtils.getCurrentUserDeptId())) {
                         if (resp.parentId() != null && !resp.parentId().equals("0")) {
                             // 创建新的 DeptResp，parentId 设为 "0"
-                            return new DeptResp(
+                            return new DeptResponse(
                                     resp.id(),
                                     "0",  // 设为根节点
                                     resp.name(),
@@ -101,14 +101,14 @@ public class DeptServiceImpl implements DeptService {
                 .toList();
 
         // 使用 TreeUtils.buildTreeForRecord 构建树形结构
-        return TreeUtils.buildTreeForRecord(deptResps, this::createWithChildren);
+        return TreeUtils.buildTreeForRecord(deptResponses, this::createWithChildren);
     }
 
     /**
      * 创建包含子节点的新 DeptResp 实例（用于 record 类型）
      */
-    private DeptResp createWithChildren(DeptResp original, List<DeptResp> children) {
-        return new DeptResp(
+    private DeptResponse createWithChildren(DeptResponse original, List<DeptResponse> children) {
+        return new DeptResponse(
                 original.id(),
                 original.parentId(),
                 original.name(),
@@ -126,7 +126,7 @@ public class DeptServiceImpl implements DeptService {
 
     @Override
     @Transactional(readOnly = true)
-    public DeptResp getDeptById(String id) {
+    public DeptResponse getDeptById(String id) {
         var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
 
         return toResp(dept);
@@ -135,30 +135,30 @@ public class DeptServiceImpl implements DeptService {
     @Override
     @Transactional
     @CacheEvict(value = "deptTree", allEntries = true)
-    public DeptResp createDept(DeptCreateReq req) {
+    public DeptResponse createDept(DeptCreateRequest request) {
         // 检查部门名称是否已存在
-        if (deptRepository.existsByNameAndDeletedFalse(req.name())) {
+        if (deptRepository.existsByNameAndDeletedFalse(request.name())) {
             throw new BizException("部门名称已存在");
         }
 
         // 检查部门编码是否已存在
-        if (req.code() != null && !req.code().isBlank()
-                && deptRepository.existsByCodeAndDeletedFalse(req.code())) {
+        if (request.code() != null && !request.code().isBlank()
+                && deptRepository.existsByCodeAndDeletedFalse(request.code())) {
             throw new BizException("部门编码已存在");
         }
 
         var dept = new DeptEntity();
-        dept.setName(XssUtils.escape(req.name()));
-        dept.setCode(XssUtils.escape(req.code()));
-        dept.setLeader(XssUtils.escape(req.leader()));
-        dept.setPhone(req.phone());
-        dept.setEmail(req.email());
-        dept.setSortOrder(req.sortOrder());
-        dept.setStatus(req.status());
+        dept.setName(XssUtils.escape(request.name()));
+        dept.setCode(XssUtils.escape(request.code()));
+        dept.setLeader(XssUtils.escape(request.leader()));
+        dept.setPhone(request.phone());
+        dept.setEmail(request.email());
+        dept.setSortOrder(request.sortOrder());
+        dept.setStatus(request.status());
 
         // 设置父部门关系
-        if (req.parentId() != null && !req.parentId().equals("0")) {
-            DeptEntity parent = EntityHelper.findByIdOrThrow(deptRepository::findById, req.parentId(), "父部门不存在");
+        if (request.parentId() != null && !request.parentId().equals("0")) {
+            DeptEntity parent = EntityHelper.findByIdOrThrow(deptRepository::findById, request.parentId(), "父部门不存在");
             dept.setParent(parent);
             // 更新 ancestors
             String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
@@ -178,24 +178,24 @@ public class DeptServiceImpl implements DeptService {
     @Override
     @Transactional
     @CacheEvict(value = "deptTree", allEntries = true)
-    public DeptResp updateDept(String id, DeptUpdateReq req) {
+    public DeptResponse updateDept(String id, DeptUpdateRequest request) {
         var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
 
         // 如果更新部门名称，检查是否与其他部门重复
-        if (req.name().isPresent() && !req.name().get().equals(dept.getName())) {
-            if (deptRepository.existsByNameAndIdNotAndDeletedFalse(req.name().get(), id)) {
+        if (request.name().isPresent() && !request.name().get().equals(dept.getName())) {
+            if (deptRepository.existsByNameAndIdNotAndDeletedFalse(request.name().get(), id)) {
                 throw new BizException("部门名称已存在");
             }
         }
 
         // 如果更新部门编码，检查是否与其他部门重复
-        if (req.code().isPresent() && !req.code().get().equals(dept.getCode())) {
-            if (deptRepository.existsByCodeAndIdNotAndDeletedFalse(req.code().get(), id)) {
+        if (request.code().isPresent() && !request.code().get().equals(dept.getCode())) {
+            if (deptRepository.existsByCodeAndIdNotAndDeletedFalse(request.code().get(), id)) {
                 throw new BizException("部门编码已存在");
             }
         }
 
-        req.parentId().ifPresent(parentId -> {
+        request.parentId().ifPresent(parentId -> {
             // 不能将自己设置为父部门
             if (id.equals(parentId)) {
                 throw new BizException("不能将自己设置为父部门");
@@ -223,23 +223,23 @@ public class DeptServiceImpl implements DeptService {
             }
         });
 
-        req.name().ifPresent(name -> dept.setName(XssUtils.escape(name)));
-        req.code().ifPresent(code -> dept.setCode(XssUtils.escape(code)));
-        req.leader().ifPresent(leader -> dept.setLeader(XssUtils.escape(leader)));
-        req.phone().ifPresent(phone -> {
+        request.name().ifPresent(name -> dept.setName(XssUtils.escape(name)));
+        request.code().ifPresent(code -> dept.setCode(XssUtils.escape(code)));
+        request.leader().ifPresent(leader -> dept.setLeader(XssUtils.escape(leader)));
+        request.phone().ifPresent(phone -> {
             if (!phone.isBlank() && !phone.matches("^1[3-9]\\d{9}$")) {
                 throw new BizException("手机号格式不正确");
             }
             dept.setPhone(phone);
         });
-        req.email().ifPresent(email -> {
+        request.email().ifPresent(email -> {
             if (!email.isBlank() && !email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
                 throw new BizException("邮箱格式不正确");
             }
             dept.setEmail(email);
         });
-        req.sortOrder().ifPresent(dept::setSortOrder);
-        req.status().ifPresent(dept::setStatus);
+        request.sortOrder().ifPresent(dept::setSortOrder);
+        request.status().ifPresent(dept::setStatus);
 
         var savedDept = deptRepository.save(dept);
 
@@ -337,9 +337,9 @@ public class DeptServiceImpl implements DeptService {
     /**
      * 转换为响应 VO
      */
-    private DeptResp toResp(DeptEntity dept) {
+    private DeptResponse toResp(DeptEntity dept) {
         String parentId = dept.getParent() != null ? dept.getParent().getId() : "0";
-        return new DeptResp(
+        return new DeptResponse(
                 dept.getId(),
                 parentId,
                 dept.getName(),

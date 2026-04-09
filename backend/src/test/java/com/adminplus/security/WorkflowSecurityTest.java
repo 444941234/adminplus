@@ -1,12 +1,9 @@
 package com.adminplus.security;
 
 import com.adminplus.common.security.AppUserDetails;
-import com.adminplus.pojo.dto.req.ApprovalActionReq;
-import com.adminplus.pojo.dto.req.AddSignReq.AddSignType;
-import com.adminplus.pojo.dto.req.WorkflowDefinitionReq;
-import com.adminplus.pojo.dto.req.WorkflowNodeReq;
-import com.adminplus.pojo.dto.req.WorkflowStartReq;
-import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
+import com.adminplus.pojo.dto.request.ApprovalActionRequest;
+import com.adminplus.pojo.dto.request.WorkflowDefinitionRequest;
+import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
 import com.adminplus.service.WorkflowDefinitionService;
@@ -326,7 +323,7 @@ class WorkflowSecurityTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -349,7 +346,7 @@ class WorkflowSecurityTest {
             when(approvalRepository.findByInstanceIdAndNodeIdAndDeletedFalse("inst-001", "node-001"))
                     .thenReturn(Arrays.asList(pendingApproval));
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -373,7 +370,7 @@ class WorkflowSecurityTest {
             when(approvalRepository.findByInstanceIdAndNodeIdAndDeletedFalse("inst-001", "node-001"))
                     .thenReturn(Arrays.asList(pendingApproval));
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -403,7 +400,7 @@ class WorkflowSecurityTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Rejected")
                     .build();
 
@@ -426,7 +423,7 @@ class WorkflowSecurityTest {
             when(approvalRepository.findByInstanceIdAndNodeIdAndDeletedFalse("inst-001", "node-001"))
                     .thenReturn(Arrays.asList(pendingApproval));
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Rejected")
                     .build();
 
@@ -591,7 +588,7 @@ class WorkflowSecurityTest {
 
             // Then - Should only return authenticated user's workflows
             assertThat(result).doesNotContainAnyElementsOf(
-                    Arrays.asList(new WorkflowInstanceResp(
+                    Arrays.asList(new WorkflowInstanceResponse(
                             testInstance.getId(),
                             testInstance.getDefinitionId(),
                             testInstance.getDefinitionName(),
@@ -678,7 +675,7 @@ class WorkflowSecurityTest {
             // Given
             authenticateAs(INITIATOR_ID);
 
-            WorkflowDefinitionReq req = new WorkflowDefinitionReq(
+            WorkflowDefinitionRequest req = new WorkflowDefinitionRequest(
                     "Test Workflow",
                     "duplicate-key",
                     "Test",
@@ -710,7 +707,7 @@ class WorkflowSecurityTest {
             when(definitionRepository.findByDefinitionKeyAndDeletedFalse("different-key"))
                     .thenReturn(Optional.of(existingDef));
 
-            WorkflowDefinitionReq req = new WorkflowDefinitionReq(
+            WorkflowDefinitionRequest req = new WorkflowDefinitionRequest(
                     "Updated",
                     "different-key",
                     "Test",
@@ -742,7 +739,7 @@ class WorkflowSecurityTest {
             when(instanceRepository.findById("inst-001"))
                     .thenReturn(Optional.of(testInstance));
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -835,7 +832,7 @@ class WorkflowSecurityTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -871,7 +868,7 @@ class WorkflowSecurityTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment(maliciousComment)
                     .build();
 
@@ -903,7 +900,7 @@ class WorkflowSecurityTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .attachments(attachmentJson)
                     .build();

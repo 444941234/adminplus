@@ -3,11 +3,11 @@ package com.adminplus.controller;
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.query.DictQuery;
-import com.adminplus.pojo.dto.req.DictCreateReq;
-import com.adminplus.pojo.dto.req.DictUpdateReq;
-import com.adminplus.pojo.dto.resp.DictItemResp;
-import com.adminplus.pojo.dto.resp.DictResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.DictCreateRequest;
+import com.adminplus.pojo.dto.request.DictUpdateRequest;
+import com.adminplus.pojo.dto.response.DictItemResponse;
+import com.adminplus.pojo.dto.response.DictResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.DictService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,45 +38,45 @@ public class DictController {
     @Operation(summary = "分页查询字典列表")
     @OperationLog(module = "字典管理", operationType = 1, description = "查询字典列表")
     @PreAuthorize("hasAuthority('dict:list')")
-    public ApiResponse<PageResultResp<DictResp>> getDictList(DictQuery req) {
-        PageResultResp<DictResp> result = dictService.getDictList(req);
-        return ApiResponse.ok(result);
+    public ApiResponse<PageResultResponse<DictResponse>> getDictList(DictQuery query) {
+        PageResultResponse<DictResponse> response = dictService.getDictList(query);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/type/{dictType}")
     @Operation(summary = "根据字典类型查询")
     @OperationLog(module = "字典管理", operationType = 1, description = "查询字典类型 {#dictType}")
     @PreAuthorize("hasAuthority('dict:query')")
-    public ApiResponse<DictResp> getDictByType(@PathVariable String dictType) {
-        DictResp dict = dictService.getDictByType(dictType);
-        return ApiResponse.ok(dict);
+    public ApiResponse<DictResponse> getDictByType(@PathVariable String dictType) {
+        DictResponse response = dictService.getDictByType(dictType);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询字典")
     @OperationLog(module = "字典管理", operationType = 1, description = "查询字典详情 {#id}")
     @PreAuthorize("hasAuthority('dict:query')")
-    public ApiResponse<DictResp> getDictById(@PathVariable String id) {
-        DictResp dict = dictService.getDictById(id);
-        return ApiResponse.ok(dict);
+    public ApiResponse<DictResponse> getDictById(@PathVariable String id) {
+        DictResponse response = dictService.getDictById(id);
+        return ApiResponse.ok(response);
     }
 
     @PostMapping
     @Operation(summary = "创建字典")
-    @OperationLog(module = "字典管理", operationType = 2, description = "新增字典 {#req.dictName}")
+    @OperationLog(module = "字典管理", operationType = 2, description = "新增字典 {#request.dictName}")
     @PreAuthorize("hasAuthority('dict:add')")
-    public ApiResponse<DictResp> createDict(@Valid @RequestBody DictCreateReq req) {
-        DictResp dict = dictService.createDict(req);
-        return ApiResponse.ok(dict);
+    public ApiResponse<DictResponse> createDict(@Valid @RequestBody DictCreateRequest request) {
+        DictResponse response = dictService.createDict(request);
+        return ApiResponse.ok(response);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新字典")
     @OperationLog(module = "字典管理", operationType = 3, description = "修改字典 {#id}")
     @PreAuthorize("hasAuthority('dict:edit')")
-    public ApiResponse<DictResp> updateDict(@PathVariable String id, @Valid @RequestBody DictUpdateReq req) {
-        DictResp dict = dictService.updateDict(id, req);
-        return ApiResponse.ok(dict);
+    public ApiResponse<DictResponse> updateDict(@PathVariable String id, @Valid @RequestBody DictUpdateRequest request) {
+        DictResponse response = dictService.updateDict(id, request);
+        return ApiResponse.ok(response);
     }
 
     @DeleteMapping("/{id}")
@@ -91,9 +91,9 @@ public class DictController {
     @GetMapping("/type/{dictType}/items")
     @Operation(summary = "根据字典类型查询字典项")
     @PreAuthorize("hasAuthority('dict:query')")
-    public ApiResponse<List<DictItemResp>> getDictItemsByType(@PathVariable String dictType) {
-        List<DictItemResp> items = dictService.getDictItemsByType(dictType);
-        return ApiResponse.ok(items);
+    public ApiResponse<List<DictItemResponse>> getDictItemsByType(@PathVariable String dictType) {
+        List<DictItemResponse> responses = dictService.getDictItemsByType(dictType);
+        return ApiResponse.ok(responses);
     }
 
     @PutMapping("/{id}/status")

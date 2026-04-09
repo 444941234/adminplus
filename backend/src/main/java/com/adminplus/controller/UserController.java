@@ -3,12 +3,12 @@ package com.adminplus.controller;
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.query.UserQuery;
-import com.adminplus.pojo.dto.req.PasswordResetReq;
-import com.adminplus.pojo.dto.req.RoleAssignReq;
-import com.adminplus.pojo.dto.req.UserCreateReq;
-import com.adminplus.pojo.dto.req.UserUpdateReq;
-import com.adminplus.pojo.dto.resp.PageResultResp;
-import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.dto.request.PasswordResetRequest;
+import com.adminplus.pojo.dto.request.RoleAssignRequest;
+import com.adminplus.pojo.dto.request.UserCreateRequest;
+import com.adminplus.pojo.dto.request.UserUpdateRequest;
+import com.adminplus.pojo.dto.response.PageResultResponse;
+import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,8 +39,8 @@ public class UserController {
     @Operation(summary = "分页查询用户列表")
     @OperationLog(module = "用户管理", operationType = 1, description = "查询用户列表")
     @PreAuthorize("hasAuthority('user:query')")
-    public ApiResponse<PageResultResp<UserResp>> getUserList(UserQuery req) {
-        PageResultResp<UserResp> result = userService.getUserList(req);
+    public ApiResponse<PageResultResponse<UserResponse>> getUserList(UserQuery req) {
+        PageResultResponse<UserResponse> result = userService.getUserList(req);
         return ApiResponse.ok(result);
     }
 
@@ -48,17 +48,17 @@ public class UserController {
     @Operation(summary = "根据ID查询用户")
     @OperationLog(module = "用户管理", operationType = 1, description = "查询用户详情 {#id}")
     @PreAuthorize("hasAuthority('user:query')")
-    public ApiResponse<UserResp> getUserById(@PathVariable String id) {
-        UserResp user = userService.getUserById(id);
+    public ApiResponse<UserResponse> getUserById(@PathVariable String id) {
+        UserResponse user = userService.getUserById(id);
         return ApiResponse.ok(user);
     }
 
     @PostMapping
     @Operation(summary = "创建用户")
-    @OperationLog(module = "用户管理", operationType = 2, description = "新增用户 {#req.username}")
+    @OperationLog(module = "用户管理", operationType = 2, description = "新增用户 {#request.username}")
     @PreAuthorize("hasAuthority('user:add')")
-    public ApiResponse<UserResp> createUser(@Valid @RequestBody UserCreateReq req) {
-        UserResp user = userService.createUser(req);
+    public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserCreateRequest request) {
+        UserResponse user = userService.createUser(request);
         return ApiResponse.ok(user);
     }
 
@@ -66,8 +66,8 @@ public class UserController {
     @Operation(summary = "更新用户")
     @OperationLog(module = "用户管理", operationType = 3, description = "修改用户 {#id}")
     @PreAuthorize("hasAuthority('user:edit')")
-    public ApiResponse<UserResp> updateUser(@PathVariable String id, @Valid @RequestBody UserUpdateReq req) {
-        UserResp user = userService.updateUser(id, req);
+    public ApiResponse<UserResponse> updateUser(@PathVariable String id, @Valid @RequestBody UserUpdateRequest request) {
+        UserResponse user = userService.updateUser(id, request);
         return ApiResponse.ok(user);
     }
 
@@ -98,9 +98,9 @@ public class UserController {
     @PreAuthorize("hasAuthority('user:edit')")
     public ApiResponse<Void> resetPassword(
             @PathVariable String id,
-            @Valid @RequestBody PasswordResetReq req
+            @Valid @RequestBody PasswordResetRequest request
     ) {
-        userService.resetPassword(id, req.password());
+        userService.resetPassword(id, request.password());
         return ApiResponse.ok();
     }
 
@@ -110,9 +110,9 @@ public class UserController {
     @PreAuthorize("hasAuthority('user:assign')")
     public ApiResponse<Void> assignRoles(
             @PathVariable String id,
-            @Valid @RequestBody RoleAssignReq req
+            @Valid @RequestBody RoleAssignRequest request
     ) {
-        userService.assignRoles(id, req.roleIds());
+        userService.assignRoles(id, request.roleIds());
         return ApiResponse.ok();
     }
 

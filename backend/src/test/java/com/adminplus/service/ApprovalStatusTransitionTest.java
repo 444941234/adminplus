@@ -1,8 +1,8 @@
 package com.adminplus.service;
 
 import com.adminplus.common.security.AppUserDetails;
-import com.adminplus.pojo.dto.req.ApprovalActionReq;
-import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
+import com.adminplus.pojo.dto.request.ApprovalActionRequest;
+import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
 import com.adminplus.service.impl.WorkflowInstanceServiceImpl;
@@ -17,13 +17,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -219,7 +217,7 @@ class ApprovalStatusTransitionTest {
                     .thenReturn(Arrays.asList(testApprover));
 
             // When
-            WorkflowInstanceResp result = service.submit("inst-001", null);
+            WorkflowInstanceResponse result = service.submit("inst-001", null);
 
             // Then
             assertThat(testInstance.getStatus()).isEqualTo("running");
@@ -325,7 +323,7 @@ class ApprovalStatusTransitionTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -360,7 +358,7 @@ class ApprovalStatusTransitionTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Insufficient documentation")
                     .build();
 
@@ -439,7 +437,7 @@ class ApprovalStatusTransitionTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -586,7 +584,7 @@ class ApprovalStatusTransitionTest {
             when(instanceRepository.findById("inst-001"))
                     .thenReturn(Optional.of(testInstance));
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -608,7 +606,7 @@ class ApprovalStatusTransitionTest {
             when(instanceRepository.findById("inst-001"))
                     .thenReturn(Optional.of(testInstance));
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Reject")
                     .build();
 
@@ -707,7 +705,7 @@ class ApprovalStatusTransitionTest {
 
             // When - Reject (ends workflow)
             assertThat(testInstance.getFinishTime()).isNull();
-            service.reject("inst-001", ApprovalActionReq.builder()
+            service.reject("inst-001", ApprovalActionRequest.builder()
                     .comment("No")
                     .build());
 

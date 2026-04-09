@@ -1,9 +1,9 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.req.WorkflowDefinitionReq;
-import com.adminplus.pojo.dto.req.WorkflowNodeReq;
-import com.adminplus.pojo.dto.resp.WorkflowDefinitionResp;
-import com.adminplus.pojo.dto.resp.WorkflowNodeResp;
+import com.adminplus.pojo.dto.request.WorkflowDefinitionRequest;
+import com.adminplus.pojo.dto.request.WorkflowNodeRequest;
+import com.adminplus.pojo.dto.response.WorkflowDefinitionResponse;
+import com.adminplus.pojo.dto.response.WorkflowNodeResponse;
 import com.adminplus.service.WorkflowDefinitionService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,31 +48,31 @@ class WorkflowDefinitionControllerTest {
     private WorkflowDefinitionController definitionController;
 
     private ObjectMapper objectMapper;
-    private WorkflowDefinitionResp testDefinition;
-    private WorkflowDefinitionReq definitionReq;
-    private WorkflowNodeResp testNode;
-    private WorkflowNodeReq nodeReq;
+    private WorkflowDefinitionResponse testDefinition;
+    private WorkflowDefinitionRequest definitionReq;
+    private WorkflowNodeResponse testNode;
+    private WorkflowNodeRequest nodeReq;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(definitionController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
-        testDefinition = new WorkflowDefinitionResp(
+        testDefinition = new WorkflowDefinitionResponse(
                 "def-001", "请假审批", "leave_approval",
                 "请假类别", "请假审批流程", 1, 1, null, 0, Instant.now(), Instant.now()
         );
-        definitionReq = WorkflowDefinitionReq.builder()
+        definitionReq = WorkflowDefinitionRequest.builder()
                 .definitionName("请假审批")
                 .definitionKey("leave_approval")
                 .category("请假类别")
                 .description("请假审批流程")
                 .status(1)
                 .build();
-        testNode = new WorkflowNodeResp(
+        testNode = new WorkflowNodeResponse(
                 "node-001", "def-001", "部门主管审批", "node_001",
                 1, "user", "user-001", false, true, null, Instant.now()
         );
-        nodeReq = WorkflowNodeReq.builder()
+        nodeReq = WorkflowNodeRequest.builder()
                 .nodeName("部门主管审批")
                 .nodeCode("node_001")
                 .nodeOrder(1)
@@ -91,7 +91,7 @@ class WorkflowDefinitionControllerTest {
         @DisplayName("should create workflow definition")
         void create_ShouldCreateDefinition() throws Exception {
             // Given
-            when(definitionService.create(any(WorkflowDefinitionReq.class))).thenReturn(testDefinition);
+            when(definitionService.create(any(WorkflowDefinitionRequest.class))).thenReturn(testDefinition);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/definitions")
@@ -100,7 +100,7 @@ class WorkflowDefinitionControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(definitionService).create(any(WorkflowDefinitionReq.class));
+            verify(definitionService).create(any(WorkflowDefinitionRequest.class));
         }
     }
 
@@ -112,7 +112,7 @@ class WorkflowDefinitionControllerTest {
         @DisplayName("should update workflow definition")
         void update_ShouldUpdateDefinition() throws Exception {
             // Given
-            when(definitionService.update(anyString(), any(WorkflowDefinitionReq.class))).thenReturn(testDefinition);
+            when(definitionService.update(anyString(), any(WorkflowDefinitionRequest.class))).thenReturn(testDefinition);
 
             // When & Then
             mockMvc.perform(put("/v1/workflow/definitions/def-001")
@@ -121,7 +121,7 @@ class WorkflowDefinitionControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(definitionService).update(anyString(), any(WorkflowDefinitionReq.class));
+            verify(definitionService).update(anyString(), any(WorkflowDefinitionRequest.class));
         }
     }
 
@@ -189,7 +189,7 @@ class WorkflowDefinitionControllerTest {
         @DisplayName("should add workflow node")
         void addNode_ShouldAddNode() throws Exception {
             // Given
-            when(definitionService.addNode(anyString(), any(WorkflowNodeReq.class))).thenReturn(testNode);
+            when(definitionService.addNode(anyString(), any(WorkflowNodeRequest.class))).thenReturn(testNode);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/definitions/def-001/nodes")
@@ -198,7 +198,7 @@ class WorkflowDefinitionControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(definitionService).addNode(anyString(), any(WorkflowNodeReq.class));
+            verify(definitionService).addNode(anyString(), any(WorkflowNodeRequest.class));
         }
     }
 

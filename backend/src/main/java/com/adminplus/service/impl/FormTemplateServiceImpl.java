@@ -1,7 +1,7 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.req.FormTemplateReq;
-import com.adminplus.pojo.dto.resp.FormTemplateResp;
+import com.adminplus.pojo.dto.request.FormTemplateRequest;
+import com.adminplus.pojo.dto.response.FormTemplateResponse;
 import com.adminplus.pojo.entity.FormTemplateEntity;
 import com.adminplus.repository.FormTemplateRepository;
 import com.adminplus.service.FormTemplateService;
@@ -31,7 +31,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "formTemplates", key = "'all'")
-    public List<FormTemplateResp> getAllTemplates() {
+    public List<FormTemplateResponse> getAllTemplates() {
         return templateRepository.findAll().stream()
                 .map(this::toResp)
                 .collect(Collectors.toList());
@@ -40,7 +40,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "formTemplates", key = "'enabled'")
-    public List<FormTemplateResp> getEnabledTemplates() {
+    public List<FormTemplateResponse> getEnabledTemplates() {
         return templateRepository.findByStatusOrderByCreateTimeDesc(1).stream()
                 .map(this::toResp)
                 .collect(Collectors.toList());
@@ -49,7 +49,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "formTemplates", key = "'category:' + #category")
-    public List<FormTemplateResp> getTemplatesByCategory(String category) {
+    public List<FormTemplateResponse> getTemplatesByCategory(String category) {
         return templateRepository.findByCategoryAndStatusOrderByCreateTimeDesc(category, 1).stream()
                 .map(this::toResp)
                 .collect(Collectors.toList());
@@ -58,7 +58,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "formTemplate", key = "#id")
-    public FormTemplateResp getTemplateById(String id) {
+    public FormTemplateResponse getTemplateById(String id) {
         return templateRepository.findById(id)
                 .map(this::toResp)
                 .orElse(null);
@@ -67,7 +67,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "formTemplate", key = "'code:' + #templateCode")
-    public FormTemplateResp getTemplateByCode(String templateCode) {
+    public FormTemplateResponse getTemplateByCode(String templateCode) {
         return templateRepository.findByTemplateCode(templateCode)
                 .map(this::toResp)
                 .orElse(null);
@@ -76,7 +76,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Override
     @Transactional
     @CacheEvict(value = {"formTemplates", "formTemplate"}, allEntries = true)
-    public FormTemplateResp createTemplate(FormTemplateReq req) {
+    public FormTemplateResponse createTemplate(FormTemplateRequest req) {
         // 检查标识是否已存在
         if (templateRepository.existsByTemplateCode(req.templateCode())) {
             throw new IllegalArgumentException("表单标识已存在: " + req.templateCode());
@@ -99,7 +99,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @Override
     @Transactional
     @CacheEvict(value = {"formTemplates", "formTemplate"}, allEntries = true)
-    public FormTemplateResp updateTemplate(String id, FormTemplateReq req) {
+    public FormTemplateResponse updateTemplate(String id, FormTemplateRequest req) {
         FormTemplateEntity entity = templateRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("表单模板不存在: " + id));
 
@@ -140,8 +140,8 @@ public class FormTemplateServiceImpl implements FormTemplateService {
         return templateRepository.existsByTemplateCode(templateCode);
     }
 
-    private FormTemplateResp toResp(FormTemplateEntity entity) {
-        return new FormTemplateResp(
+    private FormTemplateResponse toResp(FormTemplateEntity entity) {
+        return new FormTemplateResponse(
                 entity.getId(),
                 entity.getTemplateName(),
                 entity.getTemplateCode(),

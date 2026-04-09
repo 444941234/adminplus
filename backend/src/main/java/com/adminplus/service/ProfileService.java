@@ -1,11 +1,11 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.PasswordChangeReq;
-import com.adminplus.pojo.dto.req.ProfileUpdateReq;
-import com.adminplus.pojo.dto.req.SettingsUpdateReq;
-import com.adminplus.pojo.dto.resp.ActivityStatsResp;
-import com.adminplus.pojo.dto.resp.ProfileResp;
-import com.adminplus.pojo.dto.resp.SettingsResp;
+import com.adminplus.pojo.dto.request.PasswordChangeRequest;
+import com.adminplus.pojo.dto.request.ProfileUpdateRequest;
+import com.adminplus.pojo.dto.request.SettingsUpdateRequest;
+import com.adminplus.pojo.dto.response.ActivityStatsResponse;
+import com.adminplus.pojo.dto.response.ProfileResponse;
+import com.adminplus.pojo.dto.response.SettingsResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -19,17 +19,17 @@ public interface ProfileService {
     /**
      * 获取当前用户信息
      */
-    ProfileResp getCurrentUserProfile();
+    ProfileResponse getCurrentUserProfile();
 
     /**
      * 更新当前用户信息
      */
-    ProfileResp updateCurrentProfile(ProfileUpdateReq req);
+    ProfileResponse updateCurrentProfile(ProfileUpdateRequest request);
 
     /**
      * 修改密码
      */
-    void changePassword(PasswordChangeReq req);
+    void changePassword(PasswordChangeRequest request);
 
     /**
      * 上传头像
@@ -39,15 +39,15 @@ public interface ProfileService {
     /**
      * 获取用户设置
      */
-    SettingsResp getSettings();
+    SettingsResponse getSettings();
 
     /**
      * 更新用户设置
      */
-    SettingsResp updateSettings(SettingsUpdateReq req);
+    SettingsResponse updateSettings(SettingsUpdateRequest request);
 
     /**
      * 获取用户活动统计
      */
-    ActivityStatsResp getActivityStats();
+    ActivityStatsResponse getActivityStats();
 }

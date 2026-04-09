@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.resp.LogStatisticsResp;
+import com.adminplus.pojo.dto.response.LogStatisticsResponse;
 
 /**
  * 日志统计服务接口
@@ -15,7 +15,7 @@ public interface LogStatisticsService {
      *
      * @return 统计数据
      */
-    LogStatisticsResp getStatistics();
+    LogStatisticsResponse getStatistics();
 
     /**
      * 获取日志趋势数据（最近N天）
@@ -23,5 +23,5 @@ public interface LogStatisticsService {
      * @param days 天数
      * @return 趋势数据
      */
-    LogStatisticsResp getTrendData(int days);
+    LogStatisticsResponse getTrendData(int days);
 }

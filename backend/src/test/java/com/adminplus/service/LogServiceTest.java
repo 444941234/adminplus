@@ -3,9 +3,9 @@ package com.adminplus.service;
 import com.adminplus.common.properties.LogStorageProperties;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogPageResp;
-import com.adminplus.pojo.dto.resp.LogStatisticsResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.LogPageResponse;
+import com.adminplus.pojo.dto.response.LogStatisticsResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.service.impl.LogStorageStrategySelector;
 import com.adminplus.service.impl.LogServiceImpl;
@@ -87,7 +87,7 @@ class LogServiceTest {
             when(storageStrategy.findById("log-001")).thenReturn(testLog);
 
             // When
-            LogPageResp result = logService.getLogById("log-001");
+            LogPageResponse result = logService.getLogById("log-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -115,13 +115,13 @@ class LogServiceTest {
         @DisplayName("should return page result")
         void findPage_ShouldReturnPageResult() {
             // Given
-            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
+            PageResultResponse<LogPageResponse> pageResult = new PageResultResponse<>(
                     List.of(), 0L, 1, 10
             );
             when(storageStrategy.findPage(any(LogQuery.class))).thenReturn(pageResult);
 
             // When
-            PageResultResp<LogPageResp> result = logService.getLogList(query);
+            PageResultResponse<LogPageResponse> result = logService.getLogList(query);
 
             // Then
             assertThat(result).isNotNull();
@@ -231,11 +231,11 @@ class LogServiceTest {
         @DisplayName("should return statistics")
         void getStatistics_ShouldReturnStatistics() {
             // Given
-            LogStatisticsResp stats = mock(LogStatisticsResp.class);
+            LogStatisticsResponse stats = mock(LogStatisticsResponse.class);
             when(logStatisticsService.getStatistics()).thenReturn(stats);
 
             // When
-            LogStatisticsResp result = logService.getStatistics();
+            LogStatisticsResponse result = logService.getStatistics();
 
             // Then
             assertThat(result).isNotNull();

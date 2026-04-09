@@ -1,7 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogStatisticsResp;
+import com.adminplus.pojo.dto.response.LogStatisticsResponse;
 import com.adminplus.service.LogStatisticsService;
 import com.adminplus.service.LogStorageStrategy;
 import com.adminplus.enums.LogType;
@@ -34,7 +34,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
 
     @Override
     @Transactional(readOnly = true)
-    public LogStatisticsResp getStatistics() {
+    public LogStatisticsResponse getStatistics() {
         LogStorageStrategy strategy = storageStrategySelector.getStrategy();
 
         // 总数统计
@@ -67,7 +67,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
             countByOperationType.put(opType, countByOperationTypeInternal(strategy, opType));
         }
 
-        return new LogStatisticsResp(
+        return new LogStatisticsResponse(
                 totalCount,
                 countByType.get(LogType.OPERATION.getCode()),
                 countByType.get(LogType.LOGIN.getCode()),
@@ -84,7 +84,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
 
     @Override
     @Transactional(readOnly = true)
-    public LogStatisticsResp getTrendData(int days) {
+    public LogStatisticsResponse getTrendData(int days) {
         LogStorageStrategy strategy = storageStrategySelector.getStrategy();
 
         // 按日期统计
@@ -97,7 +97,7 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
         // 计算总数
         long totalCount = countByDate.values().stream().mapToLong(Long::longValue).sum();
 
-        return new LogStatisticsResp(
+        return new LogStatisticsResponse(
                 totalCount,
                 0L, 0L, 0L,  // 按类型统计
                 totalCount,  // 今日统计（这里用总数代替）

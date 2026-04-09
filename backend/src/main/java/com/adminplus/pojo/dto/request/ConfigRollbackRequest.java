@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotBlank;
  * @author AdminPlus
  * @since 2026-03-30
  */
-public record ConfigRollbackReq(
+public record ConfigRollbackRequest(
         @NotBlank(message = "历史记录ID不能为空")
         String historyId,
 

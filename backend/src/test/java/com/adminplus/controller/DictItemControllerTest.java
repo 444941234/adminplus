@@ -1,8 +1,8 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.req.DictItemCreateReq;
-import com.adminplus.pojo.dto.req.DictItemUpdateReq;
-import com.adminplus.pojo.dto.resp.DictItemResp;
+import com.adminplus.pojo.dto.request.DictItemCreateRequest;
+import com.adminplus.pojo.dto.request.DictItemUpdateRequest;
+import com.adminplus.pojo.dto.response.DictItemResponse;
 import com.adminplus.service.DictItemService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,21 +47,21 @@ class DictItemControllerTest {
     private DictItemController dictItemController;
 
     private ObjectMapper objectMapper;
-    private DictItemResp testDictItem;
-    private DictItemCreateReq createReq;
-    private DictItemUpdateReq updateReq;
+    private DictItemResponse testDictItem;
+    private DictItemCreateRequest createReq;
+    private DictItemUpdateRequest updateReq;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(dictItemController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
-        testDictItem = new DictItemResp(
+        testDictItem = new DictItemResponse(
                 "item-001", "dict-001", "status", null,
                 "启用", "1", 1, 1, null,
                 List.of(), Instant.now(), Instant.now()
         );
-        createReq = new DictItemCreateReq("dict-001", null, "启用", "1", 1, 1, null);
-        updateReq = new DictItemUpdateReq(null, "启用", "1", 1, 1, null);
+        createReq = new DictItemCreateRequest("dict-001", null, "启用", "1", 1, 1, null);
+        updateReq = new DictItemUpdateRequest(null, "启用", "1", 1, 1, null);
     }
 
     @Nested
@@ -112,7 +112,7 @@ class DictItemControllerTest {
         @DisplayName("should create dict item")
         void createDictItem_ShouldCreateItem() throws Exception {
             // Given
-            when(dictItemService.createDictItem(any(DictItemCreateReq.class))).thenReturn(testDictItem);
+            when(dictItemService.createDictItem(any(DictItemCreateRequest.class))).thenReturn(testDictItem);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/dicts/dict-001/items")
@@ -121,7 +121,7 @@ class DictItemControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(dictItemService).createDictItem(any(DictItemCreateReq.class));
+            verify(dictItemService).createDictItem(any(DictItemCreateRequest.class));
         }
     }
 
@@ -133,7 +133,7 @@ class DictItemControllerTest {
         @DisplayName("should update dict item")
         void updateDictItem_ShouldUpdateItem() throws Exception {
             // Given
-            when(dictItemService.updateDictItem(anyString(), any(DictItemUpdateReq.class))).thenReturn(testDictItem);
+            when(dictItemService.updateDictItem(anyString(), any(DictItemUpdateRequest.class))).thenReturn(testDictItem);
 
             // When & Then
             mockMvc.perform(put("/v1/sys/dicts/dict-001/items/item-001")
@@ -142,7 +142,7 @@ class DictItemControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(dictItemService).updateDictItem(anyString(), any(DictItemUpdateReq.class));
+            verify(dictItemService).updateDictItem(anyString(), any(DictItemUpdateRequest.class));
         }
     }
 

@@ -1,10 +1,10 @@
 package com.adminplus.controller;
 
 import com.adminplus.pojo.dto.query.DictQuery;
-import com.adminplus.pojo.dto.req.DictCreateReq;
-import com.adminplus.pojo.dto.req.DictUpdateReq;
-import com.adminplus.pojo.dto.resp.DictResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.DictCreateRequest;
+import com.adminplus.pojo.dto.request.DictUpdateRequest;
+import com.adminplus.pojo.dto.response.DictResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.DictService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,20 +49,20 @@ class DictControllerTest {
     private DictController dictController;
 
     private ObjectMapper objectMapper;
-    private DictResp testDict;
-    private DictCreateReq createReq;
-    private DictUpdateReq updateReq;
+    private DictResponse testDict;
+    private DictCreateRequest createReq;
+    private DictUpdateRequest updateReq;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(dictController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
-        testDict = new DictResp(
+        testDict = new DictResponse(
                 "dict-001", "status", "状态字典", 1, "状态相关字典",
                 Instant.now(), Instant.now()
         );
-        createReq = new DictCreateReq("status", "状态字典", "状态相关字典");
-        updateReq = new DictUpdateReq("状态字典", 1, "状态相关字典");
+        createReq = new DictCreateRequest("status", "状态字典", "状态相关字典");
+        updateReq = new DictUpdateRequest("状态字典", 1, "状态相关字典");
     }
 
     @Nested
@@ -73,7 +73,7 @@ class DictControllerTest {
         @DisplayName("should return dict list")
         void getDictList_ShouldReturnDictList() throws Exception {
             // Given
-            PageResultResp<DictResp> pageResult = new PageResultResp<>(List.of(testDict), 1L, 1, 10);
+            PageResultResponse<DictResponse> pageResult = new PageResultResponse<>(List.of(testDict), 1L, 1, 10);
             when(dictService.getDictList(any(DictQuery.class))).thenReturn(pageResult);
 
             // When & Then
@@ -116,7 +116,7 @@ class DictControllerTest {
         @DisplayName("should create dict")
         void createDict_ShouldCreateDict() throws Exception {
             // Given
-            when(dictService.createDict(any(DictCreateReq.class))).thenReturn(testDict);
+            when(dictService.createDict(any(DictCreateRequest.class))).thenReturn(testDict);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/dicts")
@@ -125,7 +125,7 @@ class DictControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(dictService).createDict(any(DictCreateReq.class));
+            verify(dictService).createDict(any(DictCreateRequest.class));
         }
     }
 
@@ -137,7 +137,7 @@ class DictControllerTest {
         @DisplayName("should update dict")
         void updateDict_ShouldUpdateDict() throws Exception {
             // Given
-            when(dictService.updateDict(anyString(), any(DictUpdateReq.class))).thenReturn(testDict);
+            when(dictService.updateDict(anyString(), any(DictUpdateRequest.class))).thenReturn(testDict);
 
             // When & Then
             mockMvc.perform(put("/v1/sys/dicts/dict-001")
@@ -146,7 +146,7 @@ class DictControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(dictService).updateDict(anyString(), any(DictUpdateReq.class));
+            verify(dictService).updateDict(anyString(), any(DictUpdateRequest.class));
         }
     }
 

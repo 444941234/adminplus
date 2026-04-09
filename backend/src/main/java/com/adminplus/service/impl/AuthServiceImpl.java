@@ -5,10 +5,10 @@ import com.adminplus.common.exception.BizException;
 import com.adminplus.common.properties.AppProperties;
 import com.adminplus.enums.OperationType;
 import com.adminplus.constants.CacheConstants;
-import com.adminplus.pojo.dto.req.UserLoginReq;
-import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.resp.LoginResp;
-import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.dto.request.UserLoginRequest;
+import com.adminplus.pojo.dto.request.LogEntry;
+import com.adminplus.pojo.dto.response.LoginResponse;
+import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.service.*;
 import com.adminplus.utils.LogMaskingUtils;
@@ -56,33 +56,33 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public LoginResp login(UserLoginReq req) {
-        validateCaptcha(req.captchaId(), req.captchaCode(), req.username());
+    public LoginResponse login(UserLoginRequest request) {
+        validateCaptcha(request.captchaId(), request.captchaCode(), request.username());
 
         try {
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(req.username(), req.password())
+                    new UsernamePasswordAuthenticationToken(request.username(), request.password())
             );
 
-            UserEntity user = userService.getUserByUsername(req.username());
+            UserEntity user = userService.getUserByUsername(request.username());
             List<String> roleCodes = userService.getUserRoleCodes(user.getId());
             List<String> roleNames = userService.getUserRoleNames(user.getId());
 
             String token = generateJwtToken(authentication, user, roleCodes);
 
-            UserResp userResp = buildUserResp(user, roleNames);
+            UserResponse userResponse = buildUserResp(user, roleNames);
             List<String> permissions = permissionService.getUserPermissions(user.getId());
             String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
             logService.log(LogEntry.operation("认证管理", OperationType.OTHER.getCode(),
-                    "用户登录成功: " + LogMaskingUtils.maskUsername(req.username())));
+                    "用户登录成功: " + LogMaskingUtils.maskUsername(request.username())));
 
-            return new LoginResp(token, refreshToken, SecurityConfigConstants.BEARER_PREFIX.trim(), userResp, permissions);
+            return new LoginResponse(token, refreshToken, SecurityConfigConstants.BEARER_PREFIX.trim(), userResponse, permissions);
 
         } catch (AuthenticationException e) {
-            log.error("登录失败: username={}", LogMaskingUtils.maskUsername(req.username()));
+            log.error("登录失败: username={}", LogMaskingUtils.maskUsername(request.username()));
             logService.log(LogEntry.operationBuilder("认证管理", OperationType.OTHER.getCode(),
-                            "用户登录失败: " + LogMaskingUtils.maskUsername(req.username()))
+                            "用户登录失败: " + LogMaskingUtils.maskUsername(request.username()))
                     .failed("用户名或密码错误")
                     .build());
             throw new BizException("用户名或密码错误");
@@ -126,8 +126,8 @@ public class AuthServiceImpl implements AuthService {
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
-    private UserResp buildUserResp(UserEntity user, List<String> roleNames) {
-        return new UserResp(
+    private UserResponse buildUserResp(UserEntity user, List<String> roleNames) {
+        return new UserResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getNickname(),
@@ -145,7 +145,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResp getCurrentUser(String username) {
+    public UserResponse getCurrentUser(String username) {
         return userService.getUserRespByUsername(username);
     }
 

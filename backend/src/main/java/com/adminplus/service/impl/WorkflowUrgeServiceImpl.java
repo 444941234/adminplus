@@ -1,7 +1,7 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.req.UrgeActionReq;
-import com.adminplus.pojo.dto.resp.WorkflowUrgeResp;
+import com.adminplus.pojo.dto.request.UrgeActionRequest;
+import com.adminplus.pojo.dto.response.WorkflowUrgeResponse;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
 import com.adminplus.service.WorkflowUrgeService;
@@ -33,7 +33,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
 
     @Override
     @Transactional
-    public void urgeWorkflow(String instanceId, UrgeActionReq req) {
+    public void urgeWorkflow(String instanceId, UrgeActionRequest req) {
         String urgeUserId = getCurrentUserId();
         log.info("催办工作流: instanceId={}, urgeUserId={}", instanceId, urgeUserId);
 
@@ -101,7 +101,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowUrgeResp> getReceivedUrgeRecords(String userId) {
+    public List<WorkflowUrgeResponse> getReceivedUrgeRecords(String userId) {
         log.info("查询用户收到的催办记录: userId={}", userId);
         return urgeRepository.findByUrgeTargetId(userId).stream()
                 .map(this::toUrgeResponse)
@@ -110,7 +110,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowUrgeResp> getSentUrgeRecords(String userId) {
+    public List<WorkflowUrgeResponse> getSentUrgeRecords(String userId) {
         log.info("查询用户发送的催办记录: userId={}", userId);
         return urgeRepository.findByUrgeUserId(userId).stream()
                 .map(this::toUrgeResponse)
@@ -119,7 +119,7 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowUrgeResp> getUnreadUrgeRecords(String userId) {
+    public List<WorkflowUrgeResponse> getUnreadUrgeRecords(String userId) {
         log.info("查询用户未读催办记录: userId={}", userId);
         return urgeRepository.findUnreadByUrgeTargetId(userId).stream()
                 .map(this::toUrgeResponse)
@@ -174,15 +174,15 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowUrgeResp> getInstanceUrgeRecords(String instanceId) {
+    public List<WorkflowUrgeResponse> getInstanceUrgeRecords(String instanceId) {
         log.info("查询工作流实例催办记录: instanceId={}", instanceId);
         return urgeRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId).stream()
                 .map(this::toUrgeResponse)
                 .collect(Collectors.toList());
     }
 
-    private WorkflowUrgeResp toUrgeResponse(WorkflowUrgeEntity entity) {
-        return new WorkflowUrgeResp(
+    private WorkflowUrgeResponse toUrgeResponse(WorkflowUrgeEntity entity) {
+        return new WorkflowUrgeResponse(
                 entity.getId(),
                 entity.getInstanceId(),
                 entity.getNodeId(),

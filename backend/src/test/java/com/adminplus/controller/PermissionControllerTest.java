@@ -1,6 +1,6 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.resp.PermissionResp;
+import com.adminplus.pojo.dto.response.PermissionResponse;
 import com.adminplus.service.PermissionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,12 +38,12 @@ class PermissionControllerTest {
     @InjectMocks
     private PermissionController permissionController;
 
-    private PermissionResp testPermission;
+    private PermissionResponse testPermission;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(permissionController).build();
-        testPermission = new PermissionResp(
+        testPermission = new PermissionResponse(
                 "perm-001", "user:view", "查看用户", 1, null
         );
     }

@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.resp.*;
+import com.adminplus.pojo.dto.response.*;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ public interface DashboardService {
      *
      * @return 统计数据
      */
-    DashboardStatsResp getStats();
+    DashboardStatsResponse getStats();
 
     /**
      * 清除统计数据缓存
@@ -29,54 +29,54 @@ public interface DashboardService {
      *
      * @return 图表数据
      */
-    ChartDataResp getUserGrowthData();
+    ChartDataResponse getUserGrowthData();
 
     /**
      * 获取角色分布数据
      *
      * @return 图表数据
      */
-    ChartDataResp getRoleDistributionData();
+    ChartDataResponse getRoleDistributionData();
 
     /**
      * 获取菜单类型分布数据
      *
      * @return 图表数据
      */
-    ChartDataResp getMenuDistributionData();
+    ChartDataResponse getMenuDistributionData();
 
     /**
      * 获取最近操作日志
      *
      * @return 操作日志列表
      */
-    List<OperationLogResp> getRecentOperationLogs();
+    List<OperationLogResponse> getRecentOperationLogs();
 
     /**
      * 获取系统信息
      *
      * @return 系统信息
      */
-    SystemInfoResp getSystemInfo();
+    SystemInfoResponse getSystemInfo();
 
     /**
      * 获取在线用户列表
      *
      * @return 在线用户列表
      */
-    List<OnlineUserResp> getOnlineUsers();
+    List<OnlineUserResponse> getOnlineUsers();
 
     /**
      * 获取统计数据（用于 Statistics 页面）
      *
      * @return 统计数据
      */
-    StatisticsResp getStatistics();
+    StatisticsResponse getStatistics();
 
     /**
      * 获取访问量趋势数据（最近7天）
      *
      * @return 图表数据
      */
-    ChartDataResp getVisitTrendData();
+    ChartDataResponse getVisitTrendData();
 }

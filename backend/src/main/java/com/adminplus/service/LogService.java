@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.LogEntry;
+import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogPageResp;
-import com.adminplus.pojo.dto.resp.LogStatisticsResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.LogPageResponse;
+import com.adminplus.pojo.dto.response.LogStatisticsResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ public interface LogService {
      * @param query 查询条件
      * @return 分页结果
      */
-    PageResultResp<LogPageResp> getLogList(LogQuery query);
+    PageResultResponse<LogPageResponse> getLogList(LogQuery query);
 
     /**
      * 根据ID查询日志详情
@@ -37,7 +37,7 @@ public interface LogService {
      * @param id 日志ID
      * @return 日志详情
      */
-    LogPageResp getLogById(String id);
+    LogPageResponse getLogById(String id);
 
     /**
      * 删除单条日志
@@ -73,5 +73,5 @@ public interface LogService {
      *
      * @return 统计数据
      */
-    LogStatisticsResp getStatistics();
+    LogStatisticsResponse getStatistics();
 }

@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.resp.PermissionResp;
+import com.adminplus.pojo.dto.response.PermissionResponse;
 import com.adminplus.pojo.entity.MenuEntity;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;
@@ -115,14 +115,14 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "allPermissions", key = "'list'", unless = "#result == null || #result.isEmpty()")
-    public List<PermissionResp> getAllPermissions() {
+    public List<PermissionResponse> getAllPermissions() {
         List<MenuEntity> menus = menuRepository.findAllByOrderBySortOrderAsc();
 
         return menus.stream()
                 .filter(menu -> menu.getPermKey() != null && !menu.getPermKey().isBlank())
                 .map(menu -> {
                     String parentId = menu.getParent() != null ? menu.getParent().getId() : "0";
-                    return new PermissionResp(
+                    return new PermissionResponse(
                             menu.getId(),
                             menu.getPermKey(),
                             menu.getName(),

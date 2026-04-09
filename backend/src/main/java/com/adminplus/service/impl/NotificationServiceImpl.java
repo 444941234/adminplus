@@ -1,9 +1,9 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.pojo.dto.query.NotificationQuery;
-import com.adminplus.pojo.dto.req.NotificationSendReq;
-import com.adminplus.pojo.dto.resp.NotificationResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.NotificationSendRequest;
+import com.adminplus.pojo.dto.response.NotificationResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.entity.NotificationEntity;
 import com.adminplus.repository.NotificationRepository;
 import com.adminplus.service.NotificationService;
@@ -32,16 +32,16 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public NotificationResp sendNotification(NotificationSendReq req) {
-        log.info("发送通知: type={}, recipientId={}", req.getType(), req.getRecipientId());
+    public NotificationResponse sendNotification(NotificationSendRequest request) {
+        log.info("发送通知: type={}, recipientId={}", request.getType(), request.getRecipientId());
 
         NotificationEntity notification = new NotificationEntity();
-        notification.setType(req.getType());
-        notification.setRecipientId(req.getRecipientId());
-        notification.setTitle(req.getTitle());
-        notification.setContent(req.getContent());
-        notification.setRelatedId(req.getRelatedId());
-        notification.setRelatedType(req.getRelatedType());
+        notification.setType(request.getType());
+        notification.setRecipientId(request.getRecipientId());
+        notification.setTitle(request.getTitle());
+        notification.setContent(request.getContent());
+        notification.setRelatedId(request.getRelatedId());
+        notification.setRelatedType(request.getRelatedType());
         notification.setStatus(0); // 0-未读, 1-已读
 
         notification = notificationRepository.save(notification);
@@ -53,18 +53,18 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
-    public void sendBatchNotification(List<String> recipientIds, NotificationSendReq req) {
-        log.info("批量发送通知: count={}, type={}", recipientIds.size(), req.getType());
+    public void sendBatchNotification(List<String> recipientIds, NotificationSendRequest request) {
+        log.info("批量发送通知: count={}, type={}", recipientIds.size(), request.getType());
 
         List<NotificationEntity> notifications = recipientIds.stream()
                 .map(recipientId -> {
                     NotificationEntity notification = new NotificationEntity();
-                    notification.setType(req.getType());
+                    notification.setType(request.getType());
                     notification.setRecipientId(recipientId);
-                    notification.setTitle(req.getTitle());
-                    notification.setContent(req.getContent());
-                    notification.setRelatedId(req.getRelatedId());
-                    notification.setRelatedType(req.getRelatedType());
+                    notification.setTitle(request.getTitle());
+                    notification.setContent(request.getContent());
+                    notification.setRelatedId(request.getRelatedId());
+                    notification.setRelatedType(request.getRelatedType());
                     notification.setStatus(0);
                     return notification;
                 })
@@ -100,17 +100,17 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public PageResultResp<NotificationResp> getUserNotifications(String userId, NotificationQuery req) {
-        Pageable pageable = PageUtils.toPageableDesc(req.getPage(), req.getSize(), "createTime");
+    public PageResultResponse<NotificationResponse> getUserNotifications(String userId, NotificationQuery query) {
+        Pageable pageable = PageUtils.toPageableDesc(query.getPage(), query.getSize(), "createTime");
 
         Page<NotificationEntity> pageResult;
-        if (req.getStatus() == null) {
+        if (query.getStatus() == null) {
             pageResult = notificationRepository.findByRecipientIdOrderByCreateTimeDesc(userId, pageable);
         } else {
-            pageResult = notificationRepository.findByRecipientIdAndStatusOrderByCreateTimeDesc(userId, req.getStatus(), pageable);
+            pageResult = notificationRepository.findByRecipientIdAndStatusOrderByCreateTimeDesc(userId, query.getStatus(), pageable);
         }
 
-        return PageResultResp.from(pageResult, this::toResp);
+        return PageResultResponse.from(pageResult, this::toResp);
     }
 
     @Override
@@ -133,8 +133,8 @@ public class NotificationServiceImpl implements NotificationService {
         log.info("通知已删除: id={}", notificationId);
     }
 
-    private NotificationResp toResp(NotificationEntity entity) {
-        NotificationResp resp = new NotificationResp();
+    private NotificationResponse toResp(NotificationEntity entity) {
+        NotificationResponse resp = new NotificationResponse();
         resp.setId(entity.getId());
         resp.setType(entity.getType());
         resp.setRecipientId(entity.getRecipientId());

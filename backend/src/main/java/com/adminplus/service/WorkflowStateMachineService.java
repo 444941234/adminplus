@@ -1,7 +1,7 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.ApprovalActionReq;
-import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
+import com.adminplus.pojo.dto.request.ApprovalActionRequest;
+import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
 
 /**
  * 工作流状态机服务接口
@@ -21,7 +21,7 @@ public interface WorkflowStateMachineService {
      * @param req        审批操作请求
      * @return 更新后的工作流实例
      */
-    WorkflowInstanceResp approve(String instanceId, ApprovalActionReq req);
+    WorkflowInstanceResponse approve(String instanceId, ApprovalActionRequest req);
 
     /**
      * 拒绝审批
@@ -30,7 +30,7 @@ public interface WorkflowStateMachineService {
      * @param req        审批操作请求
      * @return 更新后的工作流实例
      */
-    WorkflowInstanceResp reject(String instanceId, ApprovalActionReq req);
+    WorkflowInstanceResponse reject(String instanceId, ApprovalActionRequest req);
 
     /**
      * 取消工作流
@@ -38,7 +38,7 @@ public interface WorkflowStateMachineService {
      * @param instanceId 工作流实例ID
      * @return 更新后的工作流实例
      */
-    WorkflowInstanceResp cancel(String instanceId);
+    WorkflowInstanceResponse cancel(String instanceId);
 
     /**
      * 退回到上一节点
@@ -47,5 +47,5 @@ public interface WorkflowStateMachineService {
      * @param req        审批操作请求（包含退回理由）
      * @return 更新后的工作流实例
      */
-    WorkflowInstanceResp rollback(String instanceId, ApprovalActionReq req);
+    WorkflowInstanceResponse rollback(String instanceId, ApprovalActionRequest req);
 }

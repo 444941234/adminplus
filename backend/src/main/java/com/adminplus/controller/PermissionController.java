@@ -2,7 +2,7 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.resp.PermissionResp;
+import com.adminplus.pojo.dto.response.PermissionResponse;
 import com.adminplus.service.PermissionService;
 import com.adminplus.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -53,8 +53,8 @@ public class PermissionController {
     @Operation(summary = "获取所有可用权限（用于分配）")
     @PreAuthorize("hasAuthority('permission:list')")
     @OperationLog(module = "权限管理", operationType = 1, description = "查询所有可用权限")
-    public ApiResponse<List<PermissionResp>> getAllPermissions() {
-        List<PermissionResp> permissions = permissionService.getAllPermissions();
-        return ApiResponse.ok(permissions);
+    public ApiResponse<List<PermissionResponse>> getAllPermissions() {
+        List<PermissionResponse> responses = permissionService.getAllPermissions();
+        return ApiResponse.ok(responses);
     }
 }

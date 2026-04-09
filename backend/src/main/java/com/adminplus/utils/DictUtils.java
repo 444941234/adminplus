@@ -1,6 +1,6 @@
 package com.adminplus.utils;
 
-import com.adminplus.pojo.dto.resp.DictItemResp;
+import com.adminplus.pojo.dto.response.DictItemResponse;
 import com.adminplus.pojo.entity.DictItemEntity;
 import com.adminplus.repository.DictItemRepository;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +76,7 @@ public class DictUtils {
      * @return 字典项列表
      */
     @Cacheable(value = "dict:items", key = "#dictType")
-    public List<DictItemResp> getDictItems(String dictType) {
+    public List<DictItemResponse> getDictItems(String dictType) {
         try {
             List<DictItemEntity> entities = dictItemRepository.findByDictType(dictType);
             return entities.stream()
@@ -128,8 +128,8 @@ public class DictUtils {
         }
     }
 
-    private DictItemResp toResp(DictItemEntity entity) {
-        return new DictItemResp(
+    private DictItemResponse toResp(DictItemEntity entity) {
+        return new DictItemResponse(
                 entity.getId(),
                 entity.getDictId(),
                 null, // dictType - not needed for simple response

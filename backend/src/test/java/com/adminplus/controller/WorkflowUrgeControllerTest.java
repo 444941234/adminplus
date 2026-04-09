@@ -1,7 +1,7 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.req.UrgeActionReq;
-import com.adminplus.pojo.dto.resp.WorkflowUrgeResp;
+import com.adminplus.pojo.dto.request.UrgeActionRequest;
+import com.adminplus.pojo.dto.response.WorkflowUrgeResponse;
 import com.adminplus.service.WorkflowUrgeService;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.config.TestJacksonConfig;
@@ -52,8 +52,8 @@ class WorkflowUrgeControllerTest {
     private WorkflowUrgeController urgeController;
 
     private ObjectMapper objectMapper;
-    private WorkflowUrgeResp testUrgeRecord;
-    private UrgeActionReq urgeActionReq;
+    private WorkflowUrgeResponse testUrgeRecord;
+    private UrgeActionRequest urgeActionRequest;
     private MockedStatic<SecurityUtils> securityUtilsMock;
 
     @BeforeEach
@@ -63,13 +63,13 @@ class WorkflowUrgeControllerTest {
         securityUtilsMock = mockStatic(SecurityUtils.class);
         securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("user-001");
 
-        testUrgeRecord = new WorkflowUrgeResp(
+        testUrgeRecord = new WorkflowUrgeResponse(
                 "urge-001", "inst-001", "node-001", "Manager Approval",
                 "user-001", "张三", "user-002", "李四",
                 "请尽快审批", false, null, Instant.now()
         );
 
-        urgeActionReq = new UrgeActionReq("请尽快处理审批", "user-002");
+        urgeActionRequest = new UrgeActionRequest("请尽快处理审批", "user-002");
     }
 
     @AfterEach
@@ -86,11 +86,11 @@ class WorkflowUrgeControllerTest {
         void shouldUrgeWorkflow() throws Exception {
             mockMvc.perform(post("/v1/workflow/urge/inst-001")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(urgeActionReq)))
+                            .content(objectMapper.writeValueAsString(urgeActionRequest)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(urgeService).urgeWorkflow(anyString(), any(UrgeActionReq.class));
+            verify(urgeService).urgeWorkflow(anyString(), any(UrgeActionRequest.class));
         }
     }
 

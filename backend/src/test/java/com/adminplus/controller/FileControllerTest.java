@@ -1,6 +1,7 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.entity.FileEntity;
+import com.adminplus.enums.StorageType;
+import com.adminplus.pojo.dto.response.FileResponse;
 import com.adminplus.service.FileService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -41,17 +42,27 @@ class FileControllerTest {
     @InjectMocks
     private FileController fileController;
 
-    private FileEntity testFile;
+    private FileResponse testFile;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(fileController).build();
-        testFile = new FileEntity();
-        testFile.setId("file-001");
-        testFile.setFileName("test.jpg");
-        testFile.setFileUrl("uploads/test.jpg");
-        testFile.setFileSize(1024L);
-        testFile.setContentType("image/jpeg");
+        testFile = new FileResponse(
+                "file-001",
+                "test.jpg",
+                "test",
+                ".jpg",
+                1024L,
+                "image/jpeg",
+                "uploads/test.jpg",
+                StorageType.LOCAL,
+                "uploads",
+                1,
+                "user-001",
+                "user-001",
+                Instant.now(),
+                Instant.now()
+        );
     }
 
     @Nested

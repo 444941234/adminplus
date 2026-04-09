@@ -1,7 +1,7 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.req.ApprovalActionReq;
-import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
+import com.adminplus.pojo.dto.request.ApprovalActionRequest;
+import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
 import com.adminplus.pojo.entity.WorkflowApprovalEntity;
 import com.adminplus.pojo.entity.WorkflowInstanceEntity;
 import com.adminplus.pojo.entity.WorkflowNodeEntity;
@@ -52,7 +52,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
 
     @Override
     @Transactional
-    public WorkflowInstanceResp approve(String instanceId, ApprovalActionReq req) {
+    public WorkflowInstanceResponse approve(String instanceId, ApprovalActionRequest req) {
         log.info("Approving workflow instance: {}", instanceId);
 
         // 获取当前用户ID
@@ -130,7 +130,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
 
     @Override
     @Transactional
-    public WorkflowInstanceResp reject(String instanceId, ApprovalActionReq req) {
+    public WorkflowInstanceResponse reject(String instanceId, ApprovalActionRequest req) {
         log.info("Rejecting workflow instance: {}", instanceId);
 
         String userId = getCurrentUserId();
@@ -195,7 +195,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
 
     @Override
     @Transactional
-    public WorkflowInstanceResp cancel(String instanceId) {
+    public WorkflowInstanceResponse cancel(String instanceId) {
         log.info("Cancelling workflow instance: {}", instanceId);
 
         String userId = getCurrentUserId();
@@ -241,7 +241,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
 
     @Override
     @Transactional
-    public WorkflowInstanceResp rollback(String instanceId, ApprovalActionReq req) {
+    public WorkflowInstanceResponse rollback(String instanceId, ApprovalActionRequest req) {
         log.info("Rolling back workflow instance: {}", instanceId);
 
         String userId = getCurrentUserId();
@@ -381,7 +381,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
     /**
      * 转换为响应对象
      */
-    private WorkflowInstanceResp convertToResp(WorkflowInstanceEntity entity) {
+    private WorkflowInstanceResponse convertToResp(WorkflowInstanceEntity entity) {
         String currentUserId = getCurrentUserId();
         boolean isOwner = currentUserId.equals(entity.getUserId());
 
@@ -414,7 +414,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
         // canSubmitDraft: 草稿且是发起人
         boolean canSubmitDraft = entity.isDraft() && isOwner;
 
-        return new WorkflowInstanceResp(
+        return new WorkflowInstanceResponse(
                 entity.getId(),
                 entity.getDefinitionId(),
                 entity.getDefinitionName(),

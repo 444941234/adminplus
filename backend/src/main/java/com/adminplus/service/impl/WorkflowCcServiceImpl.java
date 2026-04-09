@@ -1,7 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.pojo.entity.WorkflowCcEntity;
-import com.adminplus.pojo.dto.resp.WorkflowCcResp;
+import com.adminplus.pojo.dto.response.WorkflowCcResponse;
 import com.adminplus.repository.WorkflowCcRepository;
 import com.adminplus.service.WorkflowCcService;
 import com.adminplus.utils.SecurityUtils;
@@ -28,7 +28,7 @@ public class WorkflowCcServiceImpl implements WorkflowCcService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowCcResp> getUserCcRecords(String userId) {
+    public List<WorkflowCcResponse> getUserCcRecords(String userId) {
         log.info("查询用户抄送记录: userId={}", userId);
         return ccRepository.findByUserId(userId).stream()
                 .map(this::toCcResponse)
@@ -37,7 +37,7 @@ public class WorkflowCcServiceImpl implements WorkflowCcService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowCcResp> getUnreadCcRecords(String userId) {
+    public List<WorkflowCcResponse> getUnreadCcRecords(String userId) {
         log.info("查询用户未读抄送记录: userId={}", userId);
         return ccRepository.findUnreadByUserId(userId).stream()
                 .map(this::toCcResponse)
@@ -92,15 +92,15 @@ public class WorkflowCcServiceImpl implements WorkflowCcService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowCcResp> getInstanceCcRecords(String instanceId) {
+    public List<WorkflowCcResponse> getInstanceCcRecords(String instanceId) {
         log.info("查询工作流实例抄送记录: instanceId={}", instanceId);
         return ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId).stream()
                 .map(this::toCcResponse)
                 .collect(Collectors.toList());
     }
 
-    private WorkflowCcResp toCcResponse(WorkflowCcEntity entity) {
-        return new WorkflowCcResp(
+    private WorkflowCcResponse toCcResponse(WorkflowCcEntity entity) {
+        return new WorkflowCcResponse(
                 entity.getId(),
                 entity.getInstanceId(),
                 entity.getNodeId(),

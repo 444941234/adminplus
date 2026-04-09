@@ -4,18 +4,18 @@ import com.adminplus.enums.WorkflowStatus;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
-import com.adminplus.pojo.dto.req.ApprovalActionReq;
-import com.adminplus.pojo.dto.req.WorkflowStartReq;
-import com.adminplus.pojo.dto.resp.WorkflowApprovalResp;
-import com.adminplus.pojo.dto.resp.WorkflowDetailResp;
-import com.adminplus.pojo.dto.resp.WorkflowDraftDetailResp;
-import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
-import com.adminplus.pojo.dto.resp.WorkflowNodeResp;
+import com.adminplus.pojo.dto.request.ApprovalActionRequest;
+import com.adminplus.pojo.dto.request.WorkflowStartRequest;
+import com.adminplus.pojo.dto.response.WorkflowApprovalResponse;
+import com.adminplus.pojo.dto.response.WorkflowDetailResponse;
+import com.adminplus.pojo.dto.response.WorkflowDraftDetailResponse;
+import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
+import com.adminplus.pojo.dto.response.WorkflowNodeResponse;
 import com.adminplus.pojo.entity.*;
-import com.adminplus.pojo.dto.req.AddSignReq;
-import com.adminplus.pojo.dto.resp.WorkflowAddSignResp;
-import com.adminplus.pojo.dto.resp.WorkflowCcResp;
-import com.adminplus.pojo.dto.resp.WorkflowOperationPermissionsResp;
+import com.adminplus.pojo.dto.request.AddSignRequest;
+import com.adminplus.pojo.dto.response.WorkflowAddSignResponse;
+import com.adminplus.pojo.dto.response.WorkflowCcResponse;
+import com.adminplus.pojo.dto.response.WorkflowOperationPermissionsResponse;
 import com.adminplus.repository.*;
 import com.adminplus.service.WorkflowDefinitionService;
 import com.adminplus.service.WorkflowInstanceService;
@@ -60,26 +60,26 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional
-    public WorkflowInstanceResp createDraft(WorkflowStartReq req) {
+    public WorkflowInstanceResponse createDraft(WorkflowStartRequest request) {
         String userId = getCurrentUserId();
-        log.info("创建工作流草稿: userId={}, definitionId={}, title={}", userId, req.definitionId(), req.title());
+        log.info("创建工作流草稿: userId={}, definitionId={}, title={}", userId, request.definitionId(), request.title());
 
-        WorkflowDefinitionEntity definition = definitionRepository.findById(req.definitionId())
+        WorkflowDefinitionEntity definition = definitionRepository.findById(request.definitionId())
                 .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在"));
 
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
 
         WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
-        instance.setDefinitionId(req.definitionId());
+        instance.setDefinitionId(request.definitionId());
         instance.setDefinitionName(definition.getDefinitionName());
         instance.setUserId(userId);
         instance.setUserName(user.getNickname());
         instance.setDeptId(user.getDeptId());
-        instance.setTitle(XssUtils.escape(req.title()));
-        instance.setBusinessData(serializeFormData(req.formData()));
+        instance.setTitle(XssUtils.escape(request.title()));
+        instance.setBusinessData(serializeFormData(request.formData()));
         instance.setStatus(WorkflowStatus.DRAFT.getCode());
-        instance.setRemark(XssUtils.escape(req.remark()));
+        instance.setRemark(XssUtils.escape(request.remark()));
 
         instance = instanceRepository.save(instance);
 
@@ -89,7 +89,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional
-    public WorkflowInstanceResp submit(String instanceId, WorkflowStartReq req) {
+    public WorkflowInstanceResponse submit(String instanceId, WorkflowStartRequest request) {
         String userId = getCurrentUserId();
         log.info("提交工作流: instanceId={}, userId={}", instanceId, userId);
 
@@ -105,8 +105,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             throw new IllegalArgumentException("只有发起人可以提交工作流");
         }
 
-        if (req != null) {
-            applyDraftChanges(instance, req);
+        if (request != null) {
+            applyDraftChanges(instance, request);
         }
 
         instance.setStatus(WorkflowStatus.RUNNING.getCode());
@@ -126,7 +126,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         HookExecutionSummary preResult = hookService.executeAllHooks(
             "PRE_SUBMIT", instance, firstNode,
             deserializeFormData(instance.getBusinessData()),
-            Map.of("req", req != null ? req : WorkflowStartReq.builder().definitionId("").title("").formData(Map.of()).build())
+            Map.of("req", request != null ? request : WorkflowStartRequest.builder().definitionId("").title("").formData(Map.of()).build())
         );
 
         if (!preResult.allPassed()) {
@@ -161,11 +161,11 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional
-    public WorkflowInstanceResp start(WorkflowStartReq req) {
-        log.info("发起工作流: title={}", req.title());
+    public WorkflowInstanceResponse start(WorkflowStartRequest request) {
+        log.info("发起工作流: title={}", request.title());
 
         // 先创建草稿
-        WorkflowInstanceResp draft = createDraft(req);
+        WorkflowInstanceResponse draft = createDraft(request);
 
         // 然后提交
         return submit(draft.id(), null);
@@ -173,7 +173,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public WorkflowDraftDetailResp getDraftDetail(String instanceId) {
+    public WorkflowDraftDetailResponse getDraftDetail(String instanceId) {
         String userId = getCurrentUserId();
         WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
@@ -188,7 +188,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         WorkflowDefinitionEntity definition = definitionRepository.findById(instance.getDefinitionId())
                 .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在"));
 
-        return new WorkflowDraftDetailResp(
+        return new WorkflowDraftDetailResponse(
                 toInstanceResponse(instance, false, false),
                 definition.getFormConfig(),
                 deserializeFormData(instance.getBusinessData())
@@ -197,7 +197,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional
-    public WorkflowInstanceResp updateDraft(String instanceId, WorkflowStartReq req) {
+    public WorkflowInstanceResponse updateDraft(String instanceId, WorkflowStartRequest request) {
         String userId = getCurrentUserId();
         WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
@@ -209,7 +209,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             throw new IllegalArgumentException("只有草稿状态可以更新");
         }
 
-        applyDraftChanges(instance, req);
+        applyDraftChanges(instance, request);
         WorkflowInstanceEntity saved = instanceRepository.save(instance);
         return toInstanceResponse(saved, false, false);
     }
@@ -233,7 +233,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public WorkflowDetailResp getDetail(String instanceId) {
+    public WorkflowDetailResponse getDetail(String instanceId) {
         String userId = getCurrentUserId();
         log.info("查询工作流详情: instanceId={}", instanceId);
 
@@ -244,20 +244,20 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         checkViewAccess(instance, userId);
 
         // 查询审批记录
-        List<WorkflowApprovalResp> approvals = approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
+        List<WorkflowApprovalResponse> approvals = approvalRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
                 .stream()
                 .map(this::toApprovalResponse)
                 .collect(Collectors.toList());
 
         // 查询所有节点
-        List<WorkflowNodeResp> nodes = nodeRepository
+        List<WorkflowNodeResponse> nodes = nodeRepository
                 .findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(instance.getDefinitionId())
                 .stream()
                 .map(this::toNodeResponse)
                 .collect(Collectors.toList());
 
         // 查询当前节点
-        WorkflowNodeResp currentNode = null;
+        WorkflowNodeResponse currentNode = null;
         if (instance.getCurrentNodeId() != null) {
             WorkflowNodeEntity nodeEntity = nodeRepository.findById(instance.getCurrentNodeId()).orElse(null);
             if (nodeEntity != null) {
@@ -271,17 +271,17 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         WorkflowDefinitionEntity definition = definitionRepository.findById(instance.getDefinitionId())
                 .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在"));
 
-        List<WorkflowCcResp> ccRecords = ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
+        List<WorkflowCcResponse> ccRecords = ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
                 .stream()
                 .map(this::toCcResponse)
                 .collect(Collectors.toList());
 
-        List<WorkflowAddSignResp> addSignRecords = addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId)
+        List<WorkflowAddSignResponse> addSignRecords = addSignRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId)
                 .stream()
                 .map(this::toAddSignResponse)
                 .collect(Collectors.toList());
 
-        return new WorkflowDetailResp(
+        return new WorkflowDetailResponse(
                 toInstanceResponse(instance, instance.isRunning() && canApprove, canApprove),
                 approvals,
                 nodes,
@@ -297,7 +297,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowInstanceResp> getMyWorkflows(String status) {
+    public List<WorkflowInstanceResponse> getMyWorkflows(String status) {
         String userId = getCurrentUserId();
         log.info("查询我发起的工作流: userId={}, status={}", userId, status);
 
@@ -336,7 +336,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowInstanceResp> getPendingApprovals() {
+    public List<WorkflowInstanceResponse> getPendingApprovals() {
         String userId = getCurrentUserId();
         log.info("查询待我审批的工作流: userId={}", userId);
 
@@ -359,20 +359,20 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional
-    public WorkflowInstanceResp approve(String instanceId, ApprovalActionReq req) {
+    public WorkflowInstanceResponse approve(String instanceId, ApprovalActionRequest request) {
         String userId = getCurrentUserId();
         log.info("同意审批: instanceId={}, userId={}", instanceId, userId);
 
-        return processApproval(instanceId, req, "approved");
+        return processApproval(instanceId, request, "approved");
     }
 
     @Override
     @Transactional
-    public WorkflowInstanceResp reject(String instanceId, ApprovalActionReq req) {
+    public WorkflowInstanceResponse reject(String instanceId, ApprovalActionRequest request) {
         String userId = getCurrentUserId();
         log.info("拒绝审批: instanceId={}, userId={}", instanceId, userId);
 
-        return processApproval(instanceId, req, "rejected");
+        return processApproval(instanceId, request, "rejected");
     }
 
     @Override
@@ -489,7 +489,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowApprovalResp> getApprovals(String instanceId) {
+    public List<WorkflowApprovalResponse> getApprovals(String instanceId) {
         String userId = getCurrentUserId();
         log.info("查询审批记录: instanceId={}", instanceId);
 
@@ -508,7 +508,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     /**
      * 处理审批
      */
-    private WorkflowInstanceResp processApproval(String instanceId, ApprovalActionReq req, String action) {
+    private WorkflowInstanceResponse processApproval(String instanceId, ApprovalActionRequest request, String action) {
         String userId = getCurrentUserId();
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
@@ -542,7 +542,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         HookExecutionSummary preResult = hookService.executeAllHooks(
             hookPoint, instance, currentNode,
             deserializeFormData(instance.getBusinessData()),
-            Map.of("req", req, "action", action)
+            Map.of("request", request, "action", action)
         );
 
         if (!preResult.allPassed()) {
@@ -552,8 +552,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         // 更新审批记录
         myApproval.setApprovalStatus(action);
-        myApproval.setComment(req.comment());
-        myApproval.setAttachments(req.attachments());
+        myApproval.setComment(request.comment());
+        myApproval.setAttachments(request.attachments());
         myApproval.setApprovalTime(Instant.now());
         myApproval.setApproverName(user.getNickname());
         approvalRepository.save(myApproval);
@@ -566,13 +566,13 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             log.info("工作流被拒绝: id={}", instanceId);
 
             // 创建抄送记录（拒绝时抄送）
-            createCcRecords(instance, currentNode, "reject", req.comment());
+            createCcRecords(instance, currentNode, "reject", request.comment());
 
             // 拒绝后钩子执行
             HookExecutionSummary postResult = hookService.executeAllHooks(
                 "POST_REJECT", instance, currentNode,
                 deserializeFormData(instance.getBusinessData()),
-                Map.of("req", req)
+                Map.of("request", request)
             );
             if (!postResult.warningMessages().isEmpty()) {
                 log.warn("拒绝后钩子警告: {}", postResult.warningMessages());
@@ -587,13 +587,13 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 moveToNextNode(instance);
 
                 // 创建抄送记录（审批通过时抄送）
-                createCcRecords(instance, currentNode, "approve", req.comment());
+                createCcRecords(instance, currentNode, "approve", request.comment());
 
                 // 同意后钩子执行
                 HookExecutionSummary postResult = hookService.executeAllHooks(
                     "POST_APPROVE", instance, currentNode,
                     deserializeFormData(instance.getBusinessData()),
-                    Map.of("req", req)
+                    Map.of("request", request)
                 );
                 if (!postResult.warningMessages().isEmpty()) {
                     log.warn("同意后钩子警告: {}", postResult.warningMessages());
@@ -827,7 +827,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         return SecurityUtils.getCurrentUserId();
     }
 
-    private WorkflowInstanceResp toInstanceResponse(WorkflowInstanceEntity entity, Boolean pendingApproval, Boolean canApprove) {
+    private WorkflowInstanceResponse toInstanceResponse(WorkflowInstanceEntity entity, Boolean pendingApproval, Boolean canApprove) {
         String currentUserId = getCurrentUserId();
         String deptName = deptRepository.findById(entity.getDeptId())
                 .map(DeptEntity::getName)
@@ -839,10 +839,10 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     /**
      * 转换为响应对象（带预先查询的部门名称，避免 N+1 问题）
      */
-    private WorkflowInstanceResp toInstanceResponseWithDeptName(WorkflowInstanceEntity entity, String deptName, Boolean pendingApproval, Boolean canApprove) {
+    private WorkflowInstanceResponse toInstanceResponseWithDeptName(WorkflowInstanceEntity entity, String deptName, Boolean pendingApproval, Boolean canApprove) {
         String currentUserId = getCurrentUserId();
 
-        return new WorkflowInstanceResp(
+        return new WorkflowInstanceResponse(
                 entity.getId(),
                 entity.getDefinitionId(),
                 entity.getDefinitionName(),
@@ -869,8 +869,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         );
     }
 
-    private WorkflowApprovalResp toApprovalResponse(WorkflowApprovalEntity entity) {
-        return new WorkflowApprovalResp(
+    private WorkflowApprovalResponse toApprovalResponse(WorkflowApprovalEntity entity) {
+        return new WorkflowApprovalResponse(
                 entity.getId(),
                 entity.getInstanceId(),
                 entity.getNodeId(),
@@ -887,7 +887,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional
-    public WorkflowInstanceResp rollback(String instanceId, ApprovalActionReq req) {
+    public WorkflowInstanceResponse rollback(String instanceId, ApprovalActionRequest request) {
         String userId = getCurrentUserId();
         log.info("回退工作流: instanceId={}, userId={}", instanceId, userId);
 
@@ -907,7 +907,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 .orElseThrow(() -> new IllegalArgumentException("您没有权限回退此工作流"));
 
         // 解析目标节点ID（从请求中获取）
-        String requestedTargetNodeId = req.targetNodeId();
+        String requestedTargetNodeId = request.targetNodeId();
         String finalTargetNodeId;
         if (requestedTargetNodeId == null || requestedTargetNodeId.isEmpty()) {
             // 如果没有指定目标节点，则回退到上一节点
@@ -920,7 +920,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         }
 
         // 验证目标节点是否在可回退范围内
-        List<WorkflowNodeResp> rollbackableNodes = getRollbackableNodes(instanceId);
+        List<WorkflowNodeResponse> rollbackableNodes = getRollbackableNodes(instanceId);
         String targetNodeIdForValidation = finalTargetNodeId; // effectively final variable for lambda
         boolean isValidTarget = rollbackableNodes.stream()
                 .anyMatch(n -> n.id().equals(targetNodeIdForValidation));
@@ -939,7 +939,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         HookExecutionSummary preResult = hookService.executeAllHooks(
             "PRE_ROLLBACK", instance, currentNode,
             deserializeFormData(instance.getBusinessData()),
-            Map.of("req", req, "targetNodeId", finalTargetNodeId)
+            Map.of("req", request, "targetNodeId", finalTargetNodeId)
         );
 
         if (!preResult.allPassed()) {
@@ -953,7 +953,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
         // 更新当前审批记录为回退状态
         approval.setApprovalStatus("rejected");
-        approval.setComment(req.comment());
+        approval.setComment(request.comment());
         approval.setApprovalTime(Instant.now());
         approval.setIsRollback(true);
         approval.setRollbackFromNodeId(currentNodeId);
@@ -972,7 +972,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         HookExecutionSummary postResult = hookService.executeAllHooks(
             "POST_ROLLBACK", instance, currentNode,
             deserializeFormData(instance.getBusinessData()),
-            Map.of("req", req, "targetNodeId", finalTargetNodeId)
+            Map.of("req", request, "targetNodeId", finalTargetNodeId)
         );
         if (!postResult.warningMessages().isEmpty()) {
             log.warn("回退后钩子警告: {}", postResult.warningMessages());
@@ -986,7 +986,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowNodeResp> getRollbackableNodes(String instanceId) {
+    public List<WorkflowNodeResponse> getRollbackableNodes(String instanceId) {
         String userId = getCurrentUserId();
         WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
@@ -1059,8 +1059,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         createApprovalRecords(instance, targetNode);
     }
 
-    private WorkflowNodeResp toNodeResponse(WorkflowNodeEntity entity) {
-        return new WorkflowNodeResp(
+    private WorkflowNodeResponse toNodeResponse(WorkflowNodeEntity entity) {
+        return new WorkflowNodeResponse(
                 entity.getId(),
                 entity.getDefinitionId(),
                 entity.getNodeName(),
@@ -1150,10 +1150,10 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional
-    public WorkflowAddSignResp addSign(String instanceId, AddSignReq req) {
+    public WorkflowAddSignResponse addSign(String instanceId, AddSignRequest request) {
         String initiatorId = getCurrentUserId();
         log.info("加签/转办: instanceId={}, initiatorId={}, addType={}, addUserId={}",
-                instanceId, initiatorId, req.addType(), req.addUserId());
+                instanceId, initiatorId, request.addType(), request.addUserId());
 
         WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
                 .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
@@ -1176,7 +1176,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 .orElseThrow(() -> new IllegalArgumentException("您没有权限对当前流程进行加签/转办"));
 
         // 验证被加签人存在
-        UserEntity addUser = userRepository.findById(req.addUserId())
+        UserEntity addUser = userRepository.findById(request.addUserId())
                 .orElseThrow(() -> new IllegalArgumentException("被加签人不存在"));
 
         // 获取发起人信息
@@ -1187,7 +1187,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         HookExecutionSummary preResult = hookService.executeAllHooks(
             "PRE_ADD_SIGN", instance, currentNode,
             deserializeFormData(instance.getBusinessData()),
-            Map.of("req", req)
+            Map.of("req", request)
         );
 
         if (!preResult.allPassed()) {
@@ -1196,14 +1196,14 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         }
 
         // 处理转办
-        if (req.addType() == AddSignReq.AddSignType.TRANSFER) {
-            WorkflowAddSignResp result = handleTransfer(instance, currentNode, myApproval, addUser, initiator, req);
+        if (request.addType() == AddSignRequest.AddSignType.TRANSFER) {
+            WorkflowAddSignResponse result = handleTransfer(instance, currentNode, myApproval, addUser, initiator, request);
 
             // 加签后钩子执行
             HookExecutionSummary postResult = hookService.executeAllHooks(
                 "POST_ADD_SIGN", instance, currentNode,
                 deserializeFormData(instance.getBusinessData()),
-                Map.of("req", req, "result", result)
+                Map.of("req", request, "result", result)
             );
             if (!postResult.warningMessages().isEmpty()) {
                 log.warn("加签后钩子警告: {}", postResult.warningMessages());
@@ -1213,13 +1213,13 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         }
 
         // 处理加签（前加签、后加签）
-        WorkflowAddSignResp result = handleAddSign(instance, currentNode, myApproval, addUser, initiator, req);
+        WorkflowAddSignResponse result = handleAddSign(instance, currentNode, myApproval, addUser, initiator, request);
 
         // 加签后钩子执行
         HookExecutionSummary postResult = hookService.executeAllHooks(
             "POST_ADD_SIGN", instance, currentNode,
             deserializeFormData(instance.getBusinessData()),
-            Map.of("req", req, "result", result)
+            Map.of("req", request, "result", result)
         );
         if (!postResult.warningMessages().isEmpty()) {
             log.warn("加签后钩子警告: {}", postResult.warningMessages());
@@ -1231,13 +1231,13 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     /**
      * 处理转办
      */
-    private WorkflowAddSignResp handleTransfer(
+    private WorkflowAddSignResponse handleTransfer(
             WorkflowInstanceEntity instance,
             WorkflowNodeEntity currentNode,
             WorkflowApprovalEntity myApproval,
             UserEntity addUser,
             UserEntity initiator,
-            AddSignReq req) {
+            AddSignRequest req) {
 
         log.info("处理转办: instanceId={}, fromUser={}, toUser={}",
                 instance.getId(), initiator.getId(), req.addUserId());
@@ -1281,13 +1281,13 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     /**
      * 处理加签
      */
-    private WorkflowAddSignResp handleAddSign(
+    private WorkflowAddSignResponse handleAddSign(
             WorkflowInstanceEntity instance,
             WorkflowNodeEntity currentNode,
             WorkflowApprovalEntity myApproval,
             UserEntity addUser,
             UserEntity initiator,
-            AddSignReq req) {
+            AddSignRequest req) {
 
         log.info("处理加签: instanceId={}, initiatorId={}, addUserId={}, addType={}",
                 instance.getId(), initiator.getId(), req.addUserId(), req.addType());
@@ -1329,7 +1329,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowAddSignResp> getAddSignRecords(String instanceId) {
+    public List<WorkflowAddSignResponse> getAddSignRecords(String instanceId) {
         String userId = getCurrentUserId();
         log.info("查询加签记录: instanceId={}", instanceId);
 
@@ -1345,8 +1345,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 .collect(Collectors.toList());
     }
 
-    private WorkflowAddSignResp toAddSignResponse(WorkflowAddSignEntity entity) {
-        return new WorkflowAddSignResp(
+    private WorkflowAddSignResponse toAddSignResponse(WorkflowAddSignEntity entity) {
+        return new WorkflowAddSignResponse(
                 entity.getId(),
                 entity.getInstanceId(),
                 entity.getNodeId(),
@@ -1362,8 +1362,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         );
     }
 
-    private WorkflowCcResp toCcResponse(WorkflowCcEntity entity) {
-        return new WorkflowCcResp(
+    private WorkflowCcResponse toCcResponse(WorkflowCcEntity entity) {
+        return new WorkflowCcResponse(
                 entity.getId(),
                 entity.getInstanceId(),
                 entity.getNodeId(),
@@ -1378,7 +1378,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         );
     }
 
-    private void applyDraftChanges(WorkflowInstanceEntity instance, WorkflowStartReq req) {
+    private void applyDraftChanges(WorkflowInstanceEntity instance, WorkflowStartRequest req) {
         if (!instance.getDefinitionId().equals(req.definitionId())) {
             WorkflowDefinitionEntity definition = definitionRepository.findById(req.definitionId())
                     .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在"));
@@ -1411,11 +1411,11 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         }
     }
 
-    private WorkflowOperationPermissionsResp buildOperationPermissions(WorkflowInstanceEntity instance, boolean canApprove) {
+    private WorkflowOperationPermissionsResponse buildOperationPermissions(WorkflowInstanceEntity instance, boolean canApprove) {
         String currentUserId = getCurrentUserId();
         boolean isOwner = Objects.equals(instance.getUserId(), currentUserId);
 
-        return new WorkflowOperationPermissionsResp(
+        return new WorkflowOperationPermissionsResponse(
                 canApprove,
                 canApprove,
                 canApprove,

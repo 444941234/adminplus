@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
  * @author AdminPlus
  * @since 2026-03-30
  */
-public record ConfigUpdateReq(
+public record ConfigUpdateRequest(
         @Size(max = 100, message = "配置名称长度不能超过100")
         String name,
 

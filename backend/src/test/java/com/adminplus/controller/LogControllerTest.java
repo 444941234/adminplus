@@ -1,9 +1,9 @@
 package com.adminplus.controller;
 
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogPageResp;
-import com.adminplus.pojo.dto.resp.LogStatisticsResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.LogPageResponse;
+import com.adminplus.pojo.dto.response.LogStatisticsResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.LogExportService;
 import com.adminplus.service.LogService;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,18 +48,18 @@ class LogControllerTest {
     @InjectMocks
     private LogController logController;
 
-    private LogPageResp testLog;
-    private LogStatisticsResp testStatistics;
+    private LogPageResponse testLog;
+    private LogStatisticsResponse testStatistics;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(logController).build();
-        testLog = new LogPageResp(
+        testLog = new LogPageResponse(
                 "log-001", "testuser", "用户管理", 1, 1,
                 "查询用户列表", "UserService.list", "{}",
                 "192.168.1.1", "本地", 100L, 1, null, Instant.now()
         );
-        testStatistics = new LogStatisticsResp(
+        testStatistics = new LogStatisticsResponse(
                 100L, 80L, 10L, 10L, 5L,
                 95L, 5L, Map.of(), Map.of(), Map.of(), Map.of()
         );
@@ -73,7 +73,7 @@ class LogControllerTest {
         @DisplayName("should return log list")
         void getLogList_ShouldReturnLogList() throws Exception {
             // Given
-            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(List.of(testLog), 1L, 1, 10);
+            PageResultResponse<LogPageResponse> pageResult = new PageResultResponse<>(List.of(testLog), 1L, 1, 10);
             when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
 
             // When & Then

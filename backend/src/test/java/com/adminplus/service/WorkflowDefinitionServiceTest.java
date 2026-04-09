@@ -1,9 +1,9 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.WorkflowDefinitionReq;
-import com.adminplus.pojo.dto.req.WorkflowNodeReq;
-import com.adminplus.pojo.dto.resp.WorkflowDefinitionResp;
-import com.adminplus.pojo.dto.resp.WorkflowNodeResp;
+import com.adminplus.pojo.dto.request.WorkflowDefinitionRequest;
+import com.adminplus.pojo.dto.request.WorkflowNodeRequest;
+import com.adminplus.pojo.dto.response.WorkflowDefinitionResponse;
+import com.adminplus.pojo.dto.response.WorkflowNodeResponse;
 import com.adminplus.pojo.entity.WorkflowDefinitionEntity;
 import com.adminplus.pojo.entity.WorkflowNodeEntity;
 import com.adminplus.repository.WorkflowDefinitionRepository;
@@ -50,14 +50,14 @@ class WorkflowDefinitionServiceTest {
     @InjectMocks
     private WorkflowDefinitionServiceImpl service;
 
-    private WorkflowDefinitionReq validDefinitionReq;
+    private WorkflowDefinitionRequest validDefinitionReq;
     private WorkflowDefinitionEntity testDefinitionEntity;
-    private WorkflowNodeReq validNodeReq;
+    private WorkflowNodeRequest validNodeReq;
     private WorkflowNodeEntity testNodeEntity;
 
     @BeforeEach
     void setUp() {
-        validDefinitionReq = new WorkflowDefinitionReq(
+        validDefinitionReq = new WorkflowDefinitionRequest(
                 "Leave Approval",
                 "leave_approval",
                 "HR",
@@ -76,7 +76,7 @@ class WorkflowDefinitionServiceTest {
         testDefinitionEntity.setVersion(1);
         testDefinitionEntity.setFormConfig("{\"fields\":[]}");
 
-        validNodeReq = new WorkflowNodeReq(
+        validNodeReq = new WorkflowNodeRequest(
                 "Manager Approval",
                 "manager_approve",
                 1,
@@ -111,7 +111,7 @@ class WorkflowDefinitionServiceTest {
                     .thenReturn(testDefinitionEntity);
 
             // When
-            WorkflowDefinitionResp result = service.create(validDefinitionReq);
+            WorkflowDefinitionResponse result = service.create(validDefinitionReq);
 
             // Then
             assertThat(result).isNotNull();
@@ -125,7 +125,7 @@ class WorkflowDefinitionServiceTest {
         @DisplayName("Should create multiple definitions with different keys")
         void shouldCreateMultipleDefinitions() {
             // Given
-            WorkflowDefinitionReq req2 = new WorkflowDefinitionReq(
+            WorkflowDefinitionRequest req2 = new WorkflowDefinitionRequest(
                     "Expense Approval",
                     "expense_approval",
                     "Finance",
@@ -171,7 +171,7 @@ class WorkflowDefinitionServiceTest {
         @DisplayName("Should throw exception when definition key is empty")
         void shouldThrowExceptionWhenKeyIsEmpty() {
             // Given
-            WorkflowDefinitionReq req = new WorkflowDefinitionReq(
+            WorkflowDefinitionRequest req = new WorkflowDefinitionRequest(
                     "Test",
                     "",
                     "HR",
@@ -195,7 +195,7 @@ class WorkflowDefinitionServiceTest {
         @DisplayName("Should update workflow definition successfully")
         void shouldUpdateWorkflowDefinition() {
             // Given
-            WorkflowDefinitionReq updateReq = new WorkflowDefinitionReq(
+            WorkflowDefinitionRequest updateReq = new WorkflowDefinitionRequest(
                     "Leave Approval Updated",
                     "leave_approval",
                     "HR Updated",
@@ -212,7 +212,7 @@ class WorkflowDefinitionServiceTest {
                     .thenReturn(testDefinitionEntity);
 
             // When
-            WorkflowDefinitionResp result = service.update("def-001", updateReq);
+            WorkflowDefinitionResponse result = service.update("def-001", updateReq);
 
             // Then
             assertThat(result).isNotNull();
@@ -269,7 +269,7 @@ class WorkflowDefinitionServiceTest {
             when(definitionRepository.findByDefinitionKeyAndDeletedFalse("different_key"))
                     .thenReturn(Optional.of(anotherEntity));
 
-            WorkflowDefinitionReq updateReq = new WorkflowDefinitionReq(
+            WorkflowDefinitionRequest updateReq = new WorkflowDefinitionRequest(
                     "Test",
                     "different_key",
                     "HR",
@@ -340,7 +340,7 @@ class WorkflowDefinitionServiceTest {
                     .thenReturn(testNodeEntity);
 
             // When
-            WorkflowNodeResp result = service.addNode("def-001", validNodeReq);
+            WorkflowNodeResponse result = service.addNode("def-001", validNodeReq);
 
             // Then
             assertThat(result).isNotNull();
@@ -353,7 +353,7 @@ class WorkflowDefinitionServiceTest {
         @DisplayName("Should add multiple nodes in sequence")
         void shouldAddMultipleNodesInSequence() {
             // Given
-            WorkflowNodeReq nodeReq2 = new WorkflowNodeReq(
+            WorkflowNodeRequest nodeReq2 = new WorkflowNodeRequest(
                     "HR Approval",
                     "hr_approve",
                     2,
@@ -411,7 +411,7 @@ class WorkflowDefinitionServiceTest {
             when(nodeRepository.save(any(WorkflowNodeEntity.class)))
                     .thenReturn(testNodeEntity);
 
-            WorkflowNodeReq updateReq = new WorkflowNodeReq(
+            WorkflowNodeRequest updateReq = new WorkflowNodeRequest(
                     "Updated Manager Approval",
                     "manager_approve",
                     1,
@@ -423,7 +423,7 @@ class WorkflowDefinitionServiceTest {
             );
 
             // When
-            WorkflowNodeResp result = service.updateNode("node-001", updateReq);
+            WorkflowNodeResponse result = service.updateNode("node-001", updateReq);
 
             // Then
             assertThat(result).isNotNull();
@@ -478,7 +478,7 @@ class WorkflowDefinitionServiceTest {
                     .thenReturn(Optional.of(testDefinitionEntity));
 
             // When
-            WorkflowDefinitionResp result = service.getById("def-001");
+            WorkflowDefinitionResponse result = service.getById("def-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -507,7 +507,7 @@ class WorkflowDefinitionServiceTest {
                     .thenReturn(entities);
 
             // When
-            List<WorkflowDefinitionResp> result = service.listAll();
+            List<WorkflowDefinitionResponse> result = service.listAll();
 
             // Then
             assertThat(result).hasSize(1);
@@ -524,7 +524,7 @@ class WorkflowDefinitionServiceTest {
                     .thenReturn(entities);
 
             // When
-            List<WorkflowDefinitionResp> result = service.listEnabled();
+            List<WorkflowDefinitionResponse> result = service.listEnabled();
 
             // Then
             assertThat(result).hasSize(1);
@@ -540,7 +540,7 @@ class WorkflowDefinitionServiceTest {
                     .thenReturn(nodes);
 
             // When
-            List<WorkflowNodeResp> result = service.listNodes("def-001");
+            List<WorkflowNodeResponse> result = service.listNodes("def-001");
 
             // Then
             assertThat(result).hasSize(1);
@@ -555,7 +555,7 @@ class WorkflowDefinitionServiceTest {
                     .thenReturn(List.of());
 
             // When
-            List<WorkflowNodeResp> result = service.listNodes("def-001");
+            List<WorkflowNodeResponse> result = service.listNodes("def-001");
 
             // Then
             assertThat(result).isEmpty();
@@ -571,7 +571,7 @@ class WorkflowDefinitionServiceTest {
         void shouldHandleLongDefinitionNames() {
             // Given
             String longName = "A".repeat(200);
-            WorkflowDefinitionReq req = new WorkflowDefinitionReq(
+            WorkflowDefinitionRequest req = new WorkflowDefinitionRequest(
                     longName,
                     "long_name",
                     "HR",
@@ -596,7 +596,7 @@ class WorkflowDefinitionServiceTest {
         @DisplayName("Should handle special characters in definition key")
         void shouldHandleSpecialCharactersInKey() {
             // Given
-            WorkflowDefinitionReq req = new WorkflowDefinitionReq(
+            WorkflowDefinitionRequest req = new WorkflowDefinitionRequest(
                     "Test",
                     "test-with-special.chars_123",
                     "HR",
@@ -621,7 +621,7 @@ class WorkflowDefinitionServiceTest {
         @DisplayName("Should handle maximum node order")
         void shouldHandleMaximumNodeOrder() {
             // Given
-            WorkflowNodeReq req = new WorkflowNodeReq(
+            WorkflowNodeRequest req = new WorkflowNodeRequest(
                     "Last Node",
                     "last",
                     Integer.MAX_VALUE,
@@ -648,7 +648,7 @@ class WorkflowDefinitionServiceTest {
         @DisplayName("Should handle null description")
         void shouldHandleNullDescription() {
             // Given
-            WorkflowDefinitionReq req = new WorkflowDefinitionReq(
+            WorkflowDefinitionRequest req = new WorkflowDefinitionRequest(
                     "Test",
                     "test",
                     "HR",
@@ -673,7 +673,7 @@ class WorkflowDefinitionServiceTest {
         @DisplayName("Should handle empty form config")
         void shouldHandleEmptyFormConfig() {
             // Given
-            WorkflowDefinitionReq req = new WorkflowDefinitionReq(
+            WorkflowDefinitionRequest req = new WorkflowDefinitionRequest(
                     "Test",
                     "test",
                     "HR",

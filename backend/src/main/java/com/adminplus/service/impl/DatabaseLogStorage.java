@@ -1,8 +1,8 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogPageResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.LogPageResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.repository.LogRepository;
 import com.adminplus.service.LogStorageStrategy;
@@ -59,13 +59,13 @@ public class DatabaseLogStorage implements LogStorageStrategy {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<LogPageResp> findPage(LogQuery query) {
+    public PageResultResponse<LogPageResponse> findPage(LogQuery query) {
         var pageable = PageUtils.toPageableDesc(query.getPage(), query.getSize(), "createTime");
 
         Specification<LogEntity> spec = buildSpecification(query);
         Page<LogEntity> pageResult = logRepository.findAll(spec, pageable);
 
-        return PageResultResp.from(pageResult, this::toLogPageVO);
+        return PageResultResponse.from(pageResult, this::toLogPageVO);
     }
 
     @Override
@@ -200,8 +200,8 @@ public class DatabaseLogStorage implements LogStorageStrategy {
     /**
      * 转换为 VO
      */
-    private LogPageResp toLogPageVO(LogEntity entity) {
-        return new LogPageResp(
+    private LogPageResponse toLogPageVO(LogEntity entity) {
+        return new LogPageResponse(
                 entity.getId(),
                 entity.getUsername(),
                 entity.getModule(),

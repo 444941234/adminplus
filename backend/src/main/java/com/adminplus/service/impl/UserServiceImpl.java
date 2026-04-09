@@ -4,11 +4,11 @@ import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
 import com.adminplus.enums.UserStatus;
 import com.adminplus.pojo.dto.query.UserQuery;
-import com.adminplus.pojo.dto.req.UserCreateReq;
-import com.adminplus.pojo.dto.req.UserUpdateReq;
-import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.resp.PageResultResp;
-import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.dto.request.UserCreateRequest;
+import com.adminplus.pojo.dto.request.UserUpdateRequest;
+import com.adminplus.pojo.dto.request.LogEntry;
+import com.adminplus.pojo.dto.response.PageResultResponse;
+import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserEntity;
@@ -59,10 +59,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<UserResp> getUserList(UserQuery req) {
-        var pageable = PageUtils.toPageable(req.getPage(), req.getSize());
+    public PageResultResponse<UserResponse> getUserList(UserQuery query) {
+        var pageable = PageUtils.toPageable(query.getPage(), query.getSize());
 
-        Page<UserEntity> pageResult = queryUsers(pageable, req.getKeyword(), req.getDeptId(), req.getStatus());
+        Page<UserEntity> pageResult = queryUsers(pageable, query.getKeyword(), query.getDeptId(), query.getStatus());
         var batchData = prepareBatchData(pageResult.getContent());
 
         return PageUtils.toResp(pageResult, user -> toResp(user,
@@ -190,7 +190,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResp getUserById(String id) {
+    public UserResponse getUserById(String id) {
         var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
         return buildUserRespWithRoles(user);
     }
@@ -204,7 +204,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResp createUser(UserCreateReq req) {
+    public UserResponse createUser(UserCreateRequest req) {
         // 检查用户名是否已存在
         if (userRepository.existsByUsername(req.username())) {
             throw new BizException("用户名已存在");
@@ -248,30 +248,30 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResp updateUser(String id, UserUpdateReq req) {
+    public UserResponse updateUser(String id, UserUpdateRequest request) {
         var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
 
-        if (req.nickname() != null) {
-            user.setNickname(XssUtils.escapeOrNull(req.nickname()));
+        if (request.nickname() != null) {
+            user.setNickname(XssUtils.escapeOrNull(request.nickname()));
         }
-        if (req.email() != null) {
-            user.setEmail(XssUtils.escapeOrNull(req.email()));
+        if (request.email() != null) {
+            user.setEmail(XssUtils.escapeOrNull(request.email()));
         }
-        if (req.phone() != null) {
-            user.setPhone(XssUtils.escapeOrNull(req.phone()));
+        if (request.phone() != null) {
+            user.setPhone(XssUtils.escapeOrNull(request.phone()));
         }
-        if (req.avatar() != null) {
-            user.setAvatar(req.avatar());
+        if (request.avatar() != null) {
+            user.setAvatar(request.avatar());
         }
-        if (req.status() != null) {
-            user.setStatus(req.status());
+        if (request.status() != null) {
+            user.setStatus(request.status());
         }
-        if (req.deptId() != null) {
+        if (request.deptId() != null) {
             // 验证部门是否存在
-            if (!req.deptId().isEmpty() && !deptRepository.existsById(req.deptId())) {
+            if (!request.deptId().isEmpty() && !deptRepository.existsById(request.deptId())) {
                 throw new BizException("部门不存在");
             }
-            user.setDeptId(req.deptId().isEmpty() ? null : req.deptId());
+            user.setDeptId(request.deptId().isEmpty() ? null : request.deptId());
         }
 
         user = userRepository.save(user);
@@ -422,7 +422,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResp getUserRespByUsername(String username) {
+    public UserResponse getUserRespByUsername(String username) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
@@ -472,7 +472,7 @@ public class UserServiceImpl implements UserService {
     /**
      * 构建用户响应对象（包含角色信息）
      */
-    private UserResp buildUserRespWithRoles(UserEntity user) {
+    private UserResponse buildUserRespWithRoles(UserEntity user) {
         List<RoleEntity> roles = getActiveRoles(user.getId());
         List<String> roleNames = roles.stream()
                 .map(RoleEntity::getName)
@@ -489,8 +489,8 @@ public class UserServiceImpl implements UserService {
         return toResp(user, deptName, roleNames);
     }
 
-    private UserResp toResp(UserEntity user, String deptName, List<String> roleNames) {
-        return new UserResp(
+    private UserResponse toResp(UserEntity user, String deptName, List<String> roleNames) {
+        return new UserResponse(
                 user.getId(), user.getUsername(), user.getNickname(),
                 user.getEmail(), user.getPhone(), user.getAvatar(),
                 user.getStatus(), user.getDeptId(), deptName, roleNames,

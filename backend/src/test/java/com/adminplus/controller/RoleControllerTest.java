@@ -1,10 +1,10 @@
 package com.adminplus.controller;
 
 import com.adminplus.pojo.dto.query.RoleQuery;
-import com.adminplus.pojo.dto.req.RoleCreateReq;
-import com.adminplus.pojo.dto.req.RoleUpdateReq;
-import com.adminplus.pojo.dto.resp.PageResultResp;
-import com.adminplus.pojo.dto.resp.RoleResp;
+import com.adminplus.pojo.dto.request.RoleCreateRequest;
+import com.adminplus.pojo.dto.request.RoleUpdateRequest;
+import com.adminplus.pojo.dto.response.PageResultResponse;
+import com.adminplus.pojo.dto.response.RoleResponse;
 import com.adminplus.service.RoleService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,22 +50,22 @@ class RoleControllerTest {
     private RoleController roleController;
 
     private ObjectMapper objectMapper;
-    private RoleResp testRole;
-    private RoleCreateReq createReq;
-    private RoleUpdateReq updateReq;
+    private RoleResponse testRole;
+    private RoleCreateRequest createReq;
+    private RoleUpdateRequest updateReq;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(roleController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
-        testRole = new RoleResp(
+        testRole = new RoleResponse(
                 "role-001", "ADMIN", "管理员", "系统管理员角色",
                 1, 1, 1, Instant.now(), Instant.now()
         );
-        createReq = new RoleCreateReq(
+        createReq = new RoleCreateRequest(
                 "ADMIN", "管理员", "系统管理员角色", 1, 1, 1
         );
-        updateReq = new RoleUpdateReq(
+        updateReq = new RoleUpdateRequest(
                 "管理员", "系统管理员角色", 1, 1, 1
         );
     }
@@ -78,7 +78,7 @@ class RoleControllerTest {
         @DisplayName("should return role list with pagination")
         void getRoleList_ShouldReturnRoleList() throws Exception {
             // Given
-            PageResultResp<RoleResp> pageResult = new PageResultResp<>(List.of(testRole), 1L, 1, 10);
+            PageResultResponse<RoleResponse> pageResult = new PageResultResponse<>(List.of(testRole), 1L, 1, 10);
             when(roleService.getRoleList(any(RoleQuery.class))).thenReturn(pageResult);
 
             // When & Then
@@ -119,7 +119,7 @@ class RoleControllerTest {
         @DisplayName("should create role")
         void createRole_ShouldCreateRole() throws Exception {
             // Given
-            when(roleService.createRole(any(RoleCreateReq.class))).thenReturn(testRole);
+            when(roleService.createRole(any(RoleCreateRequest.class))).thenReturn(testRole);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/roles")
@@ -128,7 +128,7 @@ class RoleControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(roleService).createRole(any(RoleCreateReq.class));
+            verify(roleService).createRole(any(RoleCreateRequest.class));
         }
     }
 
@@ -140,7 +140,7 @@ class RoleControllerTest {
         @DisplayName("should update role")
         void updateRole_ShouldUpdateRole() throws Exception {
             // Given
-            when(roleService.updateRole(anyString(), any(RoleUpdateReq.class))).thenReturn(testRole);
+            when(roleService.updateRole(anyString(), any(RoleUpdateRequest.class))).thenReturn(testRole);
 
             // When & Then
             mockMvc.perform(put("/v1/sys/roles/role-001")
@@ -149,7 +149,7 @@ class RoleControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(roleService).updateRole(anyString(), any(RoleUpdateReq.class));
+            verify(roleService).updateRole(anyString(), any(RoleUpdateRequest.class));
         }
     }
 

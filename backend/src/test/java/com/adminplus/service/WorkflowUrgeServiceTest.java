@@ -1,7 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.UrgeActionReq;
-import com.adminplus.pojo.dto.resp.WorkflowUrgeResp;
+import com.adminplus.pojo.dto.response.WorkflowUrgeResponse;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
 import com.adminplus.service.impl.WorkflowUrgeServiceImpl;
@@ -100,7 +99,7 @@ class WorkflowUrgeServiceTest {
             when(urgeRepository.findByUrgeTargetId(testUserId)).thenReturn(List.of(testUrge));
 
             // When
-            List<WorkflowUrgeResp> result = urgeService.getReceivedUrgeRecords(testUserId);
+            List<WorkflowUrgeResponse> result = urgeService.getReceivedUrgeRecords(testUserId);
 
             // Then
             assertThat(result).hasSize(1);
@@ -114,7 +113,7 @@ class WorkflowUrgeServiceTest {
             when(urgeRepository.findByUrgeTargetId(testUserId)).thenReturn(List.of());
 
             // When
-            List<WorkflowUrgeResp> result = urgeService.getReceivedUrgeRecords(testUserId);
+            List<WorkflowUrgeResponse> result = urgeService.getReceivedUrgeRecords(testUserId);
 
             // Then
             assertThat(result).isEmpty();
@@ -132,7 +131,7 @@ class WorkflowUrgeServiceTest {
             when(urgeRepository.findByUrgeUserId(testUserId)).thenReturn(List.of(testUrge));
 
             // When
-            List<WorkflowUrgeResp> result = urgeService.getSentUrgeRecords(testUserId);
+            List<WorkflowUrgeResponse> result = urgeService.getSentUrgeRecords(testUserId);
 
             // Then
             assertThat(result).hasSize(1);
@@ -146,7 +145,7 @@ class WorkflowUrgeServiceTest {
             when(urgeRepository.findByUrgeUserId(testUserId)).thenReturn(List.of());
 
             // When
-            List<WorkflowUrgeResp> result = urgeService.getSentUrgeRecords(testUserId);
+            List<WorkflowUrgeResponse> result = urgeService.getSentUrgeRecords(testUserId);
 
             // Then
             assertThat(result).isEmpty();
@@ -164,7 +163,7 @@ class WorkflowUrgeServiceTest {
             when(urgeRepository.findUnreadByUrgeTargetId(testUserId)).thenReturn(List.of(testUrge));
 
             // When
-            List<WorkflowUrgeResp> result = urgeService.getUnreadUrgeRecords(testUserId);
+            List<WorkflowUrgeResponse> result = urgeService.getUnreadUrgeRecords(testUserId);
 
             // Then
             assertThat(result).hasSize(1);
@@ -202,7 +201,7 @@ class WorkflowUrgeServiceTest {
                     .thenReturn(List.of(testUrge));
 
             // When
-            List<WorkflowUrgeResp> result = urgeService.getInstanceUrgeRecords("inst-001");
+            List<WorkflowUrgeResponse> result = urgeService.getInstanceUrgeRecords("inst-001");
 
             // Then
             assertThat(result).hasSize(1);

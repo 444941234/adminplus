@@ -1,9 +1,9 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.pojo.dto.req.DictCreateReq;
-import com.adminplus.pojo.dto.req.DictUpdateReq;
-import com.adminplus.pojo.dto.resp.DictResp;
+import com.adminplus.pojo.dto.request.DictCreateRequest;
+import com.adminplus.pojo.dto.request.DictUpdateRequest;
+import com.adminplus.pojo.dto.response.DictResponse;
 import com.adminplus.pojo.entity.DictEntity;
 import com.adminplus.repository.DictItemRepository;
 import com.adminplus.repository.DictRepository;
@@ -69,7 +69,7 @@ class DictServiceTest {
             when(dictRepository.findById("dict-001")).thenReturn(Optional.of(testDict));
 
             // When
-            DictResp result = dictService.getDictById("dict-001");
+            DictResponse result = dictService.getDictById("dict-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -100,7 +100,7 @@ class DictServiceTest {
             when(dictRepository.findByDictType("STATUS")).thenReturn(Optional.of(testDict));
 
             // When
-            DictResp result = dictService.getDictByType("STATUS");
+            DictResponse result = dictService.getDictByType("STATUS");
 
             // Then
             assertThat(result).isNotNull();
@@ -128,12 +128,12 @@ class DictServiceTest {
         @DisplayName("should create dict successfully")
         void createDict_ShouldCreateDict() {
             // Given
-            DictCreateReq req = new DictCreateReq("GENDER", "Gender Dictionary", "Gender options");
+            DictCreateRequest req = new DictCreateRequest("GENDER", "Gender Dictionary", "Gender options");
             when(dictRepository.existsByDictType("GENDER")).thenReturn(false);
             when(dictRepository.save(any())).thenReturn(testDict);
 
             // When
-            DictResp result = dictService.createDict(req);
+            DictResponse result = dictService.createDict(req);
 
             // Then
             assertThat(result).isNotNull();
@@ -144,7 +144,7 @@ class DictServiceTest {
         @DisplayName("should throw exception when dict type exists")
         void createDict_WhenTypeExists_ShouldThrowException() {
             // Given
-            DictCreateReq req = new DictCreateReq("STATUS", "Status Dictionary", "Status options");
+            DictCreateRequest req = new DictCreateRequest("STATUS", "Status Dictionary", "Status options");
             when(dictRepository.existsByDictType("STATUS")).thenReturn(true);
 
             // When & Then
@@ -162,12 +162,12 @@ class DictServiceTest {
         @DisplayName("should update dict successfully")
         void updateDict_ShouldUpdateDict() {
             // Given
-            DictUpdateReq req = new DictUpdateReq("Updated Dictionary", 1, "Updated remark");
+            DictUpdateRequest req = new DictUpdateRequest("Updated Dictionary", 1, "Updated remark");
             when(dictRepository.findById("dict-001")).thenReturn(Optional.of(testDict));
             when(dictRepository.save(any())).thenReturn(testDict);
 
             // When
-            DictResp result = dictService.updateDict("dict-001", req);
+            DictResponse result = dictService.updateDict("dict-001", req);
 
             // Then
             assertThat(result).isNotNull();
@@ -178,7 +178,7 @@ class DictServiceTest {
         @DisplayName("should throw exception when dict not found")
         void updateDict_WhenNotFound_ShouldThrowException() {
             // Given
-            DictUpdateReq req = new DictUpdateReq("Updated Dictionary", 1, "Updated remark");
+            DictUpdateRequest req = new DictUpdateRequest("Updated Dictionary", 1, "Updated remark");
             when(dictRepository.findById("non-existent")).thenReturn(Optional.empty());
 
             // When & Then

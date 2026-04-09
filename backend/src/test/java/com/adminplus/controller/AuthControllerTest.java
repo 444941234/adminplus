@@ -1,9 +1,8 @@
 package com.adminplus.controller;
 
-import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.req.UserLoginReq;
-import com.adminplus.pojo.dto.resp.LoginResp;
-import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.dto.request.UserLoginRequest;
+import com.adminplus.pojo.dto.response.LoginResponse;
+import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.service.AuthService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,7 +24,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -49,21 +47,21 @@ class AuthControllerTest {
     private AuthController authController;
 
     private ObjectMapper objectMapper;
-    private UserLoginReq loginReq;
-    private LoginResp loginResp;
-    private UserResp userResp;
+    private UserLoginRequest loginReq;
+    private LoginResponse loginResponse;
+    private UserResponse userResponse;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(authController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
-        loginReq = new UserLoginReq("testuser", "password", "captcha-id", "ABCD");
-        userResp = new UserResp(
+        loginReq = new UserLoginRequest("testuser", "password", "captcha-id", "ABCD");
+        userResponse = new UserResponse(
                 "user-001", "testuser", "Test User", "test@example.com",
                 "13800138000", "avatar.jpg", 1, "1", "技术部",
                 List.of(), null, null
         );
-        loginResp = new LoginResp("access-token", "refresh-token", "Bearer", userResp, List.of("user:view"));
+        loginResponse = new LoginResponse("access-token", "refresh-token", "Bearer", userResponse, List.of("user:view"));
     }
 
     @Nested
@@ -74,7 +72,7 @@ class AuthControllerTest {
         @DisplayName("should return login response on successful login")
         void login_ShouldReturnLoginResponse() throws Exception {
             // Given
-            when(authService.login(any(UserLoginReq.class))).thenReturn(loginResp);
+            when(authService.login(any(UserLoginRequest.class))).thenReturn(loginResponse);
 
             // When & Then
             mockMvc.perform(post("/v1/auth/login")
@@ -85,7 +83,7 @@ class AuthControllerTest {
                     .andExpect(jsonPath("$.data.token").value("access-token"))
                     .andExpect(jsonPath("$.data.refreshToken").value("refresh-token"));
 
-            verify(authService).login(any(UserLoginReq.class));
+            verify(authService).login(any(UserLoginRequest.class));
         }
     }
 

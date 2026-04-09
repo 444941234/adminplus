@@ -1,12 +1,12 @@
 package com.adminplus.controller;
 
 import com.adminplus.pojo.dto.query.UserQuery;
-import com.adminplus.pojo.dto.resp.UserResp;
-import com.adminplus.pojo.dto.req.UserCreateReq;
-import com.adminplus.pojo.dto.req.UserUpdateReq;
-import com.adminplus.pojo.dto.req.PasswordResetReq;
-import com.adminplus.pojo.dto.req.RoleAssignReq;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.UserResponse;
+import com.adminplus.pojo.dto.request.UserCreateRequest;
+import com.adminplus.pojo.dto.request.UserUpdateRequest;
+import com.adminplus.pojo.dto.request.PasswordResetRequest;
+import com.adminplus.pojo.dto.request.RoleAssignRequest;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.UserService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -50,24 +50,24 @@ class UserControllerTest {
     private UserController userController;
 
     private ObjectMapper objectMapper;
-    private UserResp testUser;
-    private UserCreateReq createReq;
-    private UserUpdateReq updateReq;
+    private UserResponse testUser;
+    private UserCreateRequest createReq;
+    private UserUpdateRequest updateReq;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
-        testUser = new UserResp(
+        testUser = new UserResponse(
                 "user-001", "testuser", "Test User", "test@example.com",
                 "13800138000", "avatar.jpg", 1, "1", "技术部",
                 List.of(), null, null
         );
-        createReq = new UserCreateReq(
+        createReq = new UserCreateRequest(
                 "testuser", "Password123!", "Test User", "test@example.com",
                 "13800138000", null, "1"
         );
-        updateReq = new UserUpdateReq(
+        updateReq = new UserUpdateRequest(
                 "Test User", "test@example.com", "13800138000", null, 1, "1"
         );
     }
@@ -80,7 +80,7 @@ class UserControllerTest {
         @DisplayName("should return user list")
         void getUserList_ShouldReturnUserList() throws Exception {
             // Given
-            PageResultResp<UserResp> pageResult = new PageResultResp<>(List.of(testUser), 1L, 1, 10);
+            PageResultResponse<UserResponse> pageResult = new PageResultResponse<>(List.of(testUser), 1L, 1, 10);
             when(userService.getUserList(any(UserQuery.class))).thenReturn(pageResult);
 
             // When & Then
@@ -123,7 +123,7 @@ class UserControllerTest {
         @DisplayName("should create user")
         void createUser_ShouldCreateUser() throws Exception {
             // Given
-            when(userService.createUser(any(UserCreateReq.class))).thenReturn(testUser);
+            when(userService.createUser(any(UserCreateRequest.class))).thenReturn(testUser);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/users")
@@ -132,7 +132,7 @@ class UserControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(userService).createUser(any(UserCreateReq.class));
+            verify(userService).createUser(any(UserCreateRequest.class));
         }
     }
 
@@ -144,7 +144,7 @@ class UserControllerTest {
         @DisplayName("should update user")
         void updateUser_ShouldUpdateUser() throws Exception {
             // Given
-            when(userService.updateUser(anyString(), any(UserUpdateReq.class))).thenReturn(testUser);
+            when(userService.updateUser(anyString(), any(UserUpdateRequest.class))).thenReturn(testUser);
 
             // When & Then
             mockMvc.perform(put("/v1/sys/users/user-001")
@@ -153,7 +153,7 @@ class UserControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(userService).updateUser(anyString(), any(UserUpdateReq.class));
+            verify(userService).updateUser(anyString(), any(UserUpdateRequest.class));
         }
     }
 
@@ -198,7 +198,7 @@ class UserControllerTest {
         @DisplayName("should reset password")
         void resetPassword_ShouldResetPassword() throws Exception {
             // Given
-            PasswordResetReq req = new PasswordResetReq("newpassword123");
+            PasswordResetRequest req = new PasswordResetRequest("newpassword123");
 
             // When & Then
             mockMvc.perform(put("/v1/sys/users/user-001/password")
@@ -219,7 +219,7 @@ class UserControllerTest {
         @DisplayName("should assign roles to user")
         void assignRoles_ShouldAssignRoles() throws Exception {
             // Given
-            RoleAssignReq req = new RoleAssignReq(List.of("role-001", "role-002"));
+            RoleAssignRequest req = new RoleAssignRequest(List.of("role-001", "role-002"));
 
             // When & Then
             mockMvc.perform(put("/v1/sys/users/user-001/roles")

@@ -2,10 +2,10 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.req.WorkflowDefinitionReq;
-import com.adminplus.pojo.dto.req.WorkflowNodeReq;
-import com.adminplus.pojo.dto.resp.WorkflowDefinitionResp;
-import com.adminplus.pojo.dto.resp.WorkflowNodeResp;
+import com.adminplus.pojo.dto.request.WorkflowDefinitionRequest;
+import com.adminplus.pojo.dto.request.WorkflowNodeRequest;
+import com.adminplus.pojo.dto.response.WorkflowDefinitionResponse;
+import com.adminplus.pojo.dto.response.WorkflowNodeResponse;
 import com.adminplus.service.WorkflowDefinitionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -34,11 +34,11 @@ public class WorkflowDefinitionController {
 
     @PostMapping
     @Operation(summary = "创建工作流定义")
-    @OperationLog(module = "工作流管理", operationType = 2, description = "创建工作流定义 {#req.definitionName}")
+    @OperationLog(module = "工作流管理", operationType = 2, description = "创建工作流定义 {#request.definitionName}")
     @PreAuthorize("hasAnyAuthority('workflow:definition:create', 'workflow:create')")
-    public ApiResponse<WorkflowDefinitionResp> create(@Valid @RequestBody WorkflowDefinitionReq req) {
-        log.info("创建工作流定义: {}", req.definitionName());
-        WorkflowDefinitionResp resp = definitionService.create(req);
+    public ApiResponse<WorkflowDefinitionResponse> create(@Valid @RequestBody WorkflowDefinitionRequest request) {
+        log.info("创建工作流定义: {}", request.definitionName());
+        WorkflowDefinitionResponse resp = definitionService.create(request);
         return ApiResponse.ok(resp);
     }
 
@@ -46,12 +46,12 @@ public class WorkflowDefinitionController {
     @Operation(summary = "更新工作流定义")
     @OperationLog(module = "工作流管理", operationType = 3, description = "更新工作流定义 {#id}")
     @PreAuthorize("hasAnyAuthority('workflow:definition:update', 'workflow:update')")
-    public ApiResponse<WorkflowDefinitionResp> update(
+    public ApiResponse<WorkflowDefinitionResponse> update(
             @PathVariable String id,
-            @Valid @RequestBody WorkflowDefinitionReq req) {
+            @Valid @RequestBody WorkflowDefinitionRequest request) {
         log.info("更新工作流定义: id={}", id);
-        WorkflowDefinitionResp resp = definitionService.update(id, req);
-        return ApiResponse.ok(resp);
+        WorkflowDefinitionResponse response = definitionService.update(id, request);
+        return ApiResponse.ok(response);
     }
 
     @DeleteMapping("/{id}")
@@ -68,36 +68,36 @@ public class WorkflowDefinitionController {
     @Operation(summary = "查询工作流定义详情")
     @OperationLog(module = "工作流管理", operationType = 1, description = "查询工作流定义详情 {#id}")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<WorkflowDefinitionResp> getById(@PathVariable String id) {
-        WorkflowDefinitionResp resp = definitionService.getById(id);
-        return ApiResponse.ok(resp);
+    public ApiResponse<WorkflowDefinitionResponse> getById(@PathVariable String id) {
+        WorkflowDefinitionResponse response = definitionService.getById(id);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping
     @Operation(summary = "查询所有工作流定义")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<WorkflowDefinitionResp>> listAll() {
-        List<WorkflowDefinitionResp> resp = definitionService.listAll();
-        return ApiResponse.ok(resp);
+    public ApiResponse<List<WorkflowDefinitionResponse>> listAll() {
+        List<WorkflowDefinitionResponse> responses = definitionService.listAll();
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/enabled")
     @Operation(summary = "查询启用的工作流定义")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<WorkflowDefinitionResp>> listEnabled() {
-        List<WorkflowDefinitionResp> resp = definitionService.listEnabled();
-        return ApiResponse.ok(resp);
+    public ApiResponse<List<WorkflowDefinitionResponse>> listEnabled() {
+        List<WorkflowDefinitionResponse> responses = definitionService.listEnabled();
+        return ApiResponse.ok(responses);
     }
 
     @PostMapping("/{definitionId}/nodes")
     @Operation(summary = "添加工作流节点")
-    @OperationLog(module = "工作流管理", operationType = 2, description = "添加工作流节点 {#req.nodeName}")
+    @OperationLog(module = "工作流管理", operationType = 2, description = "添加工作流节点 {#request.nodeName}")
     @PreAuthorize("hasAnyAuthority('workflow:definition:update', 'workflow:update')")
-    public ApiResponse<WorkflowNodeResp> addNode(
+    public ApiResponse<WorkflowNodeResponse> addNode(
             @PathVariable String definitionId,
-            @Valid @RequestBody WorkflowNodeReq req) {
-        log.info("添加工作流节点: definitionId={}, nodeName={}", definitionId, req.nodeName());
-        WorkflowNodeResp resp = definitionService.addNode(definitionId, req);
+            @Valid @RequestBody WorkflowNodeRequest request) {
+        log.info("添加工作流节点: definitionId={}, nodeName={}", definitionId, request.nodeName());
+        WorkflowNodeResponse resp = definitionService.addNode(definitionId, request);
         return ApiResponse.ok(resp);
     }
 
@@ -105,12 +105,12 @@ public class WorkflowDefinitionController {
     @Operation(summary = "更新工作流节点")
     @OperationLog(module = "工作流管理", operationType = 3, description = "更新工作流节点 {#nodeId}")
     @PreAuthorize("hasAnyAuthority('workflow:definition:update', 'workflow:update')")
-    public ApiResponse<WorkflowNodeResp> updateNode(
+    public ApiResponse<WorkflowNodeResponse> updateNode(
             @PathVariable String nodeId,
-            @Valid @RequestBody WorkflowNodeReq req) {
+            @Valid @RequestBody WorkflowNodeRequest request) {
         log.info("更新工作流节点: nodeId={}", nodeId);
-        WorkflowNodeResp resp = definitionService.updateNode(nodeId, req);
-        return ApiResponse.ok(resp);
+        WorkflowNodeResponse response = definitionService.updateNode(nodeId, request);
+        return ApiResponse.ok(response);
     }
 
     @DeleteMapping("/nodes/{nodeId}")
@@ -126,9 +126,9 @@ public class WorkflowDefinitionController {
     @GetMapping("/{definitionId}/nodes")
     @Operation(summary = "查询工作流的所有节点")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<WorkflowNodeResp>> listNodes(@PathVariable String definitionId) {
+    public ApiResponse<List<WorkflowNodeResponse>> listNodes(@PathVariable String definitionId) {
         log.info("查询工作流节点: definitionId={}", definitionId);
-        List<WorkflowNodeResp> resp = definitionService.listNodes(definitionId);
+        List<WorkflowNodeResponse> resp = definitionService.listNodes(definitionId);
         log.info("查询工作流节点结果: definitionId={}, 节点数={}", definitionId, resp.size());
         return ApiResponse.ok(resp);
     }

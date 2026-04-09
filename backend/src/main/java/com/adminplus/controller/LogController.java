@@ -3,9 +3,9 @@ package com.adminplus.controller;
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogPageResp;
-import com.adminplus.pojo.dto.resp.LogStatisticsResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.LogPageResponse;
+import com.adminplus.pojo.dto.response.LogStatisticsResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.LogExportService;
 import com.adminplus.service.LogService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,17 +39,17 @@ public class LogController {
     @GetMapping
     @Operation(summary = "分页查询日志列表")
     @PreAuthorize("hasAuthority('log:query')")
-    public ApiResponse<PageResultResp<LogPageResp>> getLogList(LogQuery query) {
-        PageResultResp<LogPageResp> result = logService.getLogList(query);
-        return ApiResponse.ok(result);
+    public ApiResponse<PageResultResponse<LogPageResponse>> getLogList(LogQuery query) {
+        PageResultResponse<LogPageResponse> response = logService.getLogList(query);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询日志详情")
     @PreAuthorize("hasAuthority('log:query')")
-    public ApiResponse<LogPageResp> getLogById(@PathVariable String id) {
-        LogPageResp log = logService.getLogById(id);
-        return ApiResponse.ok(log);
+    public ApiResponse<LogPageResponse> getLogById(@PathVariable String id) {
+        LogPageResponse response = logService.getLogById(id);
+        return ApiResponse.ok(response);
     }
 
     @DeleteMapping("/{id}")
@@ -91,25 +91,16 @@ public class LogController {
     @GetMapping("/statistics")
     @Operation(summary = "获取日志统计")
     @PreAuthorize("hasAuthority('log:query')")
-    public ApiResponse<LogStatisticsResp> getStatistics() {
-        LogStatisticsResp statistics = logService.getStatistics();
-        return ApiResponse.ok(statistics);
+    public ApiResponse<LogStatisticsResponse> getStatistics() {
+        LogStatisticsResponse response = logService.getStatistics();
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/export/excel")
     @Operation(summary = "导出日志为Excel")
     @OperationLog(module = "日志管理", operationType = 5, description = "导出日志为Excel")
     @PreAuthorize("hasAuthority('log:export')")
-    public ResponseEntity<byte[]> exportToExcel(
-            @RequestParam(required = false) Integer logType,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String module,
-            @RequestParam(required = false) Integer operationType,
-            @RequestParam(required = false) Integer status,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime
-    ) throws IOException {
-        var query = new LogQuery(1, 10000, username, module, logType, operationType, status, startTime, endTime);
+    public ResponseEntity<byte[]> exportToExcel(LogQuery query) throws IOException {
         return logExportService.exportToExcel(query);
     }
 
@@ -117,16 +108,7 @@ public class LogController {
     @Operation(summary = "导出日志为CSV")
     @OperationLog(module = "日志管理", operationType = 5, description = "导出日志为CSV")
     @PreAuthorize("hasAuthority('log:export')")
-    public ResponseEntity<byte[]> exportToCsv(
-            @RequestParam(required = false) Integer logType,
-            @RequestParam(required = false) String username,
-            @RequestParam(required = false) String module,
-            @RequestParam(required = false) Integer operationType,
-            @RequestParam(required = false) Integer status,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime
-    ) throws IOException {
-        var query = new LogQuery(1, 10000, username, module, logType, operationType, status, startTime, endTime);
+    public ResponseEntity<byte[]> exportToCsv(LogQuery query) throws IOException {
         return logExportService.exportToCsv(query);
     }
 }

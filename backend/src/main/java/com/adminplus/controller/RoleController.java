@@ -3,10 +3,10 @@ package com.adminplus.controller;
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.query.RoleQuery;
-import com.adminplus.pojo.dto.req.RoleCreateReq;
-import com.adminplus.pojo.dto.req.RoleUpdateReq;
-import com.adminplus.pojo.dto.resp.PageResultResp;
-import com.adminplus.pojo.dto.resp.RoleResp;
+import com.adminplus.pojo.dto.request.RoleCreateRequest;
+import com.adminplus.pojo.dto.request.RoleUpdateRequest;
+import com.adminplus.pojo.dto.response.PageResultResponse;
+import com.adminplus.pojo.dto.response.RoleResponse;
 import com.adminplus.service.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,44 +37,44 @@ public class RoleController {
     @Operation(summary = "分页查询角色列表")
     @OperationLog(module = "角色管理", operationType = 1, description = "查询角色列表")
     @PreAuthorize("hasAuthority('role:list')")
-    public ApiResponse<PageResultResp<RoleResp>> getRoleList(RoleQuery req) {
-        PageResultResp<RoleResp> result = roleService.getRoleList(req);
-        return ApiResponse.ok(result);
+    public ApiResponse<PageResultResponse<RoleResponse>> getRoleList(RoleQuery query) {
+        PageResultResponse<RoleResponse> response = roleService.getRoleList(query);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/all")
     @Operation(summary = "查询所有角色列表（用于下拉选择）")
     @PreAuthorize("hasAuthority('role:list')")
-    public ApiResponse<List<RoleResp>> getAllRoles() {
-        List<RoleResp> roles = roleService.getAllRoles();
-        return ApiResponse.ok(roles);
+    public ApiResponse<List<RoleResponse>> getAllRoles() {
+        List<RoleResponse> responses = roleService.getAllRoles();
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询角色")
     @OperationLog(module = "角色管理", operationType = 1, description = "查询角色详情 {#id}")
     @PreAuthorize("hasAuthority('role:query')")
-    public ApiResponse<RoleResp> getRoleById(@PathVariable String id) {
-        RoleResp role = roleService.getRoleById(id);
-        return ApiResponse.ok(role);
+    public ApiResponse<RoleResponse> getRoleById(@PathVariable String id) {
+        RoleResponse response = roleService.getRoleById(id);
+        return ApiResponse.ok(response);
     }
 
     @PostMapping
     @Operation(summary = "创建角色")
-    @OperationLog(module = "角色管理", operationType = 2, description = "新增角色 {#req.name}")
+    @OperationLog(module = "角色管理", operationType = 2, description = "新增角色 {#request.name}")
     @PreAuthorize("hasAuthority('role:add')")
-    public ApiResponse<RoleResp> createRole(@Valid @RequestBody RoleCreateReq req) {
-        RoleResp role = roleService.createRole(req);
-        return ApiResponse.ok(role);
+    public ApiResponse<RoleResponse> createRole(@Valid @RequestBody RoleCreateRequest request) {
+        RoleResponse response = roleService.createRole(request);
+        return ApiResponse.ok(response);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新角色")
     @OperationLog(module = "角色管理", operationType = 3, description = "修改角色 {#id}")
     @PreAuthorize("hasAuthority('role:edit')")
-    public ApiResponse<RoleResp> updateRole(@PathVariable String id, @Valid @RequestBody RoleUpdateReq req) {
-        RoleResp role = roleService.updateRole(id, req);
-        return ApiResponse.ok(role);
+    public ApiResponse<RoleResponse> updateRole(@PathVariable String id, @Valid @RequestBody RoleUpdateRequest request) {
+        RoleResponse response = roleService.updateRole(id, request);
+        return ApiResponse.ok(response);
     }
 
     @DeleteMapping("/{id}")

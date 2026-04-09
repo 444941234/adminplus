@@ -10,7 +10,7 @@ import lombok.Builder;
  * @since 2026-03-03
  */
 @Builder
-public record ApprovalActionReq(
+public record ApprovalActionRequest(
         @NotBlank(message = "审批意见不能为空")
         String comment,
 

@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.dto.query.ConfigGroupQuery;
-import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
-import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
-import com.adminplus.pojo.dto.resp.ConfigGroupResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.ConfigGroupCreateRequest;
+import com.adminplus.pojo.dto.request.ConfigGroupUpdateRequest;
+import com.adminplus.pojo.dto.response.ConfigGroupResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 
 /**
  * 配置组服务接口
@@ -17,10 +17,10 @@ public interface ConfigGroupService {
     /**
      * 分页查询配置组列表
      *
-     * @param req 查询条件
+     * @param query 查询条件
      * @return 分页结果
      */
-    PageResultResp<ConfigGroupResp> getConfigGroupList(ConfigGroupQuery req);
+    PageResultResponse<ConfigGroupResponse> getConfigGroupList(ConfigGroupQuery query);
 
     /**
      * 根据ID查询配置组
@@ -28,7 +28,7 @@ public interface ConfigGroupService {
      * @param id 配置组ID
      * @return 配置组详情
      */
-    ConfigGroupResp getConfigGroupById(String id);
+    ConfigGroupResponse getConfigGroupById(String id);
 
     /**
      * 根据编码查询配置组
@@ -36,15 +36,15 @@ public interface ConfigGroupService {
      * @param code 配置组编码
      * @return 配置组详情
      */
-    ConfigGroupResp getConfigGroupByCode(String code);
+    ConfigGroupResponse getConfigGroupByCode(String code);
 
     /**
      * 创建配置组
      *
-     * @param req 创建请求
+     * @param request 创建请求
      * @return 创建的配置组
      */
-    ConfigGroupResp createConfigGroup(ConfigGroupCreateReq req);
+    ConfigGroupResponse createConfigGroup(ConfigGroupCreateRequest request);
 
     /**
      * 更新配置组
@@ -53,7 +53,7 @@ public interface ConfigGroupService {
      * @param req 更新请求
      * @return 更新后的配置组
      */
-    ConfigGroupResp updateConfigGroup(String id, ConfigGroupUpdateReq req);
+    ConfigGroupResponse updateConfigGroup(String id, ConfigGroupUpdateRequest req);
 
     /**
      * 删除配置组
@@ -75,12 +75,12 @@ public interface ConfigGroupService {
      *
      * @return 配置组列表
      */
-    java.util.List<ConfigGroupResp> getActiveConfigGroups();
+    java.util.List<ConfigGroupResponse> getActiveConfigGroups();
 
     /**
      * 查询所有配置组（包括禁用的）
      *
      * @return 配置组列表
      */
-    java.util.List<ConfigGroupResp> getAllConfigGroups();
+    java.util.List<ConfigGroupResponse> getAllConfigGroups();
 }

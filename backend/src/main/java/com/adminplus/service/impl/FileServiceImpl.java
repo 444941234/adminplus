@@ -2,6 +2,7 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.common.exception.BizException;
+import com.adminplus.pojo.dto.response.FileResponse;
 import com.adminplus.pojo.entity.FileEntity;
 import com.adminplus.repository.FileRepository;
 import com.adminplus.service.FileService;
@@ -32,7 +33,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    public FileEntity uploadFile(MultipartFile file, String directory) {
+    public FileResponse uploadFile(MultipartFile file, String directory) {
         // 验证文件大小
         int maxSizeMB = fileStorageConfig.getLocal().getMaxSize();
         long maxSizeBytes = maxSizeMB * 1024L * 1024L;
@@ -64,7 +65,7 @@ public class FileServiceImpl implements FileService {
         fileEntity = fileRepository.save(fileEntity);
 
         log.info("文件上传成功，ID: {}, URL: {}", fileEntity.getId(), fileUrl);
-        return fileEntity;
+        return toDto(fileEntity);
     }
 
     @Override
@@ -110,14 +111,15 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional(readOnly = true)
-    public FileEntity getFileById(String fileId) {
-        return fileRepository.findByIdAndDeletedFalse(fileId)
+    public FileResponse getFileById(String fileId) {
+        FileEntity entity = fileRepository.findByIdAndDeletedFalse(fileId)
                 .orElseThrow(() -> new BizException("文件不存在"));
+        return toDto(entity);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public FileEntity getFileWithAuth(String fileId) {
+    public FileResponse getFileWithAuth(String fileId) {
         FileEntity fileEntity = fileRepository.findByIdAndDeletedFalse(fileId)
                 .orElseThrow(() -> new BizException("文件不存在"));
 
@@ -128,20 +130,26 @@ public class FileServiceImpl implements FileService {
             throw new BizException("无权查看此文件");
         }
 
-        return fileEntity;
+        return toDto(fileEntity);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<FileEntity> getUserFiles() {
+    public List<FileResponse> getUserFiles() {
         String userId = SecurityUtils.getCurrentUserId();
-        return fileRepository.findByCreateUserAndDeletedFalseOrderByCreateTimeDesc(userId);
+        return fileRepository.findByCreateUserAndDeletedFalseOrderByCreateTimeDesc(userId)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<FileEntity> getFilesByDirectory(String directory) {
-        return fileRepository.findByDirectoryAndDeletedFalseOrderByCreateTimeDesc(directory);
+    public List<FileResponse> getFilesByDirectory(String directory) {
+        return fileRepository.findByDirectoryAndDeletedFalseOrderByCreateTimeDesc(directory)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
     /**
@@ -162,5 +170,27 @@ public class FileServiceImpl implements FileService {
             return "";
         }
         return originalName.substring(originalName.lastIndexOf("."));
+    }
+
+    /**
+     * 实体转DTO
+     */
+    private FileResponse toDto(FileEntity entity) {
+        return new FileResponse(
+                entity.getId(),
+                entity.getOriginalName(),
+                entity.getFileName(),
+                entity.getFileExt(),
+                entity.getFileSize(),
+                entity.getContentType(),
+                entity.getFileUrl(),
+                entity.getStorageType(),
+                entity.getDirectory(),
+                entity.getStatus(),
+                entity.getCreateUser(),
+                entity.getUpdateUser(),
+                entity.getCreateTime(),
+                entity.getUpdateTime()
+        );
     }
 }

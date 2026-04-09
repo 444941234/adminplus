@@ -3,11 +3,11 @@ package com.adminplus.service.impl;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.query.RoleQuery;
-import com.adminplus.pojo.dto.req.RoleCreateReq;
-import com.adminplus.pojo.dto.req.RoleUpdateReq;
-import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.resp.PageResultResp;
-import com.adminplus.pojo.dto.resp.RoleResp;
+import com.adminplus.pojo.dto.request.RoleCreateRequest;
+import com.adminplus.pojo.dto.request.RoleUpdateRequest;
+import com.adminplus.pojo.dto.request.LogEntry;
+import com.adminplus.pojo.dto.response.PageResultResponse;
+import com.adminplus.pojo.dto.response.RoleResponse;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.RoleMenuEntity;
 import com.adminplus.repository.RoleMenuRepository;
@@ -53,14 +53,14 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<RoleResp> getRoleList(RoleQuery req) {
-        Pageable pageable = PageUtils.toPageableAsc(req.getPage(), req.getSize(), "sortOrder");
+    public PageResultResponse<RoleResponse> getRoleList(RoleQuery query) {
+        Pageable pageable = PageUtils.toPageableAsc(query.getPage(), query.getSize(), "sortOrder");
 
-        Specification<RoleEntity> spec = (root, query, cb) -> {
+        Specification<RoleEntity> spec = (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             // 关键词搜索
-            String keyword = req.getKeyword();
+            String keyword = query.getKeyword();
             if (keyword != null && !keyword.isEmpty()) {
                 predicates.add(cb.or(
                         cb.like(root.get("name"), "%" + keyword + "%"),
@@ -77,13 +77,13 @@ public class RoleServiceImpl implements RoleService {
         };
 
         Page<RoleEntity> pageResult = roleRepository.findAll(spec, pageable);
-        return PageResultResp.from(pageResult, this::toResp);
+        return PageResultResponse.from(pageResult, this::toResp);
     }
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "roles", key = "T(com.adminplus.utils.SecurityUtils).isAdmin() ? 'all' : 'nonAdmin'", unless = "#result == null || #result.isEmpty()")
-    public List<RoleResp> getAllRoles() {
+    public List<RoleResponse> getAllRoles() {
         List<RoleEntity> roles;
 
         // 超级管理员可以查看所有角色
@@ -99,7 +99,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
-    public RoleResp getRoleById(String id) {
+    public RoleResponse getRoleById(String id) {
         var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
         return toResp(role);
@@ -108,19 +108,19 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     @CacheEvict(value = {"userPermissions", "rolePermissions", "roles"}, allEntries = true)
-    public RoleResp createRole(RoleCreateReq req) {
+    public RoleResponse createRole(RoleCreateRequest request) {
         // 检查角色编码是否已存在
-        if (roleRepository.existsByCode(req.code())) {
+        if (roleRepository.existsByCode(request.code())) {
             throw new BizException("角色编码已存在");
         }
 
         var role = new RoleEntity();
-        role.setCode(XssUtils.escape(req.code()));
-        role.setName(XssUtils.escape(req.name()));
-        role.setDescription(XssUtils.escape(req.description()));
-        role.setDataScope(req.dataScope() != null ? req.dataScope() : 1);
-        role.setStatus(req.status() != null ? req.status() : 1);
-        role.setSortOrder(req.sortOrder());
+        role.setCode(XssUtils.escape(request.code()));
+        role.setName(XssUtils.escape(request.name()));
+        role.setDescription(XssUtils.escape(request.description()));
+        role.setDataScope(request.dataScope() != null ? request.dataScope() : 1);
+        role.setStatus(request.status() != null ? request.status() : 1);
+        role.setSortOrder(request.sortOrder());
 
         role = roleRepository.save(role);
 
@@ -133,7 +133,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional
     @CacheEvict(value = {"userPermissions", "rolePermissions", "roles"}, allEntries = true)
-    public RoleResp updateRole(String id, RoleUpdateReq req) {
+    public RoleResponse updateRole(String id, RoleUpdateRequest request) {
         var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
         // 非超级管理员不能修改超级管理员角色
@@ -141,20 +141,20 @@ public class RoleServiceImpl implements RoleService {
             throw new BizException("无权修改超级管理员角色");
         }
 
-        if (req.name() != null) {
-            role.setName(XssUtils.escape(req.name()));
+        if (request.name() != null) {
+            role.setName(XssUtils.escape(request.name()));
         }
-        if (req.description() != null) {
-            role.setDescription(XssUtils.escape(req.description()));
+        if (request.description() != null) {
+            role.setDescription(XssUtils.escape(request.description()));
         }
-        if (req.dataScope() != null) {
-            role.setDataScope(req.dataScope());
+        if (request.dataScope() != null) {
+            role.setDataScope(request.dataScope());
         }
-        if (req.status() != null) {
-            role.setStatus(req.status());
+        if (request.status() != null) {
+            role.setStatus(request.status());
         }
-        if (req.sortOrder() != null) {
-            role.setSortOrder(req.sortOrder());
+        if (request.sortOrder() != null) {
+            role.setSortOrder(request.sortOrder());
         }
 
         role = roleRepository.save(role);
@@ -255,8 +255,8 @@ public class RoleServiceImpl implements RoleService {
         logService.log(LogEntry.operation("角色管理", OperationType.UPDATE.getCode(), "更新角色状态: " + role.getName() + " -> " + (status == 1 ? "启用" : "禁用")));
     }
 
-    private RoleResp toResp(RoleEntity role) {
-        return new RoleResp(
+    private RoleResponse toResp(RoleEntity role) {
+        return new RoleResponse(
                 role.getId(),
                 role.getCode(),
                 role.getName(),

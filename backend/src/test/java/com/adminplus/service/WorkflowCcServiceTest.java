@@ -1,7 +1,7 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.entity.WorkflowCcEntity;
-import com.adminplus.pojo.dto.resp.WorkflowCcResp;
+import com.adminplus.pojo.dto.response.WorkflowCcResponse;
 import com.adminplus.repository.WorkflowCcRepository;
 import com.adminplus.service.impl.WorkflowCcServiceImpl;
 import com.adminplus.utils.SecurityUtils;
@@ -69,7 +69,7 @@ class WorkflowCcServiceTest {
             when(ccRepository.findByUserId(testUserId)).thenReturn(List.of(testCc));
 
             // When
-            List<WorkflowCcResp> result = ccService.getUserCcRecords(testUserId);
+            List<WorkflowCcResponse> result = ccService.getUserCcRecords(testUserId);
 
             // Then
             assertThat(result).hasSize(1);
@@ -84,7 +84,7 @@ class WorkflowCcServiceTest {
             when(ccRepository.findByUserId(testUserId)).thenReturn(List.of());
 
             // When
-            List<WorkflowCcResp> result = ccService.getUserCcRecords(testUserId);
+            List<WorkflowCcResponse> result = ccService.getUserCcRecords(testUserId);
 
             // Then
             assertThat(result).isEmpty();
@@ -102,7 +102,7 @@ class WorkflowCcServiceTest {
             when(ccRepository.findUnreadByUserId(testUserId)).thenReturn(List.of(testCc));
 
             // When
-            List<WorkflowCcResp> result = ccService.getUnreadCcRecords(testUserId);
+            List<WorkflowCcResponse> result = ccService.getUnreadCcRecords(testUserId);
 
             // Then
             assertThat(result).hasSize(1);
@@ -116,7 +116,7 @@ class WorkflowCcServiceTest {
             when(ccRepository.findUnreadByUserId(testUserId)).thenReturn(List.of());
 
             // When
-            List<WorkflowCcResp> result = ccService.getUnreadCcRecords(testUserId);
+            List<WorkflowCcResponse> result = ccService.getUnreadCcRecords(testUserId);
 
             // Then
             assertThat(result).isEmpty();
@@ -166,7 +166,7 @@ class WorkflowCcServiceTest {
                     .thenReturn(List.of(testCc));
 
             // When
-            List<WorkflowCcResp> result = ccService.getInstanceCcRecords("inst-001");
+            List<WorkflowCcResponse> result = ccService.getInstanceCcRecords("inst-001");
 
             // Then
             assertThat(result).hasSize(1);
@@ -181,7 +181,7 @@ class WorkflowCcServiceTest {
                     .thenReturn(List.of());
 
             // When
-            List<WorkflowCcResp> result = ccService.getInstanceCcRecords("inst-001");
+            List<WorkflowCcResponse> result = ccService.getInstanceCcRecords("inst-001");
 
             // Then
             assertThat(result).isEmpty();

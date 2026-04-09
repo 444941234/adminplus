@@ -1,8 +1,8 @@
 package com.adminplus.controller;
 
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.entity.WorkflowHookLogEntity;
-import com.adminplus.repository.WorkflowHookLogRepository;
+import com.adminplus.pojo.dto.response.WorkflowHookLogResponse;
+import com.adminplus.service.WorkflowHookLogService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -25,58 +25,53 @@ import java.util.List;
 @Tag(name = "工作流钩子日志", description = "工作流钩子执行日志查询")
 public class WorkflowHookLogController {
 
-    private final WorkflowHookLogRepository hookLogRepository;
+    private final WorkflowHookLogService hookLogService;
 
     @GetMapping("/instance/{instanceId}")
     @Operation(summary = "查询工作流实例的所有钩子日志")
     @PreAuthorize("hasAuthority('workflow:hook:log:view')")
-    public ApiResponse<List<WorkflowHookLogEntity>> listByInstanceId(@PathVariable String instanceId) {
+    public ApiResponse<List<WorkflowHookLogResponse>> listByInstanceId(@PathVariable String instanceId) {
         log.info("查询工作流钩子日志: instanceId={}", instanceId);
-        List<WorkflowHookLogEntity> logs = hookLogRepository
-                .findByInstanceIdAndDeletedFalseOrderByCreateTimeDesc(instanceId);
-        return ApiResponse.ok(logs);
+        List<WorkflowHookLogResponse> responses = hookLogService.listByInstanceId(instanceId);
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/instance/{instanceId}/{hookPoint}")
     @Operation(summary = "查询工作流实例指定钩子点的日志")
     @PreAuthorize("hasAuthority('workflow:hook:log:view')")
-    public ApiResponse<List<WorkflowHookLogEntity>> listByInstanceIdAndHookPoint(
+    public ApiResponse<List<WorkflowHookLogResponse>> listByInstanceIdAndHookPoint(
             @PathVariable String instanceId,
             @PathVariable String hookPoint) {
         log.info("查询工作流钩子日志: instanceId={}, hookPoint={}", instanceId, hookPoint);
-        List<WorkflowHookLogEntity> logs = hookLogRepository
-                .findByInstanceIdAndHookPointAndDeletedFalseOrderByCreateTimeDesc(instanceId, hookPoint);
+        List<WorkflowHookLogResponse> logs = hookLogService.listByInstanceIdAndHookPoint(instanceId, hookPoint);
         return ApiResponse.ok(logs);
     }
 
     @GetMapping("/instance/{instanceId}/node/{nodeId}")
     @Operation(summary = "查询工作流实例指定节点的日志")
     @PreAuthorize("hasAuthority('workflow:hook:log:view')")
-    public ApiResponse<List<WorkflowHookLogEntity>> listByInstanceIdAndNodeId(
+    public ApiResponse<List<WorkflowHookLogResponse>> listByInstanceIdAndNodeId(
             @PathVariable String instanceId,
             @PathVariable String nodeId) {
         log.info("查询工作流钩子日志: instanceId={}, nodeId={}", instanceId, nodeId);
-        List<WorkflowHookLogEntity> logs = hookLogRepository
-                .findByInstanceIdAndNodeIdAndDeletedFalseOrderByCreateTimeDesc(instanceId, nodeId);
+        List<WorkflowHookLogResponse> logs = hookLogService.listByInstanceIdAndNodeId(instanceId, nodeId);
         return ApiResponse.ok(logs);
     }
 
     @GetMapping("/hook/{hookId}")
     @Operation(summary = "查询钩子配置的所有执行日志")
     @PreAuthorize("hasAuthority('workflow:hook:log:view')")
-    public ApiResponse<List<WorkflowHookLogEntity>> listByHookId(@PathVariable String hookId) {
+    public ApiResponse<List<WorkflowHookLogResponse>> listByHookId(@PathVariable String hookId) {
         log.info("查询钩子执行日志: hookId={}", hookId);
-        List<WorkflowHookLogEntity> logs = hookLogRepository
-                .findByHookIdAndDeletedFalseOrderByCreateTimeDesc(hookId);
+        List<WorkflowHookLogResponse> logs = hookLogService.listByHookId(hookId);
         return ApiResponse.ok(logs);
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "查询钩子日志详情")
     @PreAuthorize("hasAuthority('workflow:hook:log:view')")
-    public ApiResponse<WorkflowHookLogEntity> getById(@PathVariable String id) {
-        return hookLogRepository.findById(id)
-                .map(ApiResponse::ok)
-                .orElse(ApiResponse.fail("钩子日志不存在"));
+    public ApiResponse<WorkflowHookLogResponse> getById(@PathVariable String id) {
+        WorkflowHookLogResponse log = hookLogService.getById(id);
+        return ApiResponse.ok(log);
     }
 }

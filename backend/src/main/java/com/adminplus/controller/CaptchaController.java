@@ -1,6 +1,7 @@
 package com.adminplus.controller;
 
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.response.CaptchaResponse;
 import com.adminplus.service.CaptchaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -44,14 +45,5 @@ public class CaptchaController {
 
         CaptchaResponse response = new CaptchaResponse(result.captchaId(), "data:image/png;base64," + base64Image);
         return ApiResponse.ok(response);
-    }
-
-    /**
-     * 验证码响应
-     */
-    record CaptchaResponse(
-            String captchaId,
-            String captchaImage
-    ) {
     }
 }

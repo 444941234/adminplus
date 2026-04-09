@@ -2,13 +2,13 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.req.PasswordChangeReq;
-import com.adminplus.pojo.dto.req.ProfileUpdateReq;
-import com.adminplus.pojo.dto.req.SettingsUpdateReq;
-import com.adminplus.pojo.dto.resp.ActivityStatsResp;
-import com.adminplus.pojo.dto.resp.AvatarUploadResp;
-import com.adminplus.pojo.dto.resp.ProfileResp;
-import com.adminplus.pojo.dto.resp.SettingsResp;
+import com.adminplus.pojo.dto.request.PasswordChangeRequest;
+import com.adminplus.pojo.dto.request.ProfileUpdateRequest;
+import com.adminplus.pojo.dto.request.SettingsUpdateRequest;
+import com.adminplus.pojo.dto.response.ActivityStatsResponse;
+import com.adminplus.pojo.dto.response.AvatarUploadResponse;
+import com.adminplus.pojo.dto.response.ProfileResponse;
+import com.adminplus.pojo.dto.response.SettingsResponse;
 import com.adminplus.service.ProfileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,8 +37,8 @@ public class ProfileController {
     @GetMapping
     @Operation(summary = "获取当前用户信息")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<ProfileResp> getProfile() {
-        ProfileResp profile = profileService.getCurrentUserProfile();
+    public ApiResponse<ProfileResponse> getProfile() {
+        ProfileResponse profile = profileService.getCurrentUserProfile();
         return ApiResponse.ok(profile);
     }
 
@@ -46,17 +46,17 @@ public class ProfileController {
     @Operation(summary = "更新当前用户信息")
     @OperationLog(module = "个人中心", operationType = 3, description = "更新个人信息")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<ProfileResp> updateProfile(@Valid @RequestBody ProfileUpdateReq req) {
-        ProfileResp profile = profileService.updateCurrentProfile(req);
-        return ApiResponse.ok(profile);
+    public ApiResponse<ProfileResponse> updateProfile(@Valid @RequestBody ProfileUpdateRequest request) {
+        ProfileResponse response = profileService.updateCurrentProfile(request);
+        return ApiResponse.ok(response);
     }
 
     @PostMapping("/password")
     @Operation(summary = "修改密码")
     @OperationLog(module = "个人中心", operationType = 3, description = "修改密码")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<Void> changePassword(@Valid @RequestBody PasswordChangeReq req) {
-        profileService.changePassword(req);
+    public ApiResponse<Void> changePassword(@Valid @RequestBody PasswordChangeRequest request) {
+        profileService.changePassword(request);
         return ApiResponse.ok();
     }
 
@@ -64,21 +64,18 @@ public class ProfileController {
     @Operation(summary = "上传头像")
     @OperationLog(module = "个人中心", operationType = 3, description = "上传头像")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<AvatarUploadResp> uploadAvatar(@RequestParam("file") MultipartFile file) {
+    public ApiResponse<AvatarUploadResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
         String avatarUrl = profileService.uploadAvatar(file);
-
-        // 同时更新用户头像
-        ProfileUpdateReq updateReq = new ProfileUpdateReq(null, null, null, avatarUrl);
-        profileService.updateCurrentProfile(updateReq);
-
-        return ApiResponse.ok(new AvatarUploadResp(avatarUrl));
+        ProfileUpdateRequest updateRequest = new ProfileUpdateRequest(null, null, null, avatarUrl);
+        profileService.updateCurrentProfile(updateRequest);
+        return ApiResponse.ok(new AvatarUploadResponse(avatarUrl));
     }
 
     @GetMapping("/settings")
     @Operation(summary = "获取用户设置")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<SettingsResp> getSettings() {
-        SettingsResp settings = profileService.getSettings();
+    public ApiResponse<SettingsResponse> getSettings() {
+        SettingsResponse settings = profileService.getSettings();
         return ApiResponse.ok(settings);
     }
 
@@ -86,8 +83,8 @@ public class ProfileController {
     @Operation(summary = "更新用户设置")
     @OperationLog(module = "个人中心", operationType = 3, description = "更新用户设置")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<SettingsResp> updateSettings(@Valid @RequestBody SettingsUpdateReq req) {
-        SettingsResp settings = profileService.updateSettings(req);
+    public ApiResponse<SettingsResponse> updateSettings(@Valid @RequestBody SettingsUpdateRequest req) {
+        SettingsResponse settings = profileService.updateSettings(req);
         return ApiResponse.ok(settings);
     }
 
@@ -95,8 +92,8 @@ public class ProfileController {
     @Operation(summary = "获取用户活动统计")
     @OperationLog(module = "个人中心", operationType = 1, description = "查看活动统计")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<ActivityStatsResp> getActivityStats() {
-        ActivityStatsResp stats = profileService.getActivityStats();
-        return ApiResponse.ok(stats);
+    public ApiResponse<ActivityStatsResponse> getActivityStats() {
+        ActivityStatsResponse response = profileService.getActivityStats();
+        return ApiResponse.ok(response);
     }
 }

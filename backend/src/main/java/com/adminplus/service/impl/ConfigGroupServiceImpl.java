@@ -3,11 +3,11 @@ package com.adminplus.service.impl;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.query.ConfigGroupQuery;
-import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
-import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
-import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.resp.ConfigGroupResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.ConfigGroupCreateRequest;
+import com.adminplus.pojo.dto.request.ConfigGroupUpdateRequest;
+import com.adminplus.pojo.dto.request.LogEntry;
+import com.adminplus.pojo.dto.response.ConfigGroupResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.entity.ConfigGroupEntity;
 import com.adminplus.repository.ConfigGroupRepository;
 import com.adminplus.repository.ConfigRepository;
@@ -46,16 +46,16 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<ConfigGroupResp> getConfigGroupList(ConfigGroupQuery req) {
-        Pageable pageable = PageUtils.toPageableAsc(req.getPage(), req.getSize(), "sortOrder");
+    public PageResultResponse<ConfigGroupResponse> getConfigGroupList(ConfigGroupQuery query) {
+        Pageable pageable = PageUtils.toPageableAsc(query.getPage(), query.getSize(), "sortOrder");
 
-        Specification<ConfigGroupEntity> spec = (root, query, cb) -> {
+        Specification<ConfigGroupEntity> spec = (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
+            if (query.getKeyword() != null && !query.getKeyword().isEmpty()) {
                 predicates.add(cb.or(
-                        cb.like(root.get("name"), "%" + req.getKeyword() + "%"),
-                        cb.like(root.get("code"), "%" + req.getKeyword() + "%")
+                        cb.like(root.get("name"), "%" + query.getKeyword() + "%"),
+                        cb.like(root.get("code"), "%" + query.getKeyword() + "%")
                 ));
             }
 
@@ -63,13 +63,13 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         };
 
         var pageResult = configGroupRepository.findAll(spec, pageable);
-        return PageResultResp.from(pageResult, this::toVO);
+        return PageResultResponse.from(pageResult, this::toVO);
     }
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "configGroup", key = "'id:' + #id")
-    public ConfigGroupResp getConfigGroupById(String id) {
+    public ConfigGroupResponse getConfigGroupById(String id) {
         ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
                 configGroupRepository::findById, id, "配置组不存在"
         );
@@ -79,7 +79,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "configGroup", key = "'code:' + #code")
-    public ConfigGroupResp getConfigGroupByCode(String code) {
+    public ConfigGroupResponse getConfigGroupByCode(String code) {
         ConfigGroupEntity group = configGroupRepository.findByCode(code)
                 .orElseThrow(() -> new BizException("配置组不存在"));
         return toVO(group);
@@ -88,18 +88,18 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     @Override
     @Transactional
     @CacheEvict(value = "configGroup", allEntries = true)
-    public ConfigGroupResp createConfigGroup(ConfigGroupCreateReq req) {
+    public ConfigGroupResponse createConfigGroup(ConfigGroupCreateRequest request) {
         // 检查编码是否已存在
-        if (configGroupRepository.existsByCode(req.code())) {
+        if (configGroupRepository.existsByCode(request.code())) {
             throw new BizException("配置组编码已存在");
         }
 
         ConfigGroupEntity group = new ConfigGroupEntity();
-        group.setName(req.name());
-        group.setCode(req.code());
-        group.setIcon(req.icon());
-        group.setSortOrder(req.sortOrder() != null ? req.sortOrder() : 0);
-        group.setDescription(req.description());
+        group.setName(request.name());
+        group.setCode(request.code());
+        group.setIcon(request.icon());
+        group.setSortOrder(request.sortOrder() != null ? request.sortOrder() : 0);
+        group.setDescription(request.description());
         group.setStatus(1); // 默认启用
 
         group = configGroupRepository.save(group);
@@ -115,7 +115,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     @Override
     @Transactional
     @CacheEvict(value = "configGroup", allEntries = true)
-    public ConfigGroupResp updateConfigGroup(String id, ConfigGroupUpdateReq req) {
+    public ConfigGroupResponse updateConfigGroup(String id, ConfigGroupUpdateRequest req) {
         ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
                 configGroupRepository::findById, id, "配置组不存在"
         );
@@ -185,7 +185,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "configGroup", key = "'active'")
-    public List<ConfigGroupResp> getActiveConfigGroups() {
+    public List<ConfigGroupResponse> getActiveConfigGroups() {
         return configGroupRepository.findByStatusOrderBySortOrderAsc(1).stream()
                 .map(this::toVO)
                 .toList();
@@ -194,7 +194,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "configGroup", key = "'all'")
-    public List<ConfigGroupResp> getAllConfigGroups() {
+    public List<ConfigGroupResponse> getAllConfigGroups() {
         return configGroupRepository.findAll(Sort.by(Sort.Direction.ASC, "sortOrder")).stream()
                 .map(this::toVO)
                 .toList();
@@ -203,9 +203,9 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     /**
      * 实体转换为 VO
      */
-    private ConfigGroupResp toVO(ConfigGroupEntity entity) {
+    private ConfigGroupResponse toVO(ConfigGroupEntity entity) {
         long configCount = configRepository.countByGroupId(entity.getId());
-        return new ConfigGroupResp(
+        return new ConfigGroupResponse(
                 entity.getId(),
                 entity.getName(),
                 entity.getCode(),

@@ -1,7 +1,7 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogStatisticsResp;
+import com.adminplus.pojo.dto.response.LogStatisticsResponse;
 import com.adminplus.service.impl.LogStorageStrategySelector;
 import com.adminplus.service.impl.LogStatisticsServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,7 +53,7 @@ class LogStatisticsServiceTest {
             when(storageStrategy.countByCondition(any(LogQuery.class))).thenReturn(10L);
 
             // When
-            LogStatisticsResp result = logStatisticsService.getStatistics();
+            LogStatisticsResponse result = logStatisticsService.getStatistics();
 
             // Then
             assertThat(result).isNotNull();
@@ -72,7 +72,7 @@ class LogStatisticsServiceTest {
             when(storageStrategy.countByCondition(any(LogQuery.class))).thenReturn(0L);
 
             // When
-            LogStatisticsResp result = logStatisticsService.getStatistics();
+            LogStatisticsResponse result = logStatisticsService.getStatistics();
 
             // Then
             assertThat(result.totalCount()).isEqualTo(0L);
@@ -109,7 +109,7 @@ class LogStatisticsServiceTest {
             when(storageStrategy.countByCondition(any(LogQuery.class))).thenReturn(5L);
 
             // When
-            LogStatisticsResp result = logStatisticsService.getTrendData(days);
+            LogStatisticsResponse result = logStatisticsService.getTrendData(days);
 
             // Then
             assertThat(result).isNotNull();
@@ -124,7 +124,7 @@ class LogStatisticsServiceTest {
             when(storageStrategy.countByCondition(any(LogQuery.class))).thenReturn(3L);
 
             // When
-            LogStatisticsResp result = logStatisticsService.getTrendData(days);
+            LogStatisticsResponse result = logStatisticsService.getTrendData(days);
 
             // Then
             assertThat(result.countByDate()).hasSize(days);
@@ -138,7 +138,7 @@ class LogStatisticsServiceTest {
             when(storageStrategy.countByCondition(any(LogQuery.class))).thenReturn(10L);
 
             // When
-            LogStatisticsResp result = logStatisticsService.getTrendData(days);
+            LogStatisticsResponse result = logStatisticsService.getTrendData(days);
 
             // Then
             assertThat(result.totalCount()).isEqualTo(30L); // 10 * 3 days

@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.NotificationSendReq;
+import com.adminplus.pojo.dto.request.NotificationSendRequest;
 import com.adminplus.pojo.entity.NotificationEntity;
 import com.adminplus.repository.NotificationRepository;
 import com.adminplus.service.impl.NotificationServiceImpl;
@@ -30,11 +30,11 @@ class NotificationServiceTest {
     @InjectMocks
     private NotificationServiceImpl notificationService;
 
-    private NotificationSendReq notificationReq;
+    private NotificationSendRequest notificationReq;
 
     @BeforeEach
     void setUp() {
-        notificationReq = new NotificationSendReq();
+        notificationReq = new NotificationSendRequest();
         notificationReq.setType("workflow_approve");
         notificationReq.setRecipientId("user-001");
         notificationReq.setTitle("测试通知");

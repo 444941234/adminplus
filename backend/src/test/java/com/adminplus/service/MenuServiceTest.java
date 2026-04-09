@@ -1,9 +1,8 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.pojo.dto.req.MenuCreateReq;
-import com.adminplus.pojo.dto.req.MenuUpdateReq;
-import com.adminplus.pojo.dto.resp.MenuResp;
+import com.adminplus.pojo.dto.request.MenuCreateRequest;
+import com.adminplus.pojo.dto.response.MenuResponse;
 import com.adminplus.pojo.entity.MenuEntity;
 import com.adminplus.repository.MenuRepository;
 import com.adminplus.repository.RoleMenuRepository;
@@ -90,7 +89,7 @@ class MenuServiceTest {
             when(menuRepository.findById("menu-001")).thenReturn(Optional.of(testMenu));
 
             // When
-            MenuResp result = menuService.getMenuById("menu-001");
+            MenuResponse result = menuService.getMenuById("menu-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -121,7 +120,7 @@ class MenuServiceTest {
             when(menuRepository.findAllByOrderBySortOrderAsc()).thenReturn(List.of());
 
             // When
-            List<MenuResp> result = menuService.getMenuTree();
+            List<MenuResponse> result = menuService.getMenuTree();
 
             // Then
             assertThat(result).isEmpty();
@@ -134,7 +133,7 @@ class MenuServiceTest {
             when(menuRepository.findAllByOrderBySortOrderAsc()).thenReturn(List.of(parentMenu, testMenu));
 
             // When
-            List<MenuResp> result = menuService.getMenuTree();
+            List<MenuResponse> result = menuService.getMenuTree();
 
             // Then
             assertThat(result).isNotEmpty();
@@ -149,7 +148,7 @@ class MenuServiceTest {
         @DisplayName("should create menu without parent")
         void createMenu_WithoutParent_ShouldCreateMenu() {
             // Given
-            MenuCreateReq req = new MenuCreateReq(
+            MenuCreateRequest req = new MenuCreateRequest(
                     null, 1, "Root Menu", "/root", "RootComponent",
                     "root:view", "icon", 1, 1, 1
             );
@@ -159,7 +158,7 @@ class MenuServiceTest {
             when(menuRepository.save(any())).thenReturn(newMenu);
 
             // When
-            MenuResp result = menuService.createMenu(req);
+            MenuResponse result = menuService.createMenu(req);
 
             // Then
             assertThat(result).isNotNull();
@@ -170,7 +169,7 @@ class MenuServiceTest {
         @DisplayName("should create menu with parent")
         void createMenu_WithParent_ShouldCreateMenu() {
             // Given
-            MenuCreateReq req = new MenuCreateReq(
+            MenuCreateRequest req = new MenuCreateRequest(
                     "parent-001", 2, "Child Menu", "/child", "ChildComponent",
                     "child:view", "icon", 1, 1, 1
             );
@@ -178,7 +177,7 @@ class MenuServiceTest {
             when(menuRepository.save(any())).thenReturn(testMenu);
 
             // When
-            MenuResp result = menuService.createMenu(req);
+            MenuResponse result = menuService.createMenu(req);
 
             // Then
             assertThat(result).isNotNull();
@@ -189,7 +188,7 @@ class MenuServiceTest {
         @DisplayName("should throw exception when parent not found")
         void createMenu_WithNonExistentParent_ShouldThrowException() {
             // Given
-            MenuCreateReq req = new MenuCreateReq(
+            MenuCreateRequest req = new MenuCreateRequest(
                     "non-existent", 2, "Child Menu", "/child", "ChildComponent",
                     "child:view", "icon", 1, 1, 1
             );
@@ -259,7 +258,7 @@ class MenuServiceTest {
             when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of());
 
             // When
-            List<MenuResp> result = menuService.getUserMenuTree("user-001");
+            List<MenuResponse> result = menuService.getUserMenuTree("user-001");
 
             // Then
             assertThat(result).isEmpty();
@@ -279,7 +278,7 @@ class MenuServiceTest {
             when(menuRepository.save(any(MenuEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             // When
-            MenuResp result = menuService.copyMenu("menu-001", "0");
+            MenuResponse result = menuService.copyMenu("menu-001", "0");
 
             // Then
             assertThat(result).isNotNull();
@@ -316,7 +315,7 @@ class MenuServiceTest {
             when(menuRepository.save(any(MenuEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             // When
-            MenuResp result = menuService.copyMenu("menu-001", "parent-001");
+            MenuResponse result = menuService.copyMenu("menu-001", "parent-001");
 
             // Then
             assertThat(result).isNotNull();

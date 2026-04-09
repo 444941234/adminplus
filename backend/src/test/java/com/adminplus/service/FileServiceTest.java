@@ -3,6 +3,7 @@ package com.adminplus.service;
 import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.StorageType;
+import com.adminplus.pojo.dto.response.FileResponse;
 import com.adminplus.pojo.entity.FileEntity;
 import com.adminplus.repository.FileRepository;
 import com.adminplus.service.impl.FileServiceImpl;
@@ -47,6 +48,7 @@ class FileServiceTest {
     private FileServiceImpl fileService;
 
     private FileEntity testFile;
+    private FileResponse testResponse;
 
     @BeforeEach
     void setUp() {
@@ -62,6 +64,23 @@ class FileServiceTest {
         testFile.setDirectory("uploads");
         testFile.setStatus(0);
         testFile.setDeleted(false);
+
+        testResponse = new FileResponse(
+                testFile.getId(),
+                testFile.getOriginalName(),
+                testFile.getFileName(),
+                testFile.getFileExt(),
+                testFile.getFileSize(),
+                testFile.getContentType(),
+                testFile.getFileUrl(),
+                testFile.getStorageType(),
+                testFile.getDirectory(),
+                testFile.getStatus(),
+                testFile.getCreateUser(),
+                testFile.getUpdateUser(),
+                testFile.getCreateTime(),
+                testFile.getUpdateTime()
+        );
     }
 
     @Nested
@@ -75,11 +94,11 @@ class FileServiceTest {
             when(fileRepository.findByIdAndDeletedFalse("file-001")).thenReturn(Optional.of(testFile));
 
             // When
-            FileEntity result = fileService.getFileById("file-001");
+            FileResponse result = fileService.getFileById("file-001");
 
             // Then
             assertThat(result).isNotNull();
-            assertThat(result.getOriginalName()).isEqualTo("test.jpg");
+            assertThat(result.originalName()).isEqualTo("test.jpg");
         }
 
         @Test
@@ -141,11 +160,11 @@ class FileServiceTest {
                     .thenReturn(List.of(testFile));
 
             // When
-            List<FileEntity> result = fileService.getFilesByDirectory("uploads");
+            List<FileResponse> result = fileService.getFilesByDirectory("uploads");
 
             // Then
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getDirectory()).isEqualTo("uploads");
+            assertThat(result.get(0).directory()).isEqualTo("uploads");
         }
 
         @Test
@@ -156,7 +175,7 @@ class FileServiceTest {
                     .thenReturn(List.of());
 
             // When
-            List<FileEntity> result = fileService.getFilesByDirectory("empty");
+            List<FileResponse> result = fileService.getFilesByDirectory("empty");
 
             // Then
             assertThat(result).isEmpty();

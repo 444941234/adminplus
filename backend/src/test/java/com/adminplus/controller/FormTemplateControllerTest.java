@@ -1,7 +1,7 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.req.FormTemplateReq;
-import com.adminplus.pojo.dto.resp.FormTemplateResp;
+import com.adminplus.pojo.dto.request.FormTemplateRequest;
+import com.adminplus.pojo.dto.response.FormTemplateResponse;
 import com.adminplus.service.FormTemplateService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,7 +48,7 @@ class FormTemplateControllerTest {
     private FormTemplateController formTemplateController;
 
     private ObjectMapper objectMapper;
-    private FormTemplateResp testTemplate;
+    private FormTemplateResponse testTemplate;
 
     @BeforeEach
     void setUp() {
@@ -59,7 +59,7 @@ class FormTemplateControllerTest {
                 .build();
         objectMapper = TestJacksonConfig.createObjectMapper();
 
-        testTemplate = new FormTemplateResp(
+        testTemplate = new FormTemplateResponse(
             "template-001",
             "请假申请表",
             "leave_form",
@@ -166,7 +166,7 @@ class FormTemplateControllerTest {
         @Test
         @DisplayName("should create template successfully")
         void createTemplate_Success() throws Exception {
-            when(formTemplateService.createTemplate(any(FormTemplateReq.class))).thenReturn(testTemplate);
+            when(formTemplateService.createTemplate(any(FormTemplateRequest.class))).thenReturn(testTemplate);
 
             mockMvc.perform(post("/v1/form-templates")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -183,13 +183,13 @@ class FormTemplateControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.templateCode").value("leave_form"));
 
-            verify(formTemplateService).createTemplate(any(FormTemplateReq.class));
+            verify(formTemplateService).createTemplate(any(FormTemplateRequest.class));
         }
 
         @Test
         @DisplayName("should return 400 when template code already exists")
         void createTemplate_CodeExists() throws Exception {
-            when(formTemplateService.createTemplate(any(FormTemplateReq.class)))
+            when(formTemplateService.createTemplate(any(FormTemplateRequest.class)))
                 .thenThrow(new IllegalArgumentException("模板标识已存在"));
 
             mockMvc.perform(post("/v1/form-templates")
@@ -215,7 +215,7 @@ class FormTemplateControllerTest {
         @Test
         @DisplayName("should update template successfully")
         void updateTemplate_Success() throws Exception {
-            when(formTemplateService.updateTemplate(anyString(), any(FormTemplateReq.class)))
+            when(formTemplateService.updateTemplate(anyString(), any(FormTemplateRequest.class)))
                 .thenReturn(testTemplate);
 
             mockMvc.perform(put("/v1/form-templates/template-001")
@@ -231,13 +231,13 @@ class FormTemplateControllerTest {
                         """))
                 .andExpect(status().isOk());
 
-            verify(formTemplateService).updateTemplate(anyString(), any(FormTemplateReq.class));
+            verify(formTemplateService).updateTemplate(anyString(), any(FormTemplateRequest.class));
         }
 
         @Test
         @DisplayName("should return 404 when template not found")
         void updateTemplate_NotFound() throws Exception {
-            when(formTemplateService.updateTemplate(anyString(), any(FormTemplateReq.class)))
+            when(formTemplateService.updateTemplate(anyString(), any(FormTemplateRequest.class)))
                 .thenThrow(new IllegalArgumentException("表单模板不存在"));
 
             mockMvc.perform(put("/v1/form-templates/non-existent")

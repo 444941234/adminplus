@@ -1,12 +1,11 @@
 package com.adminplus.controller;
 
 import com.adminplus.common.annotation.LoginLog;
-import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.req.RefreshTokenReq;
-import com.adminplus.pojo.dto.req.UserLoginReq;
-import com.adminplus.pojo.dto.resp.LoginResp;
-import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.dto.request.RefreshTokenRequest;
+import com.adminplus.pojo.dto.request.UserLoginRequest;
+import com.adminplus.pojo.dto.response.LoginResponse;
+import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.service.AuthService;
 import com.adminplus.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,7 +14,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,27 +36,25 @@ public class AuthController {
     @PostMapping("/login")
     @Operation(summary = "用户登录")
     @LoginLog(type = 1, description = "用户登录")
-    public ApiResponse<LoginResp> login(@Valid @RequestBody UserLoginReq req) {
-        log.info("用户登录: {}", req.username());
-        LoginResp resp = authService.login(req);
-        return ApiResponse.ok(resp);
+    public ApiResponse<LoginResponse> login(@Valid @RequestBody UserLoginRequest request) {
+        log.info("用户登录: {}", request.username());
+        LoginResponse response = authService.login(request);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "获取当前用户信息")
-    public ApiResponse<UserResp> getCurrentUser(Authentication authentication) {
-        // 使用 SecurityUtils 获取当前用户名，支持 JWT 和 Session 认证
+    public ApiResponse<UserResponse> getCurrentUser() {
         String username = SecurityUtils.getCurrentUsername();
-        UserResp userResp = authService.getCurrentUser(username);
-        return ApiResponse.ok(userResp);
+        UserResponse userResponse = authService.getCurrentUser(username);
+        return ApiResponse.ok(userResponse);
     }
 
     @GetMapping("/permissions")
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "获取当前用户的权限列表")
-    public ApiResponse<List<String>> getCurrentUserPermissions(Authentication authentication) {
-        // 使用 SecurityUtils 获取当前用户名，支持 JWT 和 Session 认证
+    public ApiResponse<List<String>> getCurrentUserPermissions() {
         String username = SecurityUtils.getCurrentUsername();
         List<String> permissions = authService.getCurrentUserPermissions(username);
         return ApiResponse.ok(permissions);
@@ -76,8 +72,8 @@ public class AuthController {
     @PostMapping("/refresh")
     @Operation(summary = "刷新 Access Token")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<String> refreshAccessToken(@Valid @RequestBody RefreshTokenReq req) {
-        String newToken = authService.refreshAccessToken(req.refreshToken());
+    public ApiResponse<String> refreshAccessToken(@Valid @RequestBody RefreshTokenRequest request) {
+        String newToken = authService.refreshAccessToken(request.refreshToken());
         return ApiResponse.ok(newToken);
     }
 }

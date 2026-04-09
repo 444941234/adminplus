@@ -3,7 +3,7 @@ package com.adminplus.controller;
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.entity.FileEntity;
+import com.adminplus.pojo.dto.response.FileResponse;
 import com.adminplus.service.FileService;
 import com.adminplus.utils.XssUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,15 +34,15 @@ public class FileController {
     @Operation(summary = "上传文件")
     @OperationLog(module = "文件管理", operationType = 2, description = "上传文件 {#file.originalFilename}")
     @PreAuthorize("hasAuthority('file:upload')")
-    public ApiResponse<FileEntity> uploadFile(
+    public ApiResponse<FileResponse> uploadFile(
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "directory", defaultValue = "files") String directory) {
         // 验证目录名称安全性，防止路径遍历攻击
         if (!XssUtils.isSafePath(directory)) {
             throw new BizException(400, "目录名称不合法，不能包含特殊字符或路径遍历符");
         }
-        FileEntity fileEntity = fileService.uploadFile(file, directory);
-        return ApiResponse.ok(fileEntity);
+        FileResponse fileResponse = fileService.uploadFile(file, directory);
+        return ApiResponse.ok(fileResponse);
     }
 
     @DeleteMapping("/{fileId}")
@@ -57,24 +57,24 @@ public class FileController {
     @GetMapping("/{fileId}")
     @Operation(summary = "获取文件信息")
     @PreAuthorize("hasAuthority('file:list')")
-    public ApiResponse<FileEntity> getFile(@PathVariable String fileId) {
-        FileEntity fileEntity = fileService.getFileWithAuth(fileId);
-        return ApiResponse.ok(fileEntity);
+    public ApiResponse<FileResponse> getFile(@PathVariable String fileId) {
+        FileResponse fileResponse = fileService.getFileWithAuth(fileId);
+        return ApiResponse.ok(fileResponse);
     }
 
     @GetMapping("/my")
     @Operation(summary = "获取当前用户的文件列表")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<FileEntity>> getMyFiles() {
-        List<FileEntity> files = fileService.getUserFiles();
+    public ApiResponse<List<FileResponse>> getMyFiles() {
+        List<FileResponse> files = fileService.getUserFiles();
         return ApiResponse.ok(files);
     }
 
     @GetMapping("/directory/{directory}")
     @Operation(summary = "根据目录获取文件列表")
     @PreAuthorize("hasAuthority('file:list')")
-    public ApiResponse<List<FileEntity>> getFilesByDirectory(@PathVariable String directory) {
-        List<FileEntity> files = fileService.getFilesByDirectory(directory);
+    public ApiResponse<List<FileResponse>> getFilesByDirectory(@PathVariable String directory) {
+        List<FileResponse> files = fileService.getFilesByDirectory(directory);
         return ApiResponse.ok(files);
     }
 }

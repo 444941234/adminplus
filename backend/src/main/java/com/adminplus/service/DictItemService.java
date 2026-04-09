@@ -1,8 +1,8 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.DictItemCreateReq;
-import com.adminplus.pojo.dto.req.DictItemUpdateReq;
-import com.adminplus.pojo.dto.resp.DictItemResp;
+import com.adminplus.pojo.dto.request.DictItemCreateRequest;
+import com.adminplus.pojo.dto.request.DictItemUpdateRequest;
+import com.adminplus.pojo.dto.response.DictItemResponse;
 
 import java.util.List;
 
@@ -17,32 +17,32 @@ public interface DictItemService {
     /**
      * 根据字典ID查询字典项列表
      */
-    List<DictItemResp> getDictItemsByDictId(String dictId);
+    List<DictItemResponse> getDictItemsByDictId(String dictId);
 
     /**
      * 根据字典ID查询字典项树形结构
      */
-    List<DictItemResp> getDictItemTreeByDictId(String dictId);
+    List<DictItemResponse> getDictItemTreeByDictId(String dictId);
 
     /**
      * 根据字典类型查询字典项列表（仅启用状态的）
      */
-    List<DictItemResp> getDictItemsByType(String dictType);
+    List<DictItemResponse> getDictItemsByType(String dictType);
 
     /**
      * 根据ID查询字典项
      */
-    DictItemResp getDictItemById(String id);
+    DictItemResponse getDictItemById(String id);
 
     /**
      * 创建字典项
      */
-    DictItemResp createDictItem(DictItemCreateReq req);
+    DictItemResponse createDictItem(DictItemCreateRequest request);
 
     /**
      * 更新字典项
      */
-    DictItemResp updateDictItem(String id, DictItemUpdateReq req);
+    DictItemResponse updateDictItem(String id, DictItemUpdateRequest request);
 
     /**
      * 删除字典项

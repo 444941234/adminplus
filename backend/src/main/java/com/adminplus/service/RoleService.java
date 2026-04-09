@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.dto.query.RoleQuery;
-import com.adminplus.pojo.dto.req.RoleCreateReq;
-import com.adminplus.pojo.dto.req.RoleUpdateReq;
-import com.adminplus.pojo.dto.resp.PageResultResp;
-import com.adminplus.pojo.dto.resp.RoleResp;
+import com.adminplus.pojo.dto.request.RoleCreateRequest;
+import com.adminplus.pojo.dto.request.RoleUpdateRequest;
+import com.adminplus.pojo.dto.response.PageResultResponse;
+import com.adminplus.pojo.dto.response.RoleResponse;
 
 import java.util.List;
 
@@ -19,32 +19,32 @@ public interface RoleService {
     /**
      * 分页查询角色列表
      *
-     * @param req 查询条件
+     * @param query 查询条件
      * @return 分页结果
      */
-    PageResultResp<RoleResp> getRoleList(RoleQuery req);
+    PageResultResponse<RoleResponse> getRoleList(RoleQuery query);
 
     /**
      * 查询所有角色列表（用于下拉选择等场景）
      *
      * @return 角色列表
      */
-    List<RoleResp> getAllRoles();
+    List<RoleResponse> getAllRoles();
 
     /**
      * 根据ID查询角色
      */
-    RoleResp getRoleById(String id);
+    RoleResponse getRoleById(String id);
 
     /**
      * 创建角色
      */
-    RoleResp createRole(RoleCreateReq req);
+    RoleResponse createRole(RoleCreateRequest request);
 
     /**
      * 更新角色
      */
-    RoleResp updateRole(String id, RoleUpdateReq req);
+    RoleResponse updateRole(String id, RoleUpdateRequest request);
 
     /**
      * 删除角色

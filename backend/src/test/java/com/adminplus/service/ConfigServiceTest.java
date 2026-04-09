@@ -2,9 +2,9 @@ package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.query.ConfigQuery;
-import com.adminplus.pojo.dto.req.*;
-import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.resp.*;
+import com.adminplus.pojo.dto.request.*;
+import com.adminplus.pojo.dto.request.LogEntry;
+import com.adminplus.pojo.dto.response.*;
 import com.adminplus.pojo.entity.ConfigEntity;
 import com.adminplus.pojo.entity.ConfigGroupEntity;
 import com.adminplus.pojo.entity.ConfigHistoryEntity;
@@ -99,7 +99,7 @@ class ConfigServiceTest {
             when(configGroupRepository.findById("group-001")).thenReturn(Optional.of(testGroup));
 
             // When
-            ConfigResp result = configService.getConfigById("config-001");
+            ConfigResponse result = configService.getConfigById("config-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -132,7 +132,7 @@ class ConfigServiceTest {
             when(configGroupRepository.findById("group-001")).thenReturn(Optional.of(testGroup));
 
             // When
-            ConfigResp result = configService.getConfigByKey("test.key");
+            ConfigResponse result = configService.getConfigByKey("test.key");
 
             // Then
             assertThat(result).isNotNull();
@@ -166,7 +166,7 @@ class ConfigServiceTest {
             when(configGroupRepository.findById("group-001")).thenReturn(Optional.of(testGroup));
 
             // When
-            List<ConfigResp> result = configService.getConfigsByGroupId("group-001");
+            List<ConfigResponse> result = configService.getConfigsByGroupId("group-001");
 
             // Then
             assertThat(result).hasSize(1);
@@ -194,7 +194,7 @@ class ConfigServiceTest {
         @DisplayName("should create config successfully")
         void createConfig_ShouldCreateConfig() {
             // Given
-            ConfigCreateReq req = new ConfigCreateReq(
+            ConfigCreateRequest req = new ConfigCreateRequest(
                     "group-001", "新配置", "new.key", "new-value",
                     "STRING", "IMMEDIATE", null, "新配置项",
                     false, null, 1
@@ -205,7 +205,7 @@ class ConfigServiceTest {
             when(configHistoryRepository.save(any())).thenReturn(new ConfigHistoryEntity());
 
             // When
-            ConfigResp result = configService.createConfig(req);
+            ConfigResponse result = configService.createConfig(req);
 
             // Then
             assertThat(result).isNotNull();
@@ -218,7 +218,7 @@ class ConfigServiceTest {
         @DisplayName("should throw exception when key already exists")
         void createConfig_WhenKeyExists_ShouldThrowException() {
             // Given
-            ConfigCreateReq req = new ConfigCreateReq(
+            ConfigCreateRequest req = new ConfigCreateRequest(
                     "group-001", "新配置", "existing.key", "new-value",
                     "STRING", "IMMEDIATE", null, "新配置项",
                     false, null, 1
@@ -240,7 +240,7 @@ class ConfigServiceTest {
         @DisplayName("should update config successfully")
         void updateConfig_ShouldUpdateConfig() {
             // Given
-            ConfigUpdateReq req = new ConfigUpdateReq(
+            ConfigUpdateRequest req = new ConfigUpdateRequest(
                     "更新配置", "updated-value", null, null, null,
                     "更新描述", null, null, null, 1
             );
@@ -249,7 +249,7 @@ class ConfigServiceTest {
             when(configHistoryRepository.save(any())).thenReturn(new ConfigHistoryEntity());
 
             // When
-            ConfigResp result = configService.updateConfig("config-001", req);
+            ConfigResponse result = configService.updateConfig("config-001", req);
 
             // Then
             assertThat(result).isNotNull();
@@ -260,7 +260,7 @@ class ConfigServiceTest {
         @DisplayName("should throw exception when config not found")
         void updateConfig_WhenNotFound_ShouldThrowException() {
             // Given
-            ConfigUpdateReq req = new ConfigUpdateReq(
+            ConfigUpdateRequest req = new ConfigUpdateRequest(
                     null, "value", null, null, null, null, null, null, null, null
             );
             when(configRepository.findById("non-existent")).thenReturn(Optional.empty());
@@ -349,7 +349,7 @@ class ConfigServiceTest {
 
             // When - use record constructor
             ConfigQuery query = new ConfigQuery(1, 20, null, null, null);
-            PageResultResp<ConfigResp> result = configService.getConfigList(query);
+            PageResultResponse<ConfigResponse> result = configService.getConfigList(query);
 
             // Then
             assertThat(result.records()).hasSize(1);
@@ -367,7 +367,7 @@ class ConfigServiceTest {
             // Given - no need for objectMapper mock since NUMBER validation doesn't use it
 
             // When - creating a NUMBER config with valid value
-            ConfigCreateReq req = new ConfigCreateReq(
+            ConfigCreateRequest req = new ConfigCreateRequest(
                     "group-001", "数字配置", "num.key", "123.45",
                     "NUMBER", "IMMEDIATE", null, "数字配置项",
                     false, null, 1
@@ -385,7 +385,7 @@ class ConfigServiceTest {
         @DisplayName("should throw exception for invalid NUMBER type")
         void validateConfigValue_InvalidNumber_ShouldThrowException() {
             // Given
-            ConfigCreateReq req = new ConfigCreateReq(
+            ConfigCreateRequest req = new ConfigCreateRequest(
                     "group-001", "数字配置", "num.key", "not-a-number",
                     "NUMBER", "IMMEDIATE", null, "数字配置项",
                     false, null, 1
@@ -403,7 +403,7 @@ class ConfigServiceTest {
         @DisplayName("should validate BOOLEAN type successfully")
         void validateConfigValue_BooleanType_ShouldPass() {
             // Given
-            ConfigCreateReq req = new ConfigCreateReq(
+            ConfigCreateRequest req = new ConfigCreateRequest(
                     "group-001", "布尔配置", "bool.key", "true",
                     "BOOLEAN", "IMMEDIATE", null, "布尔配置项",
                     false, null, 1
@@ -421,7 +421,7 @@ class ConfigServiceTest {
         @DisplayName("should throw exception for invalid BOOLEAN type")
         void validateConfigValue_InvalidBoolean_ShouldThrowException() {
             // Given
-            ConfigCreateReq req = new ConfigCreateReq(
+            ConfigCreateRequest req = new ConfigCreateRequest(
                     "group-001", "布尔配置", "bool.key", "maybe",
                     "BOOLEAN", "IMMEDIATE", null, "布尔配置项",
                     false, null, 1

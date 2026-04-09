@@ -2,14 +2,10 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.req.AddSignReq;
-import com.adminplus.pojo.dto.req.ApprovalActionReq;
-import com.adminplus.pojo.dto.req.WorkflowStartReq;
-import com.adminplus.pojo.dto.resp.WorkflowAddSignResp;
-import com.adminplus.pojo.dto.resp.WorkflowApprovalResp;
-import com.adminplus.pojo.dto.resp.WorkflowDetailResp;
-import com.adminplus.pojo.dto.resp.WorkflowDraftDetailResp;
-import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
+import com.adminplus.pojo.dto.request.AddSignRequest;
+import com.adminplus.pojo.dto.request.ApprovalActionRequest;
+import com.adminplus.pojo.dto.request.WorkflowStartRequest;
+import com.adminplus.pojo.dto.response.*;
 import com.adminplus.service.WorkflowInstanceService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -39,11 +35,11 @@ public class WorkflowInstanceController {
 
     @PostMapping("/draft")
     @Operation(summary = "创建工作流草稿")
-    @OperationLog(module = "工作流管理", operationType = 2, description = "创建工作流草稿 {#req.title}")
+    @OperationLog(module = "工作流管理", operationType = 2, description = "创建工作流草稿 {#request.title}")
     @PreAuthorize("hasAnyAuthority('workflow:draft', 'workflow:create')")
-    public ApiResponse<WorkflowInstanceResp> createDraft(@Valid @RequestBody WorkflowStartReq req) {
-        log.info("创建工作流草稿: title={}", req.title());
-        WorkflowInstanceResp resp = instanceService.createDraft(req);
+    public ApiResponse<WorkflowInstanceResponse> createDraft(@Valid @RequestBody WorkflowStartRequest request) {
+        log.info("创建工作流草稿: title={}", request.title());
+        WorkflowInstanceResponse resp = instanceService.createDraft(request);
         return ApiResponse.ok(resp);
     }
 
@@ -51,54 +47,49 @@ public class WorkflowInstanceController {
     @Operation(summary = "提交工作流")
     @OperationLog(module = "工作流管理", operationType = 2, description = "提交工作流 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:start', 'workflow:draft', 'workflow:create')")
-    public ApiResponse<WorkflowInstanceResp> submit(
+    public ApiResponse<WorkflowInstanceResponse> submit(
             @PathVariable String instanceId,
-            @RequestBody(required = false) WorkflowStartReq req) {
+            @RequestBody(required = false) WorkflowStartRequest request) {
         log.info("提交工作流: instanceId={}", instanceId);
-        WorkflowInstanceResp resp = instanceService.submit(instanceId, req);
-        return ApiResponse.ok(resp);
+        WorkflowInstanceResponse response = instanceService.submit(instanceId, request);
+        return ApiResponse.ok(response);
     }
 
     @PostMapping("/start")
     @Operation(summary = "发起并提交工作流")
-    @OperationLog(module = "工作流管理", operationType = 2, description = "发起工作流 {#req.title}")
+    @OperationLog(module = "工作流管理", operationType = 2, description = "发起工作流 {#request.title}")
     @PreAuthorize("hasAnyAuthority('workflow:start', 'workflow:create')")
-    public ApiResponse<WorkflowInstanceResp> start(@Valid @RequestBody WorkflowStartReq req) {
-        log.info("发起工作流: title={}", req.title());
-        WorkflowInstanceResp resp = instanceService.start(req);
-        return ApiResponse.ok(resp);
+    public ApiResponse<WorkflowInstanceResponse> start(@Valid @RequestBody WorkflowStartRequest request) {
+        log.info("发起工作流: title={}", request.title());
+        WorkflowInstanceResponse response = instanceService.start(request);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/{instanceId}")
     @Operation(summary = "查询工作流详情")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "查询成功"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "无权限查看该工作流"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "工作流实例不存在")
-    })
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<WorkflowDetailResp> getDetail(@PathVariable String instanceId) {
-        WorkflowDetailResp resp = instanceService.getDetail(instanceId);
-        return ApiResponse.ok(resp);
+    public ApiResponse<WorkflowDetailResponse> getDetail(@PathVariable String instanceId) {
+        WorkflowDetailResponse response = instanceService.getDetail(instanceId);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/{instanceId}/draft")
     @Operation(summary = "查询工作流草稿详情")
     @PreAuthorize("hasAnyAuthority('workflow:draft', 'workflow:create')")
-    public ApiResponse<WorkflowDraftDetailResp> getDraftDetail(@PathVariable String instanceId) {
-        WorkflowDraftDetailResp resp = instanceService.getDraftDetail(instanceId);
-        return ApiResponse.ok(resp);
+    public ApiResponse<WorkflowDraftDetailResponse> getDraftDetail(@PathVariable String instanceId) {
+        WorkflowDraftDetailResponse response = instanceService.getDraftDetail(instanceId);
+        return ApiResponse.ok(response);
     }
 
     @PutMapping("/{instanceId}/draft")
     @Operation(summary = "更新工作流草稿")
     @OperationLog(module = "工作流管理", operationType = 3, description = "更新工作流草稿 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:draft', 'workflow:create')")
-    public ApiResponse<WorkflowInstanceResp> updateDraft(
+    public ApiResponse<WorkflowInstanceResponse> updateDraft(
             @PathVariable String instanceId,
-            @Valid @RequestBody WorkflowStartReq req) {
-        WorkflowInstanceResp resp = instanceService.updateDraft(instanceId, req);
-        return ApiResponse.ok(resp);
+            @Valid @RequestBody WorkflowStartRequest request) {
+        WorkflowInstanceResponse response = instanceService.updateDraft(instanceId, request);
+        return ApiResponse.ok(response);
     }
 
     @DeleteMapping("/{instanceId}/draft")
@@ -113,18 +104,18 @@ public class WorkflowInstanceController {
     @GetMapping("/my")
     @Operation(summary = "查询我发起的工作流")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<WorkflowInstanceResp>> getMyWorkflows(
+    public ApiResponse<List<WorkflowInstanceResponse>> getMyWorkflows(
             @RequestParam(required = false) String status) {
-        List<WorkflowInstanceResp> resp = instanceService.getMyWorkflows(status);
-        return ApiResponse.ok(resp);
+        List<WorkflowInstanceResponse> responses = instanceService.getMyWorkflows(status);
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/pending")
     @Operation(summary = "查询待我审批的工作流")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<WorkflowInstanceResp>> getPendingApprovals() {
-        List<WorkflowInstanceResp> resp = instanceService.getPendingApprovals();
-        return ApiResponse.ok(resp);
+    public ApiResponse<List<WorkflowInstanceResponse>> getPendingApprovals() {
+        List<WorkflowInstanceResponse> responses = instanceService.getPendingApprovals();
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/pending/count")
@@ -145,30 +136,24 @@ public class WorkflowInstanceController {
     })
     @OperationLog(module = "工作流管理", operationType = 3, description = "同意审批 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:approve')")
-    public ApiResponse<WorkflowInstanceResp> approve(
+    public ApiResponse<WorkflowInstanceResponse> approve(
             @PathVariable String instanceId,
-            @Valid @RequestBody ApprovalActionReq req) {
+            @Valid @RequestBody ApprovalActionRequest request) {
         log.info("同意审批: instanceId={}", instanceId);
-        WorkflowInstanceResp resp = instanceService.approve(instanceId, req);
-        return ApiResponse.ok(resp);
+        WorkflowInstanceResponse response = instanceService.approve(instanceId, request);
+        return ApiResponse.ok(response);
     }
 
     @PostMapping("/{instanceId}/reject")
     @Operation(summary = "拒绝审批")
-    @ApiResponses({
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "拒绝成功"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "工作流不在运行状态或已审批"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "无审批权限"),
-        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "工作流实例不存在")
-    })
     @OperationLog(module = "工作流管理", operationType = 3, description = "拒绝审批 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:reject', 'workflow:approve')")
-    public ApiResponse<WorkflowInstanceResp> reject(
+    public ApiResponse<WorkflowInstanceResponse> reject(
             @PathVariable String instanceId,
-            @Valid @RequestBody ApprovalActionReq req) {
+            @Valid @RequestBody ApprovalActionRequest request) {
         log.info("拒绝审批: instanceId={}", instanceId);
-        WorkflowInstanceResp resp = instanceService.reject(instanceId, req);
-        return ApiResponse.ok(resp);
+        WorkflowInstanceResponse response = instanceService.reject(instanceId, request);
+        return ApiResponse.ok(response);
     }
 
     @PostMapping("/{instanceId}/cancel")
@@ -195,47 +180,47 @@ public class WorkflowInstanceController {
     @Operation(summary = "回退工作流")
     @OperationLog(module = "工作流管理", operationType = 3, description = "回退工作流 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:rollback', 'workflow:approve')")
-    public ApiResponse<WorkflowInstanceResp> rollback(
+    public ApiResponse<WorkflowInstanceResponse> rollback(
             @PathVariable String instanceId,
-            @Valid @RequestBody ApprovalActionReq req) {
+            @Valid @RequestBody ApprovalActionRequest request) {
         log.info("回退工作流: instanceId={}", instanceId);
-        WorkflowInstanceResp resp = instanceService.rollback(instanceId, req);
-        return ApiResponse.ok(resp);
+        WorkflowInstanceResponse response = instanceService.rollback(instanceId, request);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/{instanceId}/rollbackable-nodes")
     @Operation(summary = "获取可回退的节点列表")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<com.adminplus.pojo.dto.resp.WorkflowNodeResp>> getRollbackableNodes(@PathVariable String instanceId) {
-        List<com.adminplus.pojo.dto.resp.WorkflowNodeResp> resp = instanceService.getRollbackableNodes(instanceId);
-        return ApiResponse.ok(resp);
+    public ApiResponse<List<WorkflowNodeResponse>> getRollbackableNodes(@PathVariable String instanceId) {
+        List<WorkflowNodeResponse> responses = instanceService.getRollbackableNodes(instanceId);
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/{instanceId}/approvals")
     @Operation(summary = "查询审批记录")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<WorkflowApprovalResp>> getApprovals(@PathVariable String instanceId) {
-        List<WorkflowApprovalResp> resp = instanceService.getApprovals(instanceId);
-        return ApiResponse.ok(resp);
+    public ApiResponse<List<WorkflowApprovalResponse>> getApprovals(@PathVariable String instanceId) {
+        List<WorkflowApprovalResponse> responses = instanceService.getApprovals(instanceId);
+        return ApiResponse.ok(responses);
     }
 
     @PostMapping("/{instanceId}/add-sign")
     @Operation(summary = "加签/转办")
     @OperationLog(module = "工作流管理", operationType = 3, description = "加签/转办 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:add-sign', 'workflow:approve')")
-    public ApiResponse<WorkflowAddSignResp> addSign(
+    public ApiResponse<WorkflowAddSignResponse> addSign(
             @PathVariable String instanceId,
-            @Valid @RequestBody AddSignReq req) {
+            @Valid @RequestBody AddSignRequest request) {
         log.info("加签/转办: instanceId={}", instanceId);
-        WorkflowAddSignResp resp = instanceService.addSign(instanceId, req);
-        return ApiResponse.ok(resp);
+        WorkflowAddSignResponse response = instanceService.addSign(instanceId, request);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/{instanceId}/add-sign-records")
     @Operation(summary = "查询加签记录")
     @PreAuthorize("isAuthenticated()")
-    public ApiResponse<List<WorkflowAddSignResp>> getAddSignRecords(@PathVariable String instanceId) {
-        List<WorkflowAddSignResp> resp = instanceService.getAddSignRecords(instanceId);
-        return ApiResponse.ok(resp);
+    public ApiResponse<List<WorkflowAddSignResponse>> getAddSignRecords(@PathVariable String instanceId) {
+        List<WorkflowAddSignResponse> responses = instanceService.getAddSignRecords(instanceId);
+        return ApiResponse.ok(responses);
     }
 }

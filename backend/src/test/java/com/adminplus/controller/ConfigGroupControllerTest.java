@@ -1,11 +1,10 @@
 package com.adminplus.controller;
 
-import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.pojo.dto.query.ConfigGroupQuery;
-import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
-import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
-import com.adminplus.pojo.dto.resp.ConfigGroupResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.ConfigGroupCreateRequest;
+import com.adminplus.pojo.dto.request.ConfigGroupUpdateRequest;
+import com.adminplus.pojo.dto.response.ConfigGroupResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.ConfigGroupService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -59,8 +58,8 @@ class ConfigGroupControllerTest {
         objectMapper = TestJacksonConfig.createObjectMapper();
     }
 
-    private ConfigGroupResp createTestGroupResp() {
-        return new ConfigGroupResp(
+    private ConfigGroupResponse createTestGroupResp() {
+        return new ConfigGroupResponse(
                 "1",
                 "系统配置",
                 "system",
@@ -82,7 +81,7 @@ class ConfigGroupControllerTest {
         @DisplayName("成功查询配置组列表")
         void shouldReturnConfigGroupList() throws Exception {
             // Given
-            PageResultResp<ConfigGroupResp> pageResult = new PageResultResp<>(
+            PageResultResponse<ConfigGroupResponse> pageResult = new PageResultResponse<>(
                     Collections.singletonList(createTestGroupResp()),
                     1L,
                     1,
@@ -105,7 +104,7 @@ class ConfigGroupControllerTest {
         @DisplayName("成功按关键字搜索配置组")
         void shouldSearchConfigGroupsByKeyword() throws Exception {
             // Given
-            PageResultResp<ConfigGroupResp> pageResult = new PageResultResp<>(
+            PageResultResponse<ConfigGroupResponse> pageResult = new PageResultResponse<>(
                     Collections.singletonList(createTestGroupResp()),
                     1L,
                     1,
@@ -133,7 +132,7 @@ class ConfigGroupControllerTest {
         @DisplayName("成功查询启用的配置组列表")
         void shouldReturnActiveConfigGroups() throws Exception {
             // Given
-            List<ConfigGroupResp> groups = Collections.singletonList(createTestGroupResp());
+            List<ConfigGroupResponse> groups = Collections.singletonList(createTestGroupResp());
             when(configGroupService.getActiveConfigGroups()).thenReturn(groups);
 
             // When & Then
@@ -154,7 +153,7 @@ class ConfigGroupControllerTest {
         @DisplayName("成功根据编码查询配置组")
         void shouldReturnConfigGroupByCode() throws Exception {
             // Given
-            ConfigGroupResp group = createTestGroupResp();
+            ConfigGroupResponse group = createTestGroupResp();
             when(configGroupService.getConfigGroupByCode("system")).thenReturn(group);
 
             // When & Then
@@ -175,7 +174,7 @@ class ConfigGroupControllerTest {
         @DisplayName("成功根据ID查询配置组")
         void shouldReturnConfigGroupById() throws Exception {
             // Given
-            ConfigGroupResp group = createTestGroupResp();
+            ConfigGroupResponse group = createTestGroupResp();
             when(configGroupService.getConfigGroupById("1")).thenReturn(group);
 
             // When & Then
@@ -196,14 +195,14 @@ class ConfigGroupControllerTest {
         @DisplayName("成功创建配置组")
         void shouldCreateConfigGroup() throws Exception {
             // Given
-            ConfigGroupCreateReq req = new ConfigGroupCreateReq(
+            ConfigGroupCreateRequest req = new ConfigGroupCreateRequest(
                     "数据库配置",
                     "database",
                     "Database",
                     2,
                     "数据库相关配置"
             );
-            ConfigGroupResp result = new ConfigGroupResp(
+            ConfigGroupResponse result = new ConfigGroupResponse(
                     "2",
                     "数据库配置",
                     "database",
@@ -215,7 +214,7 @@ class ConfigGroupControllerTest {
                     Instant.now(),
                     Instant.now()
             );
-            when(configGroupService.createConfigGroup(any(ConfigGroupCreateReq.class))).thenReturn(result);
+            when(configGroupService.createConfigGroup(any(ConfigGroupCreateRequest.class))).thenReturn(result);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/config-groups")
@@ -226,7 +225,7 @@ class ConfigGroupControllerTest {
                     .andExpect(jsonPath("$.data.name").value("数据库配置"))
                     .andExpect(jsonPath("$.data.code").value("database"));
 
-            verify(configGroupService).createConfigGroup(any(ConfigGroupCreateReq.class));
+            verify(configGroupService).createConfigGroup(any(ConfigGroupCreateRequest.class));
         }
     }
 
@@ -238,14 +237,14 @@ class ConfigGroupControllerTest {
         @DisplayName("成功更新配置组")
         void shouldUpdateConfigGroup() throws Exception {
             // Given
-            ConfigGroupUpdateReq req = new ConfigGroupUpdateReq(
+            ConfigGroupUpdateRequest req = new ConfigGroupUpdateRequest(
                     "系统配置（已更新）",
                     "Settings2",
                     2,
                     "更新后的描述"
             );
-            ConfigGroupResp result = createTestGroupResp();
-            when(configGroupService.updateConfigGroup(eq("1"), any(ConfigGroupUpdateReq.class))).thenReturn(result);
+            ConfigGroupResponse result = createTestGroupResp();
+            when(configGroupService.updateConfigGroup(eq("1"), any(ConfigGroupUpdateRequest.class))).thenReturn(result);
 
             // When & Then
             mockMvc.perform(put("/v1/sys/config-groups/1")
@@ -255,7 +254,7 @@ class ConfigGroupControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.name").value("系统配置"));
 
-            verify(configGroupService).updateConfigGroup(eq("1"), any(ConfigGroupUpdateReq.class));
+            verify(configGroupService).updateConfigGroup(eq("1"), any(ConfigGroupUpdateRequest.class));
         }
     }
 

@@ -2,8 +2,8 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.req.UrgeActionReq;
-import com.adminplus.pojo.dto.resp.WorkflowUrgeResp;
+import com.adminplus.pojo.dto.request.UrgeActionRequest;
+import com.adminplus.pojo.dto.response.WorkflowUrgeResponse;
 import com.adminplus.service.WorkflowUrgeService;
 import com.adminplus.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -37,37 +37,37 @@ public class WorkflowUrgeController {
     @PreAuthorize("hasAnyAuthority('workflow:urge', 'workflow:create')")
     public ApiResponse<Void> urgeWorkflow(
             @PathVariable String instanceId,
-            @Valid @RequestBody UrgeActionReq req) {
+            @Valid @RequestBody UrgeActionRequest request) {
         log.info("催办工作流: instanceId={}", instanceId);
-        urgeService.urgeWorkflow(instanceId, req);
+        urgeService.urgeWorkflow(instanceId, request);
         return ApiResponse.ok();
     }
 
     @GetMapping("/received")
     @Operation(summary = "获取收到的催办记录")
     @PreAuthorize("hasAnyAuthority('workflow:urge:list', 'workflow:urge')")
-    public ApiResponse<List<WorkflowUrgeResp>> getReceivedUrgeRecords() {
+    public ApiResponse<List<WorkflowUrgeResponse>> getReceivedUrgeRecords() {
         String userId = SecurityUtils.getCurrentUserId();
-        List<WorkflowUrgeResp> resp = urgeService.getReceivedUrgeRecords(userId);
-        return ApiResponse.ok(resp);
+        List<WorkflowUrgeResponse> responses = urgeService.getReceivedUrgeRecords(userId);
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/sent")
     @Operation(summary = "获取发送的催办记录")
     @PreAuthorize("hasAnyAuthority('workflow:urge:list', 'workflow:urge')")
-    public ApiResponse<List<WorkflowUrgeResp>> getSentUrgeRecords() {
+    public ApiResponse<List<WorkflowUrgeResponse>> getSentUrgeRecords() {
         String userId = SecurityUtils.getCurrentUserId();
-        List<WorkflowUrgeResp> resp = urgeService.getSentUrgeRecords(userId);
-        return ApiResponse.ok(resp);
+        List<WorkflowUrgeResponse> responses = urgeService.getSentUrgeRecords(userId);
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/unread")
     @Operation(summary = "获取未读催办记录")
     @PreAuthorize("hasAnyAuthority('workflow:urge:list', 'workflow:urge')")
-    public ApiResponse<List<WorkflowUrgeResp>> getUnreadUrgeRecords() {
+    public ApiResponse<List<WorkflowUrgeResponse>> getUnreadUrgeRecords() {
         String userId = SecurityUtils.getCurrentUserId();
-        List<WorkflowUrgeResp> resp = urgeService.getUnreadUrgeRecords(userId);
-        return ApiResponse.ok(resp);
+        List<WorkflowUrgeResponse> responses = urgeService.getUnreadUrgeRecords(userId);
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/unread/count")
@@ -82,9 +82,9 @@ public class WorkflowUrgeController {
     @GetMapping("/instance/{instanceId}")
     @Operation(summary = "获取工作流实例的催办记录")
     @PreAuthorize("hasAnyAuthority('workflow:urge:list', 'workflow:urge')")
-    public ApiResponse<List<WorkflowUrgeResp>> getInstanceUrgeRecords(@PathVariable String instanceId) {
-        List<WorkflowUrgeResp> resp = urgeService.getInstanceUrgeRecords(instanceId);
-        return ApiResponse.ok(resp);
+    public ApiResponse<List<WorkflowUrgeResponse>> getInstanceUrgeRecords(@PathVariable String instanceId) {
+        List<WorkflowUrgeResponse> responses = urgeService.getInstanceUrgeRecords(instanceId);
+        return ApiResponse.ok(responses);
     }
 
     @PutMapping("/{urgeId}/read")

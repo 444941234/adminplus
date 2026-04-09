@@ -1,8 +1,8 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.resp.DeptResp;
-import com.adminplus.pojo.dto.req.DeptCreateReq;
-import com.adminplus.pojo.dto.req.DeptUpdateReq;
+import com.adminplus.pojo.dto.response.DeptResponse;
+import com.adminplus.pojo.dto.request.DeptCreateRequest;
+import com.adminplus.pojo.dto.request.DeptUpdateRequest;
 import com.adminplus.service.DeptService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -47,17 +47,17 @@ class DeptControllerTest {
     private DeptController deptController;
 
     private ObjectMapper objectMapper;
-    private DeptResp testDept;
-    private DeptCreateReq createReq;
-    private DeptUpdateReq updateReq;
+    private DeptResponse testDept;
+    private DeptCreateRequest createReq;
+    private DeptUpdateRequest updateReq;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(deptController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
-        testDept = new DeptResp("dept-001", null, "技术部", "TECH", "张三", "13800138000", "tech@example.com", 1, 1, null, null, null);
-        createReq = new DeptCreateReq(null, "技术部", "TECH", "张三", "13800138000", "tech@example.com", 1, 1);
-        updateReq = new DeptUpdateReq(Optional.empty(), Optional.of("技术部"), Optional.of("TECH"), Optional.of("张三"), Optional.of("13800138000"), Optional.of("tech@example.com"), Optional.of(1), Optional.of(1));
+        testDept = new DeptResponse("dept-001", null, "技术部", "TECH", "张三", "13800138000", "tech@example.com", 1, 1, null, null, null);
+        createReq = new DeptCreateRequest(null, "技术部", "TECH", "张三", "13800138000", "tech@example.com", 1, 1);
+        updateReq = new DeptUpdateRequest(Optional.empty(), Optional.of("技术部"), Optional.of("TECH"), Optional.of("张三"), Optional.of("13800138000"), Optional.of("tech@example.com"), Optional.of(1), Optional.of(1));
     }
 
     @Nested
@@ -108,7 +108,7 @@ class DeptControllerTest {
         @DisplayName("should create dept")
         void createDept_ShouldCreateDept() throws Exception {
             // Given
-            when(deptService.createDept(any(DeptCreateReq.class))).thenReturn(testDept);
+            when(deptService.createDept(any(DeptCreateRequest.class))).thenReturn(testDept);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/depts")
@@ -118,7 +118,7 @@ class DeptControllerTest {
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.name").value("技术部"));
 
-            verify(deptService).createDept(any(DeptCreateReq.class));
+            verify(deptService).createDept(any(DeptCreateRequest.class));
         }
     }
 
@@ -130,7 +130,7 @@ class DeptControllerTest {
         @DisplayName("should update dept")
         void updateDept_ShouldUpdateDept() throws Exception {
             // Given
-            when(deptService.updateDept(anyString(), any(DeptUpdateReq.class))).thenReturn(testDept);
+            when(deptService.updateDept(anyString(), any(DeptUpdateRequest.class))).thenReturn(testDept);
 
             // When & Then
             mockMvc.perform(put("/v1/sys/depts/dept-001")
@@ -139,7 +139,7 @@ class DeptControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(deptService).updateDept(anyString(), any(DeptUpdateReq.class));
+            verify(deptService).updateDept(anyString(), any(DeptUpdateRequest.class));
         }
     }
 

@@ -2,9 +2,9 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.workflow.hook.WorkflowNodeHookReq;
-import com.adminplus.pojo.entity.WorkflowNodeHookEntity;
-import com.adminplus.repository.WorkflowNodeHookRepository;
+import com.adminplus.pojo.dto.response.WorkflowNodeHookResponse;
+import com.adminplus.pojo.dto.workflow.hook.WorkflowNodeHookRequest;
+import com.adminplus.service.WorkflowNodeHookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -28,31 +28,28 @@ import java.util.List;
 @Tag(name = "工作流钩子", description = "工作流节点钩子配置管理")
 public class WorkflowNodeHookController {
 
-    private final WorkflowNodeHookRepository hookRepository;
+    private final WorkflowNodeHookService hookService;
 
     @PostMapping
     @Operation(summary = "创建钩子配置")
     @OperationLog(module = "工作流管理", operationType = 2, description = "创建钩子配置 {#req.hookName}")
     @PreAuthorize("hasAuthority('workflow:hook:create')")
-    public ApiResponse<WorkflowNodeHookEntity> create(@Valid @RequestBody WorkflowNodeHookReq req) {
+    public ApiResponse<WorkflowNodeHookResponse> create(@Valid @RequestBody WorkflowNodeHookRequest req) {
         log.info("创建钩子配置: nodeId={}, hookPoint={}", req.nodeId(), req.hookPoint());
-        WorkflowNodeHookEntity entity = toEntity(req);
-        WorkflowNodeHookEntity saved = hookRepository.save(entity);
-        return ApiResponse.ok(saved);
+        WorkflowNodeHookResponse response = hookService.create(req);
+        return ApiResponse.ok(response);
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新钩子配置")
     @OperationLog(module = "工作流管理", operationType = 3, description = "更新钩子配置 {#id}")
     @PreAuthorize("hasAuthority('workflow:hook:update')")
-    public ApiResponse<WorkflowNodeHookEntity> update(
+    public ApiResponse<WorkflowNodeHookResponse> update(
             @PathVariable String id,
-            @Valid @RequestBody WorkflowNodeHookReq req) {
+            @Valid @RequestBody WorkflowNodeHookRequest req) {
         log.info("更新钩子配置: id={}", id);
-        WorkflowNodeHookEntity entity = toEntity(req);
-        entity.setId(id);
-        WorkflowNodeHookEntity saved = hookRepository.save(entity);
-        return ApiResponse.ok(saved);
+        WorkflowNodeHookResponse response = hookService.update(id, req);
+        return ApiResponse.ok(response);
     }
 
     @DeleteMapping("/{id}")
@@ -61,58 +58,33 @@ public class WorkflowNodeHookController {
     @PreAuthorize("hasAuthority('workflow:hook:delete')")
     public ApiResponse<Void> delete(@PathVariable String id) {
         log.info("删除钩子配置: id={}", id);
-        hookRepository.deleteById(id);
+        hookService.delete(id);
         return ApiResponse.ok();
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "查询钩子配置详情")
     @PreAuthorize("hasAuthority('workflow:hook:view')")
-    public ApiResponse<WorkflowNodeHookEntity> getById(@PathVariable String id) {
-        return hookRepository.findById(id)
-                .map(ApiResponse::ok)
-                .orElse(ApiResponse.fail("钩子配置不存在"));
+    public ApiResponse<WorkflowNodeHookResponse> getById(@PathVariable String id) {
+        WorkflowNodeHookResponse response = hookService.getById(id);
+        return ApiResponse.ok(response);
     }
 
     @GetMapping("/node/{nodeId}")
     @Operation(summary = "查询节点的所有钩子配置")
     @PreAuthorize("hasAuthority('workflow:hook:view')")
-    public ApiResponse<List<WorkflowNodeHookEntity>> listByNodeId(@PathVariable String nodeId) {
-        List<WorkflowNodeHookEntity> hooks = hookRepository
-                .findByNodeIdAndDeletedFalseOrderByPriorityAsc(nodeId);
+    public ApiResponse<List<WorkflowNodeHookResponse>> listByNodeId(@PathVariable String nodeId) {
+        List<WorkflowNodeHookResponse> hooks = hookService.listByNodeId(nodeId);
         return ApiResponse.ok(hooks);
     }
 
     @GetMapping("/node/{nodeId}/{hookPoint}")
     @Operation(summary = "查询节点指定钩子点的配置")
     @PreAuthorize("hasAuthority('workflow:hook:view')")
-    public ApiResponse<List<WorkflowNodeHookEntity>> listByNodeIdAndHookPoint(
+    public ApiResponse<List<WorkflowNodeHookResponse>> listByNodeIdAndHookPoint(
             @PathVariable String nodeId,
             @PathVariable String hookPoint) {
-        List<WorkflowNodeHookEntity> hooks = hookRepository
-                .findByNodeIdAndHookPointAndDeletedFalseOrderByPriorityAsc(nodeId, hookPoint);
+        List<WorkflowNodeHookResponse> hooks = hookService.listByNodeIdAndHookPoint(nodeId, hookPoint);
         return ApiResponse.ok(hooks);
-    }
-
-    /**
-     * Convert DTO to entity
-     */
-    private WorkflowNodeHookEntity toEntity(WorkflowNodeHookReq req) {
-        WorkflowNodeHookEntity entity = new WorkflowNodeHookEntity();
-        entity.setNodeId(req.nodeId());
-        entity.setHookPoint(req.hookPoint());
-        entity.setHookType(req.hookType());
-        entity.setExecutorType(req.executorType());
-        entity.setExecutorConfig(req.executorConfig());
-        entity.setAsyncExecution(req.asyncExecution());
-        entity.setBlockOnFailure(req.blockOnFailure());
-        entity.setFailureMessage(req.failureMessage());
-        entity.setPriority(req.priority());
-        entity.setConditionExpression(req.conditionExpression());
-        entity.setRetryCount(req.retryCount());
-        entity.setRetryInterval(req.retryInterval() != null ? req.retryInterval() : 1000);
-        entity.setHookName(req.hookName());
-        entity.setDescription(req.description());
-        return entity;
     }
 }

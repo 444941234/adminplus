@@ -2,10 +2,11 @@ package com.adminplus.controller;
 
 import com.adminplus.common.pojo.ApiResponse;
 import com.adminplus.pojo.dto.query.NotificationQuery;
-import com.adminplus.pojo.dto.req.NotificationSendReq;
-import com.adminplus.pojo.dto.resp.NotificationResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.NotificationSendRequest;
+import com.adminplus.pojo.dto.response.NotificationResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.NotificationService;
+import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,10 +33,10 @@ public class NotificationController {
      */
     @PostMapping
     @PreAuthorize("hasAuthority('notification:send')")
-    public ApiResponse<NotificationResp> sendNotification(@RequestBody NotificationSendReq req) {
-        log.info("发送通知: type={}, recipientId={}", req.getType(), req.getRecipientId());
-        NotificationResp notification = notificationService.sendNotification(req);
-        return ApiResponse.ok(notification);
+    public ApiResponse<NotificationResponse> sendNotification(@RequestBody NotificationSendRequest request) {
+        log.info("发送通知: type={}, recipientId={}", request.getType(), request.getRecipientId());
+        NotificationResponse response = notificationService.sendNotification(request);
+        return ApiResponse.ok(response);
     }
 
     /**
@@ -45,9 +46,9 @@ public class NotificationController {
     @PreAuthorize("hasAuthority('notification:send')")
     public ApiResponse<Void> sendBatchNotification(
             @RequestParam List<String> recipientIds,
-            @RequestBody NotificationSendReq req) {
+            @RequestBody NotificationSendRequest request) {
         log.info("批量发送通知: count={}", recipientIds.size());
-        notificationService.sendBatchNotification(recipientIds, req);
+        notificationService.sendBatchNotification(recipientIds, request);
         return ApiResponse.ok();
     }
 
@@ -55,9 +56,9 @@ public class NotificationController {
      * 获取当前用户的通知列表
      */
     @GetMapping
-    public ApiResponse<PageResultResp<NotificationResp>> getMyNotifications(NotificationQuery req) {
-        String userId = getCurrentUserId();
-        PageResultResp<NotificationResp> result = notificationService.getUserNotifications(userId, req);
+    public ApiResponse<PageResultResponse<NotificationResponse>> getMyNotifications(NotificationQuery query) {
+        String userId = SecurityUtils.getCurrentUserId();
+        PageResultResponse<NotificationResponse> result = notificationService.getUserNotifications(userId, query);
         return ApiResponse.ok(result);
     }
 
@@ -66,7 +67,7 @@ public class NotificationController {
      */
     @GetMapping("/unread-count")
     public ApiResponse<Long> getUnreadCount() {
-        String userId = getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         long count = notificationService.getUnreadCount(userId);
         return ApiResponse.ok(count);
     }
@@ -76,7 +77,7 @@ public class NotificationController {
      */
     @PutMapping("/{id}/read")
     public ApiResponse<Void> markAsRead(@PathVariable String id) {
-        String userId = getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         notificationService.markAsRead(id, userId);
         return ApiResponse.ok();
     }
@@ -86,7 +87,7 @@ public class NotificationController {
      */
     @PutMapping("/read-all")
     public ApiResponse<Integer> markAllAsRead() {
-        String userId = getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         int count = notificationService.markAllAsRead(userId);
         return ApiResponse.ok(count);
     }
@@ -96,7 +97,7 @@ public class NotificationController {
      */
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteNotification(@PathVariable String id) {
-        String userId = getCurrentUserId();
+        String userId = SecurityUtils.getCurrentUserId();
         notificationService.deleteNotification(id, userId);
         return ApiResponse.ok();
     }
@@ -106,8 +107,8 @@ public class NotificationController {
      */
     @PostMapping("/test-create")
     @PreAuthorize("hasAuthority('notification:send')")
-    public ApiResponse<NotificationResp> createTestNotification() {
-        String userId = getCurrentUserId();
+    public ApiResponse<NotificationResponse> createTestNotification() {
+        String userId = SecurityUtils.getCurrentUserId();
 
         // 创建 3 条测试通知
         String[] types = {"workflow_approve", "workflow_cc", "workflow_urge"};
@@ -119,7 +120,7 @@ public class NotificationController {
         };
 
         for (int i = 0; i < 3; i++) {
-            NotificationSendReq req = new NotificationSendReq();
+            NotificationSendRequest req = new NotificationSendRequest();
             req.setType(types[i]);
             req.setRecipientId(userId);
             req.setTitle(titles[i]);
@@ -130,38 +131,5 @@ public class NotificationController {
 
         log.info("已创建 3 条测试通知给用户: {}", userId);
         return ApiResponse.ok(null);
-    }
-
-    /**
-     * 获取当前登录用户的ID
-     */
-    private String getCurrentUserId() {
-        var authentication = org.springframework.security.core.context.SecurityContextHolder
-                .getContext()
-                .getAuthentication();
-
-        // 从 AppUserDetails 中获取用户ID
-        if (authentication.getPrincipal() instanceof com.adminplus.common.security.AppUserDetails userDetails) {
-            return userDetails.getId();
-        }
-
-        // 降级方案：从 JWT claims 中获取
-        if (authentication.getCredentials() instanceof String token) {
-            // JWT token 在 credentials 中
-            try {
-                var jwt = org.springframework.security.oauth2.jwt.Jwt.withTokenValue(token)
-                        .header("alg", "RS256")
-                        .claim("sub", authentication.getName())
-                        .build();
-                String userId = jwt.getClaimAsString("userId");
-                if (userId != null) {
-                    return userId;
-                }
-            } catch (Exception ignored) {
-            }
-        }
-
-        // 最后降级到 username（兼容旧逻辑）
-        return authentication.getName();
     }
 }

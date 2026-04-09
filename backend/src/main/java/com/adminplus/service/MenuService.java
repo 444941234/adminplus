@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.MenuBatchDeleteReq;
-import com.adminplus.pojo.dto.req.MenuBatchStatusReq;
-import com.adminplus.pojo.dto.req.MenuCreateReq;
-import com.adminplus.pojo.dto.req.MenuUpdateReq;
-import com.adminplus.pojo.dto.resp.MenuResp;
+import com.adminplus.pojo.dto.request.MenuBatchDeleteRequest;
+import com.adminplus.pojo.dto.request.MenuBatchStatusRequest;
+import com.adminplus.pojo.dto.request.MenuCreateRequest;
+import com.adminplus.pojo.dto.request.MenuUpdateRequest;
+import com.adminplus.pojo.dto.response.MenuResponse;
 
 import java.util.List;
 
@@ -19,22 +19,22 @@ public interface MenuService {
     /**
      * 查询菜单树形列表
      */
-    List<MenuResp> getMenuTree();
+    List<MenuResponse> getMenuTree();
 
     /**
      * 根据ID查询菜单
      */
-    MenuResp getMenuById(String id);
+    MenuResponse getMenuById(String id);
 
     /**
      * 创建菜单
      */
-    MenuResp createMenu(MenuCreateReq req);
+    MenuResponse createMenu(MenuCreateRequest request);
 
     /**
      * 更新菜单
      */
-    MenuResp updateMenu(String id, MenuUpdateReq req);
+    MenuResponse updateMenu(String id, MenuUpdateRequest request);
 
     /**
      * 删除菜单
@@ -44,17 +44,17 @@ public interface MenuService {
     /**
      * 批量更新菜单状态
      */
-    void batchUpdateStatus(MenuBatchStatusReq req);
+    void batchUpdateStatus(MenuBatchStatusRequest request);
 
     /**
      * 批量删除菜单
      */
-    void batchDelete(MenuBatchDeleteReq req);
+    void batchDelete(MenuBatchDeleteRequest request);
 
     /**
      * 获取用户的菜单树（根据用户权限过滤）
      */
-    List<MenuResp> getUserMenuTree(String userId);
+    List<MenuResponse> getUserMenuTree(String userId);
 
     /**
      * 复制菜单到指定父级
@@ -63,5 +63,5 @@ public interface MenuService {
      * @param targetParentId 目标父级ID，"0"表示顶级
      * @return 复制后的菜单
      */
-    MenuResp copyMenu(String id, String targetParentId);
+    MenuResponse copyMenu(String id, String targetParentId);
 }

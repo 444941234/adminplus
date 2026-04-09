@@ -1,11 +1,11 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.req.ApprovalActionReq;
-import com.adminplus.pojo.dto.req.AddSignReq;
-import com.adminplus.pojo.dto.req.AddSignReq.AddSignType;
-import com.adminplus.pojo.dto.resp.WorkflowAddSignResp;
-import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
-import com.adminplus.pojo.dto.resp.WorkflowNodeResp;
+import com.adminplus.pojo.dto.request.ApprovalActionRequest;
+import com.adminplus.pojo.dto.request.AddSignRequest;
+import com.adminplus.pojo.dto.request.AddSignRequest.AddSignType;
+import com.adminplus.pojo.dto.response.WorkflowAddSignResponse;
+import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
+import com.adminplus.pojo.dto.response.WorkflowNodeResponse;
 import com.adminplus.service.WorkflowInstanceService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,28 +49,28 @@ class WorkflowInstanceControllerRollbackTest {
     private WorkflowInstanceController instanceController;
 
     private ObjectMapper objectMapper;
-    private WorkflowInstanceResp testInstance;
-    private ApprovalActionReq actionReq;
-    private AddSignReq addSignReq;
+    private WorkflowInstanceResponse testInstance;
+    private ApprovalActionRequest actionReq;
+    private AddSignRequest addSignRequest;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(instanceController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
 
-        testInstance = new WorkflowInstanceResp(
+        testInstance = new WorkflowInstanceResponse(
                 "inst-001", "def-001", "请假审批", "user-001", "发起人",
                 "dept-001", "研发部", "请假申请", null, null, null, "running",
                 java.time.Instant.now(), null, null, java.time.Instant.now(), true, true,
                 false, false, true, false, false
         );
 
-        actionReq = ApprovalActionReq.builder()
+        actionReq = ApprovalActionRequest.builder()
                 .comment("回退原因")
                 .targetNodeId("node-001")
                 .build();
 
-        addSignReq = new AddSignReq("user-002", AddSignType.BEFORE, "需要更多人审核");
+        addSignRequest = new AddSignRequest("user-002", AddSignType.BEFORE, "需要更多人审核");
     }
 
     @Nested
@@ -81,7 +81,7 @@ class WorkflowInstanceControllerRollbackTest {
         @DisplayName("should rollback workflow with target node")
         void rollback_ShouldRollbackWithTargetNode() throws Exception {
             // Given
-            when(instanceService.rollback(anyString(), any(ApprovalActionReq.class))).thenReturn(testInstance);
+            when(instanceService.rollback(anyString(), any(ApprovalActionRequest.class))).thenReturn(testInstance);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/instances/inst-001/rollback")
@@ -97,10 +97,10 @@ class WorkflowInstanceControllerRollbackTest {
         @DisplayName("should rollback workflow without target node")
         void rollback_ShouldRollbackWithoutTargetNode() throws Exception {
             // Given
-            ApprovalActionReq reqWithoutTarget = ApprovalActionReq.builder()
+            ApprovalActionRequest reqWithoutTarget = ApprovalActionRequest.builder()
                     .comment("回退原因")
                     .build();
-            when(instanceService.rollback(anyString(), any(ApprovalActionReq.class))).thenReturn(testInstance);
+            when(instanceService.rollback(anyString(), any(ApprovalActionRequest.class))).thenReturn(testInstance);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/instances/inst-001/rollback")
@@ -121,7 +121,7 @@ class WorkflowInstanceControllerRollbackTest {
         @DisplayName("should return rollbackable nodes")
         void getRollbackableNodes_ShouldReturnNodes() throws Exception {
             // Given
-            WorkflowNodeResp node = new WorkflowNodeResp(
+            WorkflowNodeResponse node = new WorkflowNodeResponse(
                     "node-001", "def-001", "部门经理审批", "manager_approval",
                     1, "user", "user-001", false, false, "审批", null
             );
@@ -160,35 +160,35 @@ class WorkflowInstanceControllerRollbackTest {
         @DisplayName("should perform before add-sign")
         void addSign_ShouldPerformBeforeAddSign() throws Exception {
             // Given
-            WorkflowAddSignResp addSignResp = new WorkflowAddSignResp(
+            WorkflowAddSignResponse addSignResp = new WorkflowAddSignResponse(
                     "add-sign-001", "inst-001", "node-001", "当前节点",
                     "user-001", "发起人", "user-002", "被加签人",
                     "before", "需要更多人审核", null, java.time.Instant.now()
             );
-            when(instanceService.addSign(anyString(), any(AddSignReq.class))).thenReturn(addSignResp);
+            when(instanceService.addSign(anyString(), any(AddSignRequest.class))).thenReturn(addSignResp);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/instances/inst-001/add-sign")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(addSignReq)))
+                            .content(objectMapper.writeValueAsString(addSignRequest)))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.addType").value("before"));
 
-            verify(instanceService).addSign("inst-001", addSignReq);
+            verify(instanceService).addSign("inst-001", addSignRequest);
         }
 
         @Test
         @DisplayName("should perform after add-sign")
         void addSign_ShouldPerformAfterAddSign() throws Exception {
             // Given
-            AddSignReq afterReq = new AddSignReq("user-002", AddSignType.AFTER, "补充审批");
-            WorkflowAddSignResp addSignResp = new WorkflowAddSignResp(
+            AddSignRequest afterReq = new AddSignRequest("user-002", AddSignType.AFTER, "补充审批");
+            WorkflowAddSignResponse addSignResp = new WorkflowAddSignResponse(
                     "add-sign-001", "inst-001", "node-001", "当前节点",
                     "user-001", "发起人", "user-002", "被加签人",
                     "after", "补充审批", null, java.time.Instant.now()
             );
-            when(instanceService.addSign(anyString(), any(AddSignReq.class))).thenReturn(addSignResp);
+            when(instanceService.addSign(anyString(), any(AddSignRequest.class))).thenReturn(addSignResp);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/instances/inst-001/add-sign")
@@ -205,13 +205,13 @@ class WorkflowInstanceControllerRollbackTest {
         @DisplayName("should perform transfer")
         void addSign_ShouldPerformTransfer() throws Exception {
             // Given
-            AddSignReq transferReq = new AddSignReq("user-002", AddSignType.TRANSFER, "暂时无法审批");
-            WorkflowAddSignResp addSignResp = new WorkflowAddSignResp(
+            AddSignRequest transferReq = new AddSignRequest("user-002", AddSignType.TRANSFER, "暂时无法审批");
+            WorkflowAddSignResponse addSignResp = new WorkflowAddSignResponse(
                     "add-sign-001", "inst-001", "node-001", "当前节点",
                     "user-001", "发起人", "user-002", "被转办人",
                     "transfer", "暂时无法审批", "user-001", java.time.Instant.now()
             );
-            when(instanceService.addSign(anyString(), any(AddSignReq.class))).thenReturn(addSignResp);
+            when(instanceService.addSign(anyString(), any(AddSignRequest.class))).thenReturn(addSignResp);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/instances/inst-001/add-sign")
@@ -234,7 +234,7 @@ class WorkflowInstanceControllerRollbackTest {
         @DisplayName("should return add-sign records")
         void getAddSignRecords_ShouldReturnRecords() throws Exception {
             // Given
-            WorkflowAddSignResp record = new WorkflowAddSignResp(
+            WorkflowAddSignResponse record = new WorkflowAddSignResponse(
                     "add-sign-001", "inst-001", "node-001", "当前节点",
                     "user-001", "发起人", "user-002", "被加签人",
                     "before", "需要更多人审核", null, java.time.Instant.now()

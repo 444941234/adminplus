@@ -3,13 +3,13 @@ package com.adminplus.service.impl;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.utils.DictUtils;
 import com.adminplus.utils.EntityHelper;
-import com.adminplus.pojo.dto.req.PasswordChangeReq;
-import com.adminplus.pojo.dto.req.ProfileUpdateReq;
-import com.adminplus.pojo.dto.req.SettingsUpdateReq;
-import com.adminplus.pojo.dto.resp.ActivityItemResp;
-import com.adminplus.pojo.dto.resp.ActivityStatsResp;
-import com.adminplus.pojo.dto.resp.ProfileResp;
-import com.adminplus.pojo.dto.resp.SettingsResp;
+import com.adminplus.pojo.dto.request.PasswordChangeRequest;
+import com.adminplus.pojo.dto.request.ProfileUpdateRequest;
+import com.adminplus.pojo.dto.request.SettingsUpdateRequest;
+import com.adminplus.pojo.dto.response.ActivityItemResponse;
+import com.adminplus.pojo.dto.response.ActivityStatsResponse;
+import com.adminplus.pojo.dto.response.ProfileResponse;
+import com.adminplus.pojo.dto.response.SettingsResponse;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.LogEntity;
@@ -35,10 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Objects;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -78,7 +76,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional(readOnly = true)
-    public ProfileResp getCurrentUserProfile() {
+    public ProfileResponse getCurrentUserProfile() {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
@@ -99,7 +97,7 @@ public class ProfileServiceImpl implements ProfileService {
                     .orElse(null);
         }
 
-        return new ProfileResp(
+        return new ProfileResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getNickname(),
@@ -116,7 +114,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public ProfileResp updateCurrentProfile(ProfileUpdateReq req) {
+    public ProfileResponse updateCurrentProfile(ProfileUpdateRequest request) {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
@@ -124,17 +122,17 @@ public class ProfileServiceImpl implements ProfileService {
         // 这里已经通过 SecurityUtils.getCurrentUserId() 获取当前登录用户ID
         // 只有当前登录用户可以修改自己的个人资料
 
-        if (req.nickname() != null) {
-            user.setNickname(XssUtils.escapeOrNull(req.nickname()));
+        if (request.nickname() != null) {
+            user.setNickname(XssUtils.escapeOrNull(request.nickname()));
         }
-        if (req.email() != null) {
-            user.setEmail(XssUtils.escapeOrNull(req.email()));
+        if (request.email() != null) {
+            user.setEmail(XssUtils.escapeOrNull(request.email()));
         }
-        if (req.phone() != null) {
-            user.setPhone(XssUtils.escapeOrNull(req.phone()));
+        if (request.phone() != null) {
+            user.setPhone(XssUtils.escapeOrNull(request.phone()));
         }
-        if (req.avatar() != null) {
-            user.setAvatar(req.avatar());
+        if (request.avatar() != null) {
+            user.setAvatar(request.avatar());
         }
 
         user = profileRepository.save(user);
@@ -155,7 +153,7 @@ public class ProfileServiceImpl implements ProfileService {
                     .orElse(null);
         }
 
-        return new ProfileResp(
+        return new ProfileResponse(
                 user.getId(),
                 user.getUsername(),
                 user.getNickname(),
@@ -172,30 +170,30 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public void changePassword(PasswordChangeReq req) {
+    public void changePassword(PasswordChangeRequest request) {
         // 验证新密码和确认密码是否一致
-        if (!Objects.equals(req.newPassword(), req.confirmPassword())) {
+        if (!Objects.equals(request.newPassword(), request.confirmPassword())) {
             throw new BizException("新密码和确认密码不一致");
         }
 
         // 验证新密码不能与原密码相同
-        if (Objects.equals(req.oldPassword(), req.newPassword())) {
+        if (Objects.equals(request.oldPassword(), request.newPassword())) {
             throw new BizException("新密码不能与原密码相同");
         }
 
         // 验证新密码强度
-        if (!PasswordUtils.isStrongPassword(req.newPassword())) throw new BizException(PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(req.newPassword())));
+        if (!PasswordUtils.isStrongPassword(request.newPassword())) throw new BizException(PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(request.newPassword())));
 
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
         // 验证原密码
-        if (!passwordEncoder.matches(req.oldPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
             throw new BizException("原密码错误");
         }
 
         // 更新密码
-        user.setPassword(passwordEncoder.encode(req.newPassword()));
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
         profileRepository.save(user);
 
         log.info("用户 {} 修改密码成功", LogMaskingUtils.maskUsername(user.getUsername()));
@@ -213,7 +211,7 @@ public class ProfileServiceImpl implements ProfileService {
         }
 
         // 使用统一的文件服务上传（包含数据库记录）
-        String avatarUrl = fileService.uploadFile(file, "avatars").getFileUrl();
+        String avatarUrl = fileService.uploadFile(file, "avatars").fileUrl();
         log.info("头像上传成功: {}", avatarUrl);
 
         return avatarUrl;
@@ -221,17 +219,17 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional(readOnly = true)
-    public SettingsResp getSettings() {
+    public SettingsResponse getSettings() {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
         // 获取用户设置，如果为 null 则使用默认值
         Map<String, Object> settings = user.getSettings();
         if (settings == null) {
-            return new SettingsResp(true, false, true, "zh-CN");
+            return new SettingsResponse(true, false, true, "zh-CN");
         }
 
-        return new SettingsResp(
+        return new SettingsResponse(
                 getBooleanSetting(settings, "notifications", true),
                 getBooleanSetting(settings, "darkMode", false),
                 getBooleanSetting(settings, "emailUpdates", true),
@@ -241,7 +239,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public SettingsResp updateSettings(SettingsUpdateReq req) {
+    public SettingsResponse updateSettings(SettingsUpdateRequest request) {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
@@ -252,17 +250,17 @@ public class ProfileServiceImpl implements ProfileService {
         }
 
         // 更新设置
-        if (req.notifications() != null) {
-            currentSettings.put("notifications", req.notifications());
+        if (request.notifications() != null) {
+            currentSettings.put("notifications", request.notifications());
         }
-        if (req.darkMode() != null) {
-            currentSettings.put("darkMode", req.darkMode());
+        if (request.darkMode() != null) {
+            currentSettings.put("darkMode", request.darkMode());
         }
-        if (req.emailUpdates() != null) {
-            currentSettings.put("emailUpdates", req.emailUpdates());
+        if (request.emailUpdates() != null) {
+            currentSettings.put("emailUpdates", request.emailUpdates());
         }
-        if (req.language() != null) {
-            currentSettings.put("language", req.language());
+        if (request.language() != null) {
+            currentSettings.put("language", request.language());
         }
 
         user.setSettings(currentSettings);
@@ -322,7 +320,7 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional(readOnly = true)
-    public ActivityStatsResp getActivityStats() {
+    public ActivityStatsResponse getActivityStats() {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
@@ -345,8 +343,8 @@ public class ProfileServiceImpl implements ProfileService {
 
         // 查询最近活动记录
         List<LogEntity> recentLogs = logRepository.findTop5ByUserIdAndDeletedFalseOrderByCreateTimeDesc(userId);
-        List<ActivityItemResp> recentActivity = recentLogs.stream()
-                .map(log -> new ActivityItemResp(
+        List<ActivityItemResponse> recentActivity = recentLogs.stream()
+                .map(log -> new ActivityItemResponse(
                         log.getId(),
                         log.getDescription() != null ? log.getDescription() : log.getModule(),
                         formatter.format(log.getCreateTime()),
@@ -359,7 +357,7 @@ public class ProfileServiceImpl implements ProfileService {
             recentActivity = List.of();
         }
 
-        return new ActivityStatsResp(
+        return new ActivityStatsResponse(
                 (int) daysActive,
                 (int) totalActions,
                 lastLogin,

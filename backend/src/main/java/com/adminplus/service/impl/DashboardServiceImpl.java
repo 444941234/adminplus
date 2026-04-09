@@ -1,6 +1,6 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.resp.*;
+import com.adminplus.pojo.dto.response.*;
 import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.pojo.entity.RefreshTokenEntity;
 import com.adminplus.pojo.entity.RoleEntity;
@@ -64,7 +64,7 @@ public class DashboardServiceImpl implements DashboardService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "dashboardStats", key = "'stats'")
-    public DashboardStatsResp getStats() {
+    public DashboardStatsResponse getStats() {
         log.debug("获取 Dashboard 统计数据");
 
         long userCount = userRepository.countByDeletedFalse();
@@ -77,7 +77,7 @@ public class DashboardServiceImpl implements DashboardService {
         Instant endOfToday = today.plusDays(1).atStartOfDay(SYSTEM_ZONE).toInstant();
         long logCount = logRepository.countByCreateTimeBetweenAndDeletedFalse(startOfToday, endOfToday);
 
-        return new DashboardStatsResp(userCount, roleCount, menuCount, logCount);
+        return new DashboardStatsResponse(userCount, roleCount, menuCount, logCount);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     @Transactional(readOnly = true)
-    public ChartDataResp getUserGrowthData() {
+    public ChartDataResponse getUserGrowthData() {
         log.debug("获取用户增长趋势数据");
 
         LocalDate today = LocalDate.now();
@@ -108,12 +108,12 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         log.debug("用户增长趋势数据: dates={}, values={}", dateLabels, values);
-        return new ChartDataResp(dateLabels, values);
+        return new ChartDataResponse(dateLabels, values);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ChartDataResp getRoleDistributionData() {
+    public ChartDataResponse getRoleDistributionData() {
         log.debug("获取角色分布数据");
 
         // 获取所有角色
@@ -133,12 +133,12 @@ public class DashboardServiceImpl implements DashboardService {
                 .collect(Collectors.toList());
 
         log.debug("角色分布数据: roles={}, counts={}", roleNames, userCounts);
-        return new ChartDataResp(roleNames, userCounts);
+        return new ChartDataResponse(roleNames, userCounts);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ChartDataResp getMenuDistributionData() {
+    public ChartDataResponse getMenuDistributionData() {
         log.debug("获取菜单类型分布数据");
 
         List<String> types = List.of("目录", "菜单", "按钮");
@@ -149,12 +149,12 @@ public class DashboardServiceImpl implements DashboardService {
         List<Long> counts = List.of(directoryCount, menuCount, buttonCount);
 
         log.debug("菜单类型分布: 目录={}, 菜单={}, 按钮={}", directoryCount, menuCount, buttonCount);
-        return new ChartDataResp(types, counts);
+        return new ChartDataResponse(types, counts);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ChartDataResp getVisitTrendData() {
+    public ChartDataResponse getVisitTrendData() {
         log.debug("获取访问量趋势数据");
 
         LocalDate today = LocalDate.now();
@@ -172,20 +172,20 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         log.debug("访问量趋势数据: dates={}, values={}", dateLabels, values);
-        return new ChartDataResp(dateLabels, values);
+        return new ChartDataResponse(dateLabels, values);
     }
 
     // ==================== 操作日志 ====================
 
     @Override
     @Transactional(readOnly = true)
-    public List<OperationLogResp> getRecentOperationLogs() {
+    public List<OperationLogResponse> getRecentOperationLogs() {
         log.debug("获取最近操作日志");
 
         List<LogEntity> logs = logRepository.findTop10ByDeletedFalseOrderByCreateTimeDesc();
 
         return logs.stream()
-                .map(log -> new OperationLogResp(
+                .map(log -> new OperationLogResponse(
                         log.getId(),
                         log.getUsername(),
                         log.getModule(),
@@ -203,7 +203,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     @Transactional(readOnly = true)
-    public SystemInfoResp getSystemInfo() {
+    public SystemInfoResponse getSystemInfo() {
         log.debug("获取系统信息");
 
         OperatingSystemMXBean osBean = ManagementFactory.getOperatingSystemMXBean();
@@ -245,7 +245,7 @@ public class DashboardServiceImpl implements DashboardService {
         // 获取数据库版本（PostgreSQL）
         String dbVersion = getPostgreSQLVersion();
 
-        return new SystemInfoResp(
+        return new SystemInfoResponse(
                 "AdminPlus",
                 appVersion,
                 osBean.getName(),
@@ -307,7 +307,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OnlineUserResp> getOnlineUsers() {
+    public List<OnlineUserResponse> getOnlineUsers() {
         log.debug("获取在线用户列表");
 
         // 基于有效的 Refresh Token 获取真正的在线用户
@@ -324,7 +324,7 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         // 获取用户登录信息（从最近的登录日志）
-        List<OnlineUserResp> result = new ArrayList<>();
+        List<OnlineUserResponse> result = new ArrayList<>();
         for (RefreshTokenEntity token : latestTokenByUser.values()) {
             userRepository.findById(token.getUserId()).ifPresent(user -> {
                 // 获取该用户最近的登录日志
@@ -335,7 +335,7 @@ public class DashboardServiceImpl implements DashboardService {
                         .orElse(null);
 
                 if (lastLoginLog != null) {
-                    result.add(new OnlineUserResp(
+                    result.add(new OnlineUserResponse(
                             user.getId(),
                             user.getUsername(),
                             lastLoginLog.getIp(),
@@ -345,7 +345,7 @@ public class DashboardServiceImpl implements DashboardService {
                     ));
                 } else {
                     // 如果没有登录日志，使用默认值
-                    result.add(new OnlineUserResp(
+                    result.add(new OnlineUserResponse(
                             user.getId(),
                             user.getUsername(),
                             "-",
@@ -365,7 +365,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     @Override
     @Transactional(readOnly = true)
-    public StatisticsResp getStatistics() {
+    public StatisticsResponse getStatistics() {
         log.debug("获取 Statistics 页面统计数据");
 
         LocalDate today = LocalDate.now();
@@ -385,12 +385,12 @@ public class DashboardServiceImpl implements DashboardService {
         long todayNewUsers = userRepository.countByCreateTimeBetweenAndDeletedFalse(startOfToday, endOfToday);
 
         // 用户增长趋势数据
-        ChartDataResp userGrowthData = getUserGrowthData();
+        ChartDataResponse userGrowthData = getUserGrowthData();
 
         // 访问量趋势数据
-        ChartDataResp visitTrendData = getVisitTrendData();
+        ChartDataResponse visitTrendData = getVisitTrendData();
 
-        return new StatisticsResp(
+        return new StatisticsResponse(
                 totalUsers,
                 todayVisits,
                 activeUsers,

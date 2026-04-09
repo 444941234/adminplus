@@ -1,9 +1,9 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.pojo.dto.req.PasswordChangeReq;
-import com.adminplus.pojo.dto.req.SettingsUpdateReq;
-import com.adminplus.pojo.dto.resp.SettingsResp;
+import com.adminplus.pojo.dto.request.PasswordChangeRequest;
+import com.adminplus.pojo.dto.request.SettingsUpdateRequest;
+import com.adminplus.pojo.dto.response.SettingsResponse;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.repository.ProfileRepository;
 import com.adminplus.service.impl.ProfileServiceImpl;
@@ -74,7 +74,7 @@ class ProfileServiceTest {
             when(profileRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
 
             // When
-            SettingsResp settings = profileService.getSettings();
+            SettingsResponse settings = profileService.getSettings();
 
             // Then
             assertNotNull(settings);
@@ -94,7 +94,7 @@ class ProfileServiceTest {
             when(profileRepository.findById("test-user-id")).thenReturn(Optional.of(testUser));
 
             // When
-            SettingsResp settings = profileService.getSettings();
+            SettingsResponse settings = profileService.getSettings();
 
             // Then
             assertNotNull(settings);
@@ -108,7 +108,7 @@ class ProfileServiceTest {
     @Test
     void testUpdateSettings_AllFields() {
         // Given
-        SettingsUpdateReq req = new SettingsUpdateReq(
+        SettingsUpdateRequest req = new SettingsUpdateRequest(
                 false,  // notifications
                 true,   // darkMode
                 false,  // emailUpdates
@@ -121,7 +121,7 @@ class ProfileServiceTest {
             when(profileRepository.save(any(UserEntity.class))).thenReturn(testUser);
 
             // When
-            SettingsResp settings = profileService.updateSettings(req);
+            SettingsResponse settings = profileService.updateSettings(req);
 
             // Then
             assertNotNull(settings);
@@ -138,7 +138,7 @@ class ProfileServiceTest {
     @Test
     void testUpdateSettings_PartialFields() {
         // Given
-        SettingsUpdateReq req = new SettingsUpdateReq(
+        SettingsUpdateRequest req = new SettingsUpdateRequest(
                 null,   // notifications (not updating)
                 true,   // darkMode
                 null,   // emailUpdates (not updating)
@@ -151,7 +151,7 @@ class ProfileServiceTest {
             when(profileRepository.save(any(UserEntity.class))).thenReturn(testUser);
 
             // When
-            SettingsResp settings = profileService.updateSettings(req);
+            SettingsResponse settings = profileService.updateSettings(req);
 
             // Then
             assertNotNull(settings);
@@ -170,7 +170,7 @@ class ProfileServiceTest {
     void testUpdateSettings_InitializeNullSettings() {
         // Given
         testUser.setSettings(null);
-        SettingsUpdateReq req = new SettingsUpdateReq(
+        SettingsUpdateRequest req = new SettingsUpdateRequest(
                 false,
                 true,
                 true,
@@ -187,7 +187,7 @@ class ProfileServiceTest {
             });
 
             // When
-            SettingsResp settings = profileService.updateSettings(req);
+            SettingsResponse settings = profileService.updateSettings(req);
 
             // Then
             assertNotNull(settings);
@@ -210,7 +210,7 @@ class ProfileServiceTest {
         @DisplayName("应成功修改密码")
         void shouldChangePassword() {
             // Given
-            PasswordChangeReq req = new PasswordChangeReq("oldPass123!@", "NewPass123!@#", "NewPass123!@#");
+            PasswordChangeRequest req = new PasswordChangeRequest("oldPass123!@", "NewPass123!@#", "NewPass123!@#");
 
             try (MockedStatic<SecurityUtils> securityUtils = mockStatic(SecurityUtils.class)) {
                 securityUtils.when(SecurityUtils::getCurrentUserId).thenReturn("test-user-id");
@@ -233,7 +233,7 @@ class ProfileServiceTest {
         @DisplayName("新密码和确认密码不一致时应抛出异常")
         void shouldThrowWhenPasswordsDoNotMatch() {
             // Given
-            PasswordChangeReq req = new PasswordChangeReq("oldPass123!@", "NewPass123!@#1", "DifferentPass!@#");
+            PasswordChangeRequest req = new PasswordChangeRequest("oldPass123!@", "NewPass123!@#1", "DifferentPass!@#");
 
             // When & Then
             BizException exception = assertThrows(BizException.class, () -> profileService.changePassword(req));
@@ -244,7 +244,7 @@ class ProfileServiceTest {
         @DisplayName("新密码与原密码相同时应抛出异常")
         void shouldThrowWhenNewPasswordSameAsOld() {
             // Given
-            PasswordChangeReq req = new PasswordChangeReq("samePass123!@#", "samePass123!@#", "samePass123!@#");
+            PasswordChangeRequest req = new PasswordChangeRequest("samePass123!@#", "samePass123!@#", "samePass123!@#");
 
             // When & Then
             BizException exception = assertThrows(BizException.class, () -> profileService.changePassword(req));
@@ -255,7 +255,7 @@ class ProfileServiceTest {
         @DisplayName("原密码错误时应抛出异常")
         void shouldThrowWhenOldPasswordIncorrect() {
             // Given
-            PasswordChangeReq req = new PasswordChangeReq("wrongPass123!@", "NewPass123!@#1", "NewPass123!@#1");
+            PasswordChangeRequest req = new PasswordChangeRequest("wrongPass123!@", "NewPass123!@#1", "NewPass123!@#1");
 
             try (MockedStatic<SecurityUtils> securityUtils = mockStatic(SecurityUtils.class)) {
                 securityUtils.when(SecurityUtils::getCurrentUserId).thenReturn("test-user-id");
@@ -272,7 +272,7 @@ class ProfileServiceTest {
         @DisplayName("新密码强度不足时应抛出异常")
         void shouldThrowWhenPasswordTooWeak() {
             // Given - password too short (less than 12 chars)
-            PasswordChangeReq req = new PasswordChangeReq("oldPass123!@", "weak123!", "weak123!");
+            PasswordChangeRequest req = new PasswordChangeRequest("oldPass123!@", "weak123!", "weak123!");
 
             // When & Then
             assertThrows(BizException.class, () -> profileService.changePassword(req));

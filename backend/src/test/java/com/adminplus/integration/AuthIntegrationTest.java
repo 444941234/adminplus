@@ -1,7 +1,7 @@
 package com.adminplus.integration;
 
 import com.adminplus.base.AbstractIntegrationTest;
-import com.adminplus.pojo.dto.req.UserLoginReq;
+import com.adminplus.pojo.dto.request.UserLoginRequest;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserEntity;
@@ -104,7 +104,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void login_WithValidCredentials_ShouldReturnToken() throws Exception {
-            UserLoginReq loginReq = new UserLoginReq("testuser", "Test@123456", "test-captcha-id", "1234");
+            UserLoginRequest loginReq = new UserLoginRequest("testuser", "Test@123456", "test-captcha-id", "1234");
 
             mockMvc.perform(post("/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -121,7 +121,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void login_WithInvalidPassword_ShouldFail() throws Exception {
-            UserLoginReq loginReq = new UserLoginReq("testuser", "wrongpassword", "test-captcha-id", "1234");
+            UserLoginRequest loginReq = new UserLoginRequest("testuser", "wrongpassword", "test-captcha-id", "1234");
 
             mockMvc.perform(post("/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -133,7 +133,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void login_WithNonExistentUser_ShouldFail() throws Exception {
-            UserLoginReq loginReq = new UserLoginReq("nonexistent", "password", "test-captcha-id", "1234");
+            UserLoginRequest loginReq = new UserLoginRequest("nonexistent", "password", "test-captcha-id", "1234");
 
             mockMvc.perform(post("/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -199,7 +199,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 @DisplayName("&")
         void refreshToken_WithValidToken_ShouldReturnNewToken() throws Exception {
             // First login to get refresh token
-            UserLoginReq loginReq = new UserLoginReq("testuser", "Test@123456", "test-captcha-id", "1234");
+            UserLoginRequest loginReq = new UserLoginRequest("testuser", "Test@123456", "test-captcha-id", "1234");
 
             MvcResult loginResult = mockMvc.perform(post("/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)

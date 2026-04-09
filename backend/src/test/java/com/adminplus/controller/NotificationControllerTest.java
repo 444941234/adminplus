@@ -1,9 +1,9 @@
 package com.adminplus.controller;
 
 import com.adminplus.pojo.dto.query.NotificationQuery;
-import com.adminplus.pojo.dto.req.NotificationSendReq;
-import com.adminplus.pojo.dto.resp.NotificationResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.NotificationSendRequest;
+import com.adminplus.pojo.dto.response.NotificationResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.NotificationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,8 +39,8 @@ class NotificationControllerTest {
     @MockitoBean
     private NotificationService notificationService;
 
-    private NotificationResp mockNotification;
-    private NotificationSendReq mockRequest;
+    private NotificationResponse mockNotification;
+    private NotificationSendRequest mockRequest;
 
     @BeforeEach
     void setUp() {
@@ -50,7 +50,7 @@ class NotificationControllerTest {
                 .apply(springSecurity())
                 .build();
 
-        mockNotification = new NotificationResp();
+        mockNotification = new NotificationResponse();
         mockNotification.setId("notif-001");
         mockNotification.setType("workflow_approve");
         mockNotification.setRecipientId("user-001");
@@ -60,7 +60,7 @@ class NotificationControllerTest {
         mockNotification.setRelatedType("workflow");
         mockNotification.setStatus(0);
 
-        mockRequest = new NotificationSendReq();
+        mockRequest = new NotificationSendRequest();
         mockRequest.setType("workflow_approve");
         mockRequest.setRecipientId("user-001");
         mockRequest.setTitle("测试通知");
@@ -72,7 +72,7 @@ class NotificationControllerTest {
     @Test
     @WithMockUser(username = "admin")
     void testGetMyNotifications() throws Exception {
-        PageResultResp<NotificationResp> emptyPage = new PageResultResp<>(Collections.emptyList(), 0L, 1, 20);
+        PageResultResponse<NotificationResponse> emptyPage = new PageResultResponse<>(Collections.emptyList(), 0L, 1, 20);
 
         when(notificationService.getUserNotifications(eq("admin"), any(NotificationQuery.class)))
                 .thenReturn(emptyPage);
@@ -101,7 +101,7 @@ class NotificationControllerTest {
     @Test
     @WithMockUser(username = "admin", authorities = {"notification:send"})
     void testSendNotification() throws Exception {
-        when(notificationService.sendNotification(any(NotificationSendReq.class)))
+        when(notificationService.sendNotification(any(NotificationSendRequest.class)))
                 .thenReturn(mockNotification);
 
         mockMvc.perform(post("/v1/notifications")
@@ -111,13 +111,13 @@ class NotificationControllerTest {
                 .andExpect(jsonPath("$.data.id").value("notif-001"))
                 .andExpect(jsonPath("$.data.title").value("测试通知"));
 
-        verify(notificationService).sendNotification(any(NotificationSendReq.class));
+        verify(notificationService).sendNotification(any(NotificationSendRequest.class));
     }
 
     @Test
     @WithMockUser(username = "admin", authorities = {"notification:send"})
     void testSendBatchNotification() throws Exception {
-        doNothing().when(notificationService).sendBatchNotification(anyList(), any(NotificationSendReq.class));
+        doNothing().when(notificationService).sendBatchNotification(anyList(), any(NotificationSendRequest.class));
 
         mockMvc.perform(post("/v1/notifications/batch")
                         .param("recipientIds", "user-001,user-002")
@@ -125,7 +125,7 @@ class NotificationControllerTest {
                         .content("{\"type\":\"workflow_approve\",\"recipientId\":\"user-001\",\"title\":\"测试通知\",\"content\":\"这是一条测试通知\"}"))
                 .andExpect(status().isOk());
 
-        verify(notificationService).sendBatchNotification(anyList(), any(NotificationSendReq.class));
+        verify(notificationService).sendBatchNotification(anyList(), any(NotificationSendRequest.class));
     }
 
     @Test
@@ -165,7 +165,7 @@ class NotificationControllerTest {
     @Test
     @WithMockUser(username = "admin")
     void testGetMyNotifications_WithStatus() throws Exception {
-        PageResultResp<NotificationResp> emptyPage = new PageResultResp<>(Collections.emptyList(), 0L, 1, 20);
+        PageResultResponse<NotificationResponse> emptyPage = new PageResultResponse<>(Collections.emptyList(), 0L, 1, 20);
 
         when(notificationService.getUserNotifications(eq("admin"), any(NotificationQuery.class)))
                 .thenReturn(emptyPage);

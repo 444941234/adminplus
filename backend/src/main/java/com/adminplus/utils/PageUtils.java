@@ -1,6 +1,6 @@
 package com.adminplus.utils;
 
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -104,8 +104,8 @@ public final class PageUtils {
      * @param <T>  数据类型
      * @return PageResultResp对象
      */
-    public static <T> PageResultResp<T> toResp(Page<T> page) {
-        return new PageResultResp<>(
+    public static <T> PageResultResponse<T> toResp(Page<T> page) {
+        return new PageResultResponse<>(
                 page.getContent(),
                 page.getTotalElements(),
                 page.getNumber() + 1,
@@ -122,8 +122,8 @@ public final class PageUtils {
      * @param <V>    视图类型
      * @return PageResultResp对象
      */
-    public static <E, V> PageResultResp<V> toResp(Page<E> page, Function<E, V> mapper) {
-        return new PageResultResp<>(
+    public static <E, V> PageResultResponse<V> toResp(Page<E> page, Function<E, V> mapper) {
+        return new PageResultResponse<>(
                 page.getContent().stream().map(mapper).toList(),
                 page.getTotalElements(),
                 page.getNumber() + 1,

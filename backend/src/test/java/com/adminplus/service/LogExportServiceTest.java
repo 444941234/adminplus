@@ -1,8 +1,8 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogPageResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.LogPageResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.impl.LogExportServiceImpl;
 import com.adminplus.utils.DictUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,12 +42,12 @@ class LogExportServiceTest {
     @InjectMocks
     private LogExportServiceImpl logExportService;
 
-    private LogPageResp testLog;
+    private LogPageResponse testLog;
     private LogQuery query;
 
     @BeforeEach
     void setUp() {
-        testLog = new LogPageResp(
+        testLog = new LogPageResponse(
                 "log-001",
                 "testuser",
                 "用户管理",
@@ -78,7 +78,7 @@ class LogExportServiceTest {
         @DisplayName("should export logs to Excel")
         void exportToExcel_ShouldReturnExcelFile() throws IOException {
             // Given
-            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
+            PageResultResponse<LogPageResponse> pageResult = new PageResultResponse<>(
                     List.of(testLog), 1L, 1, 10
             );
             when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
@@ -98,7 +98,7 @@ class LogExportServiceTest {
         @DisplayName("should export empty Excel when no logs")
         void exportToExcel_WhenNoLogs_ShouldReturnEmptyExcel() throws IOException {
             // Given
-            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
+            PageResultResponse<LogPageResponse> pageResult = new PageResultResponse<>(
                     List.of(), 0L, 1, 10
             );
             when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
@@ -115,7 +115,7 @@ class LogExportServiceTest {
         @DisplayName("should limit export to 10000 records")
         void exportToExcel_ShouldLimitRecords() throws IOException {
             // Given
-            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
+            PageResultResponse<LogPageResponse> pageResult = new PageResultResponse<>(
                     List.of(testLog), 1L, 1, 10
             );
             when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
@@ -136,7 +136,7 @@ class LogExportServiceTest {
         @DisplayName("should export logs to CSV")
         void exportToCsv_ShouldReturnCsvFile() throws IOException {
             // Given
-            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
+            PageResultResponse<LogPageResponse> pageResult = new PageResultResponse<>(
                     List.of(testLog), 1L, 1, 10
             );
             when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
@@ -155,7 +155,7 @@ class LogExportServiceTest {
         @DisplayName("should export empty CSV when no logs")
         void exportToCsv_WhenNoLogs_ShouldReturnEmptyCsv() throws IOException {
             // Given
-            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
+            PageResultResponse<LogPageResponse> pageResult = new PageResultResponse<>(
                     List.of(), 0L, 1, 10
             );
             when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
@@ -172,10 +172,10 @@ class LogExportServiceTest {
         @DisplayName("should handle log with null values")
         void exportToCsv_WithNullValues_ShouldHandleGracefully() throws IOException {
             // Given
-            LogPageResp logWithNulls = new LogPageResp(
+            LogPageResponse logWithNulls = new LogPageResponse(
                     "log-002", null, null, null, null, null, null, null, null, null, null, null, null, null
             );
-            PageResultResp<LogPageResp> pageResult = new PageResultResp<>(
+            PageResultResponse<LogPageResponse> pageResult = new PageResultResponse<>(
                     List.of(logWithNulls), 1L, 1, 10
             );
             when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);

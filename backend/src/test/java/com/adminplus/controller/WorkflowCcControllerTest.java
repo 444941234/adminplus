@@ -1,6 +1,6 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.resp.WorkflowCcResp;
+import com.adminplus.pojo.dto.response.WorkflowCcResponse;
 import com.adminplus.service.WorkflowCcService;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.config.TestJacksonConfig;
@@ -50,7 +50,7 @@ class WorkflowCcControllerTest {
     private WorkflowCcController ccController;
 
     private ObjectMapper objectMapper;
-    private WorkflowCcResp testCcRecord;
+    private WorkflowCcResponse testCcRecord;
     private MockedStatic<SecurityUtils> securityUtilsMock;
 
     @BeforeEach
@@ -60,7 +60,7 @@ class WorkflowCcControllerTest {
         securityUtilsMock = mockStatic(SecurityUtils.class);
         securityUtilsMock.when(SecurityUtils::getCurrentUserId).thenReturn("user-001");
 
-        testCcRecord = new WorkflowCcResp(
+        testCcRecord = new WorkflowCcResponse(
                 "cc-001", "inst-001", "node-001", "Manager Approval",
                 "user-002", "李四", "approve", "审批通过抄送",
                 false, null, Instant.now()

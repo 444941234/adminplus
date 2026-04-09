@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Pattern;
  * @author AdminPlus
  * @since 2026-03-30
  */
-public record ConfigImportReq(
+public record ConfigImportRequest(
         @NotBlank(message = "导入内容不能为空")
         String content,
 

@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
  * @author AdminPlus
  * @since 2026-03-30
  */
-public record ConfigCreateReq(
+public record ConfigCreateRequest(
         @NotBlank(message = "配置组ID不能为空")
         String groupId,
 

@@ -1,9 +1,9 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.dto.query.NotificationQuery;
-import com.adminplus.pojo.dto.req.NotificationSendReq;
-import com.adminplus.pojo.dto.resp.NotificationResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.NotificationSendRequest;
+import com.adminplus.pojo.dto.response.NotificationResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 
 import java.util.List;
 
@@ -18,18 +18,18 @@ public interface NotificationService {
     /**
      * 发送通知
      *
-     * @param req 通知发送请求
+     * @param request 通知发送请求
      * @return 通知响应
      */
-    NotificationResp sendNotification(NotificationSendReq req);
+    NotificationResponse sendNotification(NotificationSendRequest request);
 
     /**
      * 批量发送通知
      *
      * @param recipientIds 接收人ID列表
-     * @param req 通知发送请求模板
+     * @param request 通知发送请求模板
      */
-    void sendBatchNotification(List<String> recipientIds, NotificationSendReq req);
+    void sendBatchNotification(List<String> recipientIds, NotificationSendRequest request);
 
     /**
      * 标记通知为已读
@@ -51,10 +51,10 @@ public interface NotificationService {
      * 获取用户通知列表
      *
      * @param userId 用户ID
-     * @param req 查询条件
+     * @param query 查询条件
      * @return 通知列表
      */
-    PageResultResp<NotificationResp> getUserNotifications(String userId, NotificationQuery req);
+    PageResultResponse<NotificationResponse> getUserNotifications(String userId, NotificationQuery query);
 
     /**
      * 获取未读通知数量

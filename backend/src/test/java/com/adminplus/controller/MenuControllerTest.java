@@ -1,8 +1,8 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.req.MenuCreateReq;
-import com.adminplus.pojo.dto.req.MenuUpdateReq;
-import com.adminplus.pojo.dto.resp.MenuResp;
+import com.adminplus.pojo.dto.request.MenuCreateRequest;
+import com.adminplus.pojo.dto.request.MenuUpdateRequest;
+import com.adminplus.pojo.dto.response.MenuResponse;
 import com.adminplus.service.MenuService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,24 +48,24 @@ class MenuControllerTest {
     private MenuController menuController;
 
     private ObjectMapper objectMapper;
-    private MenuResp testMenu;
-    private MenuCreateReq createReq;
-    private MenuUpdateReq updateReq;
+    private MenuResponse testMenu;
+    private MenuCreateRequest createReq;
+    private MenuUpdateRequest updateReq;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(menuController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
-        testMenu = new MenuResp(
+        testMenu = new MenuResponse(
                 "menu-001", null, 1, "系统管理", "/system",
                 "system/index", "system:view", "setting", 1, 1, 1,
                 List.of(), Instant.now(), Instant.now()
         );
-        createReq = new MenuCreateReq(
+        createReq = new MenuCreateRequest(
                 null, 1, "系统管理", "/system", "system/index",
                 "system:view", "setting", 1, 1, 1
         );
-        updateReq = new MenuUpdateReq(
+        updateReq = new MenuUpdateRequest(
                 Optional.empty(), Optional.of(1), Optional.of("系统管理"), Optional.of("/system"), Optional.of("system/index"),
                 Optional.of("system:view"), Optional.of("setting"), Optional.of(1), Optional.of(1), Optional.of(1)
         );
@@ -119,7 +119,7 @@ class MenuControllerTest {
         @DisplayName("should create menu")
         void createMenu_ShouldCreateMenu() throws Exception {
             // Given
-            when(menuService.createMenu(any(MenuCreateReq.class))).thenReturn(testMenu);
+            when(menuService.createMenu(any(MenuCreateRequest.class))).thenReturn(testMenu);
 
             // When & Then
             mockMvc.perform(post("/v1/sys/menus")
@@ -128,7 +128,7 @@ class MenuControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(menuService).createMenu(any(MenuCreateReq.class));
+            verify(menuService).createMenu(any(MenuCreateRequest.class));
         }
     }
 
@@ -140,7 +140,7 @@ class MenuControllerTest {
         @DisplayName("should update menu")
         void updateMenu_ShouldUpdateMenu() throws Exception {
             // Given
-            when(menuService.updateMenu(anyString(), any(MenuUpdateReq.class))).thenReturn(testMenu);
+            when(menuService.updateMenu(anyString(), any(MenuUpdateRequest.class))).thenReturn(testMenu);
 
             // When & Then
             mockMvc.perform(put("/v1/sys/menus/menu-001")
@@ -149,7 +149,7 @@ class MenuControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(menuService).updateMenu(anyString(), any(MenuUpdateReq.class));
+            verify(menuService).updateMenu(anyString(), any(MenuUpdateRequest.class));
         }
     }
 

@@ -1,7 +1,7 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.resp.ChartDataResp;
-import com.adminplus.pojo.dto.resp.DashboardStatsResp;
+import com.adminplus.pojo.dto.response.ChartDataResponse;
+import com.adminplus.pojo.dto.response.DashboardStatsResponse;
 import com.adminplus.service.DashboardService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -51,7 +51,7 @@ class DashboardControllerTest {
         @DisplayName("should return dashboard stats")
         void getStats_ShouldReturnStats() throws Exception {
             // Given
-            DashboardStatsResp stats = new DashboardStatsResp(100L, 10L, 50L, 1000L);
+            DashboardStatsResponse stats = new DashboardStatsResponse(100L, 10L, 50L, 1000L);
             when(dashboardService.getStats()).thenReturn(stats);
 
             // When & Then
@@ -70,7 +70,7 @@ class DashboardControllerTest {
         @DisplayName("should return user growth data")
         void getUserGrowth_ShouldReturnData() throws Exception {
             // Given
-            ChartDataResp data = new ChartDataResp(
+            ChartDataResponse data = new ChartDataResponse(
                     List.of("2026-01", "2026-02", "2026-03"),
                     List.of(10L, 20L, 30L)
             );
@@ -92,7 +92,7 @@ class DashboardControllerTest {
         @DisplayName("should return role distribution data")
         void getRoleDistribution_ShouldReturnData() throws Exception {
             // Given
-            ChartDataResp data = new ChartDataResp(
+            ChartDataResponse data = new ChartDataResponse(
                     List.of("管理员", "普通用户"),
                     List.of(5L, 95L)
             );
@@ -114,7 +114,7 @@ class DashboardControllerTest {
         @DisplayName("should return menu distribution data")
         void getMenuDistribution_ShouldReturnData() throws Exception {
             // Given
-            ChartDataResp data = new ChartDataResp(
+            ChartDataResponse data = new ChartDataResponse(
                     List.of("目录", "菜单", "按钮"),
                     List.of(10L, 30L, 50L)
             );
@@ -136,7 +136,7 @@ class DashboardControllerTest {
         @DisplayName("should return visit trend data")
         void getVisitTrend_ShouldReturnData() throws Exception {
             // Given
-            ChartDataResp data = new ChartDataResp(
+            ChartDataResponse data = new ChartDataResponse(
                     List.of("周一", "周二", "周三"),
                     List.of(100L, 150L, 200L)
             );

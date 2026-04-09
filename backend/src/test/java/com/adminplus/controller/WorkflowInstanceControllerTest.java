@@ -1,9 +1,9 @@
 package com.adminplus.controller;
 
-import com.adminplus.pojo.dto.req.ApprovalActionReq;
-import com.adminplus.pojo.dto.req.WorkflowStartReq;
-import com.adminplus.pojo.dto.resp.WorkflowDetailResp;
-import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
+import com.adminplus.pojo.dto.request.ApprovalActionRequest;
+import com.adminplus.pojo.dto.request.WorkflowStartRequest;
+import com.adminplus.pojo.dto.response.WorkflowDetailResponse;
+import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
 import com.adminplus.service.WorkflowInstanceService;
 import com.adminplus.config.TestJacksonConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -49,25 +48,25 @@ class WorkflowInstanceControllerTest {
     private WorkflowInstanceController instanceController;
 
     private ObjectMapper objectMapper;
-    private WorkflowInstanceResp testInstance;
-    private WorkflowStartReq startReq;
-    private ApprovalActionReq actionReq;
+    private WorkflowInstanceResponse testInstance;
+    private WorkflowStartRequest startReq;
+    private ApprovalActionRequest actionReq;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.standaloneSetup(instanceController).build();
         objectMapper = TestJacksonConfig.createObjectMapper();
-        testInstance = new WorkflowInstanceResp(
+        testInstance = new WorkflowInstanceResponse(
                 "inst-001", "def-001", "请假审批", "user-001", "发起人",
                 "dept-001", null, "请假申请", null, null, null,
                 "pending", Instant.now(), null, null, Instant.now(),
                 true, true, false, false, true, false, false
         );
-        startReq = WorkflowStartReq.builder()
+        startReq = WorkflowStartRequest.builder()
                 .definitionId("def-001")
                 .title("请假申请")
                 .build();
-        actionReq = ApprovalActionReq.builder()
+        actionReq = ApprovalActionRequest.builder()
                 .comment("同意")
                 .build();
     }
@@ -80,7 +79,7 @@ class WorkflowInstanceControllerTest {
         @DisplayName("should create draft")
         void createDraft_ShouldCreateDraft() throws Exception {
             // Given
-            when(instanceService.createDraft(any(WorkflowStartReq.class))).thenReturn(testInstance);
+            when(instanceService.createDraft(any(WorkflowStartRequest.class))).thenReturn(testInstance);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/instances/draft")
@@ -89,7 +88,7 @@ class WorkflowInstanceControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(instanceService).createDraft(any(WorkflowStartReq.class));
+            verify(instanceService).createDraft(any(WorkflowStartRequest.class));
         }
     }
 
@@ -120,7 +119,7 @@ class WorkflowInstanceControllerTest {
         @DisplayName("should start workflow")
         void start_ShouldStartWorkflow() throws Exception {
             // Given
-            when(instanceService.start(any(WorkflowStartReq.class))).thenReturn(testInstance);
+            when(instanceService.start(any(WorkflowStartRequest.class))).thenReturn(testInstance);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/instances/start")
@@ -129,7 +128,7 @@ class WorkflowInstanceControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(instanceService).start(any(WorkflowStartReq.class));
+            verify(instanceService).start(any(WorkflowStartRequest.class));
         }
     }
 
@@ -141,7 +140,7 @@ class WorkflowInstanceControllerTest {
         @DisplayName("should return workflow detail")
         void getDetail_ShouldReturnDetail() throws Exception {
             // Given
-            WorkflowDetailResp detail = new WorkflowDetailResp(
+            WorkflowDetailResponse detail = new WorkflowDetailResponse(
                     testInstance, List.of(), List.of(), null, true,
                     null, null, List.of(), List.of(), null
             );
@@ -225,7 +224,7 @@ class WorkflowInstanceControllerTest {
         @DisplayName("should approve workflow")
         void approve_ShouldApproveWorkflow() throws Exception {
             // Given
-            when(instanceService.approve(anyString(), any(ApprovalActionReq.class))).thenReturn(testInstance);
+            when(instanceService.approve(anyString(), any(ApprovalActionRequest.class))).thenReturn(testInstance);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/instances/inst-001/approve")
@@ -234,7 +233,7 @@ class WorkflowInstanceControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(instanceService).approve(anyString(), any(ApprovalActionReq.class));
+            verify(instanceService).approve(anyString(), any(ApprovalActionRequest.class));
         }
     }
 
@@ -246,7 +245,7 @@ class WorkflowInstanceControllerTest {
         @DisplayName("should reject workflow")
         void reject_ShouldRejectWorkflow() throws Exception {
             // Given
-            when(instanceService.reject(anyString(), any(ApprovalActionReq.class))).thenReturn(testInstance);
+            when(instanceService.reject(anyString(), any(ApprovalActionRequest.class))).thenReturn(testInstance);
 
             // When & Then
             mockMvc.perform(post("/v1/workflow/instances/inst-001/reject")
@@ -255,7 +254,7 @@ class WorkflowInstanceControllerTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
-            verify(instanceService).reject(anyString(), any(ApprovalActionReq.class));
+            verify(instanceService).reject(anyString(), any(ApprovalActionRequest.class));
         }
     }
 

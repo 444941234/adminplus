@@ -1,9 +1,9 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.pojo.dto.req.DictItemCreateReq;
-import com.adminplus.pojo.dto.req.DictItemUpdateReq;
-import com.adminplus.pojo.dto.resp.DictItemResp;
+import com.adminplus.pojo.dto.request.DictItemCreateRequest;
+import com.adminplus.pojo.dto.request.DictItemUpdateRequest;
+import com.adminplus.pojo.dto.response.DictItemResponse;
 import com.adminplus.pojo.entity.DictEntity;
 import com.adminplus.pojo.entity.DictItemEntity;
 import com.adminplus.repository.DictItemRepository;
@@ -77,7 +77,7 @@ class DictItemServiceTest {
             when(dictRepository.findById("dict-001")).thenReturn(Optional.of(testDict));
 
             // When
-            DictItemResp result = dictItemService.getDictItemById("item-001");
+            DictItemResponse result = dictItemService.getDictItemById("item-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -109,7 +109,7 @@ class DictItemServiceTest {
             when(dictItemRepository.findByDictIdOrderBySortOrderAsc("dict-001")).thenReturn(List.of(testItem));
 
             // When
-            List<DictItemResp> result = dictItemService.getDictItemsByDictId("dict-001");
+            List<DictItemResponse> result = dictItemService.getDictItemsByDictId("dict-001");
 
             // Then
             assertThat(result).hasSize(1);
@@ -123,7 +123,7 @@ class DictItemServiceTest {
             when(dictItemRepository.findByDictIdOrderBySortOrderAsc("dict-001")).thenReturn(List.of());
 
             // When
-            List<DictItemResp> result = dictItemService.getDictItemsByDictId("dict-001");
+            List<DictItemResponse> result = dictItemService.getDictItemsByDictId("dict-001");
 
             // Then
             assertThat(result).isEmpty();
@@ -143,7 +143,7 @@ class DictItemServiceTest {
                     .thenReturn(List.of(testItem));
 
             // When
-            List<DictItemResp> result = dictItemService.getDictItemsByType("STATUS");
+            List<DictItemResponse> result = dictItemService.getDictItemsByType("STATUS");
 
             // Then
             assertThat(result).hasSize(1);
@@ -170,14 +170,14 @@ class DictItemServiceTest {
         @DisplayName("should create dict item successfully")
         void createDictItem_ShouldCreateItem() {
             // Given
-            DictItemCreateReq req = new DictItemCreateReq(
+            DictItemCreateRequest req = new DictItemCreateRequest(
                     "dict-001", null, "Inactive", "0", 2, 1, "Inactive status"
             );
             when(dictRepository.findById("dict-001")).thenReturn(Optional.of(testDict));
             when(dictItemRepository.save(any())).thenReturn(testItem);
 
             // When
-            DictItemResp result = dictItemService.createDictItem(req);
+            DictItemResponse result = dictItemService.createDictItem(req);
 
             // Then
             assertThat(result).isNotNull();
@@ -188,7 +188,7 @@ class DictItemServiceTest {
         @DisplayName("should throw exception when dict not found")
         void createDictItem_WhenDictNotFound_ShouldThrowException() {
             // Given
-            DictItemCreateReq req = new DictItemCreateReq(
+            DictItemCreateRequest req = new DictItemCreateRequest(
                     "non-existent", null, "Test", "test", 1, 1, null
             );
             when(dictRepository.findById("non-existent")).thenReturn(Optional.empty());
@@ -208,7 +208,7 @@ class DictItemServiceTest {
         @DisplayName("should update dict item successfully")
         void updateDictItem_ShouldUpdateItem() {
             // Given
-            DictItemUpdateReq req = new DictItemUpdateReq(
+            DictItemUpdateRequest req = new DictItemUpdateRequest(
                     null, "Updated Label", "2", 2, 1, "Updated"
             );
             when(dictItemRepository.findById("item-001")).thenReturn(Optional.of(testItem));
@@ -216,7 +216,7 @@ class DictItemServiceTest {
             when(dictItemRepository.save(any())).thenReturn(testItem);
 
             // When
-            DictItemResp result = dictItemService.updateDictItem("item-001", req);
+            DictItemResponse result = dictItemService.updateDictItem("item-001", req);
 
             // Then
             assertThat(result).isNotNull();
@@ -227,7 +227,7 @@ class DictItemServiceTest {
         @DisplayName("should throw exception when item not found")
         void updateDictItem_WhenItemNotFound_ShouldThrowException() {
             // Given
-            DictItemUpdateReq req = new DictItemUpdateReq(
+            DictItemUpdateRequest req = new DictItemUpdateRequest(
                     null, "Updated", null, null, null, null
             );
             when(dictItemRepository.findById("non-existent")).thenReturn(Optional.empty());

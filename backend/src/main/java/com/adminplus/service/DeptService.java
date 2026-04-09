@@ -1,8 +1,8 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.DeptCreateReq;
-import com.adminplus.pojo.dto.req.DeptUpdateReq;
-import com.adminplus.pojo.dto.resp.DeptResp;
+import com.adminplus.pojo.dto.request.DeptCreateRequest;
+import com.adminplus.pojo.dto.request.DeptUpdateRequest;
+import com.adminplus.pojo.dto.response.DeptResponse;
 
 import java.util.List;
 
@@ -17,22 +17,22 @@ public interface DeptService {
     /**
      * 查询部门树形列表
      */
-    List<DeptResp> getDeptTree();
+    List<DeptResponse> getDeptTree();
 
     /**
      * 根据ID查询部门
      */
-    DeptResp getDeptById(String id);
+    DeptResponse getDeptById(String id);
 
     /**
      * 创建部门
      */
-    DeptResp createDept(DeptCreateReq req);
+    DeptResponse createDept(DeptCreateRequest request);
 
     /**
      * 更新部门
      */
-    DeptResp updateDept(String id, DeptUpdateReq req);
+    DeptResponse updateDept(String id, DeptUpdateRequest request);
 
     /**
      * 删除部门

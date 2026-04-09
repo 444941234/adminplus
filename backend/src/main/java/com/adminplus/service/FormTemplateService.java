@@ -1,8 +1,7 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.FormTemplateReq;
-import com.adminplus.pojo.dto.resp.FormTemplateResp;
-import com.adminplus.pojo.entity.FormTemplateEntity;
+import com.adminplus.pojo.dto.request.FormTemplateRequest;
+import com.adminplus.pojo.dto.response.FormTemplateResponse;
 
 import java.util.List;
 
@@ -17,37 +16,37 @@ public interface FormTemplateService {
     /**
      * 获取所有表单模板
      */
-    List<FormTemplateResp> getAllTemplates();
+    List<FormTemplateResponse> getAllTemplates();
 
     /**
      * 获取启用的表单模板
      */
-    List<FormTemplateResp> getEnabledTemplates();
+    List<FormTemplateResponse> getEnabledTemplates();
 
     /**
      * 根据分类获取表单模板
      */
-    List<FormTemplateResp> getTemplatesByCategory(String category);
+    List<FormTemplateResponse> getTemplatesByCategory(String category);
 
     /**
      * 根据ID获取表单模板
      */
-    FormTemplateResp getTemplateById(String id);
+    FormTemplateResponse getTemplateById(String id);
 
     /**
      * 根据标识获取表单模板
      */
-    FormTemplateResp getTemplateByCode(String templateCode);
+    FormTemplateResponse getTemplateByCode(String templateCode);
 
     /**
      * 创建表单模板
      */
-    FormTemplateResp createTemplate(FormTemplateReq req);
+    FormTemplateResponse createTemplate(FormTemplateRequest req);
 
     /**
      * 更新表单模板
      */
-    FormTemplateResp updateTemplate(String id, FormTemplateReq req);
+    FormTemplateResponse updateTemplate(String id, FormTemplateRequest req);
 
     /**
      * 删除表单模板

@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.dto.query.UserQuery;
-import com.adminplus.pojo.dto.req.UserCreateReq;
-import com.adminplus.pojo.dto.req.UserUpdateReq;
-import com.adminplus.pojo.dto.resp.PageResultResp;
-import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.dto.request.UserCreateRequest;
+import com.adminplus.pojo.dto.request.UserUpdateRequest;
+import com.adminplus.pojo.dto.response.PageResultResponse;
+import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.pojo.entity.UserEntity;
 
 import java.util.List;
@@ -23,12 +23,12 @@ public interface UserService {
      * @param req 查询条件
      * @return 分页结果
      */
-    PageResultResp<UserResp> getUserList(UserQuery req);
+    PageResultResponse<UserResponse> getUserList(UserQuery req);
 
     /**
      * 根据ID查询用户
      */
-    UserResp getUserById(String id);
+    UserResponse getUserById(String id);
 
     /**
      * 根据用户名查询用户
@@ -38,12 +38,12 @@ public interface UserService {
     /**
      * 创建用户
      */
-    UserResp createUser(UserCreateReq req);
+    UserResponse createUser(UserCreateRequest req);
 
     /**
      * 更新用户
      */
-    UserResp updateUser(String id, UserUpdateReq req);
+    UserResponse updateUser(String id, UserUpdateRequest req);
 
     /**
      * 删除用户
@@ -76,7 +76,7 @@ public interface UserService {
      * @param username 用户名
      * @return 用户信息
      */
-    UserResp getUserRespByUsername(String username);
+    UserResponse getUserRespByUsername(String username);
 
     /**
      * 获取用户的角色编码列表（用于 JWT scope）

@@ -1,8 +1,8 @@
 package com.adminplus.service;
 
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogPageResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.LogPageResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.entity.LogEntity;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public interface LogStorageStrategy {
      * @param query 查询条件
      * @return 分页结果
      */
-    PageResultResp<LogPageResp> findPage(LogQuery query);
+    PageResultResponse<LogPageResponse> findPage(LogQuery query);
 
     /**
      * 统计日志总数

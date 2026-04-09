@@ -2,12 +2,12 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
-import com.adminplus.pojo.dto.req.MenuBatchDeleteReq;
-import com.adminplus.pojo.dto.req.MenuBatchStatusReq;
-import com.adminplus.pojo.dto.req.MenuCreateReq;
-import com.adminplus.pojo.dto.req.MenuUpdateReq;
-import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.resp.MenuResp;
+import com.adminplus.pojo.dto.request.MenuBatchDeleteRequest;
+import com.adminplus.pojo.dto.request.MenuBatchStatusRequest;
+import com.adminplus.pojo.dto.request.MenuCreateRequest;
+import com.adminplus.pojo.dto.request.MenuUpdateRequest;
+import com.adminplus.pojo.dto.request.LogEntry;
+import com.adminplus.pojo.dto.response.MenuResponse;
 import com.adminplus.pojo.entity.MenuEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.MenuRepository;
@@ -49,21 +49,21 @@ public class MenuServiceImpl implements MenuService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "menuTree", key = "'all'", unless = "#result == null || #result.isEmpty()")
-    public List<MenuResp> getMenuTree() {
+    public List<MenuResponse> getMenuTree() {
         List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
 
         // 转换为 VO（扁平结构，children 为 null）
-        List<MenuResp> menuResps = allMenus.stream().map(this::toResp).toList();
+        List<MenuResponse> menuResponses = allMenus.stream().map(this::toResp).toList();
 
         // 使用 TreeUtils.buildTreeForRecord 构建树形结构
-        return TreeUtils.buildTreeForRecord(menuResps, this::createWithChildren);
+        return TreeUtils.buildTreeForRecord(menuResponses, this::createWithChildren);
     }
 
     /**
      * 创建包含子节点的新 MenuResp 实例（用于 record 类型）
      */
-    private MenuResp createWithChildren(MenuResp original, List<MenuResp> children) {
-        return new MenuResp(
+    private MenuResponse createWithChildren(MenuResponse original, List<MenuResponse> children) {
+        return new MenuResponse(
                 original.id(),
                 original.parentId(),
                 original.type(),
@@ -83,7 +83,7 @@ public class MenuServiceImpl implements MenuService {
 
     @Override
     @Transactional(readOnly = true)
-    public MenuResp getMenuById(String id) {
+    public MenuResponse getMenuById(String id) {
         var menu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
         return toResp(menu);
@@ -92,21 +92,21 @@ public class MenuServiceImpl implements MenuService {
     @Override
     @Transactional
     @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
-    public MenuResp createMenu(MenuCreateReq req) {
+    public MenuResponse createMenu(MenuCreateRequest request) {
         var menu = new MenuEntity();
-        menu.setType(req.type());
-        menu.setName(XssUtils.escape(req.name()));
-        menu.setPath(XssUtils.escape(req.path()));
-        menu.setComponent(XssUtils.escape(req.component()));
-        menu.setPermKey(XssUtils.escape(req.permKey()));
-        menu.setIcon(XssUtils.escape(req.icon()));
-        menu.setSortOrder(req.sortOrder());
-        menu.setVisible(req.visible());
-        menu.setStatus(req.status());
+        menu.setType(request.type());
+        menu.setName(XssUtils.escape(request.name()));
+        menu.setPath(XssUtils.escape(request.path()));
+        menu.setComponent(XssUtils.escape(request.component()));
+        menu.setPermKey(XssUtils.escape(request.permKey()));
+        menu.setIcon(XssUtils.escape(request.icon()));
+        menu.setSortOrder(request.sortOrder());
+        menu.setVisible(request.visible());
+        menu.setStatus(request.status());
 
         // 设置父菜单关系
-        if (req.parentId() != null && !req.parentId().equals("0")) {
-            MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, req.parentId(), "父菜单不存在");
+        if (request.parentId() != null && !request.parentId().equals("0")) {
+            MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, request.parentId(), "父菜单不存在");
             menu.setParent(parent);
             // 更新 ancestors
             String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
@@ -126,10 +126,10 @@ public class MenuServiceImpl implements MenuService {
     @Override
     @Transactional
     @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
-    public MenuResp updateMenu(String id, MenuUpdateReq req) {
+    public MenuResponse updateMenu(String id, MenuUpdateRequest request) {
         var menu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
-        req.parentId().ifPresent(parentId -> {
+        request.parentId().ifPresent(parentId -> {
             // 不能将自己设置为父菜单
             if (id.equals(parentId)) {
                 throw new BizException("不能将自己设置为父菜单");
@@ -159,15 +159,15 @@ public class MenuServiceImpl implements MenuService {
             }
         });
 
-        req.type().ifPresent(menu::setType);
-        req.name().ifPresent(name -> menu.setName(XssUtils.escape(name)));
-        req.path().ifPresent(path -> menu.setPath(XssUtils.escape(path)));
-        req.component().ifPresent(component -> menu.setComponent(XssUtils.escape(component)));
-        req.permKey().ifPresent(permKey -> menu.setPermKey(XssUtils.escape(permKey)));
-        req.icon().ifPresent(icon -> menu.setIcon(XssUtils.escape(icon)));
-        req.sortOrder().ifPresent(menu::setSortOrder);
-        req.visible().ifPresent(menu::setVisible);
-        req.status().ifPresent(menu::setStatus);
+        request.type().ifPresent(menu::setType);
+        request.name().ifPresent(name -> menu.setName(XssUtils.escape(name)));
+        request.path().ifPresent(path -> menu.setPath(XssUtils.escape(path)));
+        request.component().ifPresent(component -> menu.setComponent(XssUtils.escape(component)));
+        request.permKey().ifPresent(permKey -> menu.setPermKey(XssUtils.escape(permKey)));
+        request.icon().ifPresent(icon -> menu.setIcon(XssUtils.escape(icon)));
+        request.sortOrder().ifPresent(menu::setSortOrder);
+        request.visible().ifPresent(menu::setVisible);
+        request.status().ifPresent(menu::setStatus);
 
         var savedMenu = menuRepository.save(menu);
 
@@ -197,30 +197,30 @@ public class MenuServiceImpl implements MenuService {
     @Override
     @Transactional
     @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
-    public void batchUpdateStatus(MenuBatchStatusReq req) {
-        List<MenuEntity> menus = menuRepository.findAllById(req.ids());
+    public void batchUpdateStatus(MenuBatchStatusRequest request) {
+        List<MenuEntity> menus = menuRepository.findAllById(request.ids());
 
-        if (menus.size() != req.ids().size()) {
+        if (menus.size() != request.ids().size()) {
             throw new BizException("部分菜单不存在");
         }
 
         menus.forEach(menu -> {
-            menu.setStatus(req.status());
+            menu.setStatus(request.status());
         });
 
         menuRepository.saveAll(menus);
 
         // 记录审计日志
-        logService.log(LogEntry.operation("菜单管理", OperationType.UPDATE.getCode(), "批量更新菜单状态，数量: " + req.ids().size()));
+        logService.log(LogEntry.operation("菜单管理", OperationType.UPDATE.getCode(), "批量更新菜单状态，数量: " + request.ids().size()));
     }
 
     @Override
     @Transactional
     @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
-    public void batchDelete(MenuBatchDeleteReq req) {
-        List<MenuEntity> menus = menuRepository.findAllById(req.ids());
+    public void batchDelete(MenuBatchDeleteRequest request) {
+        List<MenuEntity> menus = menuRepository.findAllById(request.ids());
 
-        if (menus.size() != req.ids().size()) {
+        if (menus.size() != request.ids().size()) {
             throw new BizException("部分菜单不存在");
         }
 
@@ -234,13 +234,13 @@ public class MenuServiceImpl implements MenuService {
         menuRepository.deleteAll(menus);
 
         // 记录审计日志
-        logService.log(LogEntry.operation("菜单管理", OperationType.DELETE.getCode(), "批量删除菜单，数量: " + req.ids().size()));
+        logService.log(LogEntry.operation("菜单管理", OperationType.DELETE.getCode(), "批量删除菜单，数量: " + request.ids().size()));
     }
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "userMenus", key = "#userId")
-    public List<MenuResp> getUserMenuTree(String userId) {
+    public List<MenuResponse> getUserMenuTree(String userId) {
         // 1. 查询用户的角色ID列表
         List<String> roleIds = userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
@@ -278,10 +278,10 @@ public class MenuServiceImpl implements MenuService {
                 .toList();
 
         // 6. 转换为 VO 并构建树形结构
-        List<MenuResp> menuResps = userMenus.stream().map(this::toResp).toList();
+        List<MenuResponse> menuResponses = userMenus.stream().map(this::toResp).toList();
 
         // 7. 使用 TreeUtils.buildTreeForRecord 构建树形结构
-        return TreeUtils.buildTreeForRecord(menuResps, this::createWithChildren);
+        return TreeUtils.buildTreeForRecord(menuResponses, this::createWithChildren);
     }
 
     /**
@@ -330,7 +330,7 @@ public class MenuServiceImpl implements MenuService {
     @Override
     @Transactional
     @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
-    public MenuResp copyMenu(String id, String targetParentId) {
+    public MenuResponse copyMenu(String id, String targetParentId) {
         // 获取原菜单
         MenuEntity sourceMenu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
@@ -392,9 +392,9 @@ public class MenuServiceImpl implements MenuService {
     /**
      * 转换为响应 VO
      */
-    private MenuResp toResp(MenuEntity menu) {
+    private MenuResponse toResp(MenuEntity menu) {
         String parentId = menu.getParent() != null ? menu.getParent().getId() : "0";
-        return new MenuResp(
+        return new MenuResponse(
                 menu.getId(),
                 parentId,
                 menu.getType(),

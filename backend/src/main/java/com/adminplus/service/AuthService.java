@@ -1,8 +1,8 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.UserLoginReq;
-import com.adminplus.pojo.dto.resp.LoginResp;
-import com.adminplus.pojo.dto.resp.UserResp;
+import com.adminplus.pojo.dto.request.UserLoginRequest;
+import com.adminplus.pojo.dto.response.LoginResponse;
+import com.adminplus.pojo.dto.response.UserResponse;
 
 import java.util.List;
 
@@ -17,12 +17,12 @@ public interface AuthService {
     /**
      * 用户登录
      */
-    LoginResp login(UserLoginReq req);
+    LoginResponse login(UserLoginRequest request);
 
     /**
      * 获取当前用户信息
      */
-    UserResp getCurrentUser(String username);
+    UserResponse getCurrentUser(String username);
 
     /**
      * 获取当前用户的权限列表

@@ -3,10 +3,10 @@ package com.adminplus.service.impl;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.query.ConfigQuery;
-import com.adminplus.pojo.dto.req.*;
-import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.resp.*;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.*;
+import com.adminplus.pojo.dto.request.LogEntry;
+import com.adminplus.pojo.dto.response.*;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.entity.ConfigEntity;
 import com.adminplus.pojo.entity.ConfigGroupEntity;
 import com.adminplus.pojo.entity.ConfigHistoryEntity;
@@ -26,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,25 +58,25 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<ConfigResp> getConfigList(ConfigQuery req) {
-        Pageable pageable = PageUtils.toPageableAsc(req.getPage(), req.getSize(), "sortOrder");
+    public PageResultResponse<ConfigResponse> getConfigList(ConfigQuery query) {
+        Pageable pageable = PageUtils.toPageableAsc(query.getPage(), query.getSize(), "sortOrder");
 
-        Specification<ConfigEntity> spec = (root, query, cb) -> {
+        Specification<ConfigEntity> spec = (root, cq, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            if (req.getGroupId() != null && !req.getGroupId().isEmpty()) {
-                predicates.add(cb.equal(root.get("groupId"), req.getGroupId()));
+            if (query.getGroupId() != null && !query.getGroupId().isEmpty()) {
+                predicates.add(cb.equal(root.get("groupId"), query.getGroupId()));
             }
 
-            if (req.getKeyword() != null && !req.getKeyword().isEmpty()) {
+            if (query.getKeyword() != null && !query.getKeyword().isEmpty()) {
                 predicates.add(cb.or(
-                        cb.like(root.get("name"), "%" + req.getKeyword() + "%"),
-                        cb.like(root.get("key"), "%" + req.getKeyword() + "%")
+                        cb.like(root.get("name"), "%" + query.getKeyword() + "%"),
+                        cb.like(root.get("key"), "%" + query.getKeyword() + "%")
                 ));
             }
 
-            if (req.getStatus() != null) {
-                predicates.add(cb.equal(root.get("status"), req.getStatus()));
+            if (query.getStatus() != null) {
+                predicates.add(cb.equal(root.get("status"), query.getStatus()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
@@ -89,7 +88,7 @@ public class ConfigServiceImpl implements ConfigService {
         // Batch fetch group names to avoid N+1 queries
         Map<String, String> groupNameMap = batchGetGroupNames(configs);
 
-        return PageResultResp.from(pageResult, config -> toVOWithGroupName(config, groupNameMap.get(config.getGroupId())));
+        return PageResultResponse.from(pageResult, config -> toVOWithGroupName(config, groupNameMap.get(config.getGroupId())));
     }
 
     /**
@@ -113,7 +112,7 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "config", key = "'id:' + #id")
-    public ConfigResp getConfigById(String id) {
+    public ConfigResponse getConfigById(String id) {
         ConfigEntity config = EntityHelper.findByIdOrThrow(
                 configRepository::findById, id, "配置不存在"
         );
@@ -123,7 +122,7 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "config", key = "'key:' + #key")
-    public ConfigResp getConfigByKey(String key) {
+    public ConfigResponse getConfigByKey(String key) {
         ConfigEntity config = configRepository.findByKey(key)
                 .orElseThrow(() -> new BizException("配置不存在"));
         return toVO(config);
@@ -131,7 +130,7 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ConfigResp> getConfigsByGroupId(String groupId) {
+    public List<ConfigResponse> getConfigsByGroupId(String groupId) {
         // 验证配置组是否存在
         ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
                 configGroupRepository::findById, groupId, "配置组不存在"
@@ -145,7 +144,7 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "config", key = "'groupCode:' + #groupCode")
-    public List<ConfigResp> getConfigsByGroupCode(String groupCode) {
+    public List<ConfigResponse> getConfigsByGroupCode(String groupCode) {
         // 根据编码查找配置组
         ConfigGroupEntity group = configGroupRepository.findByCode(groupCode)
                 .orElseThrow(() -> new BizException("配置组不存在"));
@@ -158,32 +157,32 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @Transactional
     @CacheEvict(value = "config", allEntries = true)
-    public ConfigResp createConfig(ConfigCreateReq req) {
+    public ConfigResponse createConfig(ConfigCreateRequest request) {
         // 检查配置键是否已存在
-        if (configRepository.existsByKey(req.key())) {
+        if (configRepository.existsByKey(request.key())) {
             throw new BizException("配置键已存在");
         }
 
         // 验证配置组是否存在
         ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
-                configGroupRepository::findById, req.groupId(), "配置组不存在"
+                configGroupRepository::findById, request.groupId(), "配置组不存在"
         );
 
         // 验证配置值
-        validateConfigValue(req.valueType(), req.value(), req.validationRule());
+        validateConfigValue(request.valueType(), request.value(), request.validationRule());
 
         ConfigEntity config = new ConfigEntity();
-        config.setGroupId(req.groupId());
-        config.setName(req.name());
-        config.setKey(req.key());
-        config.setValue(req.value());
-        config.setValueType(req.valueType());
-        config.setEffectType(req.effectType() != null ? req.effectType() : "IMMEDIATE");
-        config.setDefaultValue(req.defaultValue());
-        config.setDescription(req.description());
-        config.setIsRequired(req.isRequired() != null ? req.isRequired() : false);
-        config.setValidationRule(req.validationRule());
-        config.setSortOrder(req.sortOrder() != null ? req.sortOrder() : 0);
+        config.setGroupId(request.groupId());
+        config.setName(request.name());
+        config.setKey(request.key());
+        config.setValue(request.value());
+        config.setValueType(request.valueType());
+        config.setEffectType(request.effectType() != null ? request.effectType() : "IMMEDIATE");
+        config.setDefaultValue(request.defaultValue());
+        config.setDescription(request.description());
+        config.setIsRequired(request.isRequired() != null ? request.isRequired() : false);
+        config.setValidationRule(request.validationRule());
+        config.setSortOrder(request.sortOrder() != null ? request.sortOrder() : 0);
         config.setStatus(1); // 默认启用
 
         config = configRepository.save(config);
@@ -201,7 +200,7 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @Transactional
     @CacheEvict(value = "config", allEntries = true)
-    public ConfigResp updateConfig(String id, ConfigUpdateReq req) {
+    public ConfigResponse updateConfig(String id, ConfigUpdateRequest request) {
         ConfigEntity config = EntityHelper.findByIdOrThrow(
                 configRepository::findById, id, "配置不存在"
         );
@@ -210,46 +209,46 @@ public class ConfigServiceImpl implements ConfigService {
         String oldValue = config.getValue();
 
         // 更新字段
-        if (req.name() != null) {
-            config.setName(req.name());
+        if (request.name() != null) {
+            config.setName(request.name());
         }
-        if (req.value() != null) {
+        if (request.value() != null) {
             // 验证配置值
-            String valueType = req.valueType() != null ? req.valueType() : config.getValueType();
-            String validationRule = req.validationRule() != null ? req.validationRule() : config.getValidationRule();
-            validateConfigValue(valueType, req.value(), validationRule);
+            String valueType = request.valueType() != null ? request.valueType() : config.getValueType();
+            String validationRule = request.validationRule() != null ? request.validationRule() : config.getValidationRule();
+            validateConfigValue(valueType, request.value(), validationRule);
 
-            config.setValue(req.value());
+            config.setValue(request.value());
         }
-        if (req.valueType() != null) {
-            config.setValueType(req.valueType());
+        if (request.valueType() != null) {
+            config.setValueType(request.valueType());
         }
-        if (req.effectType() != null) {
-            config.setEffectType(req.effectType());
+        if (request.effectType() != null) {
+            config.setEffectType(request.effectType());
         }
-        if (req.defaultValue() != null) {
-            config.setDefaultValue(req.defaultValue());
+        if (request.defaultValue() != null) {
+            config.setDefaultValue(request.defaultValue());
         }
-        if (req.description() != null) {
-            config.setDescription(req.description());
+        if (request.description() != null) {
+            config.setDescription(request.description());
         }
-        if (req.isRequired() != null) {
-            config.setIsRequired(req.isRequired());
+        if (request.isRequired() != null) {
+            config.setIsRequired(request.isRequired());
         }
-        if (req.validationRule() != null) {
-            config.setValidationRule(req.validationRule());
+        if (request.validationRule() != null) {
+            config.setValidationRule(request.validationRule());
         }
-        if (req.sortOrder() != null) {
-            config.setSortOrder(req.sortOrder());
+        if (request.sortOrder() != null) {
+            config.setSortOrder(request.sortOrder());
         }
-        if (req.status() != null) {
-            config.setStatus(req.status());
+        if (request.status() != null) {
+            config.setStatus(request.status());
         }
 
         config = configRepository.save(config);
 
         // 如果值发生变化，记录历史
-        if (req.value() != null && !req.value().equals(oldValue)) {
+        if (request.value() != null && !request.value().equals(oldValue)) {
             saveHistory(config, oldValue, config.getValue(), "更新值");
         }
 
@@ -294,14 +293,14 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     @Transactional
     @CacheEvict(value = "config", allEntries = true)
-    public ConfigImportResultResp batchUpdateConfigs(ConfigBatchUpdateReq req) {
-        int total = req.items().size();
+    public ConfigImportResultResponse batchUpdateConfigs(ConfigBatchUpdateRequest request) {
+        int total = request.items().size();
         int success = 0;
         int skipped = 0;
         int failed = 0;
-        List<ConfigImportResultResp.ImportDetail> details = new ArrayList<>();
+        List<ConfigImportResultResponse.ImportDetail> details = new ArrayList<>();
 
-        for (ConfigBatchUpdateReq.ConfigItemUpdate item : req.items()) {
+        for (ConfigBatchUpdateRequest.ConfigItemUpdate item : request.items()) {
             try {
                 ConfigEntity config = EntityHelper.findByIdOrThrow(
                         configRepository::findById, item.id(), "配置不存在: " + item.id()
@@ -315,7 +314,7 @@ public class ConfigServiceImpl implements ConfigService {
                 saveHistory(config, oldValue, item.value(), "批量更新");
 
                 success++;
-                details.add(new ConfigImportResultResp.ImportDetail(
+                details.add(new ConfigImportResultResponse.ImportDetail(
                         config.getKey(),
                         "success",
                         null
@@ -325,7 +324,7 @@ public class ConfigServiceImpl implements ConfigService {
 
             } catch (Exception e) {
                 failed++;
-                details.add(new ConfigImportResultResp.ImportDetail(
+                details.add(new ConfigImportResultResponse.ImportDetail(
                         item.id(),
                         "failed",
                         e.getMessage()
@@ -337,12 +336,12 @@ public class ConfigServiceImpl implements ConfigService {
         logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
                 "批量更新配置: 成功 " + success + "，失败 " + failed));
 
-        return new ConfigImportResultResp(total, success, skipped, failed, details);
+        return new ConfigImportResultResponse(total, success, skipped, failed, details);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public ConfigExportResp exportConfigs(List<String> groupIds) {
+    public ConfigExportResponse exportConfigs(List<String> groupIds) {
         List<ConfigGroupEntity> groups;
         if (groupIds == null || groupIds.isEmpty()) {
             groups = configGroupRepository.findByStatusOrderBySortOrderAsc(1);
@@ -355,12 +354,12 @@ public class ConfigServiceImpl implements ConfigService {
                     .toList();
         }
 
-        List<ConfigExportResp.ExportGroup> exportGroups = groups.stream()
+        List<ConfigExportResponse.ExportGroup> exportGroups = groups.stream()
                 .map(group -> {
                     List<ConfigEntity> configs = configRepository
                             .findByGroupIdAndStatusOrderBySortOrderAsc(group.getId(), 1);
-                    List<ConfigExportResp.ExportConfig> exportConfigs = configs.stream()
-                            .map(config -> new ConfigExportResp.ExportConfig(
+                    List<ConfigExportResponse.ExportConfig> exportConfigs = configs.stream()
+                            .map(config -> new ConfigExportResponse.ExportConfig(
                                     config.getKey(),
                                     config.getName(),
                                     config.getValue(),
@@ -369,7 +368,7 @@ public class ConfigServiceImpl implements ConfigService {
                                     config.getDescription()
                             ))
                             .toList();
-                    return new ConfigExportResp.ExportGroup(
+                    return new ConfigExportResponse.ExportGroup(
                             group.getCode(),
                             group.getName(),
                             group.getIcon(),
@@ -384,15 +383,15 @@ public class ConfigServiceImpl implements ConfigService {
         logService.log(LogEntry.operation("配置管理", OperationType.EXPORT.getCode(),
                 "导出配置: " + exportGroups.size() + " 个分组"));
 
-        return new ConfigExportResp("1.0", exportTime, exportGroups);
+        return new ConfigExportResponse("1.0", exportTime, exportGroups);
     }
 
     @Override
     @Transactional
     @CacheEvict(value = "config", allEntries = true)
-    public ConfigImportResultResp importConfigs(ConfigImportReq req) {
+    public ConfigImportResultResponse importConfigs(ConfigImportRequest request) {
         // 简化实现：仅支持 JSON 格式
-        if (!"JSON".equals(req.format())) {
+        if (!"JSON".equals(request.format())) {
             throw new BizException("暂仅支持 JSON 格式导入");
         }
 
@@ -400,11 +399,11 @@ public class ConfigServiceImpl implements ConfigService {
         int success = 0;
         int skipped = 0;
         int failed = 0;
-        List<ConfigImportResultResp.ImportDetail> details = new ArrayList<>();
+        List<ConfigImportResultResponse.ImportDetail> details = new ArrayList<>();
 
         try {
             Map<String, Object> importData = objectMapper.readValue(
-                    req.content(), new TypeReference<>() {}
+                    request.content(), new TypeReference<>() {}
             );
 
             @SuppressWarnings("unchecked")
@@ -423,7 +422,7 @@ public class ConfigServiceImpl implements ConfigService {
                         if (config == null) {
                             // 跳过不存在的配置
                             skipped++;
-                            details.add(new ConfigImportResultResp.ImportDetail(
+                            details.add(new ConfigImportResultResponse.ImportDetail(
                                     key,
                                     "skipped",
                                     "配置不存在"
@@ -439,7 +438,7 @@ public class ConfigServiceImpl implements ConfigService {
                         saveHistory(config, oldValue, value, "导入");
 
                         success++;
-                        details.add(new ConfigImportResultResp.ImportDetail(
+                        details.add(new ConfigImportResultResponse.ImportDetail(
                                 key,
                                 "success",
                                 null
@@ -450,7 +449,7 @@ public class ConfigServiceImpl implements ConfigService {
                     } catch (Exception e) {
                         failed++;
                         String key = (String) item.getOrDefault("key", "unknown");
-                        details.add(new ConfigImportResultResp.ImportDetail(
+                        details.add(new ConfigImportResultResponse.ImportDetail(
                                 key,
                                 "failed",
                                 e.getMessage()
@@ -467,19 +466,19 @@ public class ConfigServiceImpl implements ConfigService {
         logService.log(LogEntry.operation("配置管理", OperationType.IMPORT.getCode(),
                 "导入配置: 成功 " + success + "，跳过 " + skipped + "，失败 " + failed));
 
-        return new ConfigImportResultResp(total, success, skipped, failed, details);
+        return new ConfigImportResultResponse(total, success, skipped, failed, details);
     }
 
     @Override
     @Transactional
     @CacheEvict(value = "config", allEntries = true)
-    public ConfigResp rollbackConfig(String id, ConfigRollbackReq req) {
+    public ConfigResponse rollbackConfig(String id, ConfigRollbackRequest request) {
         ConfigEntity config = EntityHelper.findByIdOrThrow(
                 configRepository::findById, id, "配置不存在"
         );
 
         ConfigHistoryEntity history = EntityHelper.findByIdOrThrow(
-                configHistoryRepository::findById, req.historyId(), "历史记录不存在"
+                configHistoryRepository::findById, request.historyId(), "历史记录不存在"
         );
 
         if (!history.getConfigId().equals(id)) {
@@ -503,7 +502,7 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ConfigHistoryResp> getConfigHistory(String id) {
+    public List<ConfigHistoryResponse> getConfigHistory(String id) {
         ConfigEntity config = EntityHelper.findByIdOrThrow(
                 configRepository::findById, id, "配置不存在"
         );
@@ -515,13 +514,13 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     @Transactional(readOnly = true)
-    public ConfigEffectInfoResp getConfigEffectInfo() {
+    public ConfigEffectInfoResponse getConfigEffectInfo() {
         // 查询所有需要手动生效的配置
         List<ConfigEntity> manualConfigs = configRepository.findByEffectType("MANUAL");
 
-        List<ConfigEffectInfoResp.PendingEffect> pendingEffects = manualConfigs.stream()
+        List<ConfigEffectInfoResponse.PendingEffect> pendingEffects = manualConfigs.stream()
                 .filter(c -> c.getStatus() == 1)
-                .map(c -> new ConfigEffectInfoResp.PendingEffect(
+                .map(c -> new ConfigEffectInfoResponse.PendingEffect(
                         c.getKey(),
                         c.getName(),
                         c.getValue(),
@@ -538,7 +537,7 @@ public class ConfigServiceImpl implements ConfigService {
                 .map(ConfigEntity::getKey)
                 .toList();
 
-        return new ConfigEffectInfoResp(pendingEffects, restartRequired);
+        return new ConfigEffectInfoResponse(pendingEffects, restartRequired);
     }
 
     @Override
@@ -586,7 +585,7 @@ public class ConfigServiceImpl implements ConfigService {
     /**
      * 实体转换为 VO
      */
-    private ConfigResp toVO(ConfigEntity entity) {
+    private ConfigResponse toVO(ConfigEntity entity) {
         String groupName = null;
         if (entity.getGroupId() != null) {
             ConfigGroupEntity group = configGroupRepository.findById(entity.getGroupId()).orElse(null);
@@ -601,8 +600,8 @@ public class ConfigServiceImpl implements ConfigService {
     /**
      * 实体转换为 VO（带预先查询的组名，避免 N+1 问题）
      */
-    private ConfigResp toVOWithGroupName(ConfigEntity entity, String groupName) {
-        return new ConfigResp(
+    private ConfigResponse toVOWithGroupName(ConfigEntity entity, String groupName) {
+        return new ConfigResponse(
                 entity.getId(),
                 entity.getGroupId(),
                 groupName,
@@ -625,8 +624,8 @@ public class ConfigServiceImpl implements ConfigService {
     /**
      * 历史记录转换为 VO
      */
-    private ConfigHistoryResp toHistoryVO(ConfigHistoryEntity entity) {
-        return new ConfigHistoryResp(
+    private ConfigHistoryResponse toHistoryVO(ConfigHistoryEntity entity) {
+        return new ConfigHistoryResponse(
                 entity.getId(),
                 entity.getConfigId(),
                 entity.getConfigKey(),

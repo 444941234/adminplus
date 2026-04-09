@@ -1,6 +1,6 @@
 package com.adminplus.statemachine.actions;
 
-import com.adminplus.pojo.dto.req.NotificationSendReq;
+import com.adminplus.pojo.dto.request.NotificationSendRequest;
 import com.adminplus.service.NotificationService;
 import com.adminplus.statemachine.enums.WorkflowEvent;
 import com.adminplus.statemachine.enums.WorkflowState;
@@ -51,7 +51,7 @@ public class NotifyAction implements Action<WorkflowState, WorkflowEvent> {
             }
 
             // 发送通知
-            NotificationSendReq req = new NotificationSendReq();
+            NotificationSendRequest req = new NotificationSendRequest();
             req.setType(notificationType);
             req.setRecipientId(recipientId);
             req.setTitle(title != null ? title : getDefaultTitle(notificationType));

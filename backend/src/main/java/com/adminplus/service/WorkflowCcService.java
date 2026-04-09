@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.resp.WorkflowCcResp;
+import com.adminplus.pojo.dto.response.WorkflowCcResponse;
 
 import java.util.List;
 
@@ -18,7 +18,7 @@ public interface WorkflowCcService {
      * @param userId 用户ID
      * @return 抄送记录列表
      */
-    List<WorkflowCcResp> getUserCcRecords(String userId);
+    List<WorkflowCcResponse> getUserCcRecords(String userId);
 
     /**
      * 获取用户的未读抄送记录
@@ -26,7 +26,7 @@ public interface WorkflowCcService {
      * @param userId 用户ID
      * @return 未读抄送记录列表
      */
-    List<WorkflowCcResp> getUnreadCcRecords(String userId);
+    List<WorkflowCcResponse> getUnreadCcRecords(String userId);
 
     /**
      * 统计用户未读抄送数量
@@ -56,5 +56,5 @@ public interface WorkflowCcService {
      * @param instanceId 工作流实例ID
      * @return 抄送记录列表
      */
-    List<WorkflowCcResp> getInstanceCcRecords(String instanceId);
+    List<WorkflowCcResponse> getInstanceCcRecords(String instanceId);
 }

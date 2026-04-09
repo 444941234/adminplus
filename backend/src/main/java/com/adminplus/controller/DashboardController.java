@@ -1,7 +1,7 @@
 package com.adminplus.controller;
 
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.resp.*;
+import com.adminplus.pojo.dto.response.*;
 import com.adminplus.service.DashboardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,57 +30,57 @@ public class DashboardController {
 
     @GetMapping("/stats")
     @Operation(summary = "获取统计数据")
-    public ApiResponse<DashboardStatsResp> getStats() {
+    public ApiResponse<DashboardStatsResponse> getStats() {
         return ApiResponse.ok(dashboardService.getStats());
     }
 
     @GetMapping("/user-growth")
     @Operation(summary = "获取用户增长趋势")
-    public ApiResponse<ChartDataResp> getUserGrowth() {
+    public ApiResponse<ChartDataResponse> getUserGrowth() {
         return ApiResponse.ok(dashboardService.getUserGrowthData());
     }
 
     @GetMapping("/role-distribution")
     @Operation(summary = "获取角色分布")
-    public ApiResponse<ChartDataResp> getRoleDistribution() {
+    public ApiResponse<ChartDataResponse> getRoleDistribution() {
         return ApiResponse.ok(dashboardService.getRoleDistributionData());
     }
 
     @GetMapping("/menu-distribution")
     @Operation(summary = "获取菜单类型分布")
-    public ApiResponse<ChartDataResp> getMenuDistribution() {
+    public ApiResponse<ChartDataResponse> getMenuDistribution() {
         return ApiResponse.ok(dashboardService.getMenuDistributionData());
     }
 
     @GetMapping("/recent-logs")
     @Operation(summary = "获取最近操作日志")
-    public ApiResponse<List<OperationLogResp>> getRecentLogs() {
+    public ApiResponse<List<OperationLogResponse>> getRecentLogs() {
         return ApiResponse.ok(dashboardService.getRecentOperationLogs());
     }
 
     @GetMapping("/system-info")
     @Operation(summary = "获取系统信息")
     @PreAuthorize("hasAuthority('system:config') or hasAuthority('*')")
-    public ApiResponse<SystemInfoResp> getSystemInfo() {
+    public ApiResponse<SystemInfoResponse> getSystemInfo() {
         return ApiResponse.ok(dashboardService.getSystemInfo());
     }
 
     @GetMapping("/online-users")
     @Operation(summary = "获取在线用户")
     @PreAuthorize("hasAuthority('user:query') or hasAuthority('*')")
-    public ApiResponse<List<OnlineUserResp>> getOnlineUsers() {
+    public ApiResponse<List<OnlineUserResponse>> getOnlineUsers() {
         return ApiResponse.ok(dashboardService.getOnlineUsers());
     }
 
     @GetMapping("/statistics")
     @Operation(summary = "获取统计数据（Statistics页面）")
-    public ApiResponse<StatisticsResp> getStatistics() {
+    public ApiResponse<StatisticsResponse> getStatistics() {
         return ApiResponse.ok(dashboardService.getStatistics());
     }
 
     @GetMapping("/visit-trend")
     @Operation(summary = "获取访问量趋势")
-    public ApiResponse<ChartDataResp> getVisitTrend() {
+    public ApiResponse<ChartDataResponse> getVisitTrend() {
         return ApiResponse.ok(dashboardService.getVisitTrendData());
     }
 }

@@ -2,7 +2,7 @@ package com.adminplus.common.aspect;
 
 import com.adminplus.common.annotation.LoginLog;
 import com.adminplus.common.annotation.OperationLog;
-import com.adminplus.pojo.dto.req.LogEntry;
+import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.service.LogService;
 import com.adminplus.utils.IpUtils;
 import com.adminplus.utils.SecurityUtils;

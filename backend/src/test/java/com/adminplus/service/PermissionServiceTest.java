@@ -1,6 +1,6 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.resp.PermissionResp;
+import com.adminplus.pojo.dto.response.PermissionResponse;
 import com.adminplus.pojo.entity.MenuEntity;
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserRoleEntity;
@@ -245,7 +245,7 @@ class PermissionServiceTest {
             when(menuRepository.findAllByOrderBySortOrderAsc()).thenReturn(List.of(testMenu));
 
             // When
-            List<PermissionResp> result = permissionService.getAllPermissions();
+            List<PermissionResponse> result = permissionService.getAllPermissions();
 
             // Then
             assertThat(result).hasSize(1);
@@ -259,7 +259,7 @@ class PermissionServiceTest {
             when(menuRepository.findAllByOrderBySortOrderAsc()).thenReturn(List.of());
 
             // When
-            List<PermissionResp> result = permissionService.getAllPermissions();
+            List<PermissionResponse> result = permissionService.getAllPermissions();
 
             // Then
             assertThat(result).isEmpty();

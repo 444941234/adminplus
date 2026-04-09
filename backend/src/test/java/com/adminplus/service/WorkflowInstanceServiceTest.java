@@ -1,10 +1,10 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.ApprovalActionReq;
-import com.adminplus.pojo.dto.req.WorkflowStartReq;
-import com.adminplus.pojo.dto.resp.WorkflowApprovalResp;
-import com.adminplus.pojo.dto.resp.WorkflowDetailResp;
-import com.adminplus.pojo.dto.resp.WorkflowInstanceResp;
+import com.adminplus.pojo.dto.request.ApprovalActionRequest;
+import com.adminplus.pojo.dto.request.WorkflowStartRequest;
+import com.adminplus.pojo.dto.response.WorkflowApprovalResponse;
+import com.adminplus.pojo.dto.response.WorkflowDetailResponse;
+import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
 import com.adminplus.service.impl.WorkflowInstanceServiceImpl;
@@ -16,13 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.adminplus.common.security.AppUserDetails;
-import tools.jackson.core.type.TypeReference;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Instant;
@@ -97,7 +94,7 @@ class WorkflowInstanceServiceTest {
     private UserEntity testUser;
     private UserEntity testApprover;
     private WorkflowInstanceEntity testInstance;
-    private WorkflowStartReq validStartReq;
+    private WorkflowStartRequest validStartReq;
 
     private static final String CURRENT_USER_ID = "user-001";
     private static final String APPROVER_ID = "approver-001";
@@ -158,7 +155,7 @@ class WorkflowInstanceServiceTest {
         testInstance.setStatus("draft");
 
         // Setup valid start request
-        validStartReq = WorkflowStartReq.builder()
+        validStartReq = WorkflowStartRequest.builder()
                 .definitionId("def-001")
                 .title("Leave Request")
                 .formData(Map.of("days", 3))
@@ -226,7 +223,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(testInstance);
 
             // When
-            WorkflowInstanceResp result = service.createDraft(validStartReq);
+            WorkflowInstanceResponse result = service.createDraft(validStartReq);
 
             // Then
             assertThat(result).isNotNull();
@@ -246,7 +243,7 @@ class WorkflowInstanceServiceTest {
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             // When
-            WorkflowInstanceResp result = service.createDraft(validStartReq);
+            WorkflowInstanceResponse result = service.createDraft(validStartReq);
 
             // Then
             assertThat(result.title()).isEqualTo("Leave Request");
@@ -314,7 +311,7 @@ class WorkflowInstanceServiceTest {
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             // When
-            WorkflowInstanceResp result = service.submit("inst-001", null);
+            WorkflowInstanceResponse result = service.submit("inst-001", null);
 
             // Then
             // Status is normalized: "running" -> "PROCESSING"
@@ -439,7 +436,7 @@ class WorkflowInstanceServiceTest {
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
             // When
-            WorkflowInstanceResp result = service.start(validStartReq);
+            WorkflowInstanceResponse result = service.start(validStartReq);
 
             // Then
             // Status is normalized: "running" -> "PROCESSING"
@@ -480,12 +477,12 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
             // When
-            WorkflowInstanceResp result = service.approve("inst-001", req);
+            WorkflowInstanceResponse result = service.approve("inst-001", req);
 
             // Then
             verify(approvalRepository).save(any(WorkflowApprovalEntity.class));
@@ -529,7 +526,7 @@ class WorkflowInstanceServiceTest {
             when(userRepository.findById(anyString()))
                     .thenReturn(Optional.of(testApprover));
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -574,12 +571,12 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
             // When
-            WorkflowInstanceResp result = service.approve("inst-001", req);
+            WorkflowInstanceResponse result = service.approve("inst-001", req);
 
             // Then
             assertThat(testInstance.getStatus()).isEqualTo("approved");
@@ -610,7 +607,7 @@ class WorkflowInstanceServiceTest {
             when(approvalRepository.findByInstanceIdAndNodeIdAndDeletedFalse("inst-001", "node-001"))
                     .thenReturn(Arrays.asList(approval));
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -632,7 +629,7 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.findById("inst-001"))
                     .thenReturn(Optional.of(testInstance));
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -675,12 +672,12 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Insufficient leave balance")
                     .build();
 
             // When
-            WorkflowInstanceResp result = service.reject("inst-001", req);
+            WorkflowInstanceResponse result = service.reject("inst-001", req);
 
             // Then
             assertThat(testInstance.getStatus()).isEqualTo("rejected");
@@ -935,7 +932,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Arrays.asList());
 
             // When
-            WorkflowDetailResp result = service.getDetail("inst-001");
+            WorkflowDetailResponse result = service.getDetail("inst-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -953,7 +950,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Arrays.asList(testInstance));
 
             // When
-            List<WorkflowInstanceResp> result = service.getMyWorkflows(null);
+            List<WorkflowInstanceResponse> result = service.getMyWorkflows(null);
 
             // Then
             assertThat(result).hasSize(1);
@@ -970,7 +967,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Arrays.asList(testInstance));
 
             // When
-            List<WorkflowInstanceResp> result = service.getMyWorkflows("running");
+            List<WorkflowInstanceResponse> result = service.getMyWorkflows("running");
 
             // Then
             assertThat(result).hasSize(1);
@@ -987,7 +984,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Arrays.asList(testInstance));
 
             // When
-            List<WorkflowInstanceResp> result = service.getPendingApprovals();
+            List<WorkflowInstanceResponse> result = service.getPendingApprovals();
 
             // Then
             assertThat(result).hasSize(1);
@@ -1026,7 +1023,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Arrays.asList(approval));
 
             // When
-            List<WorkflowApprovalResp> result = service.getApprovals("inst-001");
+            List<WorkflowApprovalResponse> result = service.getApprovals("inst-001");
 
             // Then
             assertThat(result).hasSize(1);
@@ -1055,7 +1052,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Arrays.asList(testApprover));
 
             // When
-            WorkflowInstanceResp result = service.submit("inst-001", null);
+            WorkflowInstanceResponse result = service.submit("inst-001", null);
 
             // Then
             assertThat(result.currentNodeId()).isEqualTo("node-001");
@@ -1091,12 +1088,12 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment(longComment)
                     .build();
 
             // When
-            WorkflowInstanceResp result = service.approve("inst-001", req);
+            WorkflowInstanceResponse result = service.approve("inst-001", req);
 
             // Then
             verify(approvalRepository).save(any(WorkflowApprovalEntity.class));
@@ -1130,7 +1127,7 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenReturn(testInstance);
 
-            ApprovalActionReq req = ApprovalActionReq.builder()
+            ApprovalActionRequest req = ApprovalActionRequest.builder()
                     .comment("Approved")
                     .build();
 
@@ -1194,7 +1191,7 @@ class WorkflowInstanceServiceTest {
             when(instanceRepository.save(any(WorkflowInstanceEntity.class)))
                     .thenAnswer(invocation -> invocation.getArgument(0));
 
-            WorkflowStartReq updateReq = WorkflowStartReq.builder()
+            WorkflowStartRequest updateReq = WorkflowStartRequest.builder()
                     .definitionId("def-001")
                     .title("Updated Title")
                     .formData(Map.of("days", 5))
@@ -1202,7 +1199,7 @@ class WorkflowInstanceServiceTest {
                     .build();
 
             // When
-            WorkflowInstanceResp result = service.updateDraft("inst-001", updateReq);
+            WorkflowInstanceResponse result = service.updateDraft("inst-001", updateReq);
 
             // Then
             assertThat(result).isNotNull();
@@ -1285,7 +1282,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Arrays.asList(addSign));
 
             // When
-            WorkflowDetailResp result = service.getDetail("inst-001");
+            WorkflowDetailResponse result = service.getDetail("inst-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -1323,7 +1320,7 @@ class WorkflowInstanceServiceTest {
                     .thenReturn(Arrays.asList());
 
             // When
-            WorkflowDetailResp result = service.getDetail("inst-001");
+            WorkflowDetailResponse result = service.getDetail("inst-001");
 
             // Then
             assertThat(result.ccRecords()).isEmpty();

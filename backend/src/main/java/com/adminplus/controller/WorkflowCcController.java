@@ -1,7 +1,7 @@
 package com.adminplus.controller;
 
 import com.adminplus.common.pojo.ApiResponse;
-import com.adminplus.pojo.dto.resp.WorkflowCcResp;
+import com.adminplus.pojo.dto.response.WorkflowCcResponse;
 import com.adminplus.service.WorkflowCcService;
 import com.adminplus.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,19 +31,19 @@ public class WorkflowCcController {
     @GetMapping("/my")
     @Operation(summary = "获取我的抄送记录")
     @PreAuthorize("hasAnyAuthority('workflow:cc:list')")
-    public ApiResponse<List<WorkflowCcResp>> getMyCcRecords() {
+    public ApiResponse<List<WorkflowCcResponse>> getMyCcRecords() {
         String userId = SecurityUtils.getCurrentUserId();
-        List<WorkflowCcResp> resp = ccService.getUserCcRecords(userId);
-        return ApiResponse.ok(resp);
+        List<WorkflowCcResponse> responses = ccService.getUserCcRecords(userId);
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/my/unread")
     @Operation(summary = "获取我的未读抄送记录")
     @PreAuthorize("hasAnyAuthority('workflow:cc:list')")
-    public ApiResponse<List<WorkflowCcResp>> getMyUnreadCcRecords() {
+    public ApiResponse<List<WorkflowCcResponse>> getMyUnreadCcRecords() {
         String userId = SecurityUtils.getCurrentUserId();
-        List<WorkflowCcResp> resp = ccService.getUnreadCcRecords(userId);
-        return ApiResponse.ok(resp);
+        List<WorkflowCcResponse> responses = ccService.getUnreadCcRecords(userId);
+        return ApiResponse.ok(responses);
     }
 
     @GetMapping("/my/unread/count")
@@ -58,9 +58,9 @@ public class WorkflowCcController {
     @GetMapping("/instance/{instanceId}")
     @Operation(summary = "获取工作流实例的抄送记录")
     @PreAuthorize("hasAnyAuthority('workflow:cc:list')")
-    public ApiResponse<List<WorkflowCcResp>> getInstanceCcRecords(@PathVariable String instanceId) {
-        List<WorkflowCcResp> resp = ccService.getInstanceCcRecords(instanceId);
-        return ApiResponse.ok(resp);
+    public ApiResponse<List<WorkflowCcResponse>> getInstanceCcRecords(@PathVariable String instanceId) {
+        List<WorkflowCcResponse> responses = ccService.getInstanceCcRecords(instanceId);
+        return ApiResponse.ok(responses);
     }
 
     @PutMapping("/{ccId}/read")

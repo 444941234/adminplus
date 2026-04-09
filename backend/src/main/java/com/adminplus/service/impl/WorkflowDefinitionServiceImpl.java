@@ -1,9 +1,9 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.pojo.dto.req.WorkflowDefinitionReq;
-import com.adminplus.pojo.dto.req.WorkflowNodeReq;
-import com.adminplus.pojo.dto.resp.WorkflowDefinitionResp;
-import com.adminplus.pojo.dto.resp.WorkflowNodeResp;
+import com.adminplus.pojo.dto.request.WorkflowDefinitionRequest;
+import com.adminplus.pojo.dto.request.WorkflowNodeRequest;
+import com.adminplus.pojo.dto.response.WorkflowDefinitionResponse;
+import com.adminplus.pojo.dto.response.WorkflowNodeResponse;
 import com.adminplus.pojo.entity.WorkflowDefinitionEntity;
 import com.adminplus.pojo.entity.WorkflowNodeEntity;
 import com.adminplus.repository.WorkflowDefinitionRepository;
@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.function.Function;
 
 /**
  * 工作流定义服务实现
@@ -38,22 +37,22 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @Override
     @CacheEvict(value = "workflowEnabledDefinitions", allEntries = true)
     @Transactional
-    public WorkflowDefinitionResp create(WorkflowDefinitionReq req) {
-        log.info("创建工作流定义: {}", req.definitionName());
+    public WorkflowDefinitionResponse create(WorkflowDefinitionRequest request) {
+        log.info("创建工作流定义: {}", request.definitionName());
 
         // 检查键是否已存在
-        if (definitionRepository.existsByDefinitionKeyAndDeletedFalse(req.definitionKey())) {
-            throw new IllegalArgumentException("工作流标识已存在: " + req.definitionKey());
+        if (definitionRepository.existsByDefinitionKeyAndDeletedFalse(request.definitionKey())) {
+            throw new IllegalArgumentException("工作流标识已存在: " + request.definitionKey());
         }
 
         WorkflowDefinitionEntity entity = new WorkflowDefinitionEntity();
-        entity.setDefinitionName(req.definitionName());
-        entity.setDefinitionKey(req.definitionKey());
-        entity.setCategory(req.category());
-        entity.setDescription(req.description());
-        entity.setStatus(req.status());
+        entity.setDefinitionName(request.definitionName());
+        entity.setDefinitionKey(request.definitionKey());
+        entity.setCategory(request.category());
+        entity.setDescription(request.description());
+        entity.setStatus(request.status());
         entity.setVersion(1);
-        entity.setFormConfig(req.formConfig());
+        entity.setFormConfig(request.formConfig());
 
         entity = definitionRepository.save(entity);
 
@@ -64,26 +63,26 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @Override
     @CacheEvict(value = {"workflowEnabledDefinitions", "workflowNodes"}, allEntries = true)
     @Transactional
-    public WorkflowDefinitionResp update(String id, WorkflowDefinitionReq req) {
+    public WorkflowDefinitionResponse update(String id, WorkflowDefinitionRequest request) {
         log.info("更新工作流定义: id={}", id);
 
         WorkflowDefinitionEntity entity = definitionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在: " + id));
 
         // 检查键是否与其他记录冲突
-        definitionRepository.findByDefinitionKeyAndDeletedFalse(req.definitionKey())
+        definitionRepository.findByDefinitionKeyAndDeletedFalse(request.definitionKey())
                 .ifPresent(existing -> {
                     if (!existing.getId().equals(id)) {
-                        throw new IllegalArgumentException("工作流标识已被使用: " + req.definitionKey());
+                        throw new IllegalArgumentException("工作流标识已被使用: " + request.definitionKey());
                     }
                 });
 
-        entity.setDefinitionName(req.definitionName());
-        entity.setDefinitionKey(req.definitionKey());
-        entity.setCategory(req.category());
-        entity.setDescription(req.description());
-        entity.setStatus(req.status());
-        entity.setFormConfig(req.formConfig());
+        entity.setDefinitionName(request.definitionName());
+        entity.setDefinitionKey(request.definitionKey());
+        entity.setCategory(request.category());
+        entity.setDescription(request.description());
+        entity.setStatus(request.status());
+        entity.setFormConfig(request.formConfig());
 
         entity = definitionRepository.save(entity);
 
@@ -110,7 +109,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
 
     @Override
     @Transactional(readOnly = true)
-    public WorkflowDefinitionResp getById(String id) {
+    public WorkflowDefinitionResponse getById(String id) {
         return definitionRepository.findById(id)
                 .map(this::toResponse)
                 .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在: " + id));
@@ -118,7 +117,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
 
     @Override
     @Transactional(readOnly = true)
-    public List<WorkflowDefinitionResp> listAll() {
+    public List<WorkflowDefinitionResponse> listAll() {
         List<WorkflowDefinitionEntity> definitions = definitionRepository.findAll();
 
         // 批量查询节点数量，避免 N+1
@@ -132,7 +131,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @Override
     @Cacheable(value = "workflowEnabledDefinitions", unless = "#result == null || #result.isEmpty()")
     @Transactional(readOnly = true)
-    public List<WorkflowDefinitionResp> listEnabled() {
+    public List<WorkflowDefinitionResponse> listEnabled() {
         List<WorkflowDefinitionEntity> definitions = definitionRepository.findByStatusAndDeletedFalseOrderByCreateTimeDesc(1);
 
         // 批量查询节点数量，避免 N+1
@@ -165,8 +164,8 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @Override
     @CacheEvict(value = "workflowNodes", key = "#definitionId")
     @Transactional
-    public WorkflowNodeResp addNode(String definitionId, WorkflowNodeReq req) {
-        log.info("添加工作流节点: definitionId={}, nodeName={}", definitionId, req.nodeName());
+    public WorkflowNodeResponse addNode(String definitionId, WorkflowNodeRequest request) {
+        log.info("添加工作流节点: definitionId={}, nodeName={}", definitionId, request.nodeName());
 
         // 验证工作流定义存在
         WorkflowDefinitionEntity definition = definitionRepository.findById(definitionId)
@@ -174,14 +173,14 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
 
         WorkflowNodeEntity entity = new WorkflowNodeEntity();
         entity.setDefinitionId(definitionId);
-        entity.setNodeName(req.nodeName());
-        entity.setNodeCode(req.nodeCode());
-        entity.setNodeOrder(req.nodeOrder());
-        entity.setApproverType(req.approverType());
-        entity.setApproverId(req.approverId());
-        entity.setIsCounterSign(req.isCounterSign());
-        entity.setAutoPassSameUser(req.autoPassSameUser());
-        entity.setDescription(req.description());
+        entity.setNodeName(request.nodeName());
+        entity.setNodeCode(request.nodeCode());
+        entity.setNodeOrder(request.nodeOrder());
+        entity.setApproverType(request.approverType());
+        entity.setApproverId(request.approverId());
+        entity.setIsCounterSign(request.isCounterSign());
+        entity.setAutoPassSameUser(request.autoPassSameUser());
+        entity.setDescription(request.description());
 
         entity = nodeRepository.save(entity);
 
@@ -191,20 +190,20 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
 
     @Override
     @Transactional
-    public WorkflowNodeResp updateNode(String nodeId, WorkflowNodeReq req) {
+    public WorkflowNodeResponse updateNode(String nodeId, WorkflowNodeRequest request) {
         log.info("更新工作流节点: nodeId={}", nodeId);
 
         WorkflowNodeEntity entity = nodeRepository.findById(nodeId)
                 .orElseThrow(() -> new IllegalArgumentException("工作流节点不存在: " + nodeId));
 
-        entity.setNodeName(req.nodeName());
-        entity.setNodeCode(req.nodeCode());
-        entity.setNodeOrder(req.nodeOrder());
-        entity.setApproverType(req.approverType());
-        entity.setApproverId(req.approverId());
-        entity.setIsCounterSign(req.isCounterSign());
-        entity.setAutoPassSameUser(req.autoPassSameUser());
-        entity.setDescription(req.description());
+        entity.setNodeName(request.nodeName());
+        entity.setNodeCode(request.nodeCode());
+        entity.setNodeOrder(request.nodeOrder());
+        entity.setApproverType(request.approverType());
+        entity.setApproverId(request.approverId());
+        entity.setIsCounterSign(request.isCounterSign());
+        entity.setAutoPassSameUser(request.autoPassSameUser());
+        entity.setDescription(request.description());
 
         entity = nodeRepository.save(entity);
 
@@ -223,7 +222,7 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @Override
     @Cacheable(value = "workflowNodes", key = "#definitionId", unless = "#result == null || #result.isEmpty()")
     @Transactional(readOnly = true)
-    public List<WorkflowNodeResp> listNodes(String definitionId) {
+    public List<WorkflowNodeResponse> listNodes(String definitionId) {
         log.info("Service层查询工作流节点: definitionId={}", definitionId);
         List<WorkflowNodeEntity> nodes = nodeRepository.findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(definitionId);
         log.info("Service层查询结果: definitionId={}, 原始节点数={}", definitionId, nodes.size());
@@ -232,8 +231,8 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
                 .collect(Collectors.toList());
     }
 
-    private WorkflowDefinitionResp toResponse(WorkflowDefinitionEntity entity, long nodeCount) {
-        return new WorkflowDefinitionResp(
+    private WorkflowDefinitionResponse toResponse(WorkflowDefinitionEntity entity, long nodeCount) {
+        return new WorkflowDefinitionResponse(
                 entity.getId(),
                 entity.getDefinitionName(),
                 entity.getDefinitionKey(),
@@ -248,12 +247,12 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         );
     }
 
-    private WorkflowDefinitionResp toResponse(WorkflowDefinitionEntity entity) {
+    private WorkflowDefinitionResponse toResponse(WorkflowDefinitionEntity entity) {
         return toResponse(entity, nodeRepository.countByDefinitionIdAndDeletedFalse(entity.getId()));
     }
 
-    private WorkflowNodeResp toNodeResponse(WorkflowNodeEntity entity) {
-        return new WorkflowNodeResp(
+    private WorkflowNodeResponse toNodeResponse(WorkflowNodeEntity entity) {
+        return new WorkflowNodeResponse(
                 entity.getId(),
                 entity.getDefinitionId(),
                 entity.getNodeName(),

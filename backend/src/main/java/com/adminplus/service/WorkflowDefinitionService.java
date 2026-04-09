@@ -1,9 +1,9 @@
 package com.adminplus.service;
 
-import com.adminplus.pojo.dto.req.WorkflowDefinitionReq;
-import com.adminplus.pojo.dto.req.WorkflowNodeReq;
-import com.adminplus.pojo.dto.resp.WorkflowDefinitionResp;
-import com.adminplus.pojo.dto.resp.WorkflowNodeResp;
+import com.adminplus.pojo.dto.request.WorkflowDefinitionRequest;
+import com.adminplus.pojo.dto.request.WorkflowNodeRequest;
+import com.adminplus.pojo.dto.response.WorkflowDefinitionResponse;
+import com.adminplus.pojo.dto.response.WorkflowNodeResponse;
 
 import java.util.List;
 
@@ -18,12 +18,12 @@ public interface WorkflowDefinitionService {
     /**
      * 创建工作流定义
      */
-    WorkflowDefinitionResp create(WorkflowDefinitionReq req);
+    WorkflowDefinitionResponse create(WorkflowDefinitionRequest req);
 
     /**
      * 更新工作流定义
      */
-    WorkflowDefinitionResp update(String id, WorkflowDefinitionReq req);
+    WorkflowDefinitionResponse update(String id, WorkflowDefinitionRequest req);
 
     /**
      * 删除工作流定义
@@ -33,27 +33,27 @@ public interface WorkflowDefinitionService {
     /**
      * 根据ID查询
      */
-    WorkflowDefinitionResp getById(String id);
+    WorkflowDefinitionResponse getById(String id);
 
     /**
      * 查询所有工作流定义
      */
-    List<WorkflowDefinitionResp> listAll();
+    List<WorkflowDefinitionResponse> listAll();
 
     /**
      * 查询启用的工作流定义
      */
-    List<WorkflowDefinitionResp> listEnabled();
+    List<WorkflowDefinitionResponse> listEnabled();
 
     /**
      * 添加工作流节点
      */
-    WorkflowNodeResp addNode(String definitionId, WorkflowNodeReq req);
+    WorkflowNodeResponse addNode(String definitionId, WorkflowNodeRequest req);
 
     /**
      * 更新工作流节点
      */
-    WorkflowNodeResp updateNode(String nodeId, WorkflowNodeReq req);
+    WorkflowNodeResponse updateNode(String nodeId, WorkflowNodeRequest req);
 
     /**
      * 删除工作流节点
@@ -63,5 +63,5 @@ public interface WorkflowDefinitionService {
     /**
      * 查询工作流的所有节点
      */
-    List<WorkflowNodeResp> listNodes(String definitionId);
+    List<WorkflowNodeResponse> listNodes(String definitionId);
 }

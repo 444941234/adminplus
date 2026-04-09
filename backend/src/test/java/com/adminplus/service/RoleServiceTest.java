@@ -1,11 +1,10 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.pojo.dto.req.RoleCreateReq;
-import com.adminplus.pojo.dto.req.RoleUpdateReq;
-import com.adminplus.pojo.dto.resp.RoleResp;
+import com.adminplus.pojo.dto.request.RoleCreateRequest;
+import com.adminplus.pojo.dto.request.RoleUpdateRequest;
+import com.adminplus.pojo.dto.response.RoleResponse;
 import com.adminplus.pojo.entity.RoleEntity;
-import com.adminplus.pojo.entity.RoleMenuEntity;
 import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRoleRepository;
@@ -78,7 +77,7 @@ class RoleServiceTest {
             when(roleRepository.findById("role-001")).thenReturn(Optional.of(testRole));
 
             // When
-            RoleResp result = roleService.getRoleById("role-001");
+            RoleResponse result = roleService.getRoleById("role-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -109,7 +108,7 @@ class RoleServiceTest {
             when(roleRepository.findByDeletedFalseAndCodeNot("ROLE_ADMIN")).thenReturn(List.of(testRole));
 
             // When
-            List<RoleResp> result = roleService.getAllRoles();
+            List<RoleResponse> result = roleService.getAllRoles();
 
             // Then
             assertThat(result).hasSize(1);
@@ -122,7 +121,7 @@ class RoleServiceTest {
             when(roleRepository.findByDeletedFalseAndCodeNot("ROLE_ADMIN")).thenReturn(List.of());
 
             // When
-            List<RoleResp> result = roleService.getAllRoles();
+            List<RoleResponse> result = roleService.getAllRoles();
 
             // Then
             assertThat(result).isEmpty();
@@ -137,14 +136,14 @@ class RoleServiceTest {
         @DisplayName("should create role successfully")
         void createRole_ShouldCreateRole() {
             // Given
-            RoleCreateReq req = new RoleCreateReq(
+            RoleCreateRequest req = new RoleCreateRequest(
                     "ROLE_MANAGER", "Manager", "Manager role", 1, 1, 2
             );
             when(roleRepository.existsByCode("ROLE_MANAGER")).thenReturn(false);
             when(roleRepository.save(any())).thenReturn(testRole);
 
             // When
-            RoleResp result = roleService.createRole(req);
+            RoleResponse result = roleService.createRole(req);
 
             // Then
             assertThat(result).isNotNull();
@@ -155,7 +154,7 @@ class RoleServiceTest {
         @DisplayName("should throw exception when code exists")
         void createRole_WhenCodeExists_ShouldThrowException() {
             // Given
-            RoleCreateReq req = new RoleCreateReq(
+            RoleCreateRequest req = new RoleCreateRequest(
                     "ROLE_USER", "User", "User role", 1, 1, 1
             );
             when(roleRepository.existsByCode("ROLE_USER")).thenReturn(true);
@@ -175,14 +174,14 @@ class RoleServiceTest {
         @DisplayName("should update role successfully")
         void updateRole_ShouldUpdateRole() {
             // Given
-            RoleUpdateReq req = new RoleUpdateReq(
+            RoleUpdateRequest req = new RoleUpdateRequest(
                     "Updated Role", "Updated description", 2, 1, 2
             );
             when(roleRepository.findById("role-001")).thenReturn(Optional.of(testRole));
             when(roleRepository.save(any())).thenReturn(testRole);
 
             // When
-            RoleResp result = roleService.updateRole("role-001", req);
+            RoleResponse result = roleService.updateRole("role-001", req);
 
             // Then
             assertThat(result).isNotNull();
@@ -193,7 +192,7 @@ class RoleServiceTest {
         @DisplayName("should throw exception when role not found")
         void updateRole_WhenNotFound_ShouldThrowException() {
             // Given
-            RoleUpdateReq req = new RoleUpdateReq(
+            RoleUpdateRequest req = new RoleUpdateRequest(
                     "Updated Role", "Updated description", 2, 1, 2
             );
             when(roleRepository.findById("non-existent")).thenReturn(Optional.empty());

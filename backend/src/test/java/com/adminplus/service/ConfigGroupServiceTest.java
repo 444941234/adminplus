@@ -2,11 +2,11 @@ package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.query.ConfigGroupQuery;
-import com.adminplus.pojo.dto.req.ConfigGroupCreateReq;
-import com.adminplus.pojo.dto.req.ConfigGroupUpdateReq;
-import com.adminplus.pojo.dto.req.LogEntry;
-import com.adminplus.pojo.dto.resp.ConfigGroupResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.request.ConfigGroupCreateRequest;
+import com.adminplus.pojo.dto.request.ConfigGroupUpdateRequest;
+import com.adminplus.pojo.dto.request.LogEntry;
+import com.adminplus.pojo.dto.response.ConfigGroupResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.entity.ConfigGroupEntity;
 import com.adminplus.repository.ConfigGroupRepository;
 import com.adminplus.repository.ConfigRepository;
@@ -32,8 +32,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.doNothing;
@@ -65,7 +63,7 @@ class ConfigGroupServiceTest {
     private ConfigGroupServiceImpl configGroupService;
 
     private ConfigGroupEntity testGroup;
-    private ConfigGroupResp testGroupResp;
+    private ConfigGroupResponse testGroupResp;
 
     @BeforeEach
     void setUp() {
@@ -80,7 +78,7 @@ class ConfigGroupServiceTest {
         testGroup.setCreateTime(Instant.now());
         testGroup.setUpdateTime(Instant.now());
 
-        testGroupResp = new ConfigGroupResp(
+        testGroupResp = new ConfigGroupResponse(
                 testGroup.getId(),
                 testGroup.getName(),
                 testGroup.getCode(),
@@ -109,7 +107,7 @@ class ConfigGroupServiceTest {
 
             // When
             ConfigGroupQuery query = new ConfigGroupQuery(1, 10, null);
-            PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(query);
+            PageResultResponse<ConfigGroupResponse> result = configGroupService.getConfigGroupList(query);
 
             // Then
             assertThat(result.records()).hasSize(1);
@@ -128,7 +126,7 @@ class ConfigGroupServiceTest {
 
             // When
             ConfigGroupQuery query = new ConfigGroupQuery(1, 10, "系统");
-            PageResultResp<ConfigGroupResp> result = configGroupService.getConfigGroupList(query);
+            PageResultResponse<ConfigGroupResponse> result = configGroupService.getConfigGroupList(query);
 
             // Then
             assertThat(result.records()).hasSize(1);
@@ -148,7 +146,7 @@ class ConfigGroupServiceTest {
             when(configRepository.countByGroupId("1")).thenReturn(0L);
 
             // When
-            ConfigGroupResp result = configGroupService.getConfigGroupById("1");
+            ConfigGroupResponse result = configGroupService.getConfigGroupById("1");
 
             // Then
             assertThat(result.id()).isEqualTo("1");
@@ -181,7 +179,7 @@ class ConfigGroupServiceTest {
             when(configRepository.countByGroupId("1")).thenReturn(0L);
 
             // When
-            ConfigGroupResp result = configGroupService.getConfigGroupByCode("system");
+            ConfigGroupResponse result = configGroupService.getConfigGroupByCode("system");
 
             // Then
             assertThat(result.code()).isEqualTo("system");
@@ -209,7 +207,7 @@ class ConfigGroupServiceTest {
         @DisplayName("成功创建配置组")
         void shouldCreateConfigGroup() {
             // Given
-            ConfigGroupCreateReq req = new ConfigGroupCreateReq(
+            ConfigGroupCreateRequest req = new ConfigGroupCreateRequest(
                     "数据库配置",
                     "database",
                     "Database",
@@ -227,7 +225,7 @@ class ConfigGroupServiceTest {
             when(configRepository.countByGroupId("2")).thenReturn(0L);
 
             // When
-            ConfigGroupResp result = configGroupService.createConfigGroup(req);
+            ConfigGroupResponse result = configGroupService.createConfigGroup(req);
 
             // Then
             assertThat(result.name()).isEqualTo("数据库配置");
@@ -241,7 +239,7 @@ class ConfigGroupServiceTest {
         @DisplayName("创建重复编码的配置组抛出异常")
         void shouldThrowExceptionWhenCreatingDuplicateCode() {
             // Given
-            ConfigGroupCreateReq req = new ConfigGroupCreateReq(
+            ConfigGroupCreateRequest req = new ConfigGroupCreateRequest(
                     "系统配置",
                     "system",
                     "Settings",
@@ -265,7 +263,7 @@ class ConfigGroupServiceTest {
         @DisplayName("成功更新配置组")
         void shouldUpdateConfigGroup() {
             // Given
-            ConfigGroupUpdateReq req = new ConfigGroupUpdateReq(
+            ConfigGroupUpdateRequest req = new ConfigGroupUpdateRequest(
                     "系统配置（已更新）",
                     "Settings2",
                     2,
@@ -276,7 +274,7 @@ class ConfigGroupServiceTest {
             when(configRepository.countByGroupId("1")).thenReturn(0L);
 
             // When
-            ConfigGroupResp result = configGroupService.updateConfigGroup("1", req);
+            ConfigGroupResponse result = configGroupService.updateConfigGroup("1", req);
 
             // Then
             assertThat(result.name()).isEqualTo("系统配置（已更新）");
@@ -289,7 +287,7 @@ class ConfigGroupServiceTest {
         @DisplayName("更新不存在的配置组抛出异常")
         void shouldThrowExceptionWhenUpdatingNonExistentConfigGroup() {
             // Given
-            ConfigGroupUpdateReq req = new ConfigGroupUpdateReq(
+            ConfigGroupUpdateRequest req = new ConfigGroupUpdateRequest(
                     "新名称",
                     "Icon",
                     1,
@@ -405,7 +403,7 @@ class ConfigGroupServiceTest {
             when(configRepository.countByGroupId(any())).thenReturn(0L);
 
             // When
-            List<ConfigGroupResp> result = configGroupService.getActiveConfigGroups();
+            List<ConfigGroupResponse> result = configGroupService.getActiveConfigGroups();
 
             // Then
             assertThat(result).hasSize(2);

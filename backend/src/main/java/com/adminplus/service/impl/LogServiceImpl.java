@@ -2,11 +2,11 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.common.properties.LogStorageProperties;
-import com.adminplus.pojo.dto.req.LogEntry;
+import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogPageResp;
-import com.adminplus.pojo.dto.resp.LogStatisticsResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.LogPageResponse;
+import com.adminplus.pojo.dto.response.LogStatisticsResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.service.LogService;
 import com.adminplus.service.LogStatisticsService;
@@ -88,13 +88,13 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResultResp<LogPageResp> getLogList(LogQuery query) {
+    public PageResultResponse<LogPageResponse> getLogList(LogQuery query) {
         return getStorageStrategy().findPage(query);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public LogPageResp getLogById(String id) {
+    public LogPageResponse getLogById(String id) {
         LogEntity logEntity = getStorageStrategy().findById(id);
         if (logEntity == null) {
             throw new BizException("日志不存在");
@@ -136,7 +136,7 @@ public class LogServiceImpl implements LogService {
 
     @Override
     @Transactional(readOnly = true)
-    public LogStatisticsResp getStatistics() {
+    public LogStatisticsResponse getStatistics() {
         return logStatisticsService.getStatistics();
     }
 
@@ -144,8 +144,8 @@ public class LogServiceImpl implements LogService {
         return storageStrategySelector.getStrategy();
     }
 
-    private LogPageResp toLogPageVO(LogEntity entity) {
-        return new LogPageResp(
+    private LogPageResponse toLogPageVO(LogEntity entity) {
+        return new LogPageResponse(
             entity.getId(),
             entity.getUsername(),
             entity.getModule(),

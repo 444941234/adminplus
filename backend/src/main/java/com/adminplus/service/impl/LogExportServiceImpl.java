@@ -1,8 +1,8 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.pojo.dto.query.LogQuery;
-import com.adminplus.pojo.dto.resp.LogPageResp;
-import com.adminplus.pojo.dto.resp.PageResultResp;
+import com.adminplus.pojo.dto.response.LogPageResponse;
+import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.service.LogExportService;
 import com.adminplus.service.LogService;
 import com.adminplus.utils.DictUtils;
@@ -56,8 +56,8 @@ public class LogExportServiceImpl implements LogExportService {
                 query.endTime()
         );
 
-        PageResultResp<LogPageResp> result = logService.getLogList(exportQuery);
-        List<LogPageResp> logs = result.records();
+        PageResultResponse<LogPageResponse> result = logService.getLogList(exportQuery);
+        List<LogPageResponse> logs = result.records();
 
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("日志数据");
@@ -72,7 +72,7 @@ public class LogExportServiceImpl implements LogExportService {
 
             // 填充数据
             for (int i = 0; i < logs.size(); i++) {
-                LogPageResp log = logs.get(i);
+                LogPageResponse log = logs.get(i);
                 Row row = sheet.createRow(i + 1);
                 int col = 0;
                 row.createCell(col++).setCellValue(log.id());
@@ -123,15 +123,15 @@ public class LogExportServiceImpl implements LogExportService {
                 query.endTime()
         );
 
-        PageResultResp<LogPageResp> result = logService.getLogList(exportQuery);
-        List<LogPageResp> logs = result.records();
+        PageResultResponse<LogPageResponse> result = logService.getLogList(exportQuery);
+        List<LogPageResponse> logs = result.records();
 
         StringBuilder csv = new StringBuilder();
         // CSV 头部
         csv.append("日志ID,用户名,模块,日志类型,操作类型,描述,请求方法,IP地址,执行时长(ms),状态,操作时间\n");
 
         // CSV 数据
-        for (LogPageResp log : logs) {
+        for (LogPageResponse log : logs) {
             csv.append(escapeCsv(log.id())).append(",");
             csv.append(escapeCsv(log.username())).append(",");
             csv.append(escapeCsv(log.module())).append(",");
