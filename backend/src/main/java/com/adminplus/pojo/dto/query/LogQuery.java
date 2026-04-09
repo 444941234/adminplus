@@ -63,4 +63,11 @@ public record LogQuery(
     public Integer getStatus() { return status; }
     public String getStartTime() { return startTime; }
     public String getEndTime() { return endTime; }
+
+    /**
+     * 创建新的查询对象，重置分页参数
+     */
+    public LogQuery withPagination(int page, int size) {
+        return new LogQuery(page, size, username, module, logType, operationType, status, startTime, endTime);
+    }
 }

@@ -43,20 +43,8 @@ public class LogExportServiceImpl implements LogExportService {
 
     @Override
     public ResponseEntity<byte[]> exportToExcel(LogQuery query) throws IOException {
-        // 限制导出数量，创建新的查询对象
-        LogQuery exportQuery = new LogQuery(
-                1,
-                10000,
-                query.username(),
-                query.module(),
-                query.logType(),
-                query.operationType(),
-                query.status(),
-                query.startTime(),
-                query.endTime()
-        );
-
-        PageResultResponse<LogPageResponse> result = logService.getLogList(exportQuery);
+        // 重置分页参数，确保导出从第一条开始，最多 10000 条
+        PageResultResponse<LogPageResponse> result = logService.getLogList(query.withPagination(1, 10000));
         List<LogPageResponse> logs = result.records();
 
         try (Workbook workbook = new XSSFWorkbook()) {
@@ -110,20 +98,8 @@ public class LogExportServiceImpl implements LogExportService {
 
     @Override
     public ResponseEntity<byte[]> exportToCsv(LogQuery query) throws IOException {
-        // 限制导出数量，创建新的查询对象
-        LogQuery exportQuery = new LogQuery(
-                1,
-                10000,
-                query.username(),
-                query.module(),
-                query.logType(),
-                query.operationType(),
-                query.status(),
-                query.startTime(),
-                query.endTime()
-        );
-
-        PageResultResponse<LogPageResponse> result = logService.getLogList(exportQuery);
+        // 重置分页参数，确保导出从第一条开始，最多 10000 条
+        PageResultResponse<LogPageResponse> result = logService.getLogList(query.withPagination(1, 10000));
         List<LogPageResponse> logs = result.records();
 
         StringBuilder csv = new StringBuilder();
