@@ -1,22 +1,18 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.common.properties.AppProperties;
+import com.adminplus.common.security.JwtTokenProvider;
 import com.adminplus.pojo.entity.RefreshTokenEntity;
 import com.adminplus.repository.RefreshTokenRepository;
-import com.adminplus.service.PermissionService;
 import com.adminplus.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Refresh Token 服务实现
@@ -30,86 +26,43 @@ import java.util.UUID;
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
-    private final JwtEncoder jwtEncoder;
-    private final PermissionService permissionService;
-
-    // Refresh Token 有效期：7 天
-    private static final long REFRESH_TOKEN_EXPIRY_DAYS = 7;
-
-    // Access Token 有效期：2 小时
-    private static final long ACCESS_TOKEN_EXPIRY_HOURS = 2;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final AppProperties appProperties;
 
     @Override
     @Transactional
     public String createRefreshToken(String userId) {
-        // 撤销用户之前的所有 Refresh Token
         refreshTokenRepository.deleteByUserId(userId);
 
-        // 生成新的 Refresh Token
-        String token = UUID.randomUUID().toString();
-        Instant expiryDate = Instant.now().plus(REFRESH_TOKEN_EXPIRY_DAYS, ChronoUnit.DAYS);
+        String token = jwtTokenProvider.generateRefreshToken(userId);
+        Instant expiryDate = Instant.now().plus(
+                appProperties.getJwt().getRefreshTokenExpirationDays(), ChronoUnit.DAYS);
 
-        RefreshTokenEntity refreshToken = RefreshTokenEntity.builder()
+        refreshTokenRepository.save(RefreshTokenEntity.builder()
                 .userId(userId)
                 .token(token)
                 .expiryDate(expiryDate)
                 .revoked(false)
-                .build();
+                .build());
 
-        refreshTokenRepository.save(refreshToken);
         log.info("创建 Refresh Token: userId={}", userId);
-
         return token;
     }
 
     @Override
     @Transactional
-    public String refreshAccessToken(String refreshToken) {
-        RefreshTokenEntity tokenEntity = refreshTokenRepository.findByToken(refreshToken)
-                .orElseThrow(() -> new BizException("无效的 Refresh Token"));
-
-        // 检查 Token 是否被撤销
-        if (tokenEntity.getRevoked()) {
-            throw new BizException("Refresh Token 已被撤销");
-        }
-
-        // 检查 Token 是否过期
-        if (tokenEntity.getExpiryDate().isBefore(Instant.now())) {
-            throw new BizException("Refresh Token 已过期");
-        }
+    public String refreshAccessToken(String token) {
+        RefreshTokenEntity tokenEntity = findAndValidateToken(token);
 
         String userId = tokenEntity.getUserId();
-
-        // 获取用户的实际角色
-        List<String> roles = permissionService.getUserRoles(userId);
-        if (roles.isEmpty()) {
-            roles = List.of("ROLE_USER");
-        }
-        String scope = String.join(" ", roles);
-
-        // 生成新的 Access Token
-        Instant now = Instant.now();
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("adminplus")
-                .issuedAt(now)
-                .expiresAt(now.plus(ACCESS_TOKEN_EXPIRY_HOURS, ChronoUnit.HOURS))
-                .subject(userId)
-                .claim("userId", userId)
-                .claim("scope", scope)
-                .build();
-
-        String newAccessToken = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        log.info("刷新 Access Token: userId={}, roles={}", userId, roles);
-
-        return newAccessToken;
+        log.info("刷新 Access Token: userId={}", userId);
+        return jwtTokenProvider.generateAccessToken(userId);
     }
 
     @Override
     @Transactional
     public void revokeRefreshToken(String token) {
-        RefreshTokenEntity tokenEntity = refreshTokenRepository.findByToken(token)
-                .orElseThrow(() -> new BizException("无效的 Refresh Token"));
-
+        RefreshTokenEntity tokenEntity = findAndValidateToken(token);
         tokenEntity.setRevoked(true);
         refreshTokenRepository.save(tokenEntity);
         log.info("撤销 Refresh Token: userId={}", tokenEntity.getUserId());
@@ -127,5 +80,20 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     public void cleanupExpiredTokens() {
         refreshTokenRepository.deleteByExpiryDateBefore(Instant.now());
         log.info("清理过期的 Refresh Token");
+    }
+
+    private RefreshTokenEntity findAndValidateToken(String token) {
+        RefreshTokenEntity tokenEntity = refreshTokenRepository.findByToken(token)
+                .orElseThrow(() -> new BizException("无效的 Refresh Token"));
+
+        if (tokenEntity.getRevoked()) {
+            throw new BizException("Refresh Token 已被撤销");
+        }
+
+        if (tokenEntity.getExpiryDate().isBefore(Instant.now())) {
+            throw new BizException("Refresh Token 已过期");
+        }
+
+        return tokenEntity;
     }
 }

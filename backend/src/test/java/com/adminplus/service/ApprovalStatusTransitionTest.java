@@ -15,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -85,6 +86,9 @@ class ApprovalStatusTransitionTest {
 
     @Mock
     private tools.jackson.databind.json.JsonMapper objectMapper;
+
+    @Mock
+    private ConversionService conversionService;
 
     @InjectMocks
     private WorkflowInstanceServiceImpl service;
@@ -173,6 +177,17 @@ class ApprovalStatusTransitionTest {
 
         // Mock nodeRepository.findById to return empty for any input (handles null case for drafts)
         lenient().when(nodeRepository.findById(any())).thenReturn(java.util.Optional.empty());
+
+        // Mock conversionService to return a basic response
+        WorkflowInstanceResponse mockResponse = new WorkflowInstanceResponse(
+                "inst-001", "def-001", "Leave Approval",
+                INITIATOR_ID, "John Doe", "dept-001", "Test Dept",
+                "Leave Request", "{}", "node-001", "Manager Approval",
+                "DRAFT", null, null, null, null,
+                null, null, null, null, null, null, null
+        );
+        lenient().when(conversionService.convert(any(WorkflowInstanceEntity.class), eq(WorkflowInstanceResponse.class)))
+                .thenReturn(mockResponse);
     }
 
     private void mockSecurityContext(String userId) {

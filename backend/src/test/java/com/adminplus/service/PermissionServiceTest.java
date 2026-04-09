@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.core.convert.ConversionService;
 
 import java.util.Collection;
 import java.util.List;
@@ -46,6 +47,9 @@ class PermissionServiceTest {
 
     @Mock
     private RoleRepository roleRepository;
+
+    @Mock
+    private ConversionService conversionService;
 
     @InjectMocks
     private PermissionServiceImpl permissionService;
@@ -82,7 +86,7 @@ class PermissionServiceTest {
             // Given
             when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(testUserRole));
             when(roleMenuRepository.findMenuIdsByRoleIds(any(Collection.class))).thenReturn(List.of("menu-001"));
-            when(menuRepository.findAllById(any(Set.class))).thenReturn(List.of(testMenu));
+            when(menuRepository.findPermKeysByMenuIds(any(Collection.class))).thenReturn(List.of("user:view"));
 
             // When
             List<String> result = permissionService.getUserPermissions("user-001");
@@ -119,17 +123,12 @@ class PermissionServiceTest {
         }
 
         @Test
-        @DisplayName("should filter out menus without permKey")
+        @DisplayName("should filter out menus without permKey via repository")
         void getUserPermissions_ShouldFilterMenusWithoutPermKey() {
-            // Given
-            MenuEntity menuWithoutPerm = new MenuEntity();
-            menuWithoutPerm.setId("menu-002");
-            menuWithoutPerm.setName("Dashboard");
-            menuWithoutPerm.setPermKey(null);
-
+            // Given - Repository already filters null/empty permKeys
             when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(testUserRole));
             when(roleMenuRepository.findMenuIdsByRoleIds(any(Collection.class))).thenReturn(List.of("menu-001", "menu-002"));
-            when(menuRepository.findAllById(any(Set.class))).thenReturn(List.of(testMenu, menuWithoutPerm));
+            when(menuRepository.findPermKeysByMenuIds(any(Collection.class))).thenReturn(List.of("user:view"));
 
             // When
             List<String> result = permissionService.getUserPermissions("user-001");
@@ -147,8 +146,7 @@ class PermissionServiceTest {
         @DisplayName("should return role codes for user")
         void getUserRoles_ShouldReturnRoleCodes() {
             // Given
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(testUserRole));
-            when(roleRepository.findAllById(any())).thenReturn(List.of(testRole));
+            when(roleRepository.findActiveRoleCodesByUserId("user-001")).thenReturn(List.of("ROLE_ADMIN"));
 
             // When
             List<String> result = permissionService.getUserRoles("user-001");
@@ -161,7 +159,7 @@ class PermissionServiceTest {
         @DisplayName("should return empty list when user has no roles")
         void getUserRoles_WithNoRoles_ShouldReturnEmptyList() {
             // Given
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of());
+            when(roleRepository.findActiveRoleCodesByUserId("user-001")).thenReturn(List.of());
 
             // When
             List<String> result = permissionService.getUserRoles("user-001");
@@ -211,7 +209,7 @@ class PermissionServiceTest {
         void getRolePermissions_ShouldReturnPermissions() {
             // Given
             when(roleMenuRepository.findMenuIdByRoleId("role-001")).thenReturn(List.of("menu-001"));
-            when(menuRepository.findAllById(any(List.class))).thenReturn(List.of(testMenu));
+            when(menuRepository.findPermKeysByMenuIds(any(Collection.class))).thenReturn(List.of("user:view"));
 
             // When
             List<String> result = permissionService.getRolePermissions("role-001");
@@ -242,7 +240,9 @@ class PermissionServiceTest {
         @DisplayName("should return all permissions")
         void getAllPermissions_ShouldReturnPermissions() {
             // Given
+            PermissionResponse permResponse = new PermissionResponse("menu-001", "user:view", "User Management", 2, "0");
             when(menuRepository.findAllByOrderBySortOrderAsc()).thenReturn(List.of(testMenu));
+            when(conversionService.convert(testMenu, PermissionResponse.class)).thenReturn(permResponse);
 
             // When
             List<PermissionResponse> result = permissionService.getAllPermissions();

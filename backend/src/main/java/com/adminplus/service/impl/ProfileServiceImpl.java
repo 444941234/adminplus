@@ -10,16 +10,10 @@ import com.adminplus.pojo.dto.response.ActivityItemResponse;
 import com.adminplus.pojo.dto.response.ActivityStatsResponse;
 import com.adminplus.pojo.dto.response.ProfileResponse;
 import com.adminplus.pojo.dto.response.SettingsResponse;
-import com.adminplus.pojo.entity.DeptEntity;
-import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.pojo.entity.UserEntity;
-import com.adminplus.pojo.entity.UserRoleEntity;
-import com.adminplus.repository.DeptRepository;
 import com.adminplus.repository.LogRepository;
 import com.adminplus.repository.ProfileRepository;
-import com.adminplus.repository.RoleRepository;
-import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.FileService;
 import com.adminplus.service.ProfileService;
 import com.adminplus.service.VirusScanService;
@@ -29,6 +23,7 @@ import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,11 +52,9 @@ public class ProfileServiceImpl implements ProfileService {
     private final PasswordEncoder passwordEncoder;
     private final VirusScanService virusScanService;
     private final FileService fileService;
-    private final DeptRepository deptRepository;
-    private final RoleRepository roleRepository;
-    private final UserRoleRepository userRoleRepository;
     private final LogRepository logRepository;
     private final DictUtils dictUtils;
+    private final ConversionService conversionService;
 
     // 允许的图片格式
     private static final String[] ALLOWED_IMAGE_TYPES = {
@@ -80,36 +73,7 @@ public class ProfileServiceImpl implements ProfileService {
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
-        // 查询用户角色
-        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(userId);
-        List<String> roleIds = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-        List<String> roles = roleRepository.findAllById(roleIds).stream()
-                .map(RoleEntity::getName)
-                .toList();
-
-        // 查询部门名称
-        String deptName = null;
-        if (user.getDeptId() != null) {
-            deptName = deptRepository.findById(user.getDeptId())
-                    .map(DeptEntity::getName)
-                    .orElse(null);
-        }
-
-        return new ProfileResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getNickname(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAvatar(),
-                user.getStatus(),
-                deptName,
-                roles,
-                user.getCreateTime(),
-                user.getUpdateTime()
-        );
+        return conversionService.convert(user, ProfileResponse.class);
     }
 
     @Override
@@ -137,35 +101,7 @@ public class ProfileServiceImpl implements ProfileService {
 
         user = profileRepository.save(user);
 
-        // 重新查询角色和部门
-        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(userId);
-        List<String> roleIds = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-        List<String> roles = roleRepository.findAllById(roleIds).stream()
-                .map(RoleEntity::getName)
-                .toList();
-
-        String deptName = null;
-        if (user.getDeptId() != null) {
-            deptName = deptRepository.findById(user.getDeptId())
-                    .map(DeptEntity::getName)
-                    .orElse(null);
-        }
-
-        return new ProfileResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getNickname(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAvatar(),
-                user.getStatus(),
-                deptName,
-                roles,
-                user.getCreateTime(),
-                user.getUpdateTime()
-        );
+        return conversionService.convert(user, ProfileResponse.class);
     }
 
     @Override

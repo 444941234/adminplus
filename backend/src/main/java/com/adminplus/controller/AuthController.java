@@ -46,8 +46,8 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "获取当前用户信息")
     public ApiResponse<UserResponse> getCurrentUser() {
-        String username = SecurityUtils.getCurrentUsername();
-        UserResponse userResponse = authService.getCurrentUser(username);
+        String userId = SecurityUtils.getCurrentUserId();
+        UserResponse userResponse = authService.getUserById(userId);
         return ApiResponse.ok(userResponse);
     }
 
@@ -55,8 +55,8 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     @Operation(summary = "获取当前用户的权限列表")
     public ApiResponse<List<String>> getCurrentUserPermissions() {
-        String username = SecurityUtils.getCurrentUsername();
-        List<String> permissions = authService.getCurrentUserPermissions(username);
+        String userId = SecurityUtils.getCurrentUserId();
+        List<String> permissions = authService.getUserPermissions(userId);
         return ApiResponse.ok(permissions);
     }
 

@@ -2,7 +2,7 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.constant.SecurityConfigConstants;
 import com.adminplus.common.exception.BizException;
-import com.adminplus.common.properties.AppProperties;
+import com.adminplus.common.security.JwtTokenProvider;
 import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.request.UserLoginRequest;
 import com.adminplus.pojo.dto.request.LogEntry;
@@ -21,14 +21,9 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 /**
@@ -43,14 +38,13 @@ import java.util.List;
 public class AuthServiceImpl implements AuthService {
 
     private final AuthenticationManager authenticationManager;
-    private final JwtEncoder jwtEncoder;
+    private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
     private final PermissionService permissionService;
     private final CaptchaService captchaService;
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenService refreshTokenService;
     private final LogService logService;
-    private final AppProperties appProperties;
     private final ConversionService conversionService;
 
     @Override
@@ -64,9 +58,8 @@ public class AuthServiceImpl implements AuthService {
             );
 
             UserEntity user = userService.getUserByUsername(request.username());
-            List<String> roleCodes = userService.getUserRoleCodes(user.getId());
 
-            String token = generateJwtToken(authentication, user, roleCodes);
+            String token = jwtTokenProvider.generateAccessToken(user.getId());
 
             UserResponse userResponse = conversionService.convert(user, UserResponse.class);
             List<String> permissions = permissionService.getUserPermissions(user.getId());
@@ -92,28 +85,6 @@ public class AuthServiceImpl implements AuthService {
             log.warn("验证码验证失败: username={}", LogMaskingUtils.maskUsername(username));
             throw new BizException("验证码错误或已过期，请重新输入");
         }
-    }
-
-    private String generateJwtToken(Authentication authentication, UserEntity user, List<String> roleCodes) {
-        Instant now = Instant.now();
-        int expirationHours = appProperties.getJwt().getExpirationHours();
-
-        List<String> scopes = roleCodes.stream()
-                .map(code -> code.startsWith(SecurityConfigConstants.ROLE_PREFIX) ? code.substring(SecurityConfigConstants.ROLE_PREFIX.length()) : code)
-                .toList();
-
-        JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("adminplus")
-                .issuedAt(now)
-                .expiresAt(now.plus(expirationHours, ChronoUnit.HOURS))
-                .subject(authentication.getName())
-                .claim("userId", user.getId())
-                .claim("username", user.getUsername())
-                .claim("deptId", user.getDeptId())
-                .claim("scope", scopes.isEmpty() ? SecurityConfigConstants.DEFAULT_SCOPE : scopes)
-                .build();
-
-        return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
     @Override

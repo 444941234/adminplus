@@ -71,22 +71,6 @@ public interface UserService {
     List<String> getUserRoleIds(String userId);
 
     /**
-     * 根据用户名查询用户完整信息（包含角色名称）
-     *
-     * @param username 用户名
-     * @return 用户信息
-     */
-    UserResponse getUserRespByUsername(String username);
-
-    /**
-     * 获取用户的角色编码列表（用于 JWT scope）
-     *
-     * @param userId 用户ID
-     * @return 角色编码列表
-     */
-    List<String> getUserRoleCodes(String userId);
-
-    /**
      * 获取用户的角色名称列表
      *
      * @param userId 用户ID

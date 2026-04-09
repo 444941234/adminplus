@@ -831,11 +831,9 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
 
     private WorkflowInstanceResponse toInstanceResponse(WorkflowInstanceEntity entity, Boolean pendingApproval, Boolean canApprove) {
         String currentUserId = getCurrentUserId();
-        String deptName = deptRepository.findById(entity.getDeptId())
-                .map(DeptEntity::getName)
-                .orElse(null);
+        WorkflowInstanceResponse base = conversionService.convert(entity, WorkflowInstanceResponse.class);
 
-        return toInstanceResponseWithDeptName(entity, deptName, pendingApproval, canApprove);
+        return withPermissions(base, currentUserId, pendingApproval, canApprove);
     }
 
     /**
@@ -843,32 +841,72 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
      */
     private WorkflowInstanceResponse toInstanceResponseWithDeptName(WorkflowInstanceEntity entity, String deptName, Boolean pendingApproval, Boolean canApprove) {
         String currentUserId = getCurrentUserId();
+        WorkflowInstanceResponse base = conversionService.convert(entity, WorkflowInstanceResponse.class);
 
+        // 如果预查询了 deptName，需要重新创建（converter 查询可能与预查询不同）
+        if (deptName != null && base.deptName() == null) {
+            base = new WorkflowInstanceResponse(
+                    base.id(), base.definitionId(), base.definitionName(),
+                    base.userId(), base.userName(), base.deptId(), deptName,
+                    base.title(), base.businessData(),
+                    base.currentNodeId(), base.currentNodeName(), base.status(),
+                    base.submitTime(), base.finishTime(), base.remark(), base.createTime(),
+                    null, null, null, null, null, null, null
+            );
+        }
+
+        return withPermissions(base, currentUserId, pendingApproval, canApprove);
+    }
+
+    /**
+     * 补充权限字段
+     */
+    private WorkflowInstanceResponse withPermissions(WorkflowInstanceResponse base, String currentUserId, Boolean pendingApproval, Boolean canApprove) {
         return new WorkflowInstanceResponse(
-                entity.getId(),
-                entity.getDefinitionId(),
-                entity.getDefinitionName(),
-                entity.getUserId(),
-                entity.getUserName(),
-                entity.getDeptId(),
-                deptName,
-                entity.getTitle(),
-                entity.getBusinessData(),
-                entity.getCurrentNodeId(),
-                entity.getCurrentNodeName(),
-                normalizeStatusForResponse(entity.getStatus()),
-                entity.getSubmitTime(),
-                entity.getFinishTime(),
-                entity.getRemark(),
-                entity.getCreateTime(),
+                base.id(),
+                base.definitionId(),
+                base.definitionName(),
+                base.userId(),
+                base.userName(),
+                base.deptId(),
+                base.deptName(),
+                base.title(),
+                base.businessData(),
+                base.currentNodeId(),
+                base.currentNodeName(),
+                base.status(),
+                base.submitTime(),
+                base.finishTime(),
+                base.remark(),
+                base.createTime(),
                 pendingApproval,
                 canApprove,
-                entity.getUserId().equals(currentUserId) && !entity.isRunning() && !entity.isApproved() && !entity.isFinished(),
-                entity.getUserId().equals(currentUserId) && entity.isCancellable(),
-                entity.getUserId().equals(currentUserId) && entity.isRunning(),
-                entity.getUserId().equals(currentUserId) && entity.isDraft(),
-                entity.getUserId().equals(currentUserId) && entity.isDraft()
+                base.userId().equals(currentUserId) && !isRunning(base.status()) && !isApproved(base.status()) && !isFinished(base.status()),
+                base.userId().equals(currentUserId) && isCancellable(base.status()),
+                base.userId().equals(currentUserId) && isRunning(base.status()),
+                base.userId().equals(currentUserId) && isDraft(base.status()),
+                base.userId().equals(currentUserId) && isDraft(base.status())
         );
+    }
+
+    private boolean isRunning(String status) {
+        return "PROCESSING".equals(status);
+    }
+
+    private boolean isDraft(String status) {
+        return "DRAFT".equals(status);
+    }
+
+    private boolean isApproved(String status) {
+        return "APPROVED".equals(status);
+    }
+
+    private boolean isFinished(String status) {
+        return "APPROVED".equals(status) || "REJECTED".equals(status) || "CANCELLED".equals(status);
+    }
+
+    private boolean isCancellable(String status) {
+        return "PROCESSING".equals(status) || "DRAFT".equals(status);
     }
 
     @Override
@@ -1372,17 +1410,6 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             case "REJECTED", "WITHDRAWN" -> "rejected";
             case "CANCELLED" -> "cancelled";
             default -> status == null ? null : status.toLowerCase(Locale.ROOT);
-        };
-    }
-
-    private String normalizeStatusForResponse(String status) {
-        return switch (status) {
-            case "draft" -> "DRAFT";
-            case "running" -> "PROCESSING";
-            case "approved" -> "APPROVED";
-            case "rejected" -> "REJECTED";
-            case "cancelled" -> "CANCELLED";
-            default -> status.toUpperCase(Locale.ROOT);
         };
     }
 }

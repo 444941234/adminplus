@@ -20,14 +20,14 @@ public interface AuthService {
     LoginResponse login(UserLoginRequest request);
 
     /**
-     * 获取当前用户信息
+     * 根据用户ID获取用户信息
      */
-    UserResponse getCurrentUser(String username);
+    UserResponse getUserById(String userId);
 
     /**
-     * 获取当前用户的权限列表
+     * 根据用户ID获取权限列表
      */
-    List<String> getCurrentUserPermissions(String username);
+    List<String> getUserPermissions(String userId);
 
     /**
      * 用户登出

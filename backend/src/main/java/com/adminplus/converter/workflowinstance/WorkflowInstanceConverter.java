@@ -1,17 +1,36 @@
 package com.adminplus.converter.workflowinstance;
 
 import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
+import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.WorkflowInstanceEntity;
+import com.adminplus.repository.DeptRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 import java.util.Locale;
 
+/**
+ * WorkflowInstanceEntity → WorkflowInstanceResponse 转换器
+ * <p>
+ * 自动查询 deptName，权限字段由 Service 层补充
+ */
 @Component
+@RequiredArgsConstructor
 public class WorkflowInstanceConverter implements Converter<WorkflowInstanceEntity, WorkflowInstanceResponse> {
+
+    private final DeptRepository deptRepository;
 
     @Override
     public WorkflowInstanceResponse convert(WorkflowInstanceEntity source) {
+        // 查询部门名称
+        String deptName = null;
+        if (source.getDeptId() != null) {
+            deptName = deptRepository.findById(source.getDeptId())
+                    .map(DeptEntity::getName)
+                    .orElse(null);
+        }
+
         return new WorkflowInstanceResponse(
                 source.getId(),
                 source.getDefinitionId(),
@@ -19,7 +38,7 @@ public class WorkflowInstanceConverter implements Converter<WorkflowInstanceEnti
                 source.getUserId(),
                 source.getUserName(),
                 source.getDeptId(),
-                null, // deptName - to be set by service layer
+                deptName,
                 source.getTitle(),
                 source.getBusinessData(),
                 source.getCurrentNodeId(),
@@ -29,7 +48,7 @@ public class WorkflowInstanceConverter implements Converter<WorkflowInstanceEnti
                 source.getFinishTime(),
                 source.getRemark(),
                 source.getCreateTime(),
-                null, null, null, null, null, null, null // pendingApproval, canApprove, etc. - to be set by service layer
+                null, null, null, null, null, null, null // 权限字段由 Service 层计算
         );
     }
 

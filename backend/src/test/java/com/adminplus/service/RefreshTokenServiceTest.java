@@ -1,6 +1,8 @@
 package com.adminplus.service;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.common.properties.AppProperties;
+import com.adminplus.common.security.JwtTokenProvider;
 import com.adminplus.pojo.entity.RefreshTokenEntity;
 import com.adminplus.repository.RefreshTokenRepository;
 import com.adminplus.service.impl.RefreshTokenServiceImpl;
@@ -12,13 +14,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,16 +38,15 @@ class RefreshTokenServiceTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Mock
-    private JwtEncoder jwtEncoder;
+    private JwtTokenProvider jwtTokenProvider;
 
     @Mock
-    private PermissionService permissionService;
+    private AppProperties appProperties;
 
     @InjectMocks
     private RefreshTokenServiceImpl refreshTokenService;
 
     private RefreshTokenEntity testToken;
-    private Jwt mockJwt;
 
     @BeforeEach
     void setUp() {
@@ -59,9 +56,9 @@ class RefreshTokenServiceTest {
         testToken.setExpiryDate(Instant.now().plus(7, ChronoUnit.DAYS));
         testToken.setRevoked(false);
 
-        mockJwt = mock(Jwt.class);
-        lenient().when(mockJwt.getTokenValue()).thenReturn("new-access-token");
-        lenient().when(permissionService.getUserRoles("user-001")).thenReturn(List.of("ROLE_USER"));
+        AppProperties.Jwt jwtProps = new AppProperties.Jwt();
+        jwtProps.setRefreshTokenExpirationDays(7);
+        lenient().when(appProperties.getJwt()).thenReturn(jwtProps);
     }
 
     @Nested
@@ -74,14 +71,14 @@ class RefreshTokenServiceTest {
             // Given
             String userId = "user-001";
             doNothing().when(refreshTokenRepository).deleteByUserId(userId);
+            when(jwtTokenProvider.generateRefreshToken(userId)).thenReturn("refresh-jwt-token");
             when(refreshTokenRepository.save(any())).thenReturn(testToken);
 
             // When
             String result = refreshTokenService.createRefreshToken(userId);
 
             // Then
-            assertThat(result).isNotNull();
-            assertThat(result).isNotEmpty();
+            assertThat(result).isEqualTo("refresh-jwt-token");
             verify(refreshTokenRepository).deleteByUserId(userId);
             verify(refreshTokenRepository).save(any(RefreshTokenEntity.class));
         }
@@ -92,6 +89,7 @@ class RefreshTokenServiceTest {
             // Given
             String userId = "user-001";
             doNothing().when(refreshTokenRepository).deleteByUserId(userId);
+            when(jwtTokenProvider.generateRefreshToken(userId)).thenReturn("refresh-jwt-token");
             when(refreshTokenRepository.save(any())).thenReturn(testToken);
 
             // When
@@ -111,7 +109,7 @@ class RefreshTokenServiceTest {
         void refreshAccessToken_WithValidToken_ShouldReturnAccessToken() {
             // Given
             when(refreshTokenRepository.findByToken("refresh-token-uuid")).thenReturn(Optional.of(testToken));
-            when(jwtEncoder.encode(any(JwtEncoderParameters.class))).thenReturn(mockJwt);
+            when(jwtTokenProvider.generateAccessToken("user-001")).thenReturn("new-access-token");
 
             // When
             String result = refreshTokenService.refreshAccessToken("refresh-token-uuid");

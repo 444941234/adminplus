@@ -54,8 +54,6 @@ public class JwtSecurityConfig {
 
     private static final int MIN_RSA_KEY_SIZE = 2048;
     private static final String DEV_KEY_ID = "adminplus-dev-key";
-    private static final String ROLE_PREFIX = "ROLE_";
-    private static final String AUTHORITIES_CLAIM_NAME = "scope";
 
     private final AppProperties appProperties;
     private final boolean production;
@@ -96,22 +94,11 @@ public class JwtSecurityConfig {
 
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        // 默认转换器：从 scope claim 读取角色
-        JwtGrantedAuthoritiesConverter defaultConverter = new JwtGrantedAuthoritiesConverter();
-        defaultConverter.setAuthorityPrefix(ROLE_PREFIX);
-        defaultConverter.setAuthoritiesClaimName(AUTHORITIES_CLAIM_NAME);
-
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
             Set<GrantedAuthority> authorities = new HashSet<>();
 
-            // 1. 从 scope claim 读取角色（如 ADMIN, USER -> ROLE_ADMIN, ROLE_USER）
-            Collection<GrantedAuthority> roleAuthorities = defaultConverter.convert(jwt);
-            if (roleAuthorities != null) {
-                authorities.addAll(roleAuthorities);
-            }
-
-            // 2. 从数据库加载用户的具体权限（如 workflow:form:view）
+            // 从数据库加载用户的具体权限（如 workflow:form:view）
             String userId = jwt.getClaimAsString("userId");
             if (userId != null) {
                 try {

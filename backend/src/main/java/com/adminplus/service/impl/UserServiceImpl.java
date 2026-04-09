@@ -66,8 +66,85 @@ public class UserServiceImpl implements UserService {
         var pageable = PageUtils.toPageable(query.getPage(), query.getSize());
 
         Page<UserEntity> pageResult = queryUsers(pageable, query.getKeyword(), query.getDeptId(), query.getStatus());
-        // 批量查询优化：直接使用 Converter（已在 Converter 内部查询额外数据）
-        return PageUtils.toResp(pageResult, user -> conversionService.convert(user, UserResponse.class));
+
+        // 批量预查询避免 N+1 问题
+        List<UserEntity> users = pageResult.getContent();
+        Map<String, String> deptNameMap = batchGetDeptNames(users);
+        Map<String, List<String>> userRolesMap = batchGetUserRoles(users);
+
+        return PageUtils.toResp(pageResult, user -> buildUserResponse(user, deptNameMap, userRolesMap));
+    }
+
+    /**
+     * 批量获取部门名称
+     */
+    private Map<String, String> batchGetDeptNames(List<UserEntity> users) {
+        List<String> deptIds = users.stream()
+                .map(UserEntity::getDeptId)
+                .filter(id -> id != null && !id.isEmpty())
+                .distinct()
+                .toList();
+
+        if (deptIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return deptRepository.findAllById(deptIds).stream()
+                .collect(Collectors.toMap(dept -> dept.getId(), dept -> dept.getName()));
+    }
+
+    /**
+     * 批量获取用户角色名称
+     */
+    private Map<String, List<String>> batchGetUserRoles(List<UserEntity> users) {
+        List<String> userIds = users.stream()
+                .map(UserEntity::getId)
+                .toList();
+
+        if (userIds.isEmpty()) {
+            return Map.of();
+        }
+
+        // 批量查询用户角色关联
+        List<UserRoleEntity> userRoles = userRoleRepository.findByUserIdIn(userIds);
+
+        // 收集所有角色ID
+        List<String> roleIds = userRoles.stream()
+                .map(UserRoleEntity::getRoleId)
+                .distinct()
+                .toList();
+
+        // 批量查询角色
+        Map<String, String> roleNameMap = roleRepository.findAllById(roleIds).stream()
+                .collect(Collectors.toMap(RoleEntity::getId, RoleEntity::getName));
+
+        // 按 userId 分组
+        return userRoles.stream()
+                .filter(ur -> roleNameMap.containsKey(ur.getRoleId()))
+                .collect(Collectors.groupingBy(
+                        UserRoleEntity::getUserId,
+                        Collectors.mapping(ur -> roleNameMap.get(ur.getRoleId()), Collectors.toList())
+                ));
+    }
+
+    /**
+     * 构建用户响应（使用预查询数据）
+     */
+    private UserResponse buildUserResponse(UserEntity user, Map<String, String> deptNameMap, Map<String, List<String>> userRolesMap) {
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getNickname(),
+                user.getEmail(),
+                user.getPhone(),
+                user.getAvatar(),
+                user.getStatus(),
+                user.getDeptId(),
+                deptNameMap.get(user.getDeptId()),
+                userRolesMap.getOrDefault(user.getId(), List.of()),
+                user.getCreateTime(),
+                user.getUpdateTime()
+        );
     }
 
     /**
@@ -345,23 +422,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponse getUserRespByUsername(String username) {
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new BizException("用户不存在"));
-
-        return conversionService.convert(user, UserResponse.class);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<String> getUserRoleCodes(String userId) {
-        return getActiveRoles(userId).stream()
-                .map(RoleEntity::getCode)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<String> getUserRoleNames(String userId) {
         return getActiveRoles(userId).stream()
                 .map(RoleEntity::getName)
@@ -372,23 +432,6 @@ public class UserServiceImpl implements UserService {
      * 获取用户的启用状态角色列表
      */
     private List<RoleEntity> getActiveRoles(String userId) {
-        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(userId);
-        if (userRoles.isEmpty()) {
-            return List.of();
-        }
-
-        List<String> roleIds = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-
-        Map<String, RoleEntity> roleMap = roleRepository.findAllById(roleIds).stream()
-                .collect(Collectors.toMap(RoleEntity::getId, r -> r));
-
-        return userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .map(roleMap::get)
-                .filter(Objects::nonNull)
-                .filter(role -> role.getStatus() == 1)
-                .toList();
+        return roleRepository.findActiveRolesByUserId(userId);
     }
 }

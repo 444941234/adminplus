@@ -3,6 +3,8 @@ package com.adminplus.repository;
 import com.adminplus.pojo.entity.RoleEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -46,4 +48,20 @@ public interface RoleRepository extends JpaRepository<RoleEntity, String>, JpaSp
      * 查询未删除且编码不等于指定值的角色
      */
     List<RoleEntity> findByDeletedFalseAndCodeNot(String code);
+
+    /**
+     * 查询用户的启用状态角色（通过用户ID关联查询）
+     */
+    @Query("SELECT r FROM RoleEntity r " +
+           "JOIN UserRoleEntity ur ON r.id = ur.roleId " +
+           "WHERE ur.userId = :userId AND r.status = 1 AND r.deleted = false")
+    List<RoleEntity> findActiveRolesByUserId(@Param("userId") String userId);
+
+    /**
+     * 查询用户的启用状态角色编码列表（通过用户ID关联查询）
+     */
+    @Query("SELECT r.code FROM RoleEntity r " +
+           "JOIN UserRoleEntity ur ON r.id = ur.roleId " +
+           "WHERE ur.userId = :userId AND r.status = 1 AND r.deleted = false")
+    List<String> findActiveRoleCodesByUserId(@Param("userId") String userId);
 }

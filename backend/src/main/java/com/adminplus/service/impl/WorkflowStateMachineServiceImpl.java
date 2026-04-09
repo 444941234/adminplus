@@ -14,6 +14,7 @@ import com.adminplus.statemachine.extendedstate.WorkflowExtendedState;
 import com.adminplus.service.WorkflowStateMachineService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -49,6 +50,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
     private final WorkflowApprovalRepository approvalRepository;
     private final WorkflowNodeRepository nodeRepository;
     private final JsonMapper objectMapper;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional
@@ -414,23 +416,25 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
         // canSubmitDraft: 草稿且是发起人
         boolean canSubmitDraft = entity.isDraft() && isOwner;
 
+        WorkflowInstanceResponse base = conversionService.convert(entity, WorkflowInstanceResponse.class);
+
         return new WorkflowInstanceResponse(
-                entity.getId(),
-                entity.getDefinitionId(),
-                entity.getDefinitionName(),
-                entity.getUserId(),
-                entity.getUserName(),
-                entity.getDeptId(),
-                null,
-                entity.getTitle(),
-                entity.getBusinessData(),
-                entity.getCurrentNodeId(),
-                entity.getCurrentNodeName(),
-                entity.getStatus() == null ? null : entity.getStatus().toUpperCase(),
-                entity.getSubmitTime(),
-                entity.getFinishTime(),
-                entity.getRemark(),
-                entity.getCreateTime(),
+                base.id(),
+                base.definitionId(),
+                base.definitionName(),
+                base.userId(),
+                base.userName(),
+                base.deptId(),
+                base.deptName(),
+                base.title(),
+                base.businessData(),
+                base.currentNodeId(),
+                base.currentNodeName(),
+                base.status(),
+                base.submitTime(),
+                base.finishTime(),
+                base.remark(),
+                base.createTime(),
                 pendingApproval,
                 canApprove,
                 canWithdraw,

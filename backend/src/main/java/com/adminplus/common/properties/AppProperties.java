@@ -20,7 +20,8 @@ public class AppProperties {
     public static class Jwt {
         private String secret = "";
         private String devSecret = "";
-        private int expirationHours = 2;  // JWT token expiration time in hours
+        private int accessTokenExpirationHours = 2;
+        private int refreshTokenExpirationDays = 7;
     }
 
     @Data
@@ -48,16 +49,16 @@ public class AppProperties {
 
     @Data
     public static class RateLimit {
-        private int loginMaxRequests = 5;      // 登录接口最大请求数/分钟
-        private int loginTimeWindow = 60;      // 登录限流时间窗口（秒）
-        private int generalMaxRequests = 100;  // 通用接口最大请求数/分钟
-        private int generalTimeWindow = 60;    // 通用限流时间窗口（秒）
+        private int loginMaxRequests = 5;
+        private int loginTimeWindow = 60;
+        private int generalMaxRequests = 100;
+        private int generalTimeWindow = 60;
     }
 
     @Data
     public static class WorkflowHook {
-        private boolean allowInternalUrls = false;  // 是否允许内网URL（默认禁用以防止SSRF）
-        private String allowedUrlPatterns = "";     // 允许的URL模式（逗号分隔，如：https://api.example.com/*,https://hooks.example.com/*）
+        private boolean allowInternalUrls = false;
+        private String allowedUrlPatterns = "";
     }
 
     @Data

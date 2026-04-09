@@ -215,6 +215,17 @@ class WorkflowSecurityTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        // Mock conversionService to return a basic response
+        WorkflowInstanceResponse mockResponse = new WorkflowInstanceResponse(
+                "inst-001", "def-001", "Test Workflow",
+                INITIATOR_ID, "Initiator User", "dept-001", "Test Dept",
+                "Test Request", "{}", "node-001", "Manager Approval",
+                "DRAFT", null, null, null, null,
+                null, null, null, null, null, null, null
+        );
+        lenient().when(conversionService.convert(any(WorkflowInstanceEntity.class), eq(WorkflowInstanceResponse.class)))
+                .thenReturn(mockResponse);
     }
 
     private void authenticateAs(String userId) {
