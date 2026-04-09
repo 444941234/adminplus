@@ -42,4 +42,4 @@ dist/
 *.tmp
 *.temp
 *.swp
-*~
+*~.worktrees/
