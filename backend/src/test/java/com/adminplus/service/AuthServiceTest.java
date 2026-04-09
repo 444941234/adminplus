@@ -16,8 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -70,12 +68,6 @@ class AuthServiceTest {
     @Mock
     private LogService logService;
 
-    @Mock
-    private StringRedisTemplate redisTemplate;
-
-    @Mock
-    private ValueOperations<String, String> valueOperations;
-
     @InjectMocks
     private AuthServiceImpl authService;
 
@@ -108,9 +100,7 @@ class AuthServiceTest {
         @Test
         @DisplayName("should throw exception when captcha is invalid")
         void login_WithInvalidCaptcha_ShouldThrowException() {
-            // Given - 验证码存在但错误
-            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-            when(valueOperations.get("captcha:captcha-id")).thenReturn("ABCD");
+            // Given - 验证码错误或已过期
             when(captchaService.validateCaptcha("captcha-id", "ABCD")).thenReturn(false);
 
             // When & Then
@@ -122,22 +112,19 @@ class AuthServiceTest {
         @Test
         @DisplayName("should throw exception when captcha is expired")
         void login_WithExpiredCaptcha_ShouldThrowException() {
-            // Given - 验证码已过期（Redis 中不存在）
-            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-            when(valueOperations.get("captcha:captcha-id")).thenReturn(null);
+            // Given - 验证码已过期（captchaService 返回 false）
+            when(captchaService.validateCaptcha("captcha-id", "ABCD")).thenReturn(false);
 
             // When & Then
             assertThatThrownBy(() -> authService.login(loginReq))
                     .isInstanceOf(BizException.class)
-                    .hasMessageContaining("验证码已过期");
+                    .hasMessageContaining("验证码错误或已过期");
         }
 
         @Test
         @DisplayName("should throw exception when authentication fails")
         void login_WithInvalidCredentials_ShouldThrowException() {
             // Given
-            when(redisTemplate.opsForValue()).thenReturn(valueOperations);
-            when(valueOperations.get("captcha:captcha-id")).thenReturn("ABCD");
             when(captchaService.validateCaptcha("captcha-id", "ABCD")).thenReturn(true);
             when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                     .thenThrow(new AuthenticationException("Invalid credentials") {});
@@ -150,12 +137,12 @@ class AuthServiceTest {
     }
 
     @Nested
-    @DisplayName("getCurrentUser Tests")
-    class GetCurrentUserTests {
+    @DisplayName("getUserById Tests")
+    class GetUserByIdTests {
 
         @Test
-        @DisplayName("should return current user info")
-        void getCurrentUser_ShouldReturnUserInfo() {
+        @DisplayName("should return user info by id")
+        void getUserById_ShouldReturnUserInfo() {
             // Given
             UserResponse userResponse = new UserResponse(
                 "user-001", "testuser", "Test User",
@@ -164,10 +151,10 @@ class AuthServiceTest {
                 null, null
             );
 
-            when(userService.getUserRespByUsername("testuser")).thenReturn(userResponse);
+            when(userService.getUserById("user-001")).thenReturn(userResponse);
 
             // When
-            UserResponse result = authService.getCurrentUser("testuser");
+            UserResponse result = authService.getUserById("user-001");
 
             // Then
             assertThat(result).isNotNull();
@@ -176,18 +163,17 @@ class AuthServiceTest {
     }
 
     @Nested
-    @DisplayName("getCurrentUserPermissions Tests")
-    class GetCurrentUserPermissionsTests {
+    @DisplayName("getUserPermissions Tests")
+    class GetUserPermissionsTests {
 
         @Test
-        @DisplayName("should return user permissions")
-        void getCurrentUserPermissions_ShouldReturnPermissions() {
+        @DisplayName("should return user permissions by id")
+        void getUserPermissions_ShouldReturnPermissions() {
             // Given
-            when(userService.getUserByUsername("testuser")).thenReturn(testUser);
             when(permissionService.getUserPermissions("user-001")).thenReturn(List.of("user:view", "user:edit"));
 
             // When
-            List<String> result = authService.getCurrentUserPermissions("testuser");
+            List<String> result = authService.getUserPermissions("user-001");
 
             // Then
             assertThat(result).containsExactly("user:view", "user:edit");

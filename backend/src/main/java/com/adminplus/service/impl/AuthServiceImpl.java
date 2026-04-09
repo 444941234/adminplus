@@ -4,7 +4,6 @@ import com.adminplus.common.constant.SecurityConfigConstants;
 import com.adminplus.common.exception.BizException;
 import com.adminplus.common.properties.AppProperties;
 import com.adminplus.enums.OperationType;
-import com.adminplus.constants.CacheConstants;
 import com.adminplus.pojo.dto.request.UserLoginRequest;
 import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.response.LoginResponse;
@@ -17,7 +16,7 @@ import com.adminplus.utils.WebUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.core.convert.ConversionService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -51,8 +50,8 @@ public class AuthServiceImpl implements AuthService {
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenService refreshTokenService;
     private final LogService logService;
-    private final StringRedisTemplate redisTemplate;
     private final AppProperties appProperties;
+    private final ConversionService conversionService;
 
     @Override
     @Transactional
@@ -66,18 +65,17 @@ public class AuthServiceImpl implements AuthService {
 
             UserEntity user = userService.getUserByUsername(request.username());
             List<String> roleCodes = userService.getUserRoleCodes(user.getId());
-            List<String> roleNames = userService.getUserRoleNames(user.getId());
 
             String token = generateJwtToken(authentication, user, roleCodes);
 
-            UserResponse userResponse = buildUserResp(user, roleNames);
+            UserResponse userResponse = conversionService.convert(user, UserResponse.class);
             List<String> permissions = permissionService.getUserPermissions(user.getId());
             String refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
             logService.log(LogEntry.operation("认证管理", OperationType.OTHER.getCode(),
                     "用户登录成功: " + LogMaskingUtils.maskUsername(request.username())));
 
-            return new LoginResponse(token, refreshToken, SecurityConfigConstants.BEARER_PREFIX.trim(), userResponse, permissions);
+            return new LoginResponse(token, refreshToken, SecurityConfigConstants.BEARER_PREFIX, userResponse, permissions);
 
         } catch (AuthenticationException e) {
             log.error("登录失败: username={}", LogMaskingUtils.maskUsername(request.username()));
@@ -90,17 +88,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void validateCaptcha(String captchaId, String captchaCode, String username) {
-        String redisKey = CacheConstants.CAPTCHA_KEY_PREFIX + captchaId;
-        String storedCode = redisTemplate.opsForValue().get(redisKey);
-
-        if (storedCode == null) {
-            log.warn("验证码已过期: username={}", LogMaskingUtils.maskUsername(username));
-            throw new BizException("验证码已过期，请重新获取");
-        }
-
         if (!captchaService.validateCaptcha(captchaId, captchaCode)) {
             log.warn("验证码验证失败: username={}", LogMaskingUtils.maskUsername(username));
-            throw new BizException("验证码错误，请重新输入");
+            throw new BizException("验证码错误或已过期，请重新输入");
         }
     }
 
@@ -126,34 +116,16 @@ public class AuthServiceImpl implements AuthService {
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
-    private UserResponse buildUserResp(UserEntity user, List<String> roleNames) {
-        return new UserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getNickname(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAvatar(),
-                user.getStatus(),
-                user.getDeptId(),
-                null,
-                roleNames,
-                user.getCreateTime(),
-                user.getUpdateTime()
-        );
+    @Override
+    @Transactional(readOnly = true)
+    public UserResponse getUserById(String userId) {
+        return userService.getUserById(userId);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponse getCurrentUser(String username) {
-        return userService.getUserRespByUsername(username);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<String> getCurrentUserPermissions(String username) {
-        UserEntity user = userService.getUserByUsername(username);
-        return permissionService.getUserPermissions(user.getId());
+    public List<String> getUserPermissions(String userId) {
+        return permissionService.getUserPermissions(userId);
     }
 
     @Override
