@@ -20,8 +20,10 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui'
-import { ChevronDown, ChevronRight, Edit, Plus, Trash2 } from '@lucide/vue'
+import { ChevronDown, ChevronRight, ChevronsDown, ChevronsUp, Copy, Edit, Plus, Trash2 } from '@lucide/vue'
 import { ConfirmDialog, EmptyState, ListSearchBar, StatusBadge } from '@/components/common'
+import CopyMenuDialog from '@/components/menu/CopyMenuDialog.vue'
+import QuickCreateDialog from '@/components/menu/QuickCreateDialog.vue'
 import { batchDelete, batchUpdateStatus, createMenu, deleteMenu, getMenuById, getMenuTree, updateMenu } from '@/api'
 import type { Menu } from '@/types'
 import { useUserStore } from '@/stores/user'
@@ -68,6 +70,7 @@ const {
   expandedKeys,
   toggleExpand,
   expandAll,
+  collapseAll,
   getAllKeys,
   buildParentOptions
 } = useTreeData<Menu>(menus)
@@ -139,6 +142,14 @@ const editId = ref('')
 const deleteDialogOpen = ref(false)
 const deleteMenuId = ref('')
 const selectedMenuIds = ref<string[]>([])
+
+// Copy dialog state
+const copyDialogOpen = ref(false)
+const copyMenuId = ref('')
+const copyMenuName = ref('')
+
+// Quick create dialog state
+const quickCreateDialogOpen = ref(false)
 
 // Status toggle
 const {
@@ -376,6 +387,25 @@ const handleBatchStatusChange = (status: number) => {
   })
 }
 
+const handleCopy = (id: string, name: string) => {
+  copyMenuId.value = id
+  copyMenuName.value = name
+  copyDialogOpen.value = true
+}
+
+const handleCopyConfirm = () => {
+  copyDialogOpen.value = false
+  fetchData()
+}
+
+const handleQuickCreate = () => {
+  quickCreateDialogOpen.value = true
+}
+
+const handleQuickCreateConfirm = () => {
+  fetchData()
+}
+
 onMounted(fetchData)
 </script>
 
@@ -388,6 +418,20 @@ onMounted(fetchData)
       @reset="handleSearch"
     >
       <template #actions>
+        <Button
+          variant="outline"
+          @click="collapseAll"
+        >
+          <ChevronsUp class="mr-2 h-4 w-4" />
+          全部收起
+        </Button>
+        <Button
+          variant="outline"
+          @click="expandAll"
+        >
+          <ChevronsDown class="mr-2 h-4 w-4" />
+          全部展开
+        </Button>
         <Button
           v-if="canEditMenu"
           variant="outline"
@@ -412,6 +456,14 @@ onMounted(fetchData)
         >
           <Trash2 class="mr-2 h-4 w-4" />
           批量删除
+        </Button>
+        <Button
+          v-if="canAddMenu"
+          variant="outline"
+          @click="handleQuickCreate"
+        >
+          <Plus class="mr-2 h-4 w-4" />
+          快速创建
         </Button>
         <Button
           v-if="canAddMenu"
@@ -578,6 +630,14 @@ onMounted(fetchData)
                     @click="handleAdd(row.menu.id, row.menu.type === 0 ? '1' : '2')"
                   >
                     <Plus class="h-4 w-4" />
+                  </Button>
+                  <Button
+                    v-if="canAddMenu"
+                    size="sm"
+                    variant="ghost"
+                    @click="handleCopy(row.menu.id, row.menu.name)"
+                  >
+                    <Copy class="h-4 w-4" />
                   </Button>
                   <Button
                     v-if="canEditMenu"
@@ -832,6 +892,22 @@ onMounted(fetchData)
       :confirm-text="statusChangeMenu?.status === 1 ? '确认禁用' : '确认启用'"
       :loading="loading"
       @confirm="handleStatusConfirm"
+    />
+
+    <CopyMenuDialog
+      v-if="canAddMenu"
+      v-model:open="copyDialogOpen"
+      :menu-id="copyMenuId"
+      :menu-name="copyMenuName"
+      :parent-options="parentOptions"
+      @confirm="handleCopyConfirm"
+    />
+
+    <QuickCreateDialog
+      v-if="canAddMenu"
+      v-model:open="quickCreateDialogOpen"
+      :parent-options="parentOptions"
+      @confirm="handleQuickCreateConfirm"
     />
   </div>
 </template>

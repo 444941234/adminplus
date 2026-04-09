@@ -40,3 +40,8 @@ export function batchUpdateStatus(ids: string[], status: number) {
 export function batchDelete(ids: string[]) {
   return del<void>('/sys/menus/batch', { ids })
 }
+
+// 复制菜单
+export function copyMenu(id: string, targetParentId: string) {
+  return post<Menu>(`/sys/menus/${id}/copy`, { targetParentId })
+}
