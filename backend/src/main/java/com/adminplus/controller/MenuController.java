@@ -2,6 +2,7 @@ package com.adminplus.controller;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.pojo.dto.req.CopyMenuRequest;
 import com.adminplus.pojo.dto.req.MenuBatchDeleteReq;
 import com.adminplus.pojo.dto.req.MenuBatchStatusReq;
 import com.adminplus.pojo.dto.req.MenuCreateReq;
@@ -105,5 +106,16 @@ public class MenuController {
         String userId = SecurityUtils.getCurrentUserId();
         List<MenuResp> menus = menuService.getUserMenuTree(userId);
         return ApiResponse.ok(menus);
+    }
+
+    @PostMapping("/{id}/copy")
+    @Operation(summary = "复制菜单")
+    @OperationLog(module = "菜单管理", operationType = 2, description = "复制菜单 {#id}")
+    @PreAuthorize("hasAuthority('menu:add')")
+    public ApiResponse<MenuResp> copyMenu(
+            @PathVariable String id,
+            @Valid @RequestBody CopyMenuRequest request) {
+        MenuResp menu = menuService.copyMenu(id, request.targetParentId());
+        return ApiResponse.ok(menu);
     }
 }
