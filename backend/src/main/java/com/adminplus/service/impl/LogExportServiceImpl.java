@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -128,7 +129,7 @@ public class LogExportServiceImpl implements LogExportService {
 
         return ResponseEntity.ok()
                 .headers(httpHeaders)
-                .body(csv.toString().getBytes("UTF-8"));
+                .body(csv.toString().getBytes(StandardCharsets.UTF_8));
     }
 
     private String getLogTypeDesc(Integer type) {
