@@ -116,7 +116,6 @@ public class DictItemServiceImpl implements DictItemService {
         }
 
         item = dictItemRepository.save(item);
-        log.info("创建字典项成功: {} - {}", dict.getDictType(), item.getLabel());
         return toRespWithDictType(item, dict.getDictType());
     }
 
@@ -162,7 +161,6 @@ public class DictItemServiceImpl implements DictItemService {
         request.getRemark().ifPresent(item::setRemark);
 
         item = dictItemRepository.save(item);
-        log.info("更新字典项成功: {} - {}", dict.getDictType(), item.getLabel());
         return toRespWithDictType(item, dict.getDictType());
     }
 
@@ -179,7 +177,6 @@ public class DictItemServiceImpl implements DictItemService {
         }
 
         dictItemRepository.delete(item);
-        log.info("删除字典项成功: {}", item.getLabel());
     }
 
     @Override
@@ -191,7 +188,6 @@ public class DictItemServiceImpl implements DictItemService {
 
         item.setStatus(status);
         dictItemRepository.save(item);
-        log.info("更新字典项状态成功: {}", item.getLabel());
     }
 
     /**

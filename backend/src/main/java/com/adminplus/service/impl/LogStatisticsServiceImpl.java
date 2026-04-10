@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.constants.DateTimeConstants;
 import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.response.LogStatisticsResponse;
 import com.adminplus.service.LogStatisticsService;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,9 +28,6 @@ import java.util.Map;
 public class LogStatisticsServiceImpl implements LogStatisticsService {
 
     private final LogStorageStrategySelector storageStrategySelector;
-
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     @Transactional(readOnly = true)
@@ -141,12 +138,12 @@ public class LogStatisticsServiceImpl implements LogStatisticsService {
                 .withHour(0)
                 .withMinute(0)
                 .withSecond(0)
-                .format(DATE_TIME_FORMATTER);
+                .format(DateTimeConstants.STANDARD_DATE_TIME);
     }
 
     private String getDateDaysAgo(int days) {
         return LocalDateTime.now()
                 .minusDays(days)
-                .format(DATE_FORMATTER);
+                .format(DateTimeConstants.STANDARD_DATE);
     }
 }

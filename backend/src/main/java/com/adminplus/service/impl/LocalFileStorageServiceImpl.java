@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.constants.DateTimeConstants;
 import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.enums.StorageType;
 import com.adminplus.service.FileStorageService;
@@ -16,7 +17,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 /**
@@ -61,7 +61,7 @@ public class LocalFileStorageServiceImpl implements FileStorageService {
             String filename = UUID.randomUUID() + extension;
 
             // 按日期创建目录（使用相对路径，防止路径遍历）
-            String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+            String datePath = LocalDate.now().format(DateTimeConstants.FILE_PATH_DATE);
 
             // 验证路径安全性
             if (!XssUtils.isSafePath(datePath)) {

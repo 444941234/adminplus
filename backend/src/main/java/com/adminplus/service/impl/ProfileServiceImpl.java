@@ -1,6 +1,8 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.constants.DateTimeConstants;
+import com.adminplus.constants.FileConstants;
 import com.adminplus.utils.DictUtils;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.pojo.dto.request.PasswordChangeRequest;
@@ -32,8 +34,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 import java.util.Objects;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,17 +55,6 @@ public class ProfileServiceImpl implements ProfileService {
     private final LogRepository logRepository;
     private final DictUtils dictUtils;
     private final ConversionService conversionService;
-
-    // 允许的图片格式
-    private static final String[] ALLOWED_IMAGE_TYPES = {
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "image/webp"
-    };
-
-    // 最大文件大小 2MB
-    private static final long MAX_FILE_SIZE = 2 * 1024 * 1024;
 
     @Override
     @Transactional(readOnly = true)
@@ -148,7 +137,6 @@ public class ProfileServiceImpl implements ProfileService {
 
         // 使用统一的文件服务上传（包含数据库记录）
         String avatarUrl = fileService.uploadFile(file, "avatars").fileUrl();
-        log.info("头像上传成功: {}", avatarUrl);
 
         return avatarUrl;
     }
@@ -238,7 +226,7 @@ public class ProfileServiceImpl implements ProfileService {
         // 验证文件类型
         String contentType = file.getContentType();
         boolean validType = false;
-        for (String allowedType : ALLOWED_IMAGE_TYPES) {
+        for (String allowedType : FileConstants.ALLOWED_IMAGE_TYPES) {
             if (allowedType.equals(contentType)) {
                 validType = true;
                 break;
@@ -249,7 +237,7 @@ public class ProfileServiceImpl implements ProfileService {
         }
 
         // 验证文件大小
-        if (file.getSize() > MAX_FILE_SIZE) {
+        if (file.getSize() > FileConstants.MAX_AVATAR_SIZE) {
             throw new BizException("图片大小不能超过 2MB");
         }
     }
@@ -261,14 +249,12 @@ public class ProfileServiceImpl implements ProfileService {
         UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
         Instant now = Instant.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                .withZone(ZoneId.systemDefault());
 
         // 查询最近登录记录
         LogEntity lastLoginLog = logRepository.findLastLoginByUserId(userId);
         String lastLogin = lastLoginLog != null
-                ? formatter.format(lastLoginLog.getCreateTime())
-                : (user.getUpdateTime() != null ? formatter.format(user.getUpdateTime()) : formatter.format(now));
+                ? DateTimeConstants.STANDARD_DATE_TIME_WITH_ZONE.format(lastLoginLog.getCreateTime())
+                : (user.getUpdateTime() != null ? DateTimeConstants.STANDARD_DATE_TIME_WITH_ZONE.format(user.getUpdateTime()) : DateTimeConstants.STANDARD_DATE_TIME_WITH_ZONE.format(now));
         String lastLoginIp = lastLoginLog != null && lastLoginLog.getIp() != null
                 ? lastLoginLog.getIp()
                 : "N/A";
@@ -283,7 +269,7 @@ public class ProfileServiceImpl implements ProfileService {
                 .map(log -> new ActivityItemResponse(
                         log.getId(),
                         log.getDescription() != null ? log.getDescription() : log.getModule(),
-                        formatter.format(log.getCreateTime()),
+                        DateTimeConstants.STANDARD_DATE_TIME_WITH_ZONE.format(log.getCreateTime()),
                         mapOperationType(log.getOperationType())
                 ))
                 .collect(Collectors.toList());

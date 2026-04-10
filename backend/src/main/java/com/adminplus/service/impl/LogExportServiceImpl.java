@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.constants.DateTimeConstants;
 import com.adminplus.enums.LogStatus;
 import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.response.LogPageResponse;
@@ -22,8 +23,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -39,9 +38,6 @@ public class LogExportServiceImpl implements LogExportService {
 
     private final LogService logService;
     private final DictUtils dictUtils;
-
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-            .withZone(ZoneId.systemDefault());
 
     @Override
     public ResponseEntity<byte[]> exportToExcel(LogQuery query) throws IOException {
@@ -145,7 +141,7 @@ public class LogExportServiceImpl implements LogExportService {
 
     private String formatDate(Instant instant) {
         if (instant == null) return "";
-        return DATE_FORMATTER.format(instant);
+        return DateTimeConstants.STANDARD_DATE_TIME_WITH_ZONE.format(instant);
     }
 
     private String escapeCsv(String value) {

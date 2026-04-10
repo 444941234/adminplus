@@ -1,5 +1,7 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.constants.CacheConstants;
+import com.adminplus.constants.TokenConstants;
 import com.adminplus.service.TokenBlacklistService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,8 +9,6 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.security.MessageDigest;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.Base64;
 import java.util.Set;
 
@@ -25,15 +25,6 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
 
     private final StringRedisTemplate redisTemplate;
 
-    // Token 黑名单 Redis 键前缀
-    private static final String BLACKLIST_KEY_PREFIX = "token:blacklist:";
-
-    // 用户 Token 集合键前缀
-    private static final String USER_TOKENS_KEY_PREFIX = "user:tokens:";
-
-    // Token 过期时间（2 小时，与 JWT 过期时间一致）
-    private static final Duration TOKEN_EXPIRATION = Duration.ofHours(2);
-
     @Override
     public void blacklistToken(String token, String userId) {
         if (token == null || token.isEmpty()) {
@@ -42,13 +33,13 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
 
         // 生成 Token 的哈希值作为键
         String tokenHash = hashToken(token);
-        String blacklistKey = BLACKLIST_KEY_PREFIX + tokenHash;
+        String blacklistKey = CacheConstants.TOKEN_BLACKLIST_KEY_PREFIX + tokenHash;
 
         // 将 Token 加入黑名单，设置过期时间为 2 小时
-        redisTemplate.opsForValue().set(blacklistKey, String.valueOf(userId), TOKEN_EXPIRATION);
+        redisTemplate.opsForValue().set(blacklistKey, String.valueOf(userId), TokenConstants.ACCESS_TOKEN_EXPIRATION);
 
         // 将 Token 添加到用户的 Token 集合
-        String userTokensKey = USER_TOKENS_KEY_PREFIX + userId;
+        String userTokensKey = CacheConstants.USER_TOKENS_KEY_PREFIX + userId;
         redisTemplate.opsForSet().add(userTokensKey, tokenHash);
 
         log.info("Token 已加入黑名单: userId={}, tokenHash={}", userId, tokenHash);
@@ -61,7 +52,7 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
         }
 
         String tokenHash = hashToken(token);
-        String blacklistKey = BLACKLIST_KEY_PREFIX + tokenHash;
+        String blacklistKey = CacheConstants.TOKEN_BLACKLIST_KEY_PREFIX + tokenHash;
 
         return redisTemplate.hasKey(blacklistKey);
     }
@@ -72,15 +63,15 @@ public class TokenBlacklistServiceImpl implements TokenBlacklistService {
             return;
         }
 
-        String userTokensKey = USER_TOKENS_KEY_PREFIX + userId;
+        String userTokensKey = CacheConstants.USER_TOKENS_KEY_PREFIX + userId;
 
         // 获取用户的所有 Token 哈希
         Set<String> tokenHashes = redisTemplate.opsForSet().members(userTokensKey);
         if (tokenHashes != null && !tokenHashes.isEmpty()) {
             // 将所有 Token 加入黑名单
             for (String tokenHash : tokenHashes) {
-                String blacklistKey = BLACKLIST_KEY_PREFIX + tokenHash;
-                redisTemplate.opsForValue().set(blacklistKey, String.valueOf(userId), TOKEN_EXPIRATION);
+                String blacklistKey = CacheConstants.TOKEN_BLACKLIST_KEY_PREFIX + tokenHash;
+                redisTemplate.opsForValue().set(blacklistKey, String.valueOf(userId), TokenConstants.ACCESS_TOKEN_EXPIRATION);
             }
         }
 

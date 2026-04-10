@@ -61,7 +61,6 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
 
         entity = definitionRepository.save(entity);
 
-        log.info("工作流定义创建成功: id={}", entity.getId());
         return toResponseWithNodeCount(entity, 0);
     }
 
@@ -69,8 +68,6 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @CacheEvict(value = {"workflowEnabledDefinitions", "workflowNodes"}, allEntries = true)
     @Transactional
     public WorkflowDefinitionResponse update(String id, WorkflowDefinitionRequest request) {
-        log.info("更新工作流定义: id={}", id);
-
         WorkflowDefinitionEntity entity = EntityHelper.findByIdOrThrow(
                 definitionRepository::findById, id, "工作流定义不存在: {}");
 
@@ -89,7 +86,6 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
 
         entity = definitionRepository.save(entity);
 
-        log.info("工作流定义更新成功: id={}", id);
         long nodeCount = nodeRepository.countByDefinitionIdAndDeletedFalse(entity.getId());
         return toResponseWithNodeCount(entity, (int) nodeCount);
     }
@@ -98,8 +94,6 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @CacheEvict(value = {"workflowEnabledDefinitions", "workflowNodes"}, allEntries = true)
     @Transactional
     public void delete(String id) {
-        log.info("删除工作流定义: id={}", id);
-
         // 同时删除所有节点
         List<WorkflowNodeEntity> nodes = nodeRepository.findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(id);
         nodes.forEach(node -> {
@@ -108,7 +102,6 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         });
 
         definitionRepository.deleteById(id);
-        log.info("工作流定义删除成功: id={}", id);
     }
 
     @Override
@@ -170,8 +163,6 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @CacheEvict(value = "workflowNodes", key = "#definitionId")
     @Transactional
     public WorkflowNodeResponse addNode(String definitionId, WorkflowNodeRequest request) {
-        log.info("添加工作流节点: definitionId={}, nodeName={}", definitionId, request.nodeName());
-
         // 验证工作流定义存在
         WorkflowDefinitionEntity definition = EntityHelper.findByIdOrThrow(
                 definitionRepository::findById, definitionId, "工作流定义不存在: {}");
@@ -189,14 +180,12 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
 
         entity = nodeRepository.save(entity);
 
-        log.info("工作流节点添加成功: id={}", entity.getId());
         return conversionService.convert(entity, WorkflowNodeResponse.class);
     }
 
     @Override
     @Transactional
     public WorkflowNodeResponse updateNode(String nodeId, WorkflowNodeRequest request) {
-        log.info("更新工作流节点: nodeId={}", nodeId);
 
         WorkflowNodeEntity entity = EntityHelper.findByIdOrThrow(
                 nodeRepository::findById, nodeId, "工作流节点不存在: {}");
@@ -212,25 +201,20 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
 
         entity = nodeRepository.save(entity);
 
-        log.info("工作流节点更新成功: id={}", nodeId);
         return conversionService.convert(entity, WorkflowNodeResponse.class);
     }
 
     @Override
     @Transactional
     public void deleteNode(String nodeId) {
-        log.info("删除工作流节点: nodeId={}", nodeId);
         nodeRepository.deleteById(nodeId);
-        log.info("工作流节点删除成功: nodeId={}", nodeId);
     }
 
     @Override
     @Cacheable(value = "workflowNodes", key = "#definitionId", unless = "#result == null || #result.isEmpty()")
     @Transactional(readOnly = true)
     public List<WorkflowNodeResponse> listNodes(String definitionId) {
-        log.info("Service层查询工作流节点: definitionId={}", definitionId);
         List<WorkflowNodeEntity> nodes = nodeRepository.findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(definitionId);
-        log.info("Service层查询结果: definitionId={}, 原始节点数={}", definitionId, nodes.size());
         return nodes.stream()
                 .map(node -> conversionService.convert(node, WorkflowNodeResponse.class))
                 .collect(Collectors.toList());

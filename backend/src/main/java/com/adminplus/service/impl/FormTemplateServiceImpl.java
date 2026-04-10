@@ -93,7 +93,6 @@ public class FormTemplateServiceImpl implements FormTemplateService {
         entity.setFormConfig(req.formConfig());
 
         entity = templateRepository.save(entity);
-        log.info("创建表单模板成功: id={}, code={}", entity.getId(), entity.getTemplateCode());
 
         return conversionService.convert(entity, FormTemplateResponse.class);
     }
@@ -119,7 +118,6 @@ public class FormTemplateServiceImpl implements FormTemplateService {
         entity.setFormConfig(req.formConfig());
 
         entity = templateRepository.save(entity);
-        log.info("更新表单模板成功: id={}, code={}", entity.getId(), entity.getTemplateCode());
 
         return conversionService.convert(entity, FormTemplateResponse.class);
     }
@@ -133,7 +131,6 @@ public class FormTemplateServiceImpl implements FormTemplateService {
         }
 
         templateRepository.deleteById(id);
-        log.info("删除表单模板成功: id={}", id);
     }
 
     @Override

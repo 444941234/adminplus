@@ -101,7 +101,6 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         group.setStatus(1); // 默认启用
 
         group = configGroupRepository.save(group);
-        log.info("创建配置组成功: {}", group.getCode());
 
         return toResponseWithConfigCount(group);
     }
@@ -128,7 +127,6 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         }
 
         group = configGroupRepository.save(group);
-        log.info("更新配置组成功: {}", group.getCode());
 
         return toResponseWithConfigCount(group);
     }
@@ -148,7 +146,6 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         }
 
         configGroupRepository.deleteById(id);
-        log.info("删除配置组成功: {}", group.getCode());
     }
 
     @Override
@@ -161,7 +158,6 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
 
         group.setStatus(status);
         configGroupRepository.save(group);
-        log.info("更新配置组状态成功: {} -> {}", group.getCode(), status);
     }
 
     @Override

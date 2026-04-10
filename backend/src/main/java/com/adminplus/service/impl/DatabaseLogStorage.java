@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.constants.DateTimeConstants;
 import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.response.LogPageResponse;
 import com.adminplus.pojo.dto.response.PageResultResponse;
@@ -20,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,8 +36,6 @@ import java.util.List;
 public class DatabaseLogStorage implements LogStorageStrategy {
 
     private final LogRepository logRepository;
-
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     @Transactional
@@ -179,13 +177,13 @@ public class DatabaseLogStorage implements LogStorageStrategy {
 
             // 时间范围查询
             if (query.getStartTime() != null && !query.getStartTime().isEmpty()) {
-                LocalDateTime startDateTime = LocalDateTime.parse(query.getStartTime(), DATE_TIME_FORMATTER);
+                LocalDateTime startDateTime = LocalDateTime.parse(query.getStartTime(), DateTimeConstants.STANDARD_DATE_TIME);
                 Instant startInstant = startDateTime.atZone(ZoneOffset.UTC).toInstant();
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("createTime"), startInstant));
             }
 
             if (query.getEndTime() != null && !query.getEndTime().isEmpty()) {
-                LocalDateTime endDateTime = LocalDateTime.parse(query.getEndTime(), DATE_TIME_FORMATTER);
+                LocalDateTime endDateTime = LocalDateTime.parse(query.getEndTime(), DateTimeConstants.STANDARD_DATE_TIME);
                 Instant endInstant = endDateTime.atZone(ZoneOffset.UTC).toInstant();
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(root.get("createTime"), endInstant));
             }

@@ -1,6 +1,8 @@
 package com.adminplus.common.interceptor;
 
 import com.adminplus.common.properties.AppProperties;
+import com.adminplus.constants.CacheConstants;
+import com.adminplus.constants.HttpConstants;
 import com.adminplus.utils.IpUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -61,7 +63,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
      */
     private boolean checkRateLimit(String clientIp, String key, int maxRequests, int timeWindow,
                                    HttpServletResponse response) throws IOException {
-        String redisKey = "rate_limit:" + key + ":" + clientIp;
+        String redisKey = CacheConstants.RATE_LIMIT_KEY_PREFIX + key + ":" + clientIp;
 
         // 原子递增，首次请求时设置过期时间
         Long count = redisTemplate.opsForValue().increment(redisKey);
@@ -71,7 +73,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
         if (count != null && count > maxRequests) {
             log.warn("限流触发: IP={}, Key={}, Count={}", clientIp, key, count);
-            response.setStatus(429);
+            response.setStatus(HttpConstants.HTTP_TOO_MANY_REQUESTS);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"code\":429,\"message\":\"请求过于频繁，请稍后再试\",\"data\":null,\"timestamp\":" + System.currentTimeMillis() + "}");
             return false;

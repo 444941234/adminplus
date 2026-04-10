@@ -2,12 +2,10 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.constant.SecurityConfigConstants;
 import com.adminplus.common.exception.BizException;
-import com.adminplus.constants.HierarchyConstants;
+import com.adminplus.constants.HttpConstants;
 import com.adminplus.common.security.AppUserDetails;
 import com.adminplus.common.security.JwtTokenProvider;
-import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.request.UserLoginRequest;
-import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.response.LoginResponse;
 import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.pojo.entity.UserEntity;
@@ -42,8 +40,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
@@ -51,7 +47,6 @@ public class AuthServiceImpl implements AuthService {
     private final CaptchaService captchaService;
     private final TokenBlacklistService tokenBlacklistService;
     private final RefreshTokenService refreshTokenService;
-    private final LogService logService;
     private final ConversionService conversionService;
 
     @Override
@@ -76,12 +71,9 @@ public class AuthServiceImpl implements AuthService {
                     .collect(Collectors.toList());
             String refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
-            logService.log(LogEntry.login(LogMaskingUtils.maskUsername(request.username()), true, null));
-
             return new LoginResponse(token, refreshToken, SecurityConfigConstants.BEARER_PREFIX, userResponse, permissions);
 
         } catch (AuthenticationException e) {
-            logService.log(LogEntry.login(LogMaskingUtils.maskUsername(request.username()), false, "用户名或密码错误"));
             throw new BizException("用户名或密码错误");
         }
     }
@@ -109,12 +101,9 @@ public class AuthServiceImpl implements AuthService {
     public void logout() {
         try {
             String userId = SecurityUtils.getCurrentUserId();
-            String username = SecurityUtils.getCurrentUsername();
 
             refreshTokenService.revokeAllUserTokens(userId);
             blacklistCurrentToken(userId);
-            logService.log(LogEntry.operation(HierarchyConstants.MODULE_AUTH, OperationType.OTHER.getCode(),
-                    "用户退出: " + LogMaskingUtils.maskUsername(username)));
 
         } catch (Exception e) {
             log.error("登出时处理 Token 黑名单失败", e);
@@ -128,7 +117,7 @@ public class AuthServiceImpl implements AuthService {
             return;
         }
 
-        String authHeader = request.getHeader(AUTHORIZATION_HEADER);
+        String authHeader = request.getHeader(HttpConstants.AUTHORIZATION_HEADER);
         if (authHeader != null && authHeader.startsWith(SecurityConfigConstants.BEARER_PREFIX)) {
             String token = authHeader.substring(SecurityConfigConstants.BEARER_PREFIX.length());
             tokenBlacklistService.blacklistToken(token, userId);

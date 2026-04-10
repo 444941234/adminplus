@@ -94,7 +94,6 @@ public class DictServiceImpl implements DictService {
 
         DictEntity dict = conversionService.convert(request, DictEntity.class);
         dict = dictRepository.save(dict);
-        log.info("创建字典成功: {}", dict.getDictType());
 
         return conversionService.convert(dict, DictResponse.class);
     }
@@ -112,7 +111,6 @@ public class DictServiceImpl implements DictService {
         dict.setRemark(request.remark());
 
         dict = dictRepository.save(dict);
-        log.info("更新字典成功: {}", dict.getDictType());
 
         return conversionService.convert(dict, DictResponse.class);
     }
@@ -130,7 +128,6 @@ public class DictServiceImpl implements DictService {
 
         dict.setDeleted(true);
         dictRepository.save(dict);
-        log.info("删除字典成功: {}", dict.getDictType());
     }
 
     @Override
@@ -141,7 +138,6 @@ public class DictServiceImpl implements DictService {
 
         dict.setStatus(status);
         dictRepository.save(dict);
-        log.info("更新字典状态成功: {}", dict.getDictType());
     }
 
     @Override

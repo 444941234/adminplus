@@ -1,14 +1,11 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.constants.HierarchyConstants;
 import com.adminplus.enums.CommonStatus;
-import com.adminplus.enums.OperationType;
 import com.adminplus.enums.UserStatus;
 import com.adminplus.pojo.dto.query.UserQuery;
 import com.adminplus.pojo.dto.request.UserCreateRequest;
 import com.adminplus.pojo.dto.request.UserUpdateRequest;
-import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.dto.response.UserResponse;
 import com.adminplus.pojo.entity.RoleEntity;
@@ -19,7 +16,6 @@ import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRepository;
 import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.DeptService;
-import com.adminplus.service.LogService;
 import com.adminplus.service.UserService;
 import com.adminplus.utils.AssociationDiffHelper;
 import com.adminplus.utils.EntityHelper;
@@ -56,7 +52,6 @@ public class UserServiceImpl implements UserService {
     private final DeptRepository deptRepository;
     private final DeptService deptService;
     private final PasswordEncoder passwordEncoder;
-    private final LogService logService;
     private final ConversionService conversionService;
 
     @Override
@@ -343,7 +338,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void assignRoles(String userId, List<String> roleIds) {
         // 检查用户是否存在
-        var user = userRepository.findById(userId)
+        userRepository.findById(userId)
                 .orElseThrow(() -> new BizException("用户不存在"));
 
         // 验证角色是否都存在
@@ -361,7 +356,7 @@ public class UserServiceImpl implements UserService {
         }
 
         // diff 精准更新
-        var result = AssociationDiffHelper.diffUpdate(
+        AssociationDiffHelper.diffUpdate(
                 userId,
                 safeRoleIds,
                 uid -> userRoleRepository.findByUserId(uid).stream()
@@ -378,17 +373,6 @@ public class UserServiceImpl implements UserService {
                     userRoleRepository.saveAll(list);
                 }
         );
-
-        // 审计日志
-        if (result.hasChanges()) {
-            String roleNames = safeRoleIds.isEmpty() ? "" :
-                    roleRepository.findAllById(safeRoleIds).stream()
-                            .map(RoleEntity::getName)
-                            .collect(Collectors.joining(", "));
-            logService.log(LogEntry.operation(HierarchyConstants.MODULE_USER, OperationType.UPDATE.getCode(),
-                    "分配角色: " + user.getUsername() + " -> " + roleNames
-                    + " (新增" + result.added() + "个, 移除" + result.removed() + "个)"));
-        }
     }
 
     @Override

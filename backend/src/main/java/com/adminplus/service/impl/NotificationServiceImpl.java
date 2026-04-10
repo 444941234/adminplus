@@ -35,8 +35,6 @@ public class NotificationServiceImpl implements NotificationService {
     @Override
     @Transactional
     public NotificationResponse sendNotification(NotificationSendRequest request) {
-        log.info("发送通知: type={}, recipientId={}", request.getType(), request.getRecipientId());
-
         NotificationEntity notification = new NotificationEntity();
         notification.setType(request.getType());
         notification.setRecipientId(request.getRecipientId());
@@ -48,16 +46,12 @@ public class NotificationServiceImpl implements NotificationService {
 
         notification = notificationRepository.save(notification);
 
-        log.info("通知发送成功: id={}", notification.getId());
-
         return conversionService.convert(notification, NotificationResponse.class);
     }
 
     @Override
     @Transactional
     public void sendBatchNotification(List<String> recipientIds, NotificationSendRequest request) {
-        log.info("批量发送通知: count={}, type={}", recipientIds.size(), request.getType());
-
         List<NotificationEntity> notifications = recipientIds.stream()
                 .map(recipientId -> {
                     NotificationEntity notification = new NotificationEntity();
@@ -73,8 +67,6 @@ public class NotificationServiceImpl implements NotificationService {
                 .toList();
 
         notificationRepository.saveAll(notifications);
-
-        log.info("批量通知发送成功: count={}", notifications.size());
     }
 
     @Override

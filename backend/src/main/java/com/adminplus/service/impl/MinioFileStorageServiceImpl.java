@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.constants.DateTimeConstants;
 import com.adminplus.common.properties.FileStorageProperties;
 import com.adminplus.enums.StorageType;
 import com.adminplus.service.FileStorageService;
@@ -15,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -63,7 +63,7 @@ public class MinioFileStorageServiceImpl implements FileStorageService {
             String filename = UUID.randomUUID() + extension;
 
             // 按日期创建目录
-            String datePath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
+            String datePath = LocalDate.now().format(DateTimeConstants.FILE_PATH_DATE);
 
             // 构建对象名称
             String objectName = directory + "/" + datePath + "/" + filename;

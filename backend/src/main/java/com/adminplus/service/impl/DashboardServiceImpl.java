@@ -1,5 +1,7 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.constants.DateTimeConstants;
+import com.adminplus.constants.DashboardConstants;
 import com.adminplus.pojo.dto.response.*;
 import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.pojo.entity.RefreshTokenEntity;
@@ -23,7 +25,6 @@ import java.lang.management.OperatingSystemMXBean;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -42,8 +43,6 @@ public class DashboardServiceImpl implements DashboardService {
 
     // ==================== 常量定义 ====================
 
-    private static final int CHART_DAYS = 7;  // 图表显示天数
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MM-dd");
     private static final ZoneId SYSTEM_ZONE = ZoneId.systemDefault();
 
     // ==================== 依赖注入 ====================
@@ -94,9 +93,9 @@ public class DashboardServiceImpl implements DashboardService {
         log.debug("获取用户增长趋势数据");
 
         LocalDate today = LocalDate.now();
-        List<LocalDate> dates = generateRecentDates(today, CHART_DAYS);
+        List<LocalDate> dates = generateRecentDates(today, DashboardConstants.CHART_DAYS);
         List<String> dateLabels = dates.stream()
-                .map(DATE_FORMATTER::format)
+                .map(DateTimeConstants.SHORT_DATE::format)
                 .collect(Collectors.toList());
         List<Long> values = new ArrayList<>();
 
@@ -158,9 +157,9 @@ public class DashboardServiceImpl implements DashboardService {
         log.debug("获取访问量趋势数据");
 
         LocalDate today = LocalDate.now();
-        List<LocalDate> dates = generateRecentDates(today, CHART_DAYS);
+        List<LocalDate> dates = generateRecentDates(today, DashboardConstants.CHART_DAYS);
         List<String> dateLabels = dates.stream()
-                .map(DATE_FORMATTER::format)
+                .map(DateTimeConstants.SHORT_DATE::format)
                 .collect(Collectors.toList());
         List<Long> values = new ArrayList<>();
 
@@ -240,7 +239,7 @@ public class DashboardServiceImpl implements DashboardService {
         // 获取连接池大小
         int poolSize = dataSource instanceof HikariDataSource hikari
                 ? hikari.getMaximumPoolSize()
-                : 20;  // 默认值与 application.yml 中的 DB_POOL_MAX 一致
+                : DashboardConstants.DEFAULT_DB_POOL_SIZE;
 
         // 获取数据库版本（PostgreSQL）
         String dbVersion = getPostgreSQLVersion();

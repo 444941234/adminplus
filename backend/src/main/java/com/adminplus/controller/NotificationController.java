@@ -1,6 +1,8 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
+import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.query.NotificationQuery;
 import com.adminplus.pojo.dto.request.NotificationSendRequest;
 import com.adminplus.pojo.dto.response.NotificationResponse;
@@ -32,9 +34,9 @@ public class NotificationController {
      * 发送通知
      */
     @PostMapping
+    @OperationLog(module = "通知管理", type = OperationType.CREATE, description = "发送通知 {#request.type}")
     @PreAuthorize("hasAuthority('notification:send')")
     public ApiResponse<NotificationResponse> sendNotification(@RequestBody NotificationSendRequest request) {
-        log.info("发送通知: type={}, recipientId={}", request.getType(), request.getRecipientId());
         NotificationResponse response = notificationService.sendNotification(request);
         return ApiResponse.ok(response);
     }
@@ -43,11 +45,11 @@ public class NotificationController {
      * 批量发送通知
      */
     @PostMapping("/batch")
+    @OperationLog(module = "通知管理", type = OperationType.CREATE, description = "批量发送通知 {#recipientIds.size}人")
     @PreAuthorize("hasAuthority('notification:send')")
     public ApiResponse<Void> sendBatchNotification(
             @RequestParam List<String> recipientIds,
             @RequestBody NotificationSendRequest request) {
-        log.info("批量发送通知: count={}", recipientIds.size());
         notificationService.sendBatchNotification(recipientIds, request);
         return ApiResponse.ok();
     }
@@ -96,6 +98,7 @@ public class NotificationController {
      * 删除通知
      */
     @DeleteMapping("/{id}")
+    @OperationLog(module = "通知管理", type = OperationType.DELETE, description = "删除通知 {#id}")
     public ApiResponse<Void> deleteNotification(@PathVariable String id) {
         String userId = SecurityUtils.getCurrentUserId();
         notificationService.deleteNotification(id, userId);
@@ -106,6 +109,7 @@ public class NotificationController {
      * 创建测试通知（仅用于开发测试）
      */
     @PostMapping("/test-create")
+    @OperationLog(module = "通知管理", type = OperationType.CREATE, description = "创建测试通知")
     @PreAuthorize("hasAuthority('notification:send')")
     public ApiResponse<NotificationResponse> createTestNotification() {
         String userId = SecurityUtils.getCurrentUserId();
@@ -129,7 +133,6 @@ public class NotificationController {
             notificationService.sendNotification(req);
         }
 
-        log.info("已创建 3 条测试通知给用户: {}", userId);
         return ApiResponse.ok(null);
     }
 }
