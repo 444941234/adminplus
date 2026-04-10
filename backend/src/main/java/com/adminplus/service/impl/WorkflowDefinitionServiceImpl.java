@@ -9,6 +9,8 @@ import com.adminplus.pojo.entity.WorkflowNodeEntity;
 import com.adminplus.repository.WorkflowDefinitionRepository;
 import com.adminplus.repository.WorkflowNodeRepository;
 import com.adminplus.service.WorkflowDefinitionService;
+import com.adminplus.utils.EntityHelper;
+import com.adminplus.utils.ServiceAssert;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
@@ -43,9 +45,10 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         log.info("创建工作流定义: {}", request.definitionName());
 
         // 检查键是否已存在
-        if (definitionRepository.existsByDefinitionKeyAndDeletedFalse(request.definitionKey())) {
-            throw new IllegalArgumentException("工作流标识已存在: " + request.definitionKey());
-        }
+        ServiceAssert.notExists(
+                definitionRepository.existsByDefinitionKeyAndDeletedFalse(request.definitionKey()),
+                "工作流标识已存在: " + request.definitionKey()
+        );
 
         WorkflowDefinitionEntity entity = new WorkflowDefinitionEntity();
         entity.setDefinitionName(request.definitionName());
@@ -68,15 +71,13 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     public WorkflowDefinitionResponse update(String id, WorkflowDefinitionRequest request) {
         log.info("更新工作流定义: id={}", id);
 
-        WorkflowDefinitionEntity entity = definitionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在: " + id));
+        WorkflowDefinitionEntity entity = EntityHelper.findByIdOrThrow(
+                definitionRepository::findById, id, "工作流定义不存在: {}");
 
         // 检查键是否与其他记录冲突
         definitionRepository.findByDefinitionKeyAndDeletedFalse(request.definitionKey())
                 .ifPresent(existing -> {
-                    if (!existing.getId().equals(id)) {
-                        throw new IllegalArgumentException("工作流标识已被使用: " + request.definitionKey());
-                    }
+                    ServiceAssert.isTrue(existing.getId().equals(id), "工作流标识已被使用: " + request.definitionKey());
                 });
 
         entity.setDefinitionName(request.definitionName());
@@ -113,8 +114,8 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     @Override
     @Transactional(readOnly = true)
     public WorkflowDefinitionResponse getById(String id) {
-        WorkflowDefinitionEntity entity = definitionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在: " + id));
+        WorkflowDefinitionEntity entity = EntityHelper.findByIdOrThrow(
+                definitionRepository::findById, id, "工作流定义不存在: {}");
         long nodeCount = nodeRepository.countByDefinitionIdAndDeletedFalse(id);
         return toResponseWithNodeCount(entity, (int) nodeCount);
     }
@@ -172,8 +173,8 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
         log.info("添加工作流节点: definitionId={}, nodeName={}", definitionId, request.nodeName());
 
         // 验证工作流定义存在
-        WorkflowDefinitionEntity definition = definitionRepository.findById(definitionId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在: " + definitionId));
+        WorkflowDefinitionEntity definition = EntityHelper.findByIdOrThrow(
+                definitionRepository::findById, definitionId, "工作流定义不存在: {}");
 
         WorkflowNodeEntity entity = new WorkflowNodeEntity();
         entity.setDefinitionId(definitionId);
@@ -197,8 +198,8 @@ public class WorkflowDefinitionServiceImpl implements WorkflowDefinitionService 
     public WorkflowNodeResponse updateNode(String nodeId, WorkflowNodeRequest request) {
         log.info("更新工作流节点: nodeId={}", nodeId);
 
-        WorkflowNodeEntity entity = nodeRepository.findById(nodeId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流节点不存在: " + nodeId));
+        WorkflowNodeEntity entity = EntityHelper.findByIdOrThrow(
+                nodeRepository::findById, nodeId, "工作流节点不存在: {}");
 
         entity.setNodeName(request.nodeName());
         entity.setNodeCode(request.nodeCode());
