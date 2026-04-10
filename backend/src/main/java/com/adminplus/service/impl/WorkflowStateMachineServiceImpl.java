@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.request.ApprovalActionRequest;
 import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
 import com.adminplus.pojo.entity.WorkflowApprovalEntity;
@@ -12,6 +13,7 @@ import com.adminplus.statemachine.enums.WorkflowEvent;
 import com.adminplus.statemachine.enums.WorkflowState;
 import com.adminplus.statemachine.extendedstate.WorkflowExtendedState;
 import com.adminplus.service.WorkflowStateMachineService;
+import com.adminplus.utils.EntityHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
@@ -61,8 +63,8 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
         String userId = getCurrentUserId();
 
         // 悲观锁查询工作流实例
-        WorkflowInstanceEntity instance = instanceRepository.findByIdForUpdate(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+                instanceRepository::findByIdForUpdate, instanceId, "工作流实例不存在");
 
         // 验证状态
         if (!instance.isRunning()) {
@@ -73,15 +75,15 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
         WorkflowApprovalEntity approval = approvalRepository
                 .findByInstanceIdAndNodeIdAndApproverIdAndApprovalStatusAndDeletedFalse(
                         instanceId, instance.getCurrentNodeId(), userId, "pending")
-                .orElseThrow(() -> new IllegalArgumentException("无权限审批该工作流"));
+                .orElseThrow(() -> new BizException("无权限审批该工作流"));
 
         // 获取当前节点
-        WorkflowNodeEntity currentNode = nodeRepository.findById(instance.getCurrentNodeId())
-                .orElseThrow(() -> new IllegalArgumentException("当前节点不存在"));
+        WorkflowNodeEntity currentNode = EntityHelper.findByIdOrThrow(
+                nodeRepository::findById, instance.getCurrentNodeId(), "当前节点不存在");
 
         // 查找下一节点
         WorkflowNodeEntity nextNode = findNextNode(instance, currentNode)
-                .orElseThrow(() -> new IllegalArgumentException("无法找到下一节点"));
+                .orElseThrow(() -> new BizException("无法找到下一节点"));
 
         // 获取或恢复状态机
         StateMachine<WorkflowState, WorkflowEvent> sm = getStateMachine(instanceId);
@@ -138,8 +140,8 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
         String userId = getCurrentUserId();
 
         // 悲观锁查询
-        WorkflowInstanceEntity instance = instanceRepository.findByIdForUpdate(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+                instanceRepository::findByIdForUpdate, instanceId, "工作流实例不存在");
 
         if (!instance.isRunning()) {
             throw new IllegalStateException("只有运行中的工作流才能拒绝");
@@ -149,7 +151,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
         WorkflowApprovalEntity approval = approvalRepository
                 .findByInstanceIdAndNodeIdAndApproverIdAndApprovalStatusAndDeletedFalse(
                         instanceId, instance.getCurrentNodeId(), userId, "pending")
-                .orElseThrow(() -> new IllegalArgumentException("无权限审批该工作流"));
+                .orElseThrow(() -> new BizException("无权限审批该工作流"));
 
         // 获取状态机
         StateMachine<WorkflowState, WorkflowEvent> sm = getStateMachine(instanceId);
@@ -203,8 +205,8 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
         String userId = getCurrentUserId();
 
         // 悲观锁查询
-        WorkflowInstanceEntity instance = instanceRepository.findByIdForUpdate(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+                instanceRepository::findByIdForUpdate, instanceId, "工作流实例不存在");
 
         if (!instance.isCancellable()) {
             throw new IllegalStateException("该工作流不能取消");
@@ -249,8 +251,8 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
         String userId = getCurrentUserId();
 
         // 悲观锁查询
-        WorkflowInstanceEntity instance = instanceRepository.findByIdForUpdate(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+                instanceRepository::findByIdForUpdate, instanceId, "工作流实例不存在");
 
         if (!instance.isRunning()) {
             throw new IllegalStateException("只有运行中的工作流才能退回");
@@ -260,7 +262,7 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
         WorkflowApprovalEntity approval = approvalRepository
                 .findByInstanceIdAndNodeIdAndApproverIdAndApprovalStatusAndDeletedFalse(
                         instanceId, instance.getCurrentNodeId(), userId, "pending")
-                .orElseThrow(() -> new IllegalArgumentException("无权限审批该工作流"));
+                .orElseThrow(() -> new BizException("无权限审批该工作流"));
 
         // 获取状态机
         StateMachine<WorkflowState, WorkflowEvent> sm = getStateMachine(instanceId);
@@ -271,8 +273,8 @@ public class WorkflowStateMachineServiceImpl implements WorkflowStateMachineServ
             throw new IllegalStateException("没有可以退回的节点");
         }
 
-        WorkflowNodeEntity previousNode = nodeRepository.findById(previousNodeId)
-                .orElseThrow(() -> new IllegalArgumentException("上一节点不存在"));
+        WorkflowNodeEntity previousNode = EntityHelper.findByIdOrThrow(
+                nodeRepository::findById, previousNodeId, "上一节点不存在");
 
         // 构建消息
         Map<String, Object> headers = new HashMap<>();

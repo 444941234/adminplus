@@ -1,11 +1,14 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.request.UrgeActionRequest;
 import com.adminplus.pojo.dto.response.WorkflowUrgeResponse;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
 import com.adminplus.service.WorkflowUrgeService;
+import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.ServiceAssert;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
@@ -39,22 +42,18 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
         String urgeUserId = getCurrentUserId();
         log.info("催办工作流: instanceId={}, urgeUserId={}", instanceId, urgeUserId);
 
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+                instanceRepository::findById, instanceId, "工作流实例不存在");
 
         // 只有发起人可以催办
-        if (!instance.getUserId().equals(urgeUserId)) {
-            throw new IllegalArgumentException("只有发起人可以催办工作流");
-        }
+        ServiceAssert.isTrue(instance.getUserId().equals(urgeUserId), "只有发起人可以催办工作流");
 
         // 只有运行中的工作流可以催办
-        if (!instance.isRunning()) {
-            throw new IllegalArgumentException("只有运行中的工作流可以催办");
-        }
+        ServiceAssert.isTrue(instance.isRunning(), "只有运行中的工作流可以催办");
 
         // 获取当前节点
-        WorkflowNodeEntity currentNode = nodeRepository.findById(instance.getCurrentNodeId())
-                .orElseThrow(() -> new IllegalArgumentException("当前节点不存在"));
+        WorkflowNodeEntity currentNode = EntityHelper.findByIdOrThrow(
+                nodeRepository::findById, instance.getCurrentNodeId(), "当前节点不存在");
 
         // 获取当前节点的所有待审批记录
         List<WorkflowApprovalEntity> pendingApprovals = approvalRepository
@@ -63,13 +62,11 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
                 .filter(WorkflowApprovalEntity::isPending)
                 .toList();
 
-        if (pendingApprovals.isEmpty()) {
-            throw new IllegalArgumentException("当前节点没有待审批人");
-        }
+        ServiceAssert.isTrue(!pendingApprovals.isEmpty(), "当前节点没有待审批人");
 
         // 获取催办人信息
-        UserEntity urgeUser = userRepository.findById(urgeUserId)
-                .orElseThrow(() -> new IllegalArgumentException("催办人不存在"));
+        UserEntity urgeUser = EntityHelper.findByIdOrThrow(
+                userRepository::findById, urgeUserId, "催办人不存在");
 
         // 创建催办记录
         int urgeCount = 0;
@@ -142,13 +139,11 @@ public class WorkflowUrgeServiceImpl implements WorkflowUrgeService {
         String userId = getCurrentUserId();
         log.info("标记催办记录为已读: urgeId={}, userId={}", urgeId, userId);
 
-        WorkflowUrgeEntity urge = urgeRepository.findById(urgeId)
-                .orElseThrow(() -> new IllegalArgumentException("催办记录不存在"));
+        WorkflowUrgeEntity urge = EntityHelper.findByIdOrThrow(
+                urgeRepository::findById, urgeId, "催办记录不存在");
 
         // 验证权限（只有被催办人可以标记已读）
-        if (!urge.getUrgeTargetId().equals(userId)) {
-            throw new IllegalArgumentException("无权限标记此催办记录");
-        }
+        ServiceAssert.isTrue(urge.getUrgeTargetId().equals(userId), "无权限标记此催办记录");
 
         urge.markAsRead();
         urgeRepository.save(urge);
