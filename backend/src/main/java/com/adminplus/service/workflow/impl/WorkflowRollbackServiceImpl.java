@@ -4,6 +4,7 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
 import com.adminplus.common.exception.BizException;
+import com.adminplus.enums.WorkflowStatus;
 import com.adminplus.pojo.dto.request.ApprovalActionRequest;
 import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
 import com.adminplus.pojo.dto.response.WorkflowNodeResponse;
@@ -250,23 +251,26 @@ public class WorkflowRollbackServiceImpl implements WorkflowRollbackService {
     }
 
     private boolean isRunning(String status) {
-        return "PROCESSING".equals(status);
+        return WorkflowStatus.RUNNING.getCode().equals(status);
     }
 
     private boolean isDraft(String status) {
-        return "DRAFT".equals(status);
+        return WorkflowStatus.DRAFT.getCode().equals(status);
     }
 
     private boolean isApproved(String status) {
-        return "APPROVED".equals(status);
+        return WorkflowStatus.APPROVED.getCode().equals(status);
     }
 
     private boolean isFinished(String status) {
-        return "APPROVED".equals(status) || "REJECTED".equals(status) || "CANCELLED".equals(status);
+        return WorkflowStatus.APPROVED.getCode().equals(status)
+            || WorkflowStatus.REJECTED.getCode().equals(status)
+            || WorkflowStatus.CANCELLED.getCode().equals(status);
     }
 
     private boolean isCancellable(String status) {
-        return "PROCESSING".equals(status) || "DRAFT".equals(status);
+        return WorkflowStatus.RUNNING.getCode().equals(status)
+            || WorkflowStatus.DRAFT.getCode().equals(status);
     }
 
     private Map<String, Object> deserializeFormData(String businessData) {
