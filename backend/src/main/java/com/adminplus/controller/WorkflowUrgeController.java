@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -33,7 +34,7 @@ public class WorkflowUrgeController {
 
     @PostMapping("/{instanceId}")
     @Operation(summary = "催办工作流")
-    @OperationLog(module = "工作流管理", operationType = 3, description = "催办工作流 {#instanceId}")
+    @OperationLog(module = "工作流管理", type = OperationType.UPDATE, description = "催办工作流 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:urge', 'workflow:create')")
     public ApiResponse<Void> urgeWorkflow(
             @PathVariable String instanceId,

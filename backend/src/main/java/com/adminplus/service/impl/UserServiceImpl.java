@@ -2,6 +2,7 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.HierarchyConstants;
+import com.adminplus.enums.CommonStatus;
 import com.adminplus.enums.OperationType;
 import com.adminplus.enums.UserStatus;
 import com.adminplus.pojo.dto.query.UserQuery;
@@ -325,14 +326,12 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateUserStatus(String id, Integer status) {
         // 不能禁用自己
-        if (id.equals(SecurityUtils.getCurrentUserIdOrDefault()) && status == 0) {
+        if (id.equals(SecurityUtils.getCurrentUserIdOrDefault()) && CommonStatus.isDisabled(status)) {
             throw new BizException("不能禁用自己");
         }
 
         // 校验 status 值范围
-        if (status != null && status != 0 && status != 1) {
-            throw new BizException("状态值不合法，只能为 0 或 1");
-        }
+        CommonStatus.fromCode(status);  // 会抛出异常如果 status 不合法
 
         var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
 

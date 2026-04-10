@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -52,7 +53,7 @@ public class PermissionController {
     @GetMapping("/all")
     @Operation(summary = "获取所有可用权限（用于分配）")
     @PreAuthorize("hasAuthority('permission:list')")
-    @OperationLog(module = "权限管理", operationType = 1, description = "查询所有可用权限")
+    @OperationLog(module = "权限管理", type = OperationType.QUERY, description = "查询所有可用权限")
     public ApiResponse<List<PermissionResponse>> getAllPermissions() {
         List<PermissionResponse> responses = permissionService.getAllPermissions();
         return ApiResponse.ok(responses);

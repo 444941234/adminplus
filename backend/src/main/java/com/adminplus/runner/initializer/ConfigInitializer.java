@@ -5,10 +5,7 @@ import com.adminplus.pojo.entity.ConfigGroupEntity;
 import com.adminplus.repository.ConfigGroupRepository;
 import com.adminplus.repository.ConfigRepository;
 import com.adminplus.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,14 +16,21 @@ import java.util.List;
  * @author AdminPlus
  * @since 2026-03-31
  */
-@Slf4j
 @Component
-@RequiredArgsConstructor
-public class ConfigInitializer implements DataInitializer {
+public class ConfigInitializer extends AbstractDataInitializer {
 
     private final ConfigGroupRepository configGroupRepository;
     private final ConfigRepository configRepository;
     private final UserRepository userRepository;
+
+    public ConfigInitializer(ConfigGroupRepository configGroupRepository,
+                            ConfigRepository configRepository,
+                            UserRepository userRepository) {
+        super(() -> configGroupRepository.count() > 0, "配置");
+        this.configGroupRepository = configGroupRepository;
+        this.configRepository = configRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public int getOrder() {
@@ -39,13 +43,7 @@ public class ConfigInitializer implements DataInitializer {
     }
 
     @Override
-    @Transactional
-    public void initialize() {
-        if (configGroupRepository.count() > 0) {
-            log.info("配置数据已存在，跳过初始化");
-            return;
-        }
-
+    protected void doInitialize() {
         // 获取 admin 用户 ID
         String adminUserId = userRepository.findByUsername("admin")
                 .map(u -> u.getId())
@@ -118,8 +116,6 @@ public class ConfigInitializer implements DataInitializer {
 
         // 保存配置项
         configRepository.saveAll(configs);
-
-        log.info("初始化配置数据完成，共 {} 个配置分组，{} 个配置项", groups.size(), configs.size());
     }
 
     private ConfigGroupEntity createConfigGroup(String name, String code, String icon, Integer sortOrder, String description, String userId) {

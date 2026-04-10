@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.exception.BizException;
@@ -36,7 +37,7 @@ public class FormTemplateController {
      */
     @GetMapping
     @Operation(summary = "获取所有表单模板")
-    @OperationLog(module = "表单模板管理", operationType = 4, description = "查询所有表单模板")
+    @OperationLog(module = "表单模板管理", type = OperationType.DELETE, description = "查询所有表单模板")
     @PreAuthorize("hasAuthority('workflow:form:list')")
     public ApiResponse<List<FormTemplateResponse>> getAllTemplates() {
         List<FormTemplateResponse> responses = formTemplateService.getAllTemplates();
@@ -94,7 +95,7 @@ public class FormTemplateController {
      */
     @PostMapping
     @Operation(summary = "创建表单模板")
-    @OperationLog(module = "表单模板管理", operationType = 1, description = "创建表单模板 {#request.templateCode()}")
+    @OperationLog(module = "表单模板管理", type = OperationType.QUERY, description = "创建表单模板 {#request.templateCode()}")
     @PreAuthorize("hasAuthority('workflow:form:create')")
     public ApiResponse<FormTemplateResponse> createTemplate(@Valid @RequestBody FormTemplateRequest request) {
 
@@ -108,7 +109,7 @@ public class FormTemplateController {
      */
     @PutMapping("/{id}")
     @Operation(summary = "更新表单模板")
-    @OperationLog(module = "表单模板管理", operationType = 2, description = "更新表单模板 {#id}")
+    @OperationLog(module = "表单模板管理", type = OperationType.CREATE, description = "更新表单模板 {#id}")
     @PreAuthorize("hasAuthority('workflow:form:update')")
     public ApiResponse<FormTemplateResponse> updateTemplate(
             @PathVariable String id,
@@ -122,7 +123,7 @@ public class FormTemplateController {
      */
     @DeleteMapping("/{id}")
     @Operation(summary = "删除表单模板")
-    @OperationLog(module = "表单模板管理", operationType = 3, description = "删除表单模板 {#id}")
+    @OperationLog(module = "表单模板管理", type = OperationType.UPDATE, description = "删除表单模板 {#id}")
     @PreAuthorize("hasAuthority('workflow:form:delete')")
     public ApiResponse<Void> deleteTemplate(@PathVariable String id) {
         formTemplateService.deleteTemplate(id);

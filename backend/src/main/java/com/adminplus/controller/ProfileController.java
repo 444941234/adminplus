@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -44,7 +45,7 @@ public class ProfileController {
 
     @PutMapping
     @Operation(summary = "更新当前用户信息")
-    @OperationLog(module = "个人中心", operationType = 3, description = "更新个人信息")
+    @OperationLog(module = "个人中心", type = OperationType.UPDATE, description = "更新个人信息")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<ProfileResponse> updateProfile(@Valid @RequestBody ProfileUpdateRequest request) {
         ProfileResponse response = profileService.updateCurrentProfile(request);
@@ -53,7 +54,7 @@ public class ProfileController {
 
     @PostMapping("/password")
     @Operation(summary = "修改密码")
-    @OperationLog(module = "个人中心", operationType = 3, description = "修改密码")
+    @OperationLog(module = "个人中心", type = OperationType.UPDATE, description = "修改密码")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<Void> changePassword(@Valid @RequestBody PasswordChangeRequest request) {
         profileService.changePassword(request);
@@ -62,7 +63,7 @@ public class ProfileController {
 
     @PostMapping("/avatar")
     @Operation(summary = "上传头像")
-    @OperationLog(module = "个人中心", operationType = 3, description = "上传头像")
+    @OperationLog(module = "个人中心", type = OperationType.UPDATE, description = "上传头像")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<AvatarUploadResponse> uploadAvatar(@RequestParam("file") MultipartFile file) {
         String avatarUrl = profileService.uploadAvatar(file);
@@ -81,7 +82,7 @@ public class ProfileController {
 
     @PutMapping("/settings")
     @Operation(summary = "更新用户设置")
-    @OperationLog(module = "个人中心", operationType = 3, description = "更新用户设置")
+    @OperationLog(module = "个人中心", type = OperationType.UPDATE, description = "更新用户设置")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<SettingsResponse> updateSettings(@Valid @RequestBody SettingsUpdateRequest req) {
         SettingsResponse settings = profileService.updateSettings(req);
@@ -90,7 +91,7 @@ public class ProfileController {
 
     @GetMapping("/activity")
     @Operation(summary = "获取用户活动统计")
-    @OperationLog(module = "个人中心", operationType = 1, description = "查看活动统计")
+    @OperationLog(module = "个人中心", type = OperationType.QUERY, description = "查看活动统计")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<ActivityStatsResponse> getActivityStats() {
         ActivityStatsResponse response = profileService.getActivityStats();

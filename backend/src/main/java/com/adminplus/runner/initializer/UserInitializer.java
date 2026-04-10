@@ -1,17 +1,18 @@
 package com.adminplus.runner.initializer;
 
 import com.adminplus.common.properties.InitializerProperties;
-import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.pojo.entity.RoleEntity;
-import com.adminplus.repository.*;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.adminplus.pojo.entity.UserEntity;
+import com.adminplus.repository.DeptRepository;
+import com.adminplus.repository.RoleRepository;
+import com.adminplus.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -20,16 +21,27 @@ import java.util.stream.Collectors;
  * @author AdminPlus
  * @since 2026-03-30
  */
-@Slf4j
 @Component
-@RequiredArgsConstructor
-public class UserInitializer implements DataInitializer {
+public class UserInitializer extends AbstractDataInitializer {
 
     private final UserRepository userRepository;
     private final DeptRepository deptRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final InitializerProperties initializerProperties;
+
+    public UserInitializer(UserRepository userRepository,
+                          DeptRepository deptRepository,
+                          RoleRepository roleRepository,
+                          PasswordEncoder passwordEncoder,
+                          InitializerProperties initializerProperties) {
+        super(() -> userRepository.count() > 0, "用户");
+        this.userRepository = userRepository;
+        this.deptRepository = deptRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.initializerProperties = initializerProperties;
+    }
 
     @Override
     public int getOrder() {
@@ -42,13 +54,7 @@ public class UserInitializer implements DataInitializer {
     }
 
     @Override
-    @Transactional
-    public void initialize() {
-        if (userRepository.count() > 0) {
-            log.info("用户数据已存在，跳过初始化");
-            return;
-        }
-
+    protected void doInitialize() {
         // 获取部门数据
         List<DeptEntity> depts = deptRepository.findAll();
         Map<String, DeptEntity> deptMap = depts.stream()
@@ -56,7 +62,6 @@ public class UserInitializer implements DataInitializer {
 
         // 创建用户数据
         String defaultPassword = initializerProperties.getDefaultPassword();
-        log.info("使用配置的默认密码初始化用户");
         String encodedPassword = passwordEncoder.encode(defaultPassword);
 
         List<UserEntity> users = new ArrayList<>();
@@ -136,8 +141,6 @@ public class UserInitializer implements DataInitializer {
             }
             roleRepository.saveAll(roles);
         }
-
-        log.info("初始化用户数据完成，共 {} 个用户，已更新部门和角色的创建者", users.size());
     }
 
     private UserEntity createUser(String username, String nickname, String email, String phone,

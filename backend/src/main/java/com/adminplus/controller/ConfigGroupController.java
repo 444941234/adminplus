@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -35,7 +36,7 @@ public class ConfigGroupController {
 
     @GetMapping
     @Operation(summary = "分页查询配置组列表")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置组列表")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询配置组列表")
     @PreAuthorize("hasAuthority('config:group:list')")
     public ApiResponse<PageResultResponse<ConfigGroupResponse>> getConfigGroupList(ConfigGroupQuery query) {
         PageResultResponse<ConfigGroupResponse> response = configGroupService.getConfigGroupList(query);
@@ -44,7 +45,7 @@ public class ConfigGroupController {
 
     @GetMapping("/active")
     @Operation(summary = "查询所有启用的配置组")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询启用的配置组")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询启用的配置组")
     @PreAuthorize("hasAuthority('config:group:query')")
     public ApiResponse<List<ConfigGroupResponse>> getActiveConfigGroups() {
         List<ConfigGroupResponse> responses = configGroupService.getActiveConfigGroups();
@@ -53,7 +54,7 @@ public class ConfigGroupController {
 
     @GetMapping("/all")
     @Operation(summary = "查询所有配置组（包括禁用的）")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询所有配置组")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询所有配置组")
     @PreAuthorize("hasAuthority('config:group:query')")
     public ApiResponse<List<ConfigGroupResponse>> getAllConfigGroups() {
         List<ConfigGroupResponse> responses = configGroupService.getAllConfigGroups();
@@ -62,7 +63,7 @@ public class ConfigGroupController {
 
     @GetMapping("/code/{code}")
     @Operation(summary = "根据编码查询配置组")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置组编码 {#code}")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询配置组编码 {#code}")
     @PreAuthorize("hasAuthority('config:group:query')")
     public ApiResponse<ConfigGroupResponse> getConfigGroupByCode(@PathVariable String code) {
         ConfigGroupResponse response = configGroupService.getConfigGroupByCode(code);
@@ -71,7 +72,7 @@ public class ConfigGroupController {
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询配置组")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置组详情 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询配置组详情 {#id}")
     @PreAuthorize("hasAuthority('config:group:query')")
     public ApiResponse<ConfigGroupResponse> getConfigGroupById(@PathVariable String id) {
         ConfigGroupResponse response = configGroupService.getConfigGroupById(id);
@@ -80,7 +81,7 @@ public class ConfigGroupController {
 
     @PostMapping
     @Operation(summary = "创建配置组")
-    @OperationLog(module = "配置管理", operationType = 2, description = "新增配置组 {#request.name}")
+    @OperationLog(module = "配置管理", type = OperationType.CREATE, description = "新增配置组 {#request.name}")
     @PreAuthorize("hasAuthority('config:group:add')")
     public ApiResponse<ConfigGroupResponse> createConfigGroup(@Valid @RequestBody ConfigGroupCreateRequest request) {
         ConfigGroupResponse response = configGroupService.createConfigGroup(request);
@@ -89,7 +90,7 @@ public class ConfigGroupController {
 
     @PutMapping("/{id}")
     @Operation(summary = "更新配置组")
-    @OperationLog(module = "配置管理", operationType = 3, description = "修改配置组 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.UPDATE, description = "修改配置组 {#id}")
     @PreAuthorize("hasAuthority('config:group:edit')")
     public ApiResponse<ConfigGroupResponse> updateConfigGroup(
             @PathVariable String id,
@@ -101,7 +102,7 @@ public class ConfigGroupController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除配置组")
-    @OperationLog(module = "配置管理", operationType = 4, description = "删除配置组 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.DELETE, description = "删除配置组 {#id}")
     @PreAuthorize("hasAuthority('config:group:delete')")
     public ApiResponse<Void> deleteConfigGroup(@PathVariable String id) {
         configGroupService.deleteConfigGroup(id);
@@ -110,7 +111,7 @@ public class ConfigGroupController {
 
     @PutMapping("/{id}/status")
     @Operation(summary = "更新配置组状态")
-    @OperationLog(module = "配置管理", operationType = 3, description = "修改配置组状态 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.UPDATE, description = "修改配置组状态 {#id}")
     @PreAuthorize("hasAuthority('config:group:edit')")
     public ApiResponse<Void> updateConfigGroupStatus(
             @PathVariable String id,

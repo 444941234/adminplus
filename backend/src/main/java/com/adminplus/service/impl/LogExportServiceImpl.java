@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.enums.LogStatus;
 import com.adminplus.pojo.dto.query.LogQuery;
 import com.adminplus.pojo.dto.response.LogPageResponse;
 import com.adminplus.pojo.dto.response.PageResultResponse;
@@ -73,7 +74,7 @@ public class LogExportServiceImpl implements LogExportService {
                 row.createCell(col++).setCellValue(log.method() != null ? log.method() : "");
                 row.createCell(col++).setCellValue(log.ip() != null ? log.ip() : "");
                 row.createCell(col++).setCellValue(log.costTime() != null ? log.costTime() : 0);
-                row.createCell(col++).setCellValue(log.status() != null && log.status() == 1 ? "成功" : "失败");
+                row.createCell(col++).setCellValue(LogStatus.SUCCESS.getCode() == log.status() ? "成功" : "失败");
                 row.createCell(col++).setCellValue(formatDate(log.createTime()));
             }
 
@@ -118,7 +119,7 @@ public class LogExportServiceImpl implements LogExportService {
             csv.append(escapeCsv(log.method() != null ? log.method() : "")).append(",");
             csv.append(escapeCsv(log.ip() != null ? log.ip() : "")).append(",");
             csv.append(log.costTime() != null ? log.costTime() : 0).append(",");
-            csv.append(log.status() != null && log.status() == 1 ? "成功" : "失败").append(",");
+            csv.append(LogStatus.SUCCESS.getCode() == log.status() ? "成功" : "失败").append(",");
             csv.append(escapeCsv(formatDate(log.createTime()))).append("\n");
         }
 

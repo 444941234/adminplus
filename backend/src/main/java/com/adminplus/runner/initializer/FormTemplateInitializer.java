@@ -2,10 +2,7 @@ package com.adminplus.runner.initializer;
 
 import com.adminplus.pojo.entity.FormTemplateEntity;
 import com.adminplus.repository.FormTemplateRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 表单模板数据初始化器
@@ -16,12 +13,15 @@ import org.springframework.transaction.annotation.Transactional;
  * @author AdminPlus
  * @since 2026-04-02
  */
-@Slf4j
 @Component
-@RequiredArgsConstructor
-public class FormTemplateInitializer implements DataInitializer {
+public class FormTemplateInitializer extends AbstractDataInitializer {
 
     private final FormTemplateRepository formTemplateRepository;
+
+    public FormTemplateInitializer(FormTemplateRepository formTemplateRepository) {
+        super(() -> formTemplateRepository.count() > 0, "表单模板");
+        this.formTemplateRepository = formTemplateRepository;
+    }
 
     @Override
     public int getOrder() {
@@ -34,17 +34,7 @@ public class FormTemplateInitializer implements DataInitializer {
     }
 
     @Override
-    @Transactional
-    public void initialize() {
-        long templateCount = formTemplateRepository.count();
-
-        if (templateCount > 0) {
-            log.info("表单模板数据已存在（{} 个模板），跳过初始化", templateCount);
-            return;
-        }
-
-        log.info("开始初始化表单模板数据");
-
+    protected void doInitialize() {
         // 创建通用表单模板
         createTemplate(
                 "请假申请表",
@@ -77,8 +67,6 @@ public class FormTemplateInitializer implements DataInitializer {
                 "合同审批表单，包含合同类型、金额、对方单位等信息",
                 buildContractApprovalFormConfig()
         );
-
-        log.info("表单模板数据初始化完成，共创建 4 个模板");
     }
 
     private void createTemplate(String name, String code, String category, String description, String formConfig) {
@@ -90,7 +78,6 @@ public class FormTemplateInitializer implements DataInitializer {
         template.setFormConfig(formConfig);
         template.setStatus(1);
         formTemplateRepository.save(template);
-        log.info("创建表单模板: {} ({})", name, code);
     }
 
     private String buildLeaveRequestFormConfig() {

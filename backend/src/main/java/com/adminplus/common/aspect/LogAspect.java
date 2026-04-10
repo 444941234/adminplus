@@ -2,6 +2,8 @@ package com.adminplus.common.aspect;
 
 import com.adminplus.common.annotation.LoginLog;
 import com.adminplus.common.annotation.OperationLog;
+import com.adminplus.enums.LoginType;
+import com.adminplus.enums.OperationType;
 import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.service.LogService;
@@ -165,7 +167,7 @@ public class LogAspect {
 
         String username = getUsernameFromArgs(joinPoint.getArgs(), method);
         String description = loginLog.description().isEmpty()
-            ? (loginLog.type() == 1 ? "用户登录" : "用户登出")
+            ? loginLog.type().getDescription()
             : loginLog.description();
 
         Throwable error = null;
@@ -186,13 +188,7 @@ public class LogAspect {
      * 获取操作类型代码
      */
     private int getOperationCode(OperationLog operationLog) {
-        // 优先使用 type() 属性（枚举）
-        OperationType type = operationLog.type();
-        if (type != OperationType.OTHER) {
-            return type.getCode();
-        }
-        // 兼容旧代码的 operationType() 属性
-        return operationLog.operationType();
+        return operationLog.type().getCode();
     }
 
     /**

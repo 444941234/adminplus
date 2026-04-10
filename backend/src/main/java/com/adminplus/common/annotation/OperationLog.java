@@ -33,17 +33,9 @@ public @interface OperationLog {
     String module() default "";
 
     /**
-     * 操作类型（枚举方式，推荐）
+     * 操作类型
      */
-    OperationType type() default OperationType.OTHER;
-
-    /**
-     * 操作类型（数字方式，兼容旧代码）
-     * 1=查询，2=新增，3=修改，4=删除，5=导出，6=导入，7=其他
-     * @deprecated 请使用 type() 属性
-     */
-    @Deprecated
-    int operationType() default 7;
+    OperationType type();
 
     /**
      * 操作描述，支持 SpEL 表达式

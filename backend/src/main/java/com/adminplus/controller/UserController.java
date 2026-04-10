@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -37,7 +38,7 @@ public class UserController {
 
     @GetMapping
     @Operation(summary = "分页查询用户列表")
-    @OperationLog(module = "用户管理", operationType = 1, description = "查询用户列表")
+    @OperationLog(module = "用户管理", type = OperationType.QUERY, description = "查询用户列表")
     @PreAuthorize("hasAuthority('user:query')")
     public ApiResponse<PageResultResponse<UserResponse>> getUserList(UserQuery req) {
         PageResultResponse<UserResponse> result = userService.getUserList(req);
@@ -46,7 +47,7 @@ public class UserController {
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询用户")
-    @OperationLog(module = "用户管理", operationType = 1, description = "查询用户详情 {#id}")
+    @OperationLog(module = "用户管理", type = OperationType.QUERY, description = "查询用户详情 {#id}")
     @PreAuthorize("hasAuthority('user:query')")
     public ApiResponse<UserResponse> getUserById(@PathVariable String id) {
         UserResponse user = userService.getUserById(id);
@@ -55,7 +56,7 @@ public class UserController {
 
     @PostMapping
     @Operation(summary = "创建用户")
-    @OperationLog(module = "用户管理", operationType = 2, description = "新增用户 {#request.username}")
+    @OperationLog(module = "用户管理", type = OperationType.CREATE, description = "新增用户 {#request.username}")
     @PreAuthorize("hasAuthority('user:add')")
     public ApiResponse<UserResponse> createUser(@Valid @RequestBody UserCreateRequest request) {
         UserResponse user = userService.createUser(request);
@@ -64,7 +65,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     @Operation(summary = "更新用户")
-    @OperationLog(module = "用户管理", operationType = 3, description = "修改用户 {#id}")
+    @OperationLog(module = "用户管理", type = OperationType.UPDATE, description = "修改用户 {#id}")
     @PreAuthorize("hasAuthority('user:edit')")
     public ApiResponse<UserResponse> updateUser(@PathVariable String id, @Valid @RequestBody UserUpdateRequest request) {
         UserResponse user = userService.updateUser(id, request);
@@ -73,7 +74,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除用户")
-    @OperationLog(module = "用户管理", operationType = 4, description = "删除用户 {#id}")
+    @OperationLog(module = "用户管理", type = OperationType.DELETE, description = "删除用户 {#id}")
     @PreAuthorize("hasAuthority('user:delete')")
     public ApiResponse<Void> deleteUser(@PathVariable String id) {
         userService.deleteUser(id);
@@ -82,7 +83,7 @@ public class UserController {
 
     @PutMapping("/{id}/status")
     @Operation(summary = "更新用户状态")
-    @OperationLog(module = "用户管理", operationType = 3, description = "修改用户状态 {#id}")
+    @OperationLog(module = "用户管理", type = OperationType.UPDATE, description = "修改用户状态 {#id}")
     @PreAuthorize("hasAuthority('user:edit')")
     public ApiResponse<Void> updateUserStatus(
             @PathVariable String id,
@@ -94,7 +95,7 @@ public class UserController {
 
     @PutMapping("/{id}/password")
     @Operation(summary = "重置用户密码")
-    @OperationLog(module = "用户管理", operationType = 3, description = "重置用户密码 {#id}")
+    @OperationLog(module = "用户管理", type = OperationType.UPDATE, description = "重置用户密码 {#id}")
     @PreAuthorize("hasAuthority('user:edit')")
     public ApiResponse<Void> resetPassword(
             @PathVariable String id,
@@ -106,7 +107,7 @@ public class UserController {
 
     @PutMapping("/{id}/roles")
     @Operation(summary = "为用户分配角色")
-    @OperationLog(module = "用户管理", operationType = 3, description = "分配用户角色 {#id}")
+    @OperationLog(module = "用户管理", type = OperationType.UPDATE, description = "分配用户角色 {#id}")
     @PreAuthorize("hasAuthority('user:assign')")
     public ApiResponse<Void> assignRoles(
             @PathVariable String id,
@@ -118,7 +119,7 @@ public class UserController {
 
     @GetMapping("/{id}/roles")
     @Operation(summary = "查询用户的角色ID列表")
-    @OperationLog(module = "用户管理", operationType = 1, description = "查询用户角色 {#id}")
+    @OperationLog(module = "用户管理", type = OperationType.QUERY, description = "查询用户角色 {#id}")
     @PreAuthorize("hasAuthority('user:query')")
     public ApiResponse<List<String>> getUserRoleIds(@PathVariable String id) {
         List<String> roleIds = userService.getUserRoleIds(id);

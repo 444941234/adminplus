@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -35,7 +36,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/draft")
     @Operation(summary = "创建工作流草稿")
-    @OperationLog(module = "工作流管理", operationType = 2, description = "创建工作流草稿 {#request.title}")
+    @OperationLog(module = "工作流管理", type = OperationType.CREATE, description = "创建工作流草稿 {#request.title}")
     @PreAuthorize("hasAnyAuthority('workflow:draft', 'workflow:create')")
     public ApiResponse<WorkflowInstanceResponse> createDraft(@Valid @RequestBody WorkflowStartRequest request) {
         log.info("创建工作流草稿: title={}", request.title());
@@ -45,7 +46,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/submit")
     @Operation(summary = "提交工作流")
-    @OperationLog(module = "工作流管理", operationType = 2, description = "提交工作流 {#instanceId}")
+    @OperationLog(module = "工作流管理", type = OperationType.CREATE, description = "提交工作流 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:start', 'workflow:draft', 'workflow:create')")
     public ApiResponse<WorkflowInstanceResponse> submit(
             @PathVariable String instanceId,
@@ -57,7 +58,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/start")
     @Operation(summary = "发起并提交工作流")
-    @OperationLog(module = "工作流管理", operationType = 2, description = "发起工作流 {#request.title}")
+    @OperationLog(module = "工作流管理", type = OperationType.CREATE, description = "发起工作流 {#request.title}")
     @PreAuthorize("hasAnyAuthority('workflow:start', 'workflow:create')")
     public ApiResponse<WorkflowInstanceResponse> start(@Valid @RequestBody WorkflowStartRequest request) {
         log.info("发起工作流: title={}", request.title());
@@ -83,7 +84,7 @@ public class WorkflowInstanceController {
 
     @PutMapping("/{instanceId}/draft")
     @Operation(summary = "更新工作流草稿")
-    @OperationLog(module = "工作流管理", operationType = 3, description = "更新工作流草稿 {#instanceId}")
+    @OperationLog(module = "工作流管理", type = OperationType.UPDATE, description = "更新工作流草稿 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:draft', 'workflow:create')")
     public ApiResponse<WorkflowInstanceResponse> updateDraft(
             @PathVariable String instanceId,
@@ -94,7 +95,7 @@ public class WorkflowInstanceController {
 
     @DeleteMapping("/{instanceId}/draft")
     @Operation(summary = "删除工作流草稿")
-    @OperationLog(module = "工作流管理", operationType = 4, description = "删除工作流草稿 {#instanceId}")
+    @OperationLog(module = "工作流管理", type = OperationType.DELETE, description = "删除工作流草稿 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:draft', 'workflow:create')")
     public ApiResponse<Void> deleteDraft(@PathVariable String instanceId) {
         instanceService.deleteDraft(instanceId);
@@ -134,7 +135,7 @@ public class WorkflowInstanceController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "无审批权限"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "工作流实例不存在")
     })
-    @OperationLog(module = "工作流管理", operationType = 3, description = "同意审批 {#instanceId}")
+    @OperationLog(module = "工作流管理", type = OperationType.UPDATE, description = "同意审批 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:approve')")
     public ApiResponse<WorkflowInstanceResponse> approve(
             @PathVariable String instanceId,
@@ -146,7 +147,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/reject")
     @Operation(summary = "拒绝审批")
-    @OperationLog(module = "工作流管理", operationType = 3, description = "拒绝审批 {#instanceId}")
+    @OperationLog(module = "工作流管理", type = OperationType.UPDATE, description = "拒绝审批 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:reject', 'workflow:approve')")
     public ApiResponse<WorkflowInstanceResponse> reject(
             @PathVariable String instanceId,
@@ -158,7 +159,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/cancel")
     @Operation(summary = "取消工作流")
-    @OperationLog(module = "工作流管理", operationType = 4, description = "取消工作流 {#instanceId}")
+    @OperationLog(module = "工作流管理", type = OperationType.DELETE, description = "取消工作流 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:cancel', 'workflow:create')")
     public ApiResponse<Void> cancel(@PathVariable String instanceId) {
         log.info("取消工作流: instanceId={}", instanceId);
@@ -168,7 +169,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/withdraw")
     @Operation(summary = "撤回工作流")
-    @OperationLog(module = "工作流管理", operationType = 3, description = "撤回工作流 {#instanceId}")
+    @OperationLog(module = "工作流管理", type = OperationType.UPDATE, description = "撤回工作流 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:withdraw', 'workflow:create')")
     public ApiResponse<Void> withdraw(@PathVariable String instanceId) {
         log.info("撤回工作流: instanceId={}", instanceId);
@@ -178,7 +179,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/rollback")
     @Operation(summary = "回退工作流")
-    @OperationLog(module = "工作流管理", operationType = 3, description = "回退工作流 {#instanceId}")
+    @OperationLog(module = "工作流管理", type = OperationType.UPDATE, description = "回退工作流 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:rollback', 'workflow:approve')")
     public ApiResponse<WorkflowInstanceResponse> rollback(
             @PathVariable String instanceId,
@@ -206,7 +207,7 @@ public class WorkflowInstanceController {
 
     @PostMapping("/{instanceId}/add-sign")
     @Operation(summary = "加签/转办")
-    @OperationLog(module = "工作流管理", operationType = 3, description = "加签/转办 {#instanceId}")
+    @OperationLog(module = "工作流管理", type = OperationType.UPDATE, description = "加签/转办 {#instanceId}")
     @PreAuthorize("hasAnyAuthority('workflow:add-sign', 'workflow:approve')")
     public ApiResponse<WorkflowAddSignResponse> addSign(
             @PathVariable String instanceId,

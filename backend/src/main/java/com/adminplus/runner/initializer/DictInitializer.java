@@ -2,13 +2,10 @@ package com.adminplus.runner.initializer;
 
 import com.adminplus.pojo.entity.DictEntity;
 import com.adminplus.pojo.entity.DictItemEntity;
-import com.adminplus.repository.DictRepository;
 import com.adminplus.repository.DictItemRepository;
+import com.adminplus.repository.DictRepository;
 import com.adminplus.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,14 +16,21 @@ import java.util.List;
  * @author AdminPlus
  * @since 2026-03-30
  */
-@Slf4j
 @Component
-@RequiredArgsConstructor
-public class DictInitializer implements DataInitializer {
+public class DictInitializer extends AbstractDataInitializer {
 
     private final DictRepository dictRepository;
     private final DictItemRepository dictItemRepository;
     private final UserRepository userRepository;
+
+    public DictInitializer(DictRepository dictRepository,
+                          DictItemRepository dictItemRepository,
+                          UserRepository userRepository) {
+        super(() -> dictRepository.count() > 0, "字典");
+        this.dictRepository = dictRepository;
+        this.dictItemRepository = dictItemRepository;
+        this.userRepository = userRepository;
+    }
 
     @Override
     public int getOrder() {
@@ -39,13 +43,7 @@ public class DictInitializer implements DataInitializer {
     }
 
     @Override
-    @Transactional
-    public void initialize() {
-        if (dictRepository.count() > 0) {
-            log.info("字典数据已存在，跳过初始化");
-            return;
-        }
-
+    protected void doInitialize() {
         // 获取 admin 用户 ID
         String adminUserId = userRepository.findByUsername("admin")
                 .map(u -> u.getId())
@@ -54,48 +52,27 @@ public class DictInitializer implements DataInitializer {
         List<DictEntity> dicts = new ArrayList<>();
 
         // 性别字典
-        DictEntity genderDict = createDict("gender", "性别", "用户性别字典", adminUserId);
-        dicts.add(genderDict);
-
+        dicts.add(createDict("gender", "性别", "用户性别字典", adminUserId));
         // 通用状态字典
-        DictEntity statusDict = createDict("common_status", "通用状态", "通用状态字典（正常/禁用）", adminUserId);
-        dicts.add(statusDict);
-
+        dicts.add(createDict("common_status", "通用状态", "通用状态字典（正常/禁用）", adminUserId));
         // 菜单类型字典
-        DictEntity menuTypeDict = createDict("menu_type", "菜单类型", "菜单类型字典", adminUserId);
-        dicts.add(menuTypeDict);
-
+        dicts.add(createDict("menu_type", "菜单类型", "菜单类型字典", adminUserId));
         // 操作类型字典
-        DictEntity operationTypeDict = createDict("operation_type", "操作类型", "日志操作类型字典", adminUserId);
-        dicts.add(operationTypeDict);
-
+        dicts.add(createDict("operation_type", "操作类型", "日志操作类型字典", adminUserId));
         // 日志类型字典
-        DictEntity logTypeDict = createDict("log_type", "日志类型", "日志分类字典", adminUserId);
-        dicts.add(logTypeDict);
-
+        dicts.add(createDict("log_type", "日志类型", "日志分类字典", adminUserId));
         // 日志状态字典
-        DictEntity logStatusDict = createDict("log_status", "日志状态", "日志执行状态字典", adminUserId);
-        dicts.add(logStatusDict);
-
+        dicts.add(createDict("log_status", "日志状态", "日志执行状态字典", adminUserId));
         // 用户状态字典
-        DictEntity userStatusDict = createDict("user_status", "用户状态", "用户账户状态字典", adminUserId);
-        dicts.add(userStatusDict);
-
+        dicts.add(createDict("user_status", "用户状态", "用户账户状态字典", adminUserId));
         // 工作流状态字典
-        DictEntity workflowStatusDict = createDict("workflow_status", "工作流状态", "工作流转状态字典", adminUserId);
-        dicts.add(workflowStatusDict);
-
+        dicts.add(createDict("workflow_status", "工作流状态", "工作流转状态字典", adminUserId));
         // 审批状态字典
-        DictEntity approvalStatusDict = createDict("approval_status", "审批状态", "审批节点状态字典", adminUserId);
-        dicts.add(approvalStatusDict);
-
+        dicts.add(createDict("approval_status", "审批状态", "审批节点状态字典", adminUserId));
         // 存储类型字典
-        DictEntity storageTypeDict = createDict("storage_type", "存储类型", "文件存储方式字典", adminUserId);
-        dicts.add(storageTypeDict);
-
+        dicts.add(createDict("storage_type", "存储类型", "文件存储方式字典", adminUserId));
         // 通知类型字典
-        DictEntity noticeTypeDict = createDict("notice_type", "通知类型", "消息通知分类字典", adminUserId);
-        dicts.add(noticeTypeDict);
+        dicts.add(createDict("notice_type", "通知类型", "消息通知分类字典", adminUserId));
 
         // 先保存字典以生成 ID
         List<DictEntity> savedDicts = dictRepository.saveAll(dicts);
@@ -190,7 +167,6 @@ public class DictInitializer implements DataInitializer {
         }
 
         dictItemRepository.saveAll(items);
-        log.info("初始化字典数据完成，共 {} 个字典，{} 个字典项", savedDicts.size(), items.size());
     }
 
     private DictEntity createDict(String dictType, String dictName, String remark, String userId) {

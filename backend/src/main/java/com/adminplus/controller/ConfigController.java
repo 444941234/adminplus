@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -34,7 +35,7 @@ public class ConfigController {
 
     @GetMapping
     @Operation(summary = "分页查询配置列表")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置列表")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询配置列表")
     @PreAuthorize("hasAuthority('config:list')")
     public ApiResponse<PageResultResponse<ConfigResponse>> getConfigList(ConfigQuery query) {
         PageResultResponse<ConfigResponse> response = configService.getConfigList(query);
@@ -43,7 +44,7 @@ public class ConfigController {
 
     @GetMapping("/group/{groupId}")
     @Operation(summary = "根据配置组ID查询配置列表")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置组配置 {#groupId}")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询配置组配置 {#groupId}")
     @PreAuthorize("hasAuthority('config:query')")
     public ApiResponse<List<ConfigResponse>> getConfigsByGroupId(@PathVariable String groupId) {
         List<ConfigResponse> result = configService.getConfigsByGroupId(groupId);
@@ -52,7 +53,7 @@ public class ConfigController {
 
     @GetMapping("/group-code/{groupCode}")
     @Operation(summary = "根据配置组编码查询配置列表")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置组配置 {#groupCode}")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询配置组配置 {#groupCode}")
     @PreAuthorize("hasAuthority('config:query')")
     public ApiResponse<List<ConfigResponse>> getConfigsByGroupCode(@PathVariable String groupCode) {
         List<ConfigResponse> result = configService.getConfigsByGroupCode(groupCode);
@@ -61,7 +62,7 @@ public class ConfigController {
 
     @GetMapping("/key/{key}")
     @Operation(summary = "根据配置键查询")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置键 {#key}")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询配置键 {#key}")
     @PreAuthorize("hasAuthority('config:query')")
     public ApiResponse<ConfigResponse> getConfigByKey(@PathVariable String key) {
         ConfigResponse result = configService.getConfigByKey(key);
@@ -70,7 +71,7 @@ public class ConfigController {
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询配置")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置详情 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询配置详情 {#id}")
     @PreAuthorize("hasAuthority('config:query')")
     public ApiResponse<ConfigResponse> getConfigById(@PathVariable String id) {
         ConfigResponse result = configService.getConfigById(id);
@@ -79,7 +80,7 @@ public class ConfigController {
 
     @PostMapping
     @Operation(summary = "创建配置")
-    @OperationLog(module = "配置管理", operationType = 2, description = "新增配置 {#request.name}")
+    @OperationLog(module = "配置管理", type = OperationType.CREATE, description = "新增配置 {#request.name}")
     @PreAuthorize("hasAuthority('config:add')")
     public ApiResponse<ConfigResponse> createConfig(@Valid @RequestBody ConfigCreateRequest request) {
         ConfigResponse result = configService.createConfig(request);
@@ -88,7 +89,7 @@ public class ConfigController {
 
     @PutMapping("/{id}")
     @Operation(summary = "更新配置")
-    @OperationLog(module = "配置管理", operationType = 3, description = "修改配置 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.UPDATE, description = "修改配置 {#id}")
     @PreAuthorize("hasAuthority('config:edit')")
     public ApiResponse<ConfigResponse> updateConfig(
             @PathVariable String id,
@@ -100,7 +101,7 @@ public class ConfigController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除配置")
-    @OperationLog(module = "配置管理", operationType = 4, description = "删除配置 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.DELETE, description = "删除配置 {#id}")
     @PreAuthorize("hasAuthority('config:delete')")
     public ApiResponse<Void> deleteConfig(@PathVariable String id) {
         configService.deleteConfig(id);
@@ -109,7 +110,7 @@ public class ConfigController {
 
     @PutMapping("/{id}/status")
     @Operation(summary = "更新配置状态")
-    @OperationLog(module = "配置管理", operationType = 3, description = "修改配置状态 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.UPDATE, description = "修改配置状态 {#id}")
     @PreAuthorize("hasAuthority('config:edit')")
     public ApiResponse<Void> updateConfigStatus(
             @PathVariable String id,
@@ -121,7 +122,7 @@ public class ConfigController {
 
     @PostMapping("/batch")
     @Operation(summary = "批量更新配置值")
-    @OperationLog(module = "配置管理", operationType = 3, description = "批量更新配置值")
+    @OperationLog(module = "配置管理", type = OperationType.UPDATE, description = "批量更新配置值")
     @PreAuthorize("hasAuthority('config:edit')")
     public ApiResponse<ConfigImportResultResponse> batchUpdateConfigs(@Valid @RequestBody ConfigBatchUpdateRequest request) {
         ConfigImportResultResponse result = configService.batchUpdateConfigs(request);
@@ -130,7 +131,7 @@ public class ConfigController {
 
     @PostMapping("/export")
     @Operation(summary = "导出配置")
-    @OperationLog(module = "配置管理", operationType = 5, description = "导出配置")
+    @OperationLog(module = "配置管理", type = OperationType.EXPORT, description = "导出配置")
     @PreAuthorize("hasAuthority('config:export')")
     public ApiResponse<ConfigExportResponse> exportConfigs(@RequestBody(required = false) List<String> groupIds) {
         ConfigExportResponse result = configService.exportConfigs(groupIds);
@@ -139,7 +140,7 @@ public class ConfigController {
 
     @PostMapping("/import")
     @Operation(summary = "导入配置")
-    @OperationLog(module = "配置管理", operationType = 6, description = "导入配置")
+    @OperationLog(module = "配置管理", type = OperationType.IMPORT, description = "导入配置")
     @PreAuthorize("hasAuthority('config:import')")
     public ApiResponse<ConfigImportResultResponse> importConfigs(@Valid @RequestBody ConfigImportRequest req) {
         ConfigImportResultResponse result = configService.importConfigs(req);
@@ -148,7 +149,7 @@ public class ConfigController {
 
     @PostMapping("/{id}/rollback")
     @Operation(summary = "回滚配置到历史版本")
-    @OperationLog(module = "配置管理", operationType = 3, description = "回滚配置 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.UPDATE, description = "回滚配置 {#id}")
     @PreAuthorize("hasAuthority('config:rollback')")
     public ApiResponse<ConfigResponse> rollbackConfig(
             @PathVariable String id,
@@ -160,7 +161,7 @@ public class ConfigController {
 
     @GetMapping("/{id}/history")
     @Operation(summary = "查询配置历史记录")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置历史 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询配置历史 {#id}")
     @PreAuthorize("hasAuthority('config:query')")
     public ApiResponse<List<ConfigHistoryResponse>> getConfigHistory(@PathVariable String id) {
         List<ConfigHistoryResponse> result = configService.getConfigHistory(id);
@@ -169,7 +170,7 @@ public class ConfigController {
 
     @GetMapping("/effect-info")
     @Operation(summary = "获取配置生效信息")
-    @OperationLog(module = "配置管理", operationType = 1, description = "查询配置生效信息")
+    @OperationLog(module = "配置管理", type = OperationType.QUERY, description = "查询配置生效信息")
     @PreAuthorize("hasAuthority('config:query')")
     public ApiResponse<ConfigEffectInfoResponse> getConfigEffectInfo() {
         ConfigEffectInfoResponse result = configService.getConfigEffectInfo();
@@ -178,7 +179,7 @@ public class ConfigController {
 
     @PostMapping("/{id}/apply")
     @Operation(summary = "使配置生效（手动生效模式）")
-    @OperationLog(module = "配置管理", operationType = 3, description = "手动生效配置 {#id}")
+    @OperationLog(module = "配置管理", type = OperationType.UPDATE, description = "手动生效配置 {#id}")
     @PreAuthorize("hasAuthority('config:apply')")
     public ApiResponse<Void> applyConfig(@PathVariable String id) {
         configService.applyConfig(id);
@@ -187,7 +188,7 @@ public class ConfigController {
 
     @PostMapping("/refresh-cache")
     @Operation(summary = "刷新配置缓存")
-    @OperationLog(module = "配置管理", operationType = 3, description = "刷新配置缓存")
+    @OperationLog(module = "配置管理", type = OperationType.UPDATE, description = "刷新配置缓存")
     @PreAuthorize("hasAuthority('config:edit')")
     public ApiResponse<Void> refreshConfigCache() {
         configService.refreshConfigCache();

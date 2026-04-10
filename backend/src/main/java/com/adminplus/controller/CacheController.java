@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -47,7 +48,7 @@ public class CacheController {
 
     @DeleteMapping("/clear-all")
     @Operation(summary = "清除所有缓存")
-    @OperationLog(module = "缓存管理", operationType = 4, description = "清除所有缓存")
+    @OperationLog(module = "缓存管理", type = OperationType.DELETE, description = "清除所有缓存")
     @PreAuthorize("hasAuthority('cache:clear')")
     public ApiResponse<Void> clearAllCache() {
         // Spring Cache key 格式: cacheName::key
@@ -61,7 +62,7 @@ public class CacheController {
 
     @DeleteMapping("/clear/{cacheName}")
     @Operation(summary = "清除指定缓存")
-    @OperationLog(module = "缓存管理", operationType = 4, description = "清除缓存 {#cacheName}")
+    @OperationLog(module = "缓存管理", type = OperationType.DELETE, description = "清除缓存 {#cacheName}")
     @PreAuthorize("hasAuthority('cache:clear')")
     public ApiResponse<Void> clearCache(@PathVariable String cacheName) {
         // Spring Cache key 格式: cacheName::*
@@ -75,7 +76,7 @@ public class CacheController {
 
     @GetMapping("/keys")
     @Operation(summary = "获取所有缓存键")
-    @OperationLog(module = "缓存管理", operationType = 1, description = "查询缓存键列表")
+    @OperationLog(module = "缓存管理", type = OperationType.QUERY, description = "查询缓存键列表")
     @PreAuthorize("hasAuthority('cache:list')")
     public ApiResponse<Set<String>> getCacheKeys() {
         Set<String> keys = redisTemplate.keys("*");
@@ -84,7 +85,7 @@ public class CacheController {
 
     @DeleteMapping("/clear-roles")
     @Operation(summary = "清除角色缓存")
-    @OperationLog(module = "缓存管理", operationType = 4, description = "清除角色缓存")
+    @OperationLog(module = "缓存管理", type = OperationType.DELETE, description = "清除角色缓存")
     @PreAuthorize("hasAuthority('cache:clear')")
     public ApiResponse<Void> clearRolesCache() {
         Set<String> keys = redisTemplate.keys("roles*");

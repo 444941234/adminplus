@@ -2,10 +2,7 @@ package com.adminplus.runner.initializer;
 
 import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.repository.RoleRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,12 +13,15 @@ import java.util.List;
  * @author AdminPlus
  * @since 2026-03-30
  */
-@Slf4j
 @Component
-@RequiredArgsConstructor
-public class RoleInitializer implements DataInitializer {
+public class RoleInitializer extends AbstractDataInitializer {
 
     private final RoleRepository roleRepository;
+
+    public RoleInitializer(RoleRepository roleRepository) {
+        super(() -> roleRepository.count() > 0, "角色");
+        this.roleRepository = roleRepository;
+    }
 
     @Override
     public int getOrder() {
@@ -34,13 +34,7 @@ public class RoleInitializer implements DataInitializer {
     }
 
     @Override
-    @Transactional
-    public void initialize() {
-        if (roleRepository.count() > 0) {
-            log.info("角色数据已存在，跳过初始化");
-            return;
-        }
-
+    protected void doInitialize() {
         List<RoleEntity> roles = Arrays.asList(
                 createRole(null, "ROLE_ADMIN", "超级管理员", "拥有系统所有权限", 1, 1),
                 createRole(null, "ROLE_MANAGER", "部门经理", "拥有部门管理权限", 1, 2),
@@ -53,7 +47,6 @@ public class RoleInitializer implements DataInitializer {
         );
 
         roleRepository.saveAll(roles);
-        log.info("初始化角色数据完成，共 {} 个角色", roles.size());
     }
 
     private RoleEntity createRole(String id, String code, String name, String description, Integer status, Integer sortOrder) {

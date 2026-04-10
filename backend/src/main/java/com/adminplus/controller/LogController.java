@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -54,7 +55,7 @@ public class LogController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除单条日志")
-    @OperationLog(module = "日志管理", operationType = 4, description = "删除单条日志 {#id}")
+    @OperationLog(module = "日志管理", type = OperationType.DELETE, description = "删除单条日志 {#id}")
     @PreAuthorize("hasAuthority('log:delete')")
     public ApiResponse<Void> deleteLog(@PathVariable String id) {
         logService.deleteById(id);
@@ -63,7 +64,7 @@ public class LogController {
 
     @DeleteMapping("/batch")
     @Operation(summary = "批量删除日志")
-    @OperationLog(module = "日志管理", operationType = 4, description = "批量删除日志")
+    @OperationLog(module = "日志管理", type = OperationType.DELETE, description = "批量删除日志")
     @PreAuthorize("hasAuthority('log:delete')")
     public ApiResponse<Void> deleteLogsBatch(@RequestBody List<String> ids) {
         logService.deleteByIds(ids);
@@ -72,7 +73,7 @@ public class LogController {
 
     @DeleteMapping("/condition")
     @Operation(summary = "根据条件删除日志")
-    @OperationLog(module = "日志管理", operationType = 4, description = "根据条件删除日志")
+    @OperationLog(module = "日志管理", type = OperationType.DELETE, description = "根据条件删除日志")
     @PreAuthorize("hasAuthority('log:delete')")
     public ApiResponse<Integer> deleteLogsByCondition(@Valid @RequestBody LogQuery query) {
         Integer count = logService.deleteByCondition(query);
@@ -81,7 +82,7 @@ public class LogController {
 
     @PostMapping("/cleanup")
     @Operation(summary = "清理过期日志")
-    @OperationLog(module = "日志管理", operationType = 4, description = "清理过期日志")
+    @OperationLog(module = "日志管理", type = OperationType.DELETE, description = "清理过期日志")
     @PreAuthorize("hasAuthority('log:delete')")
     public ApiResponse<Integer> cleanupExpiredLogs() {
         Integer count = logService.cleanupExpiredLogs();
@@ -98,7 +99,7 @@ public class LogController {
 
     @GetMapping("/export/excel")
     @Operation(summary = "导出日志为Excel")
-    @OperationLog(module = "日志管理", operationType = 5, description = "导出日志为Excel")
+    @OperationLog(module = "日志管理", type = OperationType.EXPORT, description = "导出日志为Excel")
     @PreAuthorize("hasAuthority('log:export')")
     public ResponseEntity<byte[]> exportToExcel(LogQuery query) throws IOException {
         return logExportService.exportToExcel(query);
@@ -106,7 +107,7 @@ public class LogController {
 
     @GetMapping("/export/csv")
     @Operation(summary = "导出日志为CSV")
-    @OperationLog(module = "日志管理", operationType = 5, description = "导出日志为CSV")
+    @OperationLog(module = "日志管理", type = OperationType.EXPORT, description = "导出日志为CSV")
     @PreAuthorize("hasAuthority('log:export')")
     public ResponseEntity<byte[]> exportToCsv(LogQuery query) throws IOException {
         return logExportService.exportToCsv(query);

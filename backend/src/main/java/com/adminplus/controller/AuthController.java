@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.LoginType;
 
 import com.adminplus.common.annotation.LoginLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -35,7 +36,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "用户登录")
-    @LoginLog(type = 1, description = "用户登录")
+    @LoginLog(type = LoginType.LOGIN, description = "用户登录")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody UserLoginRequest request) {
         LoginResponse response = authService.login(request);
         return ApiResponse.ok(response);
@@ -62,7 +63,7 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "用户登出")
     @PreAuthorize("isAuthenticated()")
-    @LoginLog(type = 2, description = "用户登出")
+    @LoginLog(type = LoginType.LOGOUT, description = "用户登出")
     public ApiResponse<Void> logout() {
         authService.logout();
         return ApiResponse.ok();

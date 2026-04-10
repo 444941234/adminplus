@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -33,7 +34,7 @@ public class MenuController {
 
     @GetMapping("/tree")
     @Operation(summary = "查询菜单树形列表")
-    @OperationLog(module = "菜单管理", operationType = 1, description = "查询菜单树形列表")
+    @OperationLog(module = "菜单管理", type = OperationType.QUERY, description = "查询菜单树形列表")
     @PreAuthorize("hasAuthority('menu:list')")
     public ApiResponse<List<MenuResponse>> getMenuTree() {
         List<MenuResponse> responses = menuService.getMenuTree();
@@ -42,7 +43,7 @@ public class MenuController {
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询菜单")
-    @OperationLog(module = "菜单管理", operationType = 1, description = "查询菜单详情 {#id}")
+    @OperationLog(module = "菜单管理", type = OperationType.QUERY, description = "查询菜单详情 {#id}")
     @PreAuthorize("hasAuthority('menu:query')")
     public ApiResponse<MenuResponse> getMenuById(@PathVariable String id) {
         MenuResponse response = menuService.getMenuById(id);
@@ -51,7 +52,7 @@ public class MenuController {
 
     @PostMapping
     @Operation(summary = "创建菜单")
-    @OperationLog(module = "菜单管理", operationType = 2, description = "新增菜单 {#request.menuName}")
+    @OperationLog(module = "菜单管理", type = OperationType.CREATE, description = "新增菜单 {#request.menuName}")
     @PreAuthorize("hasAuthority('menu:add')")
     public ApiResponse<MenuResponse> createMenu(@Valid @RequestBody MenuCreateRequest request) {
         MenuResponse response = menuService.createMenu(request);
@@ -60,7 +61,7 @@ public class MenuController {
 
     @PutMapping("/{id}")
     @Operation(summary = "更新菜单")
-    @OperationLog(module = "菜单管理", operationType = 3, description = "修改菜单 {#id}")
+    @OperationLog(module = "菜单管理", type = OperationType.UPDATE, description = "修改菜单 {#id}")
     @PreAuthorize("hasAuthority('menu:edit')")
     public ApiResponse<MenuResponse> updateMenu(@PathVariable String id, @Valid @RequestBody MenuUpdateRequest request) {
         MenuResponse response = menuService.updateMenu(id, request);
@@ -69,7 +70,7 @@ public class MenuController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除菜单")
-    @OperationLog(module = "菜单管理", operationType = 4, description = "删除菜单 {#id}")
+    @OperationLog(module = "菜单管理", type = OperationType.DELETE, description = "删除菜单 {#id}")
     @PreAuthorize("hasAuthority('menu:delete')")
     public ApiResponse<Void> deleteMenu(@PathVariable String id) {
         menuService.deleteMenu(id);
@@ -78,7 +79,7 @@ public class MenuController {
 
     @PutMapping("/batch/status")
     @Operation(summary = "批量更新菜单状态")
-    @OperationLog(module = "菜单管理", operationType = 3, description = "批量更新菜单状态")
+    @OperationLog(module = "菜单管理", type = OperationType.UPDATE, description = "批量更新菜单状态")
     @PreAuthorize("hasAuthority('menu:edit')")
     public ApiResponse<Void> batchUpdateStatus(@Valid @RequestBody MenuBatchStatusRequest request) {
         menuService.batchUpdateStatus(request);
@@ -87,7 +88,7 @@ public class MenuController {
 
     @DeleteMapping("/batch")
     @Operation(summary = "批量删除菜单")
-    @OperationLog(module = "菜单管理", operationType = 4, description = "批量删除菜单")
+    @OperationLog(module = "菜单管理", type = OperationType.DELETE, description = "批量删除菜单")
     @PreAuthorize("hasAuthority('menu:delete')")
     public ApiResponse<Void> batchDelete(@Valid @RequestBody MenuBatchDeleteRequest request) {
         menuService.batchDelete(request);
@@ -106,7 +107,7 @@ public class MenuController {
 
     @PostMapping("/{id}/copy")
     @Operation(summary = "复制菜单")
-    @OperationLog(module = "菜单管理", operationType = 2, description = "复制菜单 {#id}")
+    @OperationLog(module = "菜单管理", type = OperationType.CREATE, description = "复制菜单 {#id}")
     @PreAuthorize("hasAuthority('menu:add')")
     public ApiResponse<MenuResponse> copyMenu(
             @PathVariable String id,

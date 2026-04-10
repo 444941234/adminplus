@@ -2,10 +2,7 @@ package com.adminplus.runner.initializer;
 
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.repository.DeptRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,12 +15,15 @@ import java.util.stream.Collectors;
  * @author AdminPlus
  * @since 2026-03-30
  */
-@Slf4j
 @Component
-@RequiredArgsConstructor
-public class DepartmentInitializer implements DataInitializer {
+public class DepartmentInitializer extends AbstractDataInitializer {
 
     private final DeptRepository deptRepository;
+
+    public DepartmentInitializer(DeptRepository deptRepository) {
+        super(() -> deptRepository.count() > 0, "部门");
+        this.deptRepository = deptRepository;
+    }
 
     @Override
     public int getOrder() {
@@ -36,13 +36,7 @@ public class DepartmentInitializer implements DataInitializer {
     }
 
     @Override
-    @Transactional
-    public void initialize() {
-        if (deptRepository.count() > 0) {
-            log.info("部门数据已存在，跳过初始化");
-            return;
-        }
-
+    protected void doInitialize() {
         // 创建部门数据（临时 ID 用于建立关系）
         // 数据结构：{tempId, parentId, name, code, leader, phone, sortOrder, status}
         // sortOrder: 同级部门按此值排序，间隔10方便后续插入
@@ -86,7 +80,6 @@ public class DepartmentInitializer implements DataInitializer {
         }
 
         deptRepository.saveAll(depts);
-        log.info("初始化部门数据完成，共 {} 个部门", depts.size());
     }
 
     private DeptEntity createDept(String tempId, String parentTempId, String name, String code,

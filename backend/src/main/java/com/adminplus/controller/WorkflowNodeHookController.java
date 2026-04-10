@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -32,7 +33,7 @@ public class WorkflowNodeHookController {
 
     @PostMapping
     @Operation(summary = "创建钩子配置")
-    @OperationLog(module = "工作流管理", operationType = 2, description = "创建钩子配置 {#req.hookName}")
+    @OperationLog(module = "工作流管理", type = OperationType.CREATE, description = "创建钩子配置 {#req.hookName}")
     @PreAuthorize("hasAuthority('workflow:hook:create')")
     public ApiResponse<WorkflowNodeHookResponse> create(@Valid @RequestBody WorkflowNodeHookRequest req) {
         log.info("创建钩子配置: nodeId={}, hookPoint={}", req.nodeId(), req.hookPoint());
@@ -42,7 +43,7 @@ public class WorkflowNodeHookController {
 
     @PutMapping("/{id}")
     @Operation(summary = "更新钩子配置")
-    @OperationLog(module = "工作流管理", operationType = 3, description = "更新钩子配置 {#id}")
+    @OperationLog(module = "工作流管理", type = OperationType.UPDATE, description = "更新钩子配置 {#id}")
     @PreAuthorize("hasAuthority('workflow:hook:update')")
     public ApiResponse<WorkflowNodeHookResponse> update(
             @PathVariable String id,
@@ -54,7 +55,7 @@ public class WorkflowNodeHookController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除钩子配置")
-    @OperationLog(module = "工作流管理", operationType = 4, description = "删除钩子配置 {#id}")
+    @OperationLog(module = "工作流管理", type = OperationType.DELETE, description = "删除钩子配置 {#id}")
     @PreAuthorize("hasAuthority('workflow:hook:delete')")
     public ApiResponse<Void> delete(@PathVariable String id) {
         log.info("删除钩子配置: id={}", id);

@@ -1,4 +1,5 @@
 package com.adminplus.controller;
+import com.adminplus.enums.OperationType;
 
 import com.adminplus.common.annotation.OperationLog;
 import com.adminplus.common.pojo.ApiResponse;
@@ -33,7 +34,7 @@ public class DictItemController {
 
     @GetMapping
     @Operation(summary = "查询字典项列表")
-    @OperationLog(module = "字典项管理", operationType = 1, description = "查询字典项列表 {#dictId}")
+    @OperationLog(module = "字典项管理", type = OperationType.QUERY, description = "查询字典项列表 {#dictId}")
     @PreAuthorize("hasAuthority('dictitem:list')")
     public ApiResponse<List<DictItemResponse>> getDictItems(@PathVariable String dictId) {
         List<DictItemResponse> items = dictItemService.getDictItemsByDictId(dictId);
@@ -58,7 +59,7 @@ public class DictItemController {
 
     @GetMapping("/{id}")
     @Operation(summary = "根据ID查询字典项")
-    @OperationLog(module = "字典项管理", operationType = 1, description = "查询字典项详情 {#id}")
+    @OperationLog(module = "字典项管理", type = OperationType.QUERY, description = "查询字典项详情 {#id}")
     @PreAuthorize("hasAuthority('dictitem:query')")
     public ApiResponse<DictItemResponse> getDictItemById(@PathVariable String id) {
         DictItemResponse item = dictItemService.getDictItemById(id);
@@ -67,7 +68,7 @@ public class DictItemController {
 
     @PostMapping
     @Operation(summary = "创建字典项")
-    @OperationLog(module = "字典项管理", operationType = 2, description = "新增字典项 {#request.label}")
+    @OperationLog(module = "字典项管理", type = OperationType.CREATE, description = "新增字典项 {#request.label}")
     @PreAuthorize("hasAuthority('dictitem:add')")
     public ApiResponse<DictItemResponse> createDictItem(@PathVariable String dictId, @Valid @RequestBody DictItemCreateRequest request) {
         DictItemResponse item = dictItemService.createDictItem(request);
@@ -76,7 +77,7 @@ public class DictItemController {
 
     @PutMapping("/{id}")
     @Operation(summary = "更新字典项")
-    @OperationLog(module = "字典项管理", operationType = 3, description = "修改字典项 {#id}")
+    @OperationLog(module = "字典项管理", type = OperationType.UPDATE, description = "修改字典项 {#id}")
     @PreAuthorize("hasAuthority('dictitem:edit')")
     public ApiResponse<DictItemResponse> updateDictItem(@PathVariable String id, @Valid @RequestBody DictItemUpdateRequest request) {
         DictItemResponse item = dictItemService.updateDictItem(id, request);
@@ -85,7 +86,7 @@ public class DictItemController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "删除字典项")
-    @OperationLog(module = "字典项管理", operationType = 4, description = "删除字典项 {#id}")
+    @OperationLog(module = "字典项管理", type = OperationType.DELETE, description = "删除字典项 {#id}")
     @PreAuthorize("hasAuthority('dictitem:delete')")
     public ApiResponse<Void> deleteDictItem(@PathVariable String id) {
         dictItemService.deleteDictItem(id);
@@ -94,7 +95,7 @@ public class DictItemController {
 
     @PutMapping("/{id}/status")
     @Operation(summary = "更新字典项状态")
-    @OperationLog(module = "字典项管理", operationType = 3, description = "修改字典项状态 {#id}")
+    @OperationLog(module = "字典项管理", type = OperationType.UPDATE, description = "修改字典项状态 {#id}")
     @PreAuthorize("hasAuthority('dictitem:edit')")
     public ApiResponse<Void> updateDictItemStatus(
             @PathVariable String id,

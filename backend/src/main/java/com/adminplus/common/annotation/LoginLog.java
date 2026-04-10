@@ -1,5 +1,7 @@
 package com.adminplus.common.annotation;
 
+import com.adminplus.enums.LoginType;
+
 import java.lang.annotation.*;
 
 /**
@@ -15,9 +17,9 @@ import java.lang.annotation.*;
 public @interface LoginLog {
 
     /**
-     * 登录类型：1=登录，2=登出
+     * 登录类型
      */
-    int type() default 1;
+    LoginType type() default LoginType.LOGIN;
 
     /**
      * 描述
