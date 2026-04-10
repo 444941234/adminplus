@@ -1,12 +1,9 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.constants.HierarchyConstants;
-import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.query.DictQuery;
 import com.adminplus.pojo.dto.request.DictCreateRequest;
 import com.adminplus.pojo.dto.request.DictUpdateRequest;
-import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.response.DictItemResponse;
 import com.adminplus.pojo.dto.response.DictResponse;
 import com.adminplus.pojo.dto.response.PageResultResponse;
@@ -17,7 +14,6 @@ import com.adminplus.repository.DictRepository;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.PageUtils;
 import com.adminplus.service.DictService;
-import com.adminplus.service.LogService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +41,6 @@ public class DictServiceImpl implements DictService {
 
     private final DictRepository dictRepository;
     private final DictItemRepository dictItemRepository;
-    private final LogService logService;
     private final ConversionService conversionService;
 
     @Override
@@ -101,8 +96,6 @@ public class DictServiceImpl implements DictService {
         dict = dictRepository.save(dict);
         log.info("创建字典成功: {}", dict.getDictType());
 
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DICT, OperationType.CREATE.getCode(), "创建字典: " + dict.getDictName() + " (" + dict.getDictType() + ")"));
-
         return conversionService.convert(dict, DictResponse.class);
     }
 
@@ -121,8 +114,6 @@ public class DictServiceImpl implements DictService {
         dict = dictRepository.save(dict);
         log.info("更新字典成功: {}", dict.getDictType());
 
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DICT, OperationType.UPDATE.getCode(), "更新字典: " + dict.getDictName() + " (" + dict.getDictType() + ")"));
-
         return conversionService.convert(dict, DictResponse.class);
     }
 
@@ -140,8 +131,6 @@ public class DictServiceImpl implements DictService {
         dict.setDeleted(true);
         dictRepository.save(dict);
         log.info("删除字典成功: {}", dict.getDictType());
-
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DICT, OperationType.DELETE.getCode(), "删除字典: " + dict.getDictName() + " (" + dict.getDictType() + ")"));
     }
 
     @Override

@@ -1,12 +1,9 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.constants.HierarchyConstants;
-import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.query.RoleQuery;
 import com.adminplus.pojo.dto.request.RoleCreateRequest;
 import com.adminplus.pojo.dto.request.RoleUpdateRequest;
-import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.dto.response.RoleResponse;
 import com.adminplus.pojo.entity.RoleEntity;
@@ -14,7 +11,6 @@ import com.adminplus.pojo.entity.RoleMenuEntity;
 import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRoleRepository;
-import com.adminplus.service.LogService;
 import com.adminplus.service.RoleService;
 import com.adminplus.utils.AssociationDiffHelper;
 import com.adminplus.utils.EntityHelper;
@@ -23,7 +19,6 @@ import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -43,7 +38,6 @@ import java.util.List;
  * @author AdminPlus
  * @since 2026-02-06
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RoleServiceImpl implements RoleService {
@@ -51,7 +45,6 @@ public class RoleServiceImpl implements RoleService {
     private final RoleRepository roleRepository;
     private final RoleMenuRepository roleMenuRepository;
     private final UserRoleRepository userRoleRepository;
-    private final LogService logService;
     private final ConversionService conversionService;
 
     @Override
@@ -127,9 +120,6 @@ public class RoleServiceImpl implements RoleService {
 
         role = roleRepository.save(role);
 
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_ROLE, OperationType.CREATE.getCode(), "创建角色: " + role.getName() + " (" + role.getCode() + ")"));
-
         return conversionService.convert(role, RoleResponse.class);
     }
 
@@ -162,8 +152,6 @@ public class RoleServiceImpl implements RoleService {
 
         role = roleRepository.save(role);
 
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_ROLE, OperationType.UPDATE.getCode(), "更新角色: " + role.getName() + " (" + role.getCode() + ")"));
-
         return conversionService.convert(role, RoleResponse.class);
     }
 
@@ -193,9 +181,6 @@ public class RoleServiceImpl implements RoleService {
 
         // 逻辑删除（Entity 配置了 @SQLDelete，JPA delete 会触发 UPDATE SET deleted=true）
         roleRepository.delete(role);
-
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_ROLE, OperationType.DELETE.getCode(), "删除角色: " + role.getName() + " (" + role.getCode() + ")"));
     }
 
     @Override
@@ -223,13 +208,6 @@ public class RoleServiceImpl implements RoleService {
                     roleMenuRepository.saveAll(list);
                 }
         );
-
-        // 记录审计日志
-        if (result.hasChanges()) {
-            logService.log(LogEntry.operation(HierarchyConstants.MODULE_ROLE, OperationType.UPDATE.getCode(),
-                    "分配菜单权限: " + role.getName() + " -> " + safeMenuIds.size() + " 个菜单"
-                            + " (新增" + result.added() + "个, 移除" + result.removed() + "个)"));
-        }
     }
 
     @Override
@@ -254,7 +232,5 @@ public class RoleServiceImpl implements RoleService {
 
         role.setStatus(status);
         roleRepository.save(role);
-
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_ROLE, OperationType.UPDATE.getCode(), "更新角色状态: " + role.getName() + " -> " + (status == 1 ? "启用" : "禁用")));
     }
 }

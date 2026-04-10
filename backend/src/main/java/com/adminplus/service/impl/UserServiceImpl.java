@@ -23,13 +23,11 @@ import com.adminplus.service.LogService;
 import com.adminplus.service.UserService;
 import com.adminplus.utils.AssociationDiffHelper;
 import com.adminplus.utils.EntityHelper;
-import com.adminplus.utils.LogMaskingUtils;
 import com.adminplus.utils.PageUtils;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,7 +46,6 @@ import java.util.stream.Collectors;
  * @author AdminPlus
  * @since 2026-02-06
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -263,9 +260,6 @@ public class UserServiceImpl implements UserService {
 
         user = userRepository.save(user);
 
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_USER, OperationType.CREATE.getCode(), "创建用户: " + user.getUsername()));
-
         return conversionService.convert(user, UserResponse.class);
     }
 
@@ -299,9 +293,6 @@ public class UserServiceImpl implements UserService {
 
         user = userRepository.save(user);
 
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_USER, OperationType.UPDATE.getCode(), "更新用户: " + user.getUsername()));
-
         return conversionService.convert(user, UserResponse.class);
     }
 
@@ -317,9 +308,6 @@ public class UserServiceImpl implements UserService {
 
         // 逻辑删除（Entity 配置了 @SQLDelete，delete() 会触发 UPDATE SET deleted=true）
         userRepository.delete(user);
-
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_USER, OperationType.DELETE.getCode(), "删除用户: " + user.getUsername()));
     }
 
     @Override
@@ -337,9 +325,6 @@ public class UserServiceImpl implements UserService {
 
         user.setStatus(status);
         userRepository.save(user);
-
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_USER, OperationType.UPDATE.getCode(), "更新用户状态: " + user.getUsername() + " -> " + status));
     }
 
     @Override
@@ -352,9 +337,6 @@ public class UserServiceImpl implements UserService {
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-
-        // 记录审计日志（使用掩码隐藏用户名）
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_USER, OperationType.UPDATE.getCode(), "重置密码: " + LogMaskingUtils.maskUsername(user.getUsername())));
     }
 
     @Override

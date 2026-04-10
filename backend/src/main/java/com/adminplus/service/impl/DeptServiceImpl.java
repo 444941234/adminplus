@@ -2,22 +2,18 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.HierarchyConstants;
-import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.request.DeptCreateRequest;
 import com.adminplus.pojo.dto.request.DeptUpdateRequest;
-import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.response.DeptResponse;
 import com.adminplus.pojo.entity.DeptEntity;
 import com.adminplus.repository.DeptRepository;
 import com.adminplus.service.DeptService;
-import com.adminplus.service.LogService;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.HierarchyHelper;
 import com.adminplus.utils.SecurityUtils;
 import com.adminplus.utils.TreeUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -33,13 +29,11 @@ import java.util.List;
  * @author AdminPlus
  * @since 2026-02-09
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class DeptServiceImpl implements DeptService {
 
     private final DeptRepository deptRepository;
-    private final LogService logService;
     private final ConversionService conversionService;
 
     @Override
@@ -162,9 +156,6 @@ public class DeptServiceImpl implements DeptService {
 
         dept = deptRepository.save(dept);
 
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DEPT, OperationType.CREATE.getCode(), "创建部门: " + dept.getName()));
-
         return conversionService.convert(dept, DeptResponse.class);
     }
 
@@ -236,9 +227,6 @@ public class DeptServiceImpl implements DeptService {
 
         var savedDept = deptRepository.save(dept);
 
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DEPT, OperationType.UPDATE.getCode(), "更新部门: " + savedDept.getName()));
-
         return conversionService.convert(savedDept, DeptResponse.class);
     }
 
@@ -255,8 +243,6 @@ public class DeptServiceImpl implements DeptService {
         }
 
         deptRepository.deleteById(id);
-
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DEPT, OperationType.DELETE.getCode(), "删除部门 ID: " + id));
     }
 
     /**
@@ -327,7 +313,5 @@ public class DeptServiceImpl implements DeptService {
         var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
         dept.setStatus(status);
         deptRepository.save(dept);
-
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DEPT, OperationType.UPDATE.getCode(), "更新部门状态: " + dept.getName() + " -> " + (status == 1 ? "启用" : "禁用")));
     }
 }

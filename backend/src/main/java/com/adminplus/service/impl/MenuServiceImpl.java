@@ -2,23 +2,19 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.HierarchyConstants;
-import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.request.MenuBatchDeleteRequest;
 import com.adminplus.pojo.dto.request.MenuBatchStatusRequest;
 import com.adminplus.pojo.dto.request.MenuCreateRequest;
 import com.adminplus.pojo.dto.request.MenuUpdateRequest;
-import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.response.MenuResponse;
 import com.adminplus.pojo.entity.MenuEntity;
 import com.adminplus.repository.MenuRepository;
-import com.adminplus.service.LogService;
 import com.adminplus.service.MenuService;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.HierarchyHelper;
 import com.adminplus.utils.TreeUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -35,13 +31,11 @@ import java.util.stream.Collectors;
  * @author AdminPlus
  * @since 2026-02-06
  */
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MenuServiceImpl implements MenuService {
 
     private final MenuRepository menuRepository;
-    private final LogService logService;
     private final ConversionService conversionService;
 
     @Override
@@ -114,9 +108,6 @@ public class MenuServiceImpl implements MenuService {
 
         menu = menuRepository.save(menu);
 
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.CREATE.getCode(), "创建菜单: " + menu.getName()));
-
         return conversionService.convert(menu, MenuResponse.class);
     }
 
@@ -168,9 +159,6 @@ public class MenuServiceImpl implements MenuService {
 
         var savedMenu = menuRepository.save(menu);
 
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.UPDATE.getCode(), "更新菜单: " + savedMenu.getName()));
-
         return conversionService.convert(savedMenu, MenuResponse.class);
     }
 
@@ -186,9 +174,6 @@ public class MenuServiceImpl implements MenuService {
         }
 
         menuRepository.delete(menu);
-
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.DELETE.getCode(), "删除菜单: " + menu.getName()));
     }
 
     @Override
@@ -209,9 +194,6 @@ public class MenuServiceImpl implements MenuService {
             menusToUpdate.forEach(menu -> menu.setStatus(request.status()));
             menuRepository.saveAll(menusToUpdate);
         }
-
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.UPDATE.getCode(), "批量更新菜单状态，数量: " + request.ids().size()));
     }
 
     @Override
@@ -232,9 +214,6 @@ public class MenuServiceImpl implements MenuService {
         }
 
         menuRepository.deleteAll(menus);
-
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.DELETE.getCode(), "批量删除菜单，数量: " + request.ids().size()));
     }
 
     @Override
@@ -370,10 +349,6 @@ public class MenuServiceImpl implements MenuService {
         }
 
         copiedMenu = menuRepository.save(copiedMenu);
-
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.CREATE.getCode(),
-                "复制菜单: " + sourceMenu.getName() + " -> " + copiedMenu.getName()));
 
         return conversionService.convert(copiedMenu, MenuResponse.class);
     }

@@ -1,19 +1,15 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.constants.HierarchyConstants;
-import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.query.ConfigGroupQuery;
 import com.adminplus.pojo.dto.request.ConfigGroupCreateRequest;
 import com.adminplus.pojo.dto.request.ConfigGroupUpdateRequest;
-import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.response.ConfigGroupResponse;
 import com.adminplus.pojo.dto.response.PageResultResponse;
 import com.adminplus.pojo.entity.ConfigGroupEntity;
 import com.adminplus.repository.ConfigGroupRepository;
 import com.adminplus.repository.ConfigRepository;
 import com.adminplus.service.ConfigGroupService;
-import com.adminplus.service.LogService;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.PageUtils;
 import jakarta.persistence.criteria.Predicate;
@@ -44,7 +40,6 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
 
     private final ConfigGroupRepository configGroupRepository;
     private final ConfigRepository configRepository;
-    private final LogService logService;
     private final ConversionService conversionService;
 
     @Override
@@ -108,10 +103,6 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         group = configGroupRepository.save(group);
         log.info("创建配置组成功: {}", group.getCode());
 
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.CREATE.getCode(),
-                "创建配置组: " + group.getName() + " (" + group.getCode() + ")"));
-
         return toResponseWithConfigCount(group);
     }
 
@@ -139,10 +130,6 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         group = configGroupRepository.save(group);
         log.info("更新配置组成功: {}", group.getCode());
 
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.UPDATE.getCode(),
-                "更新配置组: " + group.getName() + " (" + group.getCode() + ")"));
-
         return toResponseWithConfigCount(group);
     }
 
@@ -162,10 +149,6 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
 
         configGroupRepository.deleteById(id);
         log.info("删除配置组成功: {}", group.getCode());
-
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.DELETE.getCode(),
-                "删除配置组: " + group.getName() + " (" + group.getCode() + ")"));
     }
 
     @Override
@@ -179,10 +162,6 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         group.setStatus(status);
         configGroupRepository.save(group);
         log.info("更新配置组状态成功: {} -> {}", group.getCode(), status);
-
-        // 记录审计日志
-        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.UPDATE.getCode(),
-                "更新配置组状态: " + group.getName() + " (" + group.getCode() + ") -> " + status));
     }
 
     @Override
