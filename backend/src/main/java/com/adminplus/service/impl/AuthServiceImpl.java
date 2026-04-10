@@ -2,6 +2,8 @@ package com.adminplus.service.impl;
 
 import com.adminplus.common.constant.SecurityConfigConstants;
 import com.adminplus.common.exception.BizException;
+import com.adminplus.constants.HierarchyConstants;
+import com.adminplus.common.security.AppUserDetails;
 import com.adminplus.common.security.JwtTokenProvider;
 import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.request.UserLoginRequest;
@@ -21,10 +23,13 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 认证服务实现
@@ -36,6 +41,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
+
+    private static final String AUTHORIZATION_HEADER = "Authorization";
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
@@ -57,25 +64,24 @@ public class AuthServiceImpl implements AuthService {
                     new UsernamePasswordAuthenticationToken(request.username(), request.password())
             );
 
-            UserEntity user = userService.getUserByUsername(request.username());
+            AppUserDetails userDetails = (AppUserDetails) authentication.getPrincipal();
+            UserEntity user = userService.getUserByUsername(userDetails.getUsername());
 
-            String token = jwtTokenProvider.generateAccessToken(user.getId());
+            String token = jwtTokenProvider.generateAccessToken(userDetails.getId());
 
             UserResponse userResponse = conversionService.convert(user, UserResponse.class);
-            List<String> permissions = permissionService.getUserPermissions(user.getId());
-            String refreshToken = refreshTokenService.createRefreshToken(user.getId());
+            List<String> permissions = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority).filter(Objects::nonNull)
+                    .filter(auth -> !auth.startsWith("ROLE_"))
+                    .collect(Collectors.toList());
+            String refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
-            logService.log(LogEntry.operation("认证管理", OperationType.OTHER.getCode(),
-                    "用户登录成功: " + LogMaskingUtils.maskUsername(request.username())));
+            logService.log(LogEntry.login(LogMaskingUtils.maskUsername(request.username()), true, null));
 
             return new LoginResponse(token, refreshToken, SecurityConfigConstants.BEARER_PREFIX, userResponse, permissions);
 
         } catch (AuthenticationException e) {
-            log.error("登录失败: username={}", LogMaskingUtils.maskUsername(request.username()));
-            logService.log(LogEntry.operationBuilder("认证管理", OperationType.OTHER.getCode(),
-                            "用户登录失败: " + LogMaskingUtils.maskUsername(request.username()))
-                    .failed("用户名或密码错误")
-                    .build());
+            logService.log(LogEntry.login(LogMaskingUtils.maskUsername(request.username()), false, "用户名或密码错误"));
             throw new BizException("用户名或密码错误");
         }
     }
@@ -107,7 +113,7 @@ public class AuthServiceImpl implements AuthService {
 
             refreshTokenService.revokeAllUserTokens(userId);
             blacklistCurrentToken(userId);
-            logService.log(LogEntry.operation("认证管理", OperationType.OTHER.getCode(),
+            logService.log(LogEntry.operation(HierarchyConstants.MODULE_AUTH, OperationType.OTHER.getCode(),
                     "用户退出: " + LogMaskingUtils.maskUsername(username)));
 
         } catch (Exception e) {
@@ -118,23 +124,18 @@ public class AuthServiceImpl implements AuthService {
     private void blacklistCurrentToken(String userId) {
         HttpServletRequest request = WebUtils.getRequest();
         if (request == null) {
-            blacklistAllUserTokens(userId);
+            tokenBlacklistService.blacklistAllUserTokens(userId);
             return;
         }
 
-        String authHeader = request.getHeader("Authorization");
+        String authHeader = request.getHeader(AUTHORIZATION_HEADER);
         if (authHeader != null && authHeader.startsWith(SecurityConfigConstants.BEARER_PREFIX)) {
             String token = authHeader.substring(SecurityConfigConstants.BEARER_PREFIX.length());
             tokenBlacklistService.blacklistToken(token, userId);
             log.info("用户登出，Token 已加入黑名单: userId={}", userId);
         } else {
-            blacklistAllUserTokens(userId);
+            tokenBlacklistService.blacklistAllUserTokens(userId);
         }
-    }
-
-    private void blacklistAllUserTokens(String userId) {
-        tokenBlacklistService.blacklistAllUserTokens(userId);
-        log.info("用户登出，所有 Token 已加入黑名单: userId={}", userId);
     }
 
     @Override

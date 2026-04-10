@@ -84,9 +84,7 @@ class PermissionServiceTest {
         @DisplayName("should return permissions for user with roles")
         void getUserPermissions_WithRoles_ShouldReturnPermissions() {
             // Given
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(testUserRole));
-            when(roleMenuRepository.findMenuIdsByRoleIds(any(Collection.class))).thenReturn(List.of("menu-001"));
-            when(menuRepository.findPermKeysByMenuIds(any(Collection.class))).thenReturn(List.of("user:view"));
+            when(menuRepository.findPermKeysByUserId("user-001")).thenReturn(List.of("user:view"));
 
             // When
             List<String> result = permissionService.getUserPermissions("user-001");
@@ -99,21 +97,7 @@ class PermissionServiceTest {
         @DisplayName("should return empty list when user has no roles")
         void getUserPermissions_WithNoRoles_ShouldReturnEmptyList() {
             // Given
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of());
-
-            // When
-            List<String> result = permissionService.getUserPermissions("user-001");
-
-            // Then
-            assertThat(result).isEmpty();
-        }
-
-        @Test
-        @DisplayName("should return empty list when roles have no menus")
-        void getUserPermissions_WithNoMenus_ShouldReturnEmptyList() {
-            // Given
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(testUserRole));
-            when(roleMenuRepository.findMenuIdsByRoleIds(any(Collection.class))).thenReturn(List.of());
+            when(menuRepository.findPermKeysByUserId("user-001")).thenReturn(List.of());
 
             // When
             List<String> result = permissionService.getUserPermissions("user-001");
@@ -126,9 +110,7 @@ class PermissionServiceTest {
         @DisplayName("should filter out menus without permKey via repository")
         void getUserPermissions_ShouldFilterMenusWithoutPermKey() {
             // Given - Repository already filters null/empty permKeys
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(testUserRole));
-            when(roleMenuRepository.findMenuIdsByRoleIds(any(Collection.class))).thenReturn(List.of("menu-001", "menu-002"));
-            when(menuRepository.findPermKeysByMenuIds(any(Collection.class))).thenReturn(List.of("user:view"));
+            when(menuRepository.findPermKeysByUserId("user-001")).thenReturn(List.of("user:view"));
 
             // When
             List<String> result = permissionService.getUserPermissions("user-001");
@@ -177,7 +159,7 @@ class PermissionServiceTest {
         @DisplayName("should return role IDs for user")
         void getUserRoleIds_ShouldReturnRoleIds() {
             // Given
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(testUserRole));
+            when(roleRepository.findActiveRoleIdsByUserId("user-001")).thenReturn(List.of("role-001"));
 
             // When
             List<String> result = permissionService.getUserRoleIds("user-001");
@@ -190,7 +172,7 @@ class PermissionServiceTest {
         @DisplayName("should return empty list when user has no roles")
         void getUserRoleIds_WithNoRoles_ShouldReturnEmptyList() {
             // Given
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of());
+            when(roleRepository.findActiveRoleIdsByUserId("user-001")).thenReturn(List.of());
 
             // When
             List<String> result = permissionService.getUserRoleIds("user-001");

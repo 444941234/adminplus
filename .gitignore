@@ -12,6 +12,8 @@
 *.war
 *.ear
 target/
+tools/
+META-INF/
 
 # Logs
 logs/

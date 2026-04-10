@@ -328,7 +328,7 @@ class MenuServiceTest {
         @DisplayName("should return empty list when user has no roles")
         void getUserMenuTree_WhenNoRoles_ShouldReturnEmptyList() {
             // Given
-            when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of());
+            when(menuRepository.findMenuIdsByUserId("user-001")).thenReturn(List.of());
 
             // When
             List<MenuResponse> result = menuService.getUserMenuTree("user-001");

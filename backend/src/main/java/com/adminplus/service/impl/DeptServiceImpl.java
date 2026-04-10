@@ -1,6 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.constants.HierarchyConstants;
 import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.request.DeptCreateRequest;
 import com.adminplus.pojo.dto.request.DeptUpdateRequest;
@@ -45,26 +46,20 @@ public class DeptServiceImpl implements DeptService {
     @Transactional(readOnly = true)
     @Cacheable(value = "deptTree", key = "T(com.adminplus.utils.SecurityUtils).getCurrentUserDeptId() ?: 'admin'", unless = "#result == null || #result.isEmpty()")
     public List<DeptResponse> getDeptTree() {
+        boolean isAdmin = SecurityUtils.isAdmin();
+        String currentDeptId = isAdmin ? null : SecurityUtils.getCurrentUserDeptId();
         List<DeptEntity> allDepts;
 
-        // 超级管理员可以查看所有部门
-        if (SecurityUtils.isAdmin()) {
+        if (isAdmin) {
             allDepts = deptRepository.findAllByOrderBySortOrderAsc();
         } else {
-            // 非超级管理员只能查看本部门及以下部门
-            String currentDeptId = SecurityUtils.getCurrentUserDeptId();
             if (currentDeptId == null) {
                 return List.of();
             }
 
-            // 获取本部门及所有子部门
             List<String> accessibleDeptIds = getDeptAndChildrenIds(currentDeptId);
-
-            // 对于非根部门，需要调整其 parentId 为 "0" 以便构建树
-            // 这样用户的当前部门会成为树的根节点
             allDepts = deptRepository.findAllById(accessibleDeptIds);
 
-            // 按sortOrder排序
             allDepts.sort((a, b) -> {
                 if (a.getSortOrder() == null && b.getSortOrder() == null) return 0;
                 if (a.getSortOrder() == null) return 1;
@@ -73,18 +68,15 @@ public class DeptServiceImpl implements DeptService {
             });
         }
 
-        // 转换为 VO（扁平结构，children 为 null）
+        final String finalCurrentDeptId = currentDeptId;
         List<DeptResponse> deptResponses = allDepts.stream()
                 .map(dept -> {
                     DeptResponse resp = conversionService.convert(dept, DeptResponse.class);
-                    // 对于非管理员用户，如果当前部门不是根部门（parentId != "0"），
-                    // 则将其 parentId 改为 "0"，使其成为树的根节点
-                    if (!SecurityUtils.isAdmin() && dept.getId().equals(SecurityUtils.getCurrentUserDeptId())) {
-                        if (resp.parentId() != null && !resp.parentId().equals("0")) {
-                            // 创建新的 DeptResp，parentId 设为 "0"
+                    if (!isAdmin && dept.getId().equals(finalCurrentDeptId)) {
+                        if (resp.parentId() != null && !resp.parentId().equals(HierarchyConstants.ROOT_PARENT_ID)) {
                             return new DeptResponse(
                                     resp.id(),
-                                    "0",  // 设为根节点
+                                    HierarchyConstants.ROOT_PARENT_ID,
                                     resp.name(),
                                     resp.code(),
                                     resp.leader(),
@@ -102,7 +94,6 @@ public class DeptServiceImpl implements DeptService {
                 })
                 .toList();
 
-        // 使用 TreeUtils.buildTreeForRecord 构建树形结构
         return TreeUtils.buildTreeForRecord(deptResponses, this::createWithChildren);
     }
 
@@ -159,20 +150,20 @@ public class DeptServiceImpl implements DeptService {
         dept.setStatus(request.status());
 
         // 设置父部门关系
-        if (request.parentId() != null && !request.parentId().equals("0")) {
+        if (request.parentId() != null && !request.parentId().equals(HierarchyConstants.ROOT_PARENT_ID)) {
             DeptEntity parent = EntityHelper.findByIdOrThrow(deptRepository::findById, request.parentId(), "父部门不存在");
             dept.setParent(parent);
             // 更新 ancestors
             String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
             dept.setAncestors(parentAncestors + parent.getId() + ",");
         } else {
-            dept.setAncestors("0,");
+            dept.setAncestors(HierarchyConstants.ROOT_ANCESTORS);
         }
 
         dept = deptRepository.save(dept);
 
         // 记录审计日志
-        logService.log(LogEntry.operation("部门管理", OperationType.CREATE.getCode(), "创建部门: " + dept.getName()));
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DEPT, OperationType.CREATE.getCode(), "创建部门: " + dept.getName()));
 
         return conversionService.convert(dept, DeptResponse.class);
     }
@@ -210,7 +201,7 @@ public class DeptServiceImpl implements DeptService {
             // 记录旧 ancestors 用于级联更新子孙
             String oldAncestors = dept.getAncestors() != null ? dept.getAncestors() : "";
 
-            if (!parentId.equals("0")) {
+            if (!parentId.equals(HierarchyConstants.ROOT_PARENT_ID)) {
                 DeptEntity parent = EntityHelper.findByIdOrThrow(deptRepository::findById, parentId, "父部门不存在");
                 dept.setParent(parent);
                 String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
@@ -220,7 +211,7 @@ public class DeptServiceImpl implements DeptService {
                 cascadeUpdateAncestors(oldAncestors, newAncestors, id);
             } else {
                 dept.setParent(null);
-                dept.setAncestors("0,");
+                dept.setAncestors(HierarchyConstants.ROOT_ANCESTORS);
                 cascadeUpdateAncestors(oldAncestors, "0,", id);
             }
         });
@@ -246,7 +237,7 @@ public class DeptServiceImpl implements DeptService {
         var savedDept = deptRepository.save(dept);
 
         // 记录审计日志
-        logService.log(LogEntry.operation("部门管理", OperationType.UPDATE.getCode(), "更新部门: " + savedDept.getName()));
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DEPT, OperationType.UPDATE.getCode(), "更新部门: " + savedDept.getName()));
 
         return conversionService.convert(savedDept, DeptResponse.class);
     }
@@ -255,17 +246,17 @@ public class DeptServiceImpl implements DeptService {
     @Transactional
     @CacheEvict(value = "deptTree", allEntries = true)
     public void deleteDept(String id) {
-        var dept = EntityHelper.findByIdOrThrow(deptRepository::findById, id, "部门不存在");
+        if (!deptRepository.existsById(id)) {
+            throw new BizException("部门不存在");
+        }
 
-        // 检查是否有子部门
-        if (!dept.getChildren().isEmpty()) {
+        if (deptRepository.countByParentId(id) > 0) {
             throw new BizException("该部门下存在子部门，无法删除");
         }
 
-        deptRepository.delete(dept);
+        deptRepository.deleteById(id);
 
-        // 记录审计日志
-        logService.log(LogEntry.operation("部门管理", OperationType.DELETE.getCode(), "删除部门: " + dept.getName()));
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DEPT, OperationType.DELETE.getCode(), "删除部门 ID: " + id));
     }
 
     /**
@@ -275,8 +266,12 @@ public class DeptServiceImpl implements DeptService {
      * </p>
      */
     private boolean isChildDept(String parentId, String targetId) {
-        return HierarchyHelper.isDescendant(parentId, targetId,
-                id -> deptRepository.findById(id).map(DeptEntity::getAncestors));
+        return deptRepository.findById(targetId)
+                .map(dept -> {
+                    String ancestors = dept.getAncestors();
+                    return ancestors != null && ancestors.contains(parentId + ",");
+                })
+                .orElse(false);
     }
 
     /**
@@ -333,6 +328,6 @@ public class DeptServiceImpl implements DeptService {
         dept.setStatus(status);
         deptRepository.save(dept);
 
-        logService.log(LogEntry.operation("部门管理", OperationType.UPDATE.getCode(), "更新部门状态: " + dept.getName() + " -> " + (status == 1 ? "启用" : "禁用")));
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_DEPT, OperationType.UPDATE.getCode(), "更新部门状态: " + dept.getName() + " -> " + (status == 1 ? "启用" : "禁用")));
     }
 }

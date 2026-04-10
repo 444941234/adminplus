@@ -56,4 +56,32 @@ public interface MenuRepository extends JpaRepository<MenuEntity, String> {
      */
     @Query("SELECT m.permKey FROM MenuEntity m WHERE m.id IN :menuIds AND m.permKey IS NOT NULL AND m.permKey != ''")
     List<String> findPermKeysByMenuIds(@Param("menuIds") Collection<String> menuIds);
+
+    /**
+     * 根据角色ID列表直接查询所有权限标识（关联查询优化）
+     * 通过 role_menu 关联表直接查询 menu 的 permKey，避免 N+1 查询
+     */
+    @Query("SELECT DISTINCT m.permKey FROM MenuEntity m " +
+           "INNER JOIN RoleMenuEntity rm ON m.id = rm.menuId " +
+           "WHERE rm.roleId IN :roleIds AND m.permKey IS NOT NULL AND m.permKey != ''")
+    List<String> findPermKeysByRoleIds(@Param("roleIds") Collection<String> roleIds);
+
+    /**
+     * 根据用户ID直接查询所有权限标识（完整关联查询）
+     * 通过 user_role -> role_menu -> menu 三表关联，一次性查询用户所有权限
+     */
+    @Query("SELECT DISTINCT m.permKey FROM MenuEntity m " +
+           "INNER JOIN RoleMenuEntity rm ON m.id = rm.menuId " +
+           "INNER JOIN UserRoleEntity ur ON rm.roleId = ur.roleId " +
+           "WHERE ur.userId = :userId AND m.permKey IS NOT NULL AND m.permKey != ''")
+    List<String> findPermKeysByUserId(@Param("userId") String userId);
+
+    /**
+     * 根据用户ID直接查询所有菜单ID（完整关联查询）
+     * 通过 user_role -> role_menu -> menu 三表关联，一次性查询用户所有菜单ID
+     */
+    @Query("SELECT DISTINCT rm.menuId FROM RoleMenuEntity rm " +
+           "INNER JOIN UserRoleEntity ur ON rm.roleId = ur.roleId " +
+           "WHERE ur.userId = :userId")
+    List<String> findMenuIdsByUserId(@Param("userId") String userId);
 }

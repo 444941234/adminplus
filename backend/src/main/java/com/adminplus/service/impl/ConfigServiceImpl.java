@@ -1,6 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.constants.HierarchyConstants;
 import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.query.ConfigQuery;
 import com.adminplus.pojo.dto.request.*;
@@ -193,7 +194,7 @@ public class ConfigServiceImpl implements ConfigService {
         saveHistory(config, null, config.getValue(), "创建");
 
         log.info("创建配置成功: {}", config.getKey());
-        logService.log(LogEntry.operation("配置管理", OperationType.CREATE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.CREATE.getCode(),
                 "创建配置: " + config.getName() + " (" + config.getKey() + ")"));
 
         return conversionService.convert(config, ConfigResponse.class);
@@ -255,7 +256,7 @@ public class ConfigServiceImpl implements ConfigService {
         }
 
         log.info("更新配置成功: {}", config.getKey());
-        logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.UPDATE.getCode(),
                 "更新配置: " + config.getName() + " (" + config.getKey() + ")"));
 
         return conversionService.convert(config, ConfigResponse.class);
@@ -272,7 +273,7 @@ public class ConfigServiceImpl implements ConfigService {
         configRepository.deleteById(id);
         log.info("删除配置成功: {}", config.getKey());
 
-        logService.log(LogEntry.operation("配置管理", OperationType.DELETE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.DELETE.getCode(),
                 "删除配置: " + config.getName() + " (" + config.getKey() + ")"));
     }
 
@@ -288,7 +289,7 @@ public class ConfigServiceImpl implements ConfigService {
         configRepository.save(config);
         log.info("更新配置状态成功: {} -> {}", config.getKey(), status);
 
-        logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.UPDATE.getCode(),
                 "更新配置状态: " + config.getName() + " (" + config.getKey() + ") -> " + status));
     }
 
@@ -335,7 +336,7 @@ public class ConfigServiceImpl implements ConfigService {
             }
         }
 
-        logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.UPDATE.getCode(),
                 "批量更新配置: 成功 " + success + "，失败 " + failed));
 
         return new ConfigImportResultResponse(total, success, skipped, failed, details);
@@ -382,7 +383,7 @@ public class ConfigServiceImpl implements ConfigService {
         String exportTime = Instant.now().atZone(ZoneId.systemDefault())
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-        logService.log(LogEntry.operation("配置管理", OperationType.EXPORT.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.EXPORT.getCode(),
                 "导出配置: " + exportGroups.size() + " 个分组"));
 
         return new ConfigExportResponse("1.0", exportTime, exportGroups);
@@ -465,7 +466,7 @@ public class ConfigServiceImpl implements ConfigService {
             throw new BizException("JSON 解析失败: " + e.getMessage());
         }
 
-        logService.log(LogEntry.operation("配置管理", OperationType.IMPORT.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.IMPORT.getCode(),
                 "导入配置: 成功 " + success + "，跳过 " + skipped + "，失败 " + failed));
 
         return new ConfigImportResultResponse(total, success, skipped, failed, details);
@@ -496,7 +497,7 @@ public class ConfigServiceImpl implements ConfigService {
         saveHistory(config, oldValue, history.getOldValue(), "回滚到版本: " + history.getId());
 
         log.info("回滚配置成功: {} -> {}", config.getKey(), history.getOldValue());
-        logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.UPDATE.getCode(),
                 "回滚配置: " + config.getName() + " (" + config.getKey() + ") 到版本 " + history.getId()));
 
         return conversionService.convert(config, ConfigResponse.class);
@@ -559,7 +560,7 @@ public class ConfigServiceImpl implements ConfigService {
         saveHistory(config, currentValue, currentValue, "手动生效");
 
         log.info("手动生效配置成功: {}", config.getKey());
-        logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.UPDATE.getCode(),
                 "手动生效配置: " + config.getName() + " (" + config.getKey() + ")"));
     }
 
@@ -567,7 +568,7 @@ public class ConfigServiceImpl implements ConfigService {
     @CacheEvict(value = {"config", "configGroups", "configByKey"}, allEntries = true)
     public void refreshConfigCache() {
         log.info("刷新配置缓存成功");
-        logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(), "刷新配置缓存"));
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.UPDATE.getCode(), "刷新配置缓存"));
     }
 
     /**

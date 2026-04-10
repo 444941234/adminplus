@@ -1,6 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.constants.HierarchyConstants;
 import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.query.ConfigGroupQuery;
 import com.adminplus.pojo.dto.request.ConfigGroupCreateRequest;
@@ -108,7 +109,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("创建配置组成功: {}", group.getCode());
 
         // 记录审计日志
-        logService.log(LogEntry.operation("配置管理", OperationType.CREATE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.CREATE.getCode(),
                 "创建配置组: " + group.getName() + " (" + group.getCode() + ")"));
 
         return toResponseWithConfigCount(group);
@@ -139,7 +140,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("更新配置组成功: {}", group.getCode());
 
         // 记录审计日志
-        logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.UPDATE.getCode(),
                 "更新配置组: " + group.getName() + " (" + group.getCode() + ")"));
 
         return toResponseWithConfigCount(group);
@@ -163,7 +164,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("删除配置组成功: {}", group.getCode());
 
         // 记录审计日志
-        logService.log(LogEntry.operation("配置管理", OperationType.DELETE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.DELETE.getCode(),
                 "删除配置组: " + group.getName() + " (" + group.getCode() + ")"));
     }
 
@@ -180,7 +181,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
         log.info("更新配置组状态成功: {} -> {}", group.getCode(), status);
 
         // 记录审计日志
-        logService.log(LogEntry.operation("配置管理", OperationType.UPDATE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_CONFIG, OperationType.UPDATE.getCode(),
                 "更新配置组状态: " + group.getName() + " (" + group.getCode() + ") -> " + status));
     }
 

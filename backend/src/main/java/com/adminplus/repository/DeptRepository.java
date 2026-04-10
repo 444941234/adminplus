@@ -35,6 +35,12 @@ public interface DeptRepository extends JpaRepository<DeptEntity, String> {
     List<DeptEntity> findByParentIdOrderBySortOrderAsc(@Param("parentId") String parentId);
 
     /**
+     * 统计指定父部门下的子部门数量
+     */
+    @Query("SELECT COUNT(d) FROM DeptEntity d WHERE d.parent.id = :parentId")
+    long countByParentId(@Param("parentId") String parentId);
+
+    /**
      * 根据父部门ID列表查询子部门
      */
     @Query("SELECT d FROM DeptEntity d WHERE d.parent.id IN :parentIds ORDER BY d.sortOrder ASC")

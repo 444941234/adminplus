@@ -1,35 +1,29 @@
 package com.adminplus.common.security;
 
 import com.adminplus.common.exception.BizException;
-import com.adminplus.pojo.entity.RoleEntity;
 import com.adminplus.pojo.entity.UserEntity;
-import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.MenuRepository;
-import com.adminplus.repository.RoleMenuRepository;
 import com.adminplus.repository.RoleRepository;
 import com.adminplus.repository.UserRepository;
-import com.adminplus.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class AppUserDetailsService implements UserDetailsService {
 
     private final UserRepository userRepository;
-    private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
-    private final RoleMenuRepository roleMenuRepository;
     private final MenuRepository menuRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public @NonNull UserDetails loadUserByUsername(@NonNull String username) throws UsernameNotFoundException {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("用户不存在: " + username));
 
@@ -37,25 +31,9 @@ public class AppUserDetailsService implements UserDetailsService {
             throw new BizException("用户已被删除");
         }
 
-        List<UserRoleEntity> userRoles = userRoleRepository.findByUserId(user.getId());
-        List<String> roleIds = userRoles.stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-
-        List<RoleEntity> roles = roleIds.isEmpty() ? List.of() : roleRepository.findAllById(roleIds);
-        List<String> roleCodes = roles.stream()
-                .filter(role -> role.getStatus() == 1)
-                .map(RoleEntity::getCode)
-                .collect(Collectors.toList());
-
-        // 加载用户权限：通过角色-菜单关联获取菜单权限
-        List<String> permissions = List.of();
-        if (!roleIds.isEmpty()) {
-            // 获取角色关联的所有菜单ID
-            List<String> menuIds = roleMenuRepository.findMenuIdsByRoleIds(roleIds);
-            // 获取菜单的权限标识
-            permissions = menuIds.isEmpty() ? List.of() : menuRepository.findPermKeysByMenuIds(menuIds);
-        }
+        // 直接通过 userId 查询启用的角色 code 和权限（关联查询优化）
+        List<String> roleCodes = roleRepository.findActiveRoleCodesByUserId(user.getId());
+        List<String> permissions = menuRepository.findPermKeysByUserId(user.getId());
 
         return new AppUserDetails(
                 user.getId(),

@@ -40,20 +40,8 @@ public class PermissionServiceImpl implements PermissionService {
     @Transactional(readOnly = true)
     @Cacheable(value = "userPermissions", key = "#userId", unless = "#result == null || #result.isEmpty()")
     public List<String> getUserPermissions(String userId) {
-        List<String> roleIds = userRoleRepository.findByUserId(userId).stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-
-        if (roleIds.isEmpty()) {
-            return List.of();
-        }
-
-        Set<String> menuIds = new HashSet<>(roleMenuRepository.findMenuIdsByRoleIds(roleIds));
-        if (menuIds.isEmpty()) {
-            return List.of();
-        }
-
-        return menuRepository.findPermKeysByMenuIds(menuIds);
+        // 直接通过 userId 查询权限（三表关联查询优化）
+        return menuRepository.findPermKeysByUserId(userId);
     }
 
     @Override
@@ -66,9 +54,7 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     @Transactional(readOnly = true)
     public List<String> getUserRoleIds(String userId) {
-        return userRoleRepository.findByUserId(userId).stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
+        return roleRepository.findActiveRoleIdsByUserId(userId);
     }
 
     @Override

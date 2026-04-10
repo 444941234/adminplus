@@ -64,4 +64,12 @@ public interface RoleRepository extends JpaRepository<RoleEntity, String>, JpaSp
            "JOIN UserRoleEntity ur ON r.id = ur.roleId " +
            "WHERE ur.userId = :userId AND r.status = 1 AND r.deleted = false")
     List<String> findActiveRoleCodesByUserId(@Param("userId") String userId);
+
+    /**
+     * 查询用户的启用状态角色ID列表（通过用户ID关联查询）
+     */
+    @Query("SELECT r.id FROM RoleEntity r " +
+           "JOIN UserRoleEntity ur ON r.id = ur.roleId " +
+           "WHERE ur.userId = :userId AND r.status = 1 AND r.deleted = false")
+    List<String> findActiveRoleIdsByUserId(@Param("userId") String userId);
 }

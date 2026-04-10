@@ -37,7 +37,6 @@ public class AuthController {
     @Operation(summary = "用户登录")
     @LoginLog(type = 1, description = "用户登录")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody UserLoginRequest request) {
-        log.info("用户登录: {}", request.username());
         LoginResponse response = authService.login(request);
         return ApiResponse.ok(response);
     }

@@ -1,6 +1,7 @@
 package com.adminplus.service.impl;
 
 import com.adminplus.common.exception.BizException;
+import com.adminplus.constants.HierarchyConstants;
 import com.adminplus.enums.OperationType;
 import com.adminplus.pojo.dto.request.MenuBatchDeleteRequest;
 import com.adminplus.pojo.dto.request.MenuBatchStatusRequest;
@@ -9,10 +10,7 @@ import com.adminplus.pojo.dto.request.MenuUpdateRequest;
 import com.adminplus.pojo.dto.request.LogEntry;
 import com.adminplus.pojo.dto.response.MenuResponse;
 import com.adminplus.pojo.entity.MenuEntity;
-import com.adminplus.pojo.entity.UserRoleEntity;
 import com.adminplus.repository.MenuRepository;
-import com.adminplus.repository.RoleMenuRepository;
-import com.adminplus.repository.UserRoleRepository;
 import com.adminplus.service.LogService;
 import com.adminplus.service.MenuService;
 import com.adminplus.utils.EntityHelper;
@@ -44,8 +42,6 @@ public class MenuServiceImpl implements MenuService {
 
     private final MenuRepository menuRepository;
     private final LogService logService;
-    private final UserRoleRepository userRoleRepository;
-    private final RoleMenuRepository roleMenuRepository;
     private final ConversionService conversionService;
 
     @Override
@@ -107,20 +103,19 @@ public class MenuServiceImpl implements MenuService {
         menu.setStatus(request.status());
 
         // 设置父菜单关系
-        if (request.parentId() != null && !request.parentId().equals("0")) {
+        if (request.parentId() != null && !request.parentId().equals(HierarchyConstants.ROOT_PARENT_ID)) {
             MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, request.parentId(), "父菜单不存在");
             menu.setParent(parent);
-            // 更新 ancestors
             String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
             menu.setAncestors(parentAncestors + parent.getId() + ",");
         } else {
-            menu.setAncestors("0,");
+            menu.setAncestors(HierarchyConstants.ROOT_ANCESTORS);
         }
 
         menu = menuRepository.save(menu);
 
         // 记录审计日志
-        logService.log(LogEntry.operation("菜单管理", OperationType.CREATE.getCode(), "创建菜单: " + menu.getName()));
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.CREATE.getCode(), "创建菜单: " + menu.getName()));
 
         return conversionService.convert(menu, MenuResponse.class);
     }
@@ -138,14 +133,14 @@ public class MenuServiceImpl implements MenuService {
             }
 
             // 检查是否将菜单设置为自己的子菜单（防止循环引用）
-            if (!parentId.equals("0") && isChildMenu(id, parentId)) {
+            if (!parentId.equals(HierarchyConstants.ROOT_PARENT_ID) && isChildMenu(id, parentId)) {
                 throw new BizException("不能将菜单设置为自己的子菜单");
             }
 
             // 记录旧 ancestors 用于级联更新
             String oldAncestors = menu.getAncestors() != null ? menu.getAncestors() : "";
 
-            if (!parentId.equals("0")) {
+            if (!parentId.equals(HierarchyConstants.ROOT_PARENT_ID)) {
                 MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, parentId, "父菜单不存在");
                 menu.setParent(parent);
                 // 更新 ancestors
@@ -156,7 +151,7 @@ public class MenuServiceImpl implements MenuService {
                 cascadeUpdateAncestors(oldAncestors, newAncestors, id);
             } else {
                 menu.setParent(null);
-                menu.setAncestors("0,");
+                menu.setAncestors(HierarchyConstants.ROOT_ANCESTORS);
                 cascadeUpdateAncestors(oldAncestors, "0,", id);
             }
         });
@@ -174,7 +169,7 @@ public class MenuServiceImpl implements MenuService {
         var savedMenu = menuRepository.save(menu);
 
         // 记录审计日志
-        logService.log(LogEntry.operation("菜单管理", OperationType.UPDATE.getCode(), "更新菜单: " + savedMenu.getName()));
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.UPDATE.getCode(), "更新菜单: " + savedMenu.getName()));
 
         return conversionService.convert(savedMenu, MenuResponse.class);
     }
@@ -193,7 +188,7 @@ public class MenuServiceImpl implements MenuService {
         menuRepository.delete(menu);
 
         // 记录审计日志
-        logService.log(LogEntry.operation("菜单管理", OperationType.DELETE.getCode(), "删除菜单: " + menu.getName()));
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.DELETE.getCode(), "删除菜单: " + menu.getName()));
     }
 
     @Override
@@ -206,14 +201,17 @@ public class MenuServiceImpl implements MenuService {
             throw new BizException("部分菜单不存在");
         }
 
-        menus.forEach(menu -> {
-            menu.setStatus(request.status());
-        });
+        List<MenuEntity> menusToUpdate = menus.stream()
+                .filter(menu -> !menu.getStatus().equals(request.status()))
+                .toList();
 
-        menuRepository.saveAll(menus);
+        if (!menusToUpdate.isEmpty()) {
+            menusToUpdate.forEach(menu -> menu.setStatus(request.status()));
+            menuRepository.saveAll(menusToUpdate);
+        }
 
         // 记录审计日志
-        logService.log(LogEntry.operation("菜单管理", OperationType.UPDATE.getCode(), "批量更新菜单状态，数量: " + request.ids().size()));
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.UPDATE.getCode(), "批量更新菜单状态，数量: " + request.ids().size()));
     }
 
     @Override
@@ -236,30 +234,21 @@ public class MenuServiceImpl implements MenuService {
         menuRepository.deleteAll(menus);
 
         // 记录审计日志
-        logService.log(LogEntry.operation("菜单管理", OperationType.DELETE.getCode(), "批量删除菜单，数量: " + request.ids().size()));
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.DELETE.getCode(), "批量删除菜单，数量: " + request.ids().size()));
     }
 
     @Override
     @Transactional(readOnly = true)
     @Cacheable(value = "userMenus", key = "#userId")
     public List<MenuResponse> getUserMenuTree(String userId) {
-        // 1. 查询用户的角色ID列表
-        List<String> roleIds = userRoleRepository.findByUserId(userId).stream()
-                .map(UserRoleEntity::getRoleId)
-                .toList();
-
-        if (roleIds.isEmpty()) {
-            return List.of();
-        }
-
-        // 2. 批量查询这些角色的菜单ID列表（去重）
-        Set<String> menuIds = new HashSet<>(roleMenuRepository.findMenuIdsByRoleIds(roleIds));
+        // 1. 直接通过 userId 查询用户的菜单ID列表（三表关联查询优化）
+        List<String> menuIds = menuRepository.findMenuIdsByUserId(userId);
 
         if (menuIds.isEmpty()) {
             return List.of();
         }
 
-        // 3. 查询所有菜单（包括父菜单），因为需要构建树形结构
+        // 2. 查询所有菜单（包括父菜单），因为需要构建树形结构
         List<MenuEntity> allMenus = menuRepository.findAllByOrderBySortOrderAsc();
 
         // 使用 Map 优化查找性能
@@ -290,7 +279,7 @@ public class MenuServiceImpl implements MenuService {
      * 递归添加父菜单到集合中（优化版，使用 Map 查找）
      */
     private void addParentMenus(Map<String, MenuEntity> menuMap, Set<String> menuIds, String menuId) {
-        if (menuId == null || menuId.equals("0")) {
+        if (menuId == null || menuId.equals(HierarchyConstants.ROOT_PARENT_ID)) {
             return;
         }
 
@@ -298,7 +287,7 @@ public class MenuServiceImpl implements MenuService {
 
         if (menu != null && menu.getParent() != null) {
             String parentId = menu.getParent().getId();
-            if (parentId != null && !parentId.equals("0") && !menuIds.contains(parentId)) {
+            if (parentId != null && !parentId.equals(HierarchyConstants.ROOT_PARENT_ID) && !menuIds.contains(parentId)) {
                 menuIds.add(parentId);
                 addParentMenus(menuMap, menuIds, parentId);
             }
@@ -337,7 +326,7 @@ public class MenuServiceImpl implements MenuService {
         MenuEntity sourceMenu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
         // 不能复制到自己的子孙节点（防止循环引用）
-        if (!targetParentId.equals("0") && isChildMenu(id, targetParentId)) {
+        if (!targetParentId.equals(HierarchyConstants.ROOT_PARENT_ID) && isChildMenu(id, targetParentId)) {
             throw new BizException("不能将菜单复制到自己的子菜单下");
         }
 
@@ -353,9 +342,10 @@ public class MenuServiceImpl implements MenuService {
         copiedMenu.setStatus(sourceMenu.getStatus());
 
         // 计算排序值：目标父级下最大值 + 10
-        int maxSortOrder = 0;
-        if (targetParentId.equals("0")) {
-            // 顶级菜单最大排序值
+        int maxSortOrder;
+        MenuEntity parent = null;
+
+        if (targetParentId.equals(HierarchyConstants.ROOT_PARENT_ID)) {
             List<MenuEntity> topMenus = menuRepository.findAllByOrderBySortOrderAsc();
             maxSortOrder = topMenus.stream()
                     .filter(m -> m.getParent() == null)
@@ -363,8 +353,7 @@ public class MenuServiceImpl implements MenuService {
                     .max()
                     .orElse(0);
         } else {
-            // 指定父级下最大排序值
-            MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, targetParentId, "父菜单不存在");
+            parent = EntityHelper.findByIdOrThrow(menuRepository::findById, targetParentId, "父菜单不存在");
             maxSortOrder = parent.getChildren().stream()
                     .mapToInt(MenuEntity::getSortOrder)
                     .max()
@@ -372,20 +361,18 @@ public class MenuServiceImpl implements MenuService {
         }
         copiedMenu.setSortOrder(maxSortOrder + 10);
 
-        // 设置父菜单关系
-        if (!targetParentId.equals("0")) {
-            MenuEntity parent = EntityHelper.findByIdOrThrow(menuRepository::findById, targetParentId, "父菜单不存在");
+        if (parent != null) {
             copiedMenu.setParent(parent);
             String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
             copiedMenu.setAncestors(parentAncestors + parent.getId() + ",");
         } else {
-            copiedMenu.setAncestors("0,");
+            copiedMenu.setAncestors(HierarchyConstants.ROOT_ANCESTORS);
         }
 
         copiedMenu = menuRepository.save(copiedMenu);
 
         // 记录审计日志
-        logService.log(LogEntry.operation("菜单管理", OperationType.CREATE.getCode(),
+        logService.log(LogEntry.operation(HierarchyConstants.MODULE_MENU, OperationType.CREATE.getCode(),
                 "复制菜单: " + sourceMenu.getName() + " -> " + copiedMenu.getName()));
 
         return conversionService.convert(copiedMenu, MenuResponse.class);

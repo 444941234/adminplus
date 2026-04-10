@@ -191,24 +191,22 @@ class DeptServiceTest {
         @DisplayName("should delete department without children")
         void deleteDept_WithoutChildren_ShouldDelete() {
             // Given
-            testDept.setChildren(List.of());
-            when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
+            when(deptRepository.existsById("dept-001")).thenReturn(true);
+            when(deptRepository.countByParentId("dept-001")).thenReturn(0L);
 
             // When
             deptService.deleteDept("dept-001");
 
             // Then
-            verify(deptRepository).delete(testDept);
+            verify(deptRepository).deleteById("dept-001");
         }
 
         @Test
         @DisplayName("should throw exception when department has children")
         void deleteDept_WithChildren_ShouldThrowException() {
             // Given
-            DeptEntity childDept = new DeptEntity();
-            childDept.setId("child-001");
-            testDept.setChildren(List.of(childDept));
-            when(deptRepository.findById("dept-001")).thenReturn(Optional.of(testDept));
+            when(deptRepository.existsById("dept-001")).thenReturn(true);
+            when(deptRepository.countByParentId("dept-001")).thenReturn(1L);
 
             // When & Then
             assertThatThrownBy(() -> deptService.deleteDept("dept-001"))
@@ -220,7 +218,7 @@ class DeptServiceTest {
         @DisplayName("should throw exception when department not found")
         void deleteDept_WhenNotFound_ShouldThrowException() {
             // Given
-            when(deptRepository.findById("non-existent")).thenReturn(Optional.empty());
+            when(deptRepository.existsById("non-existent")).thenReturn(false);
 
             // When & Then
             assertThatThrownBy(() -> deptService.deleteDept("non-existent"))
