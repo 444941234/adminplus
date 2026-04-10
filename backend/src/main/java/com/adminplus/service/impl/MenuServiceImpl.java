@@ -1,6 +1,5 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.HierarchyConstants;
 import com.adminplus.pojo.dto.request.MenuBatchDeleteRequest;
 import com.adminplus.pojo.dto.request.MenuBatchStatusRequest;
@@ -12,6 +11,7 @@ import com.adminplus.repository.MenuRepository;
 import com.adminplus.service.MenuService;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.HierarchyHelper;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.utils.TreeUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
@@ -119,14 +119,11 @@ public class MenuServiceImpl implements MenuService {
 
         request.parentId().ifPresent(parentId -> {
             // 不能将自己设置为父菜单
-            if (id.equals(parentId)) {
-                throw new BizException("不能将自己设置为父菜单");
-            }
+            ServiceAssert.isTrue(!id.equals(parentId), "不能将自己设置为父菜单");
 
             // 检查是否将菜单设置为自己的子菜单（防止循环引用）
-            if (!parentId.equals(HierarchyConstants.ROOT_PARENT_ID) && isChildMenu(id, parentId)) {
-                throw new BizException("不能将菜单设置为自己的子菜单");
-            }
+            ServiceAssert.isTrue(parentId.equals(HierarchyConstants.ROOT_PARENT_ID) || !isChildMenu(id, parentId),
+                    "不能将菜单设置为自己的子菜单");
 
             // 记录旧 ancestors 用于级联更新
             String oldAncestors = menu.getAncestors() != null ? menu.getAncestors() : "";
@@ -169,9 +166,7 @@ public class MenuServiceImpl implements MenuService {
         var menu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
         // 检查是否有子菜单
-        if (!menu.getChildren().isEmpty()) {
-            throw new BizException("该菜单下存在子菜单，无法删除");
-        }
+        ServiceAssert.isTrue(menu.getChildren().isEmpty(), "该菜单下存在子菜单，无法删除");
 
         menuRepository.delete(menu);
     }
@@ -181,10 +176,7 @@ public class MenuServiceImpl implements MenuService {
     @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
     public void batchUpdateStatus(MenuBatchStatusRequest request) {
         List<MenuEntity> menus = menuRepository.findAllById(request.ids());
-
-        if (menus.size() != request.ids().size()) {
-            throw new BizException("部分菜单不存在");
-        }
+        ServiceAssert.isTrue(menus.size() == request.ids().size(), "部分菜单不存在");
 
         List<MenuEntity> menusToUpdate = menus.stream()
                 .filter(menu -> !menu.getStatus().equals(request.status()))
@@ -201,16 +193,12 @@ public class MenuServiceImpl implements MenuService {
     @CacheEvict(value = {"userMenus", "menuTree", "allPermissions"}, allEntries = true)
     public void batchDelete(MenuBatchDeleteRequest request) {
         List<MenuEntity> menus = menuRepository.findAllById(request.ids());
-
-        if (menus.size() != request.ids().size()) {
-            throw new BizException("部分菜单不存在");
-        }
+        ServiceAssert.isTrue(menus.size() == request.ids().size(), "部分菜单不存在");
 
         // 检查是否有子菜单
         for (MenuEntity menu : menus) {
-            if (!menu.getChildren().isEmpty()) {
-                throw new BizException("菜单 [" + menu.getName() + "] 下有子菜单，无法批量删除");
-            }
+            ServiceAssert.isTrue(menu.getChildren().isEmpty(),
+                    () -> "菜单 [" + menu.getName() + "] 下有子菜单，无法批量删除");
         }
 
         menuRepository.deleteAll(menus);
@@ -305,9 +293,8 @@ public class MenuServiceImpl implements MenuService {
         MenuEntity sourceMenu = EntityHelper.findByIdOrThrow(menuRepository::findById, id, "菜单不存在");
 
         // 不能复制到自己的子孙节点（防止循环引用）
-        if (!targetParentId.equals(HierarchyConstants.ROOT_PARENT_ID) && isChildMenu(id, targetParentId)) {
-            throw new BizException("不能将菜单复制到自己的子菜单下");
-        }
+        ServiceAssert.isTrue(targetParentId.equals(HierarchyConstants.ROOT_PARENT_ID) || !isChildMenu(id, targetParentId),
+                "不能将菜单复制到自己的子菜单下");
 
         // 创建副本
         MenuEntity copiedMenu = new MenuEntity();

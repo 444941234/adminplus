@@ -3,6 +3,7 @@ package com.adminplus.utils;
 import com.adminplus.common.exception.BizException;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * 服务层断言工具类
@@ -21,6 +22,15 @@ public final class ServiceAssert {
     public static void isTrue(boolean condition, String message) {
         if (!condition) {
             throw new BizException(message);
+        }
+    }
+
+    /**
+     * 断言条件为真（支持动态消息）
+     */
+    public static void isTrue(boolean condition, Supplier<String> messageSupplier) {
+        if (!condition) {
+            throw new BizException(messageSupplier.get());
         }
     }
 
@@ -67,5 +77,19 @@ public final class ServiceAssert {
         if (!Objects.equals(expected, actual)) {
             throw new BizException(message);
         }
+    }
+
+    /**
+     * 直接抛出业务异常（用于无条件失败场景）
+     */
+    public static void fail(String message) {
+        throw new BizException(message);
+    }
+
+    /**
+     * 直接抛出业务异常（支持动态消息）
+     */
+    public static void fail(Supplier<String> messageSupplier) {
+        throw new BizException(messageSupplier.get());
     }
 }

@@ -13,6 +13,7 @@ import com.adminplus.repository.DictItemRepository;
 import com.adminplus.repository.DictRepository;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.PageUtils;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.service.DictService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -88,9 +89,7 @@ public class DictServiceImpl implements DictService {
     @Transactional
     @CacheEvict(value = "dict", allEntries = true)
     public DictResponse createDict(DictCreateRequest request) {
-        if (dictRepository.existsByDictType(request.dictType())) {
-            throw new BizException("字典类型已存在");
-        }
+        ServiceAssert.notExists(dictRepository.existsByDictType(request.dictType()), "字典类型已存在");
 
         DictEntity dict = conversionService.convert(request, DictEntity.class);
         dict = dictRepository.save(dict);
@@ -122,9 +121,7 @@ public class DictServiceImpl implements DictService {
         DictEntity dict = EntityHelper.findByIdOrThrow(dictRepository::findById, id, "字典不存在");
 
         List<DictItemEntity> items = dictItemRepository.findByDictIdOrderBySortOrderAsc(id);
-        if (!items.isEmpty()) {
-            throw new BizException("该字典下存在字典项，无法删除");
-        }
+        ServiceAssert.isTrue(items.isEmpty(), "该字典下存在字典项，无法删除");
 
         dict.setDeleted(true);
         dictRepository.save(dict);

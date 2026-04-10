@@ -9,6 +9,7 @@ import com.adminplus.pojo.entity.DictItemEntity;
 import com.adminplus.repository.DictItemRepository;
 import com.adminplus.repository.DictRepository;
 import com.adminplus.service.DictItemService;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.utils.TreeUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -104,9 +105,7 @@ public class DictItemServiceImpl implements DictItemService {
         if (request.parentId() != null && !request.parentId().equals("0")) {
             DictItemEntity parent = dictItemRepository.findById(request.parentId())
                     .orElseThrow(() -> new BizException("父节点不存在"));
-            if (!parent.getDictId().equals(request.dictId())) {
-                throw new BizException("父节点不属于当前字典");
-            }
+            ServiceAssert.isTrue(parent.getDictId().equals(request.dictId()), "父节点不属于当前字典");
             item.setParent(parent);
             // 更新 ancestors
             String parentAncestors = parent.getAncestors() != null ? parent.getAncestors() : "";
@@ -172,9 +171,7 @@ public class DictItemServiceImpl implements DictItemService {
                 .orElseThrow(() -> new BizException("字典项不存在"));
 
         // 检查是否有子节点
-        if (!item.getChildren().isEmpty()) {
-            throw new BizException("该字典项下存在子节点，无法删除");
-        }
+        ServiceAssert.isTrue(item.getChildren().isEmpty(), "该字典项下存在子节点，无法删除");
 
         dictItemRepository.delete(item);
     }

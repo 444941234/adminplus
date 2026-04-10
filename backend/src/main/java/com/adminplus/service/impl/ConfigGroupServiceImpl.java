@@ -12,6 +12,7 @@ import com.adminplus.repository.ConfigRepository;
 import com.adminplus.service.ConfigGroupService;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.PageUtils;
+import com.adminplus.utils.ServiceAssert;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -88,9 +89,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
     @CacheEvict(value = "configGroup", allEntries = true)
     public ConfigGroupResponse createConfigGroup(ConfigGroupCreateRequest request) {
         // 检查编码是否已存在
-        if (configGroupRepository.existsByCode(request.code())) {
-            throw new BizException("配置组编码已存在");
-        }
+        ServiceAssert.notExists(configGroupRepository.existsByCode(request.code()), "配置组编码已存在");
 
         ConfigGroupEntity group = new ConfigGroupEntity();
         group.setName(request.name());
@@ -141,9 +140,7 @@ public class ConfigGroupServiceImpl implements ConfigGroupService {
 
         // 检查是否有配置项
         long configCount = configRepository.countByGroupId(id);
-        if (configCount > 0) {
-            throw new BizException("该配置组下存在配置项，无法删除");
-        }
+        ServiceAssert.isTrue(configCount == 0, "该配置组下存在配置项，无法删除");
 
         configGroupRepository.deleteById(id);
     }

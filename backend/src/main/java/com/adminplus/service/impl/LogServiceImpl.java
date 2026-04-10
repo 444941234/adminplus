@@ -11,6 +11,7 @@ import com.adminplus.pojo.entity.LogEntity;
 import com.adminplus.service.LogService;
 import com.adminplus.service.LogStatisticsService;
 import com.adminplus.service.LogStorageStrategy;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -96,9 +97,7 @@ public class LogServiceImpl implements LogService {
     @Transactional(readOnly = true)
     public LogPageResponse getLogById(String id) {
         LogEntity logEntity = getStorageStrategy().findById(id);
-        if (logEntity == null) {
-            throw new BizException("日志不存在");
-        }
+        ServiceAssert.notNull(logEntity, "日志不存在");
         return toLogPageVO(logEntity);
     }
 

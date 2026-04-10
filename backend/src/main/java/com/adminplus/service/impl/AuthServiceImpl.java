@@ -12,6 +12,7 @@ import com.adminplus.pojo.entity.UserEntity;
 import com.adminplus.service.*;
 import com.adminplus.utils.LogMaskingUtils;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.utils.WebUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -81,7 +82,7 @@ public class AuthServiceImpl implements AuthService {
     private void validateCaptcha(String captchaId, String captchaCode, String username) {
         if (!captchaService.validateCaptcha(captchaId, captchaCode)) {
             log.warn("验证码验证失败: username={}", LogMaskingUtils.maskUsername(username));
-            throw new BizException("验证码错误或已过期，请重新输入");
+            ServiceAssert.fail("验证码错误或已过期，请重新输入");
         }
     }
 

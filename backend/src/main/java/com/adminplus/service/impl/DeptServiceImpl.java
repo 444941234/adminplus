@@ -1,6 +1,5 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.common.exception.BizException;
 import com.adminplus.constants.HierarchyConstants;
 import com.adminplus.pojo.dto.request.DeptCreateRequest;
 import com.adminplus.pojo.dto.request.DeptUpdateRequest;
@@ -11,6 +10,7 @@ import com.adminplus.service.DeptService;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.HierarchyHelper;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.utils.TreeUtils;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
@@ -124,14 +124,11 @@ public class DeptServiceImpl implements DeptService {
     @CacheEvict(value = "deptTree", allEntries = true)
     public DeptResponse createDept(DeptCreateRequest request) {
         // 检查部门名称是否已存在
-        if (deptRepository.existsByNameAndDeletedFalse(request.name())) {
-            throw new BizException("部门名称已存在");
-        }
+        ServiceAssert.notExists(deptRepository.existsByNameAndDeletedFalse(request.name()), "部门名称已存在");
 
         // 检查部门编码是否已存在
-        if (request.code() != null && !request.code().isBlank()
-                && deptRepository.existsByCodeAndDeletedFalse(request.code())) {
-            throw new BizException("部门编码已存在");
+        if (request.code() != null && !request.code().isBlank()) {
+            ServiceAssert.notExists(deptRepository.existsByCodeAndDeletedFalse(request.code()), "部门编码已存在");
         }
 
         var dept = new DeptEntity();
@@ -167,27 +164,19 @@ public class DeptServiceImpl implements DeptService {
 
         // 如果更新部门名称，检查是否与其他部门重复
         if (request.name().isPresent() && !request.name().get().equals(dept.getName())) {
-            if (deptRepository.existsByNameAndIdNotAndDeletedFalse(request.name().get(), id)) {
-                throw new BizException("部门名称已存在");
-            }
+            ServiceAssert.notExists(deptRepository.existsByNameAndIdNotAndDeletedFalse(request.name().get(), id), "部门名称已存在");
         }
 
         // 如果更新部门编码，检查是否与其他部门重复
         if (request.code().isPresent() && !request.code().get().equals(dept.getCode())) {
-            if (deptRepository.existsByCodeAndIdNotAndDeletedFalse(request.code().get(), id)) {
-                throw new BizException("部门编码已存在");
-            }
+            ServiceAssert.notExists(deptRepository.existsByCodeAndIdNotAndDeletedFalse(request.code().get(), id), "部门编码已存在");
         }
 
         request.parentId().ifPresent(parentId -> {
             // 不能将自己设置为父部门
-            if (id.equals(parentId)) {
-                throw new BizException("不能将自己设置为父部门");
-            }
+            ServiceAssert.isTrue(!id.equals(parentId), "不能将自己设置为父部门");
             // 检查是否将部门设置为自己的子部门（防止循环引用）
-            if (isChildDept(id, parentId)) {
-                throw new BizException("不能将部门设置为自己的子部门");
-            }
+            ServiceAssert.isTrue(!isChildDept(id, parentId), "不能将部门设置为自己的子部门");
 
             // 记录旧 ancestors 用于级联更新子孙
             String oldAncestors = dept.getAncestors() != null ? dept.getAncestors() : "";
@@ -211,15 +200,11 @@ public class DeptServiceImpl implements DeptService {
         request.code().ifPresent(code -> dept.setCode(XssUtils.escape(code)));
         request.leader().ifPresent(leader -> dept.setLeader(XssUtils.escape(leader)));
         request.phone().ifPresent(phone -> {
-            if (!phone.isBlank() && !phone.matches("^1[3-9]\\d{9}$")) {
-                throw new BizException("手机号格式不正确");
-            }
+            ServiceAssert.isTrue(phone.isBlank() || phone.matches("^1[3-9]\\d{9}$"), "手机号格式不正确");
             dept.setPhone(phone);
         });
         request.email().ifPresent(email -> {
-            if (!email.isBlank() && !email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$")) {
-                throw new BizException("邮箱格式不正确");
-            }
+            ServiceAssert.isTrue(email.isBlank() || email.matches("^[\\w.-]+@[\\w.-]+\\.[a-zA-Z]{2,}$"), "邮箱格式不正确");
             dept.setEmail(email);
         });
         request.sortOrder().ifPresent(dept::setSortOrder);
@@ -234,13 +219,8 @@ public class DeptServiceImpl implements DeptService {
     @Transactional
     @CacheEvict(value = "deptTree", allEntries = true)
     public void deleteDept(String id) {
-        if (!deptRepository.existsById(id)) {
-            throw new BizException("部门不存在");
-        }
-
-        if (deptRepository.countByParentId(id) > 0) {
-            throw new BizException("该部门下存在子部门，无法删除");
-        }
+        ServiceAssert.exists(deptRepository.existsById(id), "部门不存在");
+        ServiceAssert.isTrue(deptRepository.countByParentId(id) == 0, "该部门下存在子部门，无法删除");
 
         deptRepository.deleteById(id);
     }

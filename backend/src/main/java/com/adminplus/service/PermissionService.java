@@ -14,26 +14,40 @@ public interface PermissionService {
 
     /**
      * 获取用户的权限标识符列表（如 user:add, user:edit）
+     *
+     * @param userId 用户ID
+     * @return 权限标识符列表
      */
     List<String> getUserPermissions(String userId);
 
     /**
      * 获取用户的角色编码列表（如 ROLE_ADMIN, ROLE_USER）
+     *
+     * @param userId 用户ID
+     * @return 角色编码列表
      */
     List<String> getUserRoles(String userId);
 
     /**
      * 获取用户的角色ID列表
+     *
+     * @param userId 用户ID
+     * @return 角色ID列表
      */
     List<String> getUserRoleIds(String userId);
 
     /**
      * 获取角色的权限标识符列表
+     *
+     * @param roleId 角色ID
+     * @return 权限标识符列表
      */
     List<String> getRolePermissions(String roleId);
 
     /**
      * 获取所有可用权限（用于分配）
+     *
+     * @return 所有权限列表
      */
     List<PermissionResponse> getAllPermissions();
 }

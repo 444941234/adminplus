@@ -15,6 +15,7 @@ import com.adminplus.repository.ConfigRepository;
 import com.adminplus.service.ConfigService;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.PageUtils;
+import com.adminplus.utils.ServiceAssert;
 import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.json.JsonMapper;
@@ -157,9 +158,7 @@ public class ConfigServiceImpl implements ConfigService {
     @CacheEvict(value = "config", allEntries = true)
     public ConfigResponse createConfig(ConfigCreateRequest request) {
         // 检查配置键是否已存在
-        if (configRepository.existsByKey(request.key())) {
-            throw new BizException("配置键已存在");
-        }
+        ServiceAssert.notExists(configRepository.existsByKey(request.key()), "配置键已存在");
 
         // 验证配置组是否存在
         ConfigGroupEntity group = EntityHelper.findByIdOrThrow(
@@ -367,9 +366,7 @@ public class ConfigServiceImpl implements ConfigService {
     @CacheEvict(value = "config", allEntries = true)
     public ConfigImportResultResponse importConfigs(ConfigImportRequest request) {
         // 简化实现：仅支持 JSON 格式
-        if (!"JSON".equals(request.format())) {
-            throw new BizException("暂仅支持 JSON 格式导入");
-        }
+        ServiceAssert.isTrue("JSON".equals(request.format()), "暂仅支持 JSON 格式导入");
 
         int total = 0;
         int success = 0;
@@ -436,7 +433,7 @@ public class ConfigServiceImpl implements ConfigService {
             }
 
         } catch (JacksonException e) {
-            throw new BizException("JSON 解析失败: " + e.getMessage());
+            ServiceAssert.fail("JSON 解析失败: " + e.getMessage());
         }
 
         return new ConfigImportResultResponse(total, success, skipped, failed, details);
@@ -454,9 +451,7 @@ public class ConfigServiceImpl implements ConfigService {
                 configHistoryRepository::findById, request.historyId(), "历史记录不存在"
         );
 
-        if (!history.getConfigId().equals(id)) {
-            throw new BizException("历史记录与配置不匹配");
-        }
+        ServiceAssert.isTrue(history.getConfigId().equals(id), "历史记录与配置不匹配");
 
         // 回滚值
         String oldValue = config.getValue();
@@ -519,9 +514,7 @@ public class ConfigServiceImpl implements ConfigService {
                 configRepository::findById, id, "配置不存在"
         );
 
-        if (!"MANUAL".equals(config.getEffectType())) {
-            throw new BizException("该配置不是手动生效类型");
-        }
+        ServiceAssert.isTrue("MANUAL".equals(config.getEffectType()), "该配置不是手动生效类型");
 
         // 手动生效：这里只是标记，实际生效逻辑由业务系统处理
         String currentValue = config.getValue();
@@ -588,19 +581,18 @@ public class ConfigServiceImpl implements ConfigService {
                 try {
                     Double.parseDouble(value);
                 } catch (NumberFormatException e) {
-                    throw new BizException("配置值类型为数字时，值必须是有效的数字");
+                    ServiceAssert.fail("配置值类型为数字时，值必须是有效的数字");
                 }
             }
             case "BOOLEAN" -> {
-                if (!"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
-                    throw new BizException("配置值类型为布尔值时，值必须是 true 或 false");
-                }
+                ServiceAssert.isTrue("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value),
+                        "配置值类型为布尔值时，值必须是 true 或 false");
             }
             case "JSON", "ARRAY" -> {
                 try {
                     objectMapper.readTree(value);
                 } catch (Exception e) {
-                    throw new BizException("配置值格式不正确，必须是有效的JSON");
+                    ServiceAssert.fail("配置值格式不正确，必须是有效的JSON");
                 }
             }
         }
@@ -608,9 +600,8 @@ public class ConfigServiceImpl implements ConfigService {
         // 自定义校验规则
         if (validationRule != null && !validationRule.isEmpty()) {
             try {
-                if (!value.matches(validationRule)) {
-                    throw new BizException("配置值不符合校验规则: " + validationRule);
-                }
+                ServiceAssert.isTrue(value.matches(validationRule),
+                        () -> "配置值不符合校验规则: " + validationRule);
             } catch (Exception e) {
                 log.warn("校验规则执行失败: {}", validationRule, e);
             }

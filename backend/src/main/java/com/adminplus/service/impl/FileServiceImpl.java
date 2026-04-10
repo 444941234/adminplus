@@ -8,6 +8,7 @@ import com.adminplus.repository.FileRepository;
 import com.adminplus.service.FileService;
 import com.adminplus.service.FileStorageService;
 import com.adminplus.utils.FileContentValidator;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,13 +39,9 @@ public class FileServiceImpl implements FileService {
     public FileResponse uploadFile(MultipartFile file, String directory) {
         int maxSizeMB = fileStorageConfig.getLocal().getMaxSize();
         long maxSizeBytes = maxSizeMB * 1024L * 1024L;
-        if (file.getSize() > maxSizeBytes) {
-            throw new BizException(400, "文件大小超过限制，最大允许 " + maxSizeMB + "MB");
-        }
+        ServiceAssert.isTrue(file.getSize() <= maxSizeBytes, 400, "文件大小超过限制，最大允许 " + maxSizeMB + "MB");
 
-        if (!FileContentValidator.isAllowedFileType(file, file.getContentType())) {
-            throw new BizException("不支持的文件类型");
-        }
+        ServiceAssert.isTrue(FileContentValidator.isAllowedFileType(file, file.getContentType()), "不支持的文件类型");
 
         String fileUrl = fileStorageService.uploadFile(file, directory);
 
@@ -88,9 +85,7 @@ public class FileServiceImpl implements FileService {
 
         String currentUserId = SecurityUtils.getCurrentUserId();
         boolean isAdmin = SecurityUtils.isAdmin();
-        if (!isAdmin && !fileEntity.getCreateUser().equals(currentUserId)) {
-            throw new BizException("无权删除此文件");
-        }
+        ServiceAssert.isTrue(isAdmin || fileEntity.getCreateUser().equals(currentUserId), "无权删除此文件");
 
         boolean deleted = fileStorageService.deleteFile(fileEntity.getFileUrl());
 
@@ -117,9 +112,7 @@ public class FileServiceImpl implements FileService {
 
         String currentUserId = SecurityUtils.getCurrentUserId();
         boolean isAdmin = SecurityUtils.isAdmin();
-        if (!isAdmin && !fileEntity.getCreateUser().equals(currentUserId)) {
-            throw new BizException("无权查看此文件");
-        }
+        ServiceAssert.isTrue(isAdmin || fileEntity.getCreateUser().equals(currentUserId), "无权查看此文件");
 
         return conversionService.convert(fileEntity, FileResponse.class);
     }

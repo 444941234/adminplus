@@ -1,6 +1,5 @@
 package com.adminplus.service.impl;
 
-import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.query.RoleQuery;
 import com.adminplus.pojo.dto.request.RoleCreateRequest;
 import com.adminplus.pojo.dto.request.RoleUpdateRequest;
@@ -16,6 +15,7 @@ import com.adminplus.utils.AssociationDiffHelper;
 import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.PageUtils;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.utils.XssUtils;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -106,9 +106,7 @@ public class RoleServiceImpl implements RoleService {
     @CacheEvict(value = {"userPermissions", "rolePermissions", "roles"}, allEntries = true)
     public RoleResponse createRole(RoleCreateRequest request) {
         // 检查角色编码是否已存在
-        if (roleRepository.existsByCode(request.code())) {
-            throw new BizException("角色编码已存在");
-        }
+        ServiceAssert.notExists(roleRepository.existsByCode(request.code()), "角色编码已存在");
 
         var role = new RoleEntity();
         role.setCode(XssUtils.escape(request.code()));
@@ -130,9 +128,8 @@ public class RoleServiceImpl implements RoleService {
         var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
         // 非超级管理员不能修改超级管理员角色
-        if ("ROLE_ADMIN".equals(role.getCode()) && !SecurityUtils.isAdmin()) {
-            throw new BizException("无权修改超级管理员角色");
-        }
+        ServiceAssert.isTrue(!"ROLE_ADMIN".equals(role.getCode()) || SecurityUtils.isAdmin(),
+                "无权修改超级管理员角色");
 
         if (request.name() != null) {
             role.setName(XssUtils.escape(request.name()));
@@ -162,19 +159,14 @@ public class RoleServiceImpl implements RoleService {
         var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
         // 非超级管理员不能删除超级管理员角色
-        if ("ROLE_ADMIN".equals(role.getCode()) && !SecurityUtils.isAdmin()) {
-            throw new BizException("无权删除超级管理员角色");
-        }
+        ServiceAssert.isTrue(!"ROLE_ADMIN".equals(role.getCode()) || SecurityUtils.isAdmin(),
+                "无权删除超级管理员角色");
 
         // 不能删除超级管理员角色（即使是超级管理员也不能删除）
-        if ("ROLE_ADMIN".equals(role.getCode())) {
-            throw new BizException("超级管理员角色不能删除");
-        }
+        ServiceAssert.isTrue(!"ROLE_ADMIN".equals(role.getCode()), "超级管理员角色不能删除");
 
         // 检查是否有用户绑定了该角色
-        if (userRoleRepository.existsByRoleId(id)) {
-            throw new BizException("该角色已分配给用户，无法删除");
-        }
+        ServiceAssert.notExists(userRoleRepository.existsByRoleId(id), "该角色已分配给用户，无法删除");
 
         // 删除角色-菜单关联
         roleMenuRepository.deleteByRoleId(id);
@@ -213,9 +205,7 @@ public class RoleServiceImpl implements RoleService {
     @Override
     @Transactional(readOnly = true)
     public List<String> getRoleMenuIds(String roleId) {
-        if (!roleRepository.existsById(roleId)) {
-            throw new BizException("角色不存在");
-        }
+        ServiceAssert.exists(roleRepository.existsById(roleId), "角色不存在");
         return roleMenuRepository.findMenuIdByRoleId(roleId);
     }
 
@@ -226,9 +216,8 @@ public class RoleServiceImpl implements RoleService {
         var role = EntityHelper.findByIdOrThrow(roleRepository::findById, id, "角色不存在");
 
         // 非超级管理员不能修改超级管理员角色状态
-        if ("ROLE_ADMIN".equals(role.getCode()) && !SecurityUtils.isAdmin()) {
-            throw new BizException("无权修改超级管理员角色状态");
-        }
+        ServiceAssert.isTrue(!"ROLE_ADMIN".equals(role.getCode()) || SecurityUtils.isAdmin(),
+                "无权修改超级管理员角色状态");
 
         role.setStatus(status);
         roleRepository.save(role);

@@ -6,6 +6,7 @@ import com.adminplus.common.security.JwtTokenProvider;
 import com.adminplus.pojo.entity.RefreshTokenEntity;
 import com.adminplus.repository.RefreshTokenRepository;
 import com.adminplus.service.RefreshTokenService;
+import com.adminplus.utils.ServiceAssert;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -87,11 +88,11 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
                 .orElseThrow(() -> new BizException("无效的 Refresh Token"));
 
         if (tokenEntity.getRevoked()) {
-            throw new BizException("Refresh Token 已被撤销");
+            ServiceAssert.fail("Refresh Token 已被撤销");
         }
 
         if (tokenEntity.getExpiryDate().isBefore(Instant.now())) {
-            throw new BizException("Refresh Token 已过期");
+            ServiceAssert.fail("Refresh Token 已过期");
         }
 
         return tokenEntity;

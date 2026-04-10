@@ -22,6 +22,7 @@ import com.adminplus.service.VirusScanService;
 import com.adminplus.utils.LogMaskingUtils;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -97,25 +98,20 @@ public class ProfileServiceImpl implements ProfileService {
     @Transactional
     public void changePassword(PasswordChangeRequest request) {
         // 验证新密码和确认密码是否一致
-        if (!Objects.equals(request.newPassword(), request.confirmPassword())) {
-            throw new BizException("新密码和确认密码不一致");
-        }
+        ServiceAssert.isTrue(Objects.equals(request.newPassword(), request.confirmPassword()), "新密码和确认密码不一致");
 
         // 验证新密码不能与原密码相同
-        if (Objects.equals(request.oldPassword(), request.newPassword())) {
-            throw new BizException("新密码不能与原密码相同");
-        }
+        ServiceAssert.isTrue(!Objects.equals(request.oldPassword(), request.newPassword()), "新密码不能与原密码相同");
 
         // 验证新密码强度
-        if (!PasswordUtils.isStrongPassword(request.newPassword())) throw new BizException(PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(request.newPassword())));
+        ServiceAssert.isTrue(PasswordUtils.isStrongPassword(request.newPassword()),
+                PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(request.newPassword())));
 
         String userId = SecurityUtils.getCurrentUserId();
         UserEntity user = EntityHelper.findByIdOrThrow(profileRepository::findById, userId, "用户不存在");
 
         // 验证原密码
-        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword())) {
-            throw new BizException("原密码错误");
-        }
+        ServiceAssert.isTrue(passwordEncoder.matches(request.oldPassword(), user.getPassword()), "原密码错误");
 
         // 更新密码
         user.setPassword(passwordEncoder.encode(request.newPassword()));
@@ -131,9 +127,7 @@ public class ProfileServiceImpl implements ProfileService {
         validateImageFile(file);
 
         // 病毒扫描
-        if (!virusScanService.scanFile(file)) {
-            throw new BizException("文件包含病毒，上传被拒绝");
-        }
+        ServiceAssert.isTrue(virusScanService.scanFile(file), "文件包含病毒，上传被拒绝");
 
         // 使用统一的文件服务上传（包含数据库记录）
         String avatarUrl = fileService.uploadFile(file, "avatars").fileUrl();
@@ -219,9 +213,7 @@ public class ProfileServiceImpl implements ProfileService {
      * 验证图片文件
      */
     private void validateImageFile(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new BizException("请选择要上传的文件");
-        }
+        ServiceAssert.isTrue(file != null && !file.isEmpty(), "请选择要上传的文件");
 
         // 验证文件类型
         String contentType = file.getContentType();
@@ -232,14 +224,10 @@ public class ProfileServiceImpl implements ProfileService {
                 break;
             }
         }
-        if (!validType) {
-            throw new BizException("只支持上传 JPG、PNG、GIF、WebP 格式的图片");
-        }
+        ServiceAssert.isTrue(validType, "只支持上传 JPG、PNG、GIF、WebP 格式的图片");
 
         // 验证文件大小
-        if (file.getSize() > FileConstants.MAX_AVATAR_SIZE) {
-            throw new BizException("图片大小不能超过 2MB");
-        }
+        ServiceAssert.isTrue(file.getSize() <= FileConstants.MAX_AVATAR_SIZE, "图片大小不能超过 2MB");
     }
 
     @Override

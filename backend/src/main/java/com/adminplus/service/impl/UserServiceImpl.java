@@ -22,6 +22,7 @@ import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.PageUtils;
 import com.adminplus.utils.PasswordUtils;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.ConversionService;
@@ -229,18 +230,15 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse createUser(UserCreateRequest req) {
         // 检查用户名是否已存在
-        if (userRepository.existsByUsername(req.username())) {
-            throw new BizException("用户名已存在");
-        }
+        ServiceAssert.notExists(userRepository.existsByUsername(req.username()), "用户名已存在");
 
         // 验证密码强度
-        if (!PasswordUtils.isStrongPassword(req.password())) throw new BizException(PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(req.password())));
+        ServiceAssert.isTrue(PasswordUtils.isStrongPassword(req.password()),
+                PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(req.password())));
 
         // 验证部门是否存在
         if (req.deptId() != null && !req.deptId().isEmpty()) {
-            if (!deptRepository.existsById(req.deptId())) {
-                throw new BizException("部门不存在");
-            }
+            ServiceAssert.exists(deptRepository.existsById(req.deptId()), "部门不存在");
         }
 
         var user = new UserEntity();
@@ -280,8 +278,8 @@ public class UserServiceImpl implements UserService {
         }
         if (request.deptId() != null) {
             // 验证部门是否存在
-            if (!request.deptId().isEmpty() && !deptRepository.existsById(request.deptId())) {
-                throw new BizException("部门不存在");
+            if (!request.deptId().isEmpty()) {
+                ServiceAssert.exists(deptRepository.existsById(request.deptId()), "部门不存在");
             }
             user.setDeptId(request.deptId().isEmpty() ? null : request.deptId());
         }
@@ -295,9 +293,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteUser(String id) {
         // 不能删除自己
-        if (id.equals(SecurityUtils.getCurrentUserIdOrDefault())) {
-            throw new BizException("不能删除自己");
-        }
+        ServiceAssert.isTrue(!id.equals(SecurityUtils.getCurrentUserIdOrDefault()), "不能删除自己");
 
         var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
 
@@ -309,9 +305,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void updateUserStatus(String id, Integer status) {
         // 不能禁用自己
-        if (id.equals(SecurityUtils.getCurrentUserIdOrDefault()) && CommonStatus.isDisabled(status)) {
-            throw new BizException("不能禁用自己");
-        }
+        ServiceAssert.isTrue(!id.equals(SecurityUtils.getCurrentUserIdOrDefault()) || !CommonStatus.isDisabled(status),
+                "不能禁用自己");
 
         // 校验 status 值范围
         CommonStatus.fromCode(status);  // 会抛出异常如果 status 不合法
@@ -328,7 +323,8 @@ public class UserServiceImpl implements UserService {
         var user = EntityHelper.findByIdOrThrow(userRepository::findById, id, "用户不存在");
 
         // 验证新密码强度（确保所有密码修改操作都使用相同的密码强度规则）
-        if (!PasswordUtils.isStrongPassword(newPassword)) throw new BizException(PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(newPassword)));
+        ServiceAssert.isTrue(PasswordUtils.isStrongPassword(newPassword),
+                PasswordUtils.getErrorMessage(PasswordUtils.getPasswordStrengthHint(newPassword)));
 
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -338,21 +334,21 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void assignRoles(String userId, List<String> roleIds) {
         // 检查用户是否存在
-        userRepository.findById(userId)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        ServiceAssert.exists(userRepository.existsById(userId), "用户不存在");
 
         // 验证角色是否都存在
         List<String> safeRoleIds = (roleIds != null) ? roleIds : List.of();
         if (!safeRoleIds.isEmpty()) {
             List<RoleEntity> foundRoles = roleRepository.findAllById(safeRoleIds);
-            if (foundRoles.size() != safeRoleIds.size()) {
-                List<String> foundIds = foundRoles.stream().map(RoleEntity::getId).toList();
-                String missingId = safeRoleIds.stream()
-                        .filter(id -> !foundIds.contains(id))
-                        .findFirst()
-                        .orElse(null);
-                throw new BizException("角色不存在，ID: " + missingId);
-            }
+            ServiceAssert.isTrue(foundRoles.size() == safeRoleIds.size(),
+                    () -> {
+                        List<String> foundIds = foundRoles.stream().map(RoleEntity::getId).toList();
+                        String missingId = safeRoleIds.stream()
+                                .filter(id -> !foundIds.contains(id))
+                                .findFirst()
+                                .orElse(null);
+                        return "角色不存在，ID: " + missingId;
+                    });
         }
 
         // diff 精准更新
@@ -379,8 +375,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public List<String> getUserRoleIds(String userId) {
         // 检查用户是否存在
-        userRepository.findById(userId)
-                .orElseThrow(() -> new BizException("用户不存在"));
+        ServiceAssert.exists(userRepository.existsById(userId), "用户不存在");
         return userRoleRepository.findByUserId(userId).stream()
                 .map(UserRoleEntity::getRoleId)
                 .toList();
