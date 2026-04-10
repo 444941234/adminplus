@@ -1,10 +1,12 @@
 package com.adminplus.utils;
 
+import com.adminplus.constants.FileConstants;
 import org.apache.tika.Tika;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -19,10 +21,8 @@ public class FileContentValidator {
 
     private static final Tika TIKA = new Tika();
 
-    // 允许的图片类型
-    private static final Set<String> ALLOWED_IMAGE_TYPES = Set.of(
-            "image/jpeg", "image/png", "image/gif", "image/webp"
-    );
+    // 允许的图片类型（使用 FileConstants）
+    private static final Set<String> ALLOWED_IMAGE_TYPES = new HashSet<>(Arrays.asList(FileConstants.ALLOWED_IMAGE_TYPES));
 
     // 允许的文档类型
     private static final Set<String> ALLOWED_DOCUMENT_TYPES = Set.of(

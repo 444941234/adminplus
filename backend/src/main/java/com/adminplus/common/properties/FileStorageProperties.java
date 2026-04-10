@@ -1,11 +1,13 @@
 package com.adminplus.common.properties;
 
+import com.adminplus.constants.FileConstants;
 import com.adminplus.enums.StorageType;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -46,14 +48,9 @@ public class FileStorageProperties {
         private String accessPrefix = "/uploads";
 
         /**
-         * 允许的文件类型
+         * 允许的文件类型（默认使用 FileConstants）
          */
-        private List<String> allowedTypes = new ArrayList<>(List.of(
-                "image/jpeg",
-                "image/png",
-                "image/gif",
-                "image/webp"
-        ));
+        private List<String> allowedTypes = new ArrayList<>(Arrays.asList(FileConstants.ALLOWED_IMAGE_TYPES));
 
         /**
          * 最大文件大小 (MB)
