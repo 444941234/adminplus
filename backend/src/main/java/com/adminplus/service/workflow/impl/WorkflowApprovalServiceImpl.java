@@ -193,6 +193,22 @@ public class WorkflowApprovalServiceImpl implements WorkflowApprovalService {
     }
 
     @Override
+    public void recreateApprovalsForNode(WorkflowInstanceEntity instance, WorkflowNodeEntity targetNode) {
+        // 查找目标节点的所有审批记录
+        List<WorkflowApprovalEntity> existingApprovals = approvalRepository
+                .findByInstanceIdAndNodeIdAndDeletedFalse(instance.getId(), targetNode.getId());
+
+        // 如果存在旧的审批记录，将其标记为已删除
+        if (!existingApprovals.isEmpty()) {
+            existingApprovals.forEach(a -> a.setDeleted(true));
+            approvalRepository.saveAll(existingApprovals);
+        }
+
+        // 重新创建审批记录
+        createApprovalRecords(instance, targetNode);
+    }
+
+    @Override
     @Transactional
     public void withdraw(String instanceId) {
         String userId = getCurrentUserId();

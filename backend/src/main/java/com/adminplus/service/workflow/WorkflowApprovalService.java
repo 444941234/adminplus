@@ -3,6 +3,8 @@ package com.adminplus.service.workflow;
 import com.adminplus.pojo.dto.request.ApprovalActionRequest;
 import com.adminplus.pojo.dto.request.WorkflowStartRequest;
 import com.adminplus.pojo.dto.response.WorkflowInstanceResponse;
+import com.adminplus.pojo.entity.WorkflowInstanceEntity;
+import com.adminplus.pojo.entity.WorkflowNodeEntity;
 
 /**
  * 工作流审批服务接口
@@ -55,4 +57,15 @@ public interface WorkflowApprovalService {
      * @param instanceId 工作流实例ID
      */
     void withdraw(String instanceId);
+
+    /**
+     * 清理目标节点的旧审批记录并重新创建
+     * <p>
+     * 用于工作流回退时，清除目标节点的审批记录并重新创建待审批记录
+     * </p>
+     *
+     * @param instance   工作流实例
+     * @param targetNode 目标节点
+     */
+    void recreateApprovalsForNode(WorkflowInstanceEntity instance, WorkflowNodeEntity targetNode);
 }
