@@ -22,7 +22,9 @@ import com.adminplus.service.WorkflowInstanceService;
 import com.adminplus.service.workflow.hook.WorkflowHookService;
 import com.adminplus.pojo.dto.workflow.hook.HookExecutionSummary;
 import com.adminplus.common.exception.BizException;
+import com.adminplus.utils.EntityHelper;
 import com.adminplus.utils.SecurityUtils;
+import com.adminplus.utils.ServiceAssert;
 import com.adminplus.utils.XssUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -66,11 +68,11 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         String userId = getCurrentUserId();
         log.info("创建工作流草稿: userId={}, definitionId={}, title={}", userId, request.definitionId(), request.title());
 
-        WorkflowDefinitionEntity definition = definitionRepository.findById(request.definitionId())
-                .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在"));
+        WorkflowDefinitionEntity definition = EntityHelper.findByIdOrThrow(
+            definitionRepository::findById, request.definitionId(), "工作流定义不存在");
 
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
+        UserEntity user = EntityHelper.findByIdOrThrow(
+            userRepository::findById, userId, "用户不存在");
 
         WorkflowInstanceEntity instance = new WorkflowInstanceEntity();
         instance.setDefinitionId(request.definitionId());
@@ -95,17 +97,13 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         String userId = getCurrentUserId();
         log.info("提交工作流: instanceId={}, userId={}", instanceId, userId);
 
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
-        if (!instance.isDraft() && !instance.isRunning()) {
-            throw new IllegalArgumentException("只有草稿或进行中的工作流可以提交");
-        }
+        ServiceAssert.isTrue(instance.isDraft() || instance.isRunning(), "只有草稿或进行中的工作流可以提交");
 
         // 验证是否为发起人
-        if (!instance.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("只有发起人可以提交工作流");
-        }
+        ServiceAssert.isTrue(instance.getUserId().equals(userId), "只有发起人可以提交工作流");
 
         if (request != null) {
             applyDraftChanges(instance, request);
@@ -118,9 +116,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         List<WorkflowNodeEntity> nodes = nodeRepository
                 .findByDefinitionIdAndDeletedFalseOrderByNodeOrderAsc(instance.getDefinitionId());
 
-        if (nodes.isEmpty()) {
-            throw new IllegalArgumentException("工作流没有配置审批节点");
-        }
+        ServiceAssert.isTrue(!nodes.isEmpty(), "工作流没有配置审批节点");
 
         WorkflowNodeEntity firstNode = nodes.get(0);
 
@@ -177,18 +173,14 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     @Transactional(readOnly = true)
     public WorkflowDraftDetailResponse getDraftDetail(String instanceId) {
         String userId = getCurrentUserId();
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
-        if (!instance.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("只有发起人可以查看草稿");
-        }
-        if (!instance.isDraft()) {
-            throw new IllegalArgumentException("当前流程不是草稿状态");
-        }
+        ServiceAssert.isTrue(instance.getUserId().equals(userId), "只有发起人可以查看草稿");
+        ServiceAssert.isTrue(instance.isDraft(), "当前流程不是草稿状态");
 
-        WorkflowDefinitionEntity definition = definitionRepository.findById(instance.getDefinitionId())
-                .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在"));
+        WorkflowDefinitionEntity definition = EntityHelper.findByIdOrThrow(
+            definitionRepository::findById, instance.getDefinitionId(), "工作流定义不存在");
 
         return new WorkflowDraftDetailResponse(
                 toInstanceResponse(instance, false, false),
@@ -201,15 +193,11 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     @Transactional
     public WorkflowInstanceResponse updateDraft(String instanceId, WorkflowStartRequest request) {
         String userId = getCurrentUserId();
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
-        if (!instance.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("只有发起人可以更新草稿");
-        }
-        if (!instance.isDraft()) {
-            throw new IllegalArgumentException("只有草稿状态可以更新");
-        }
+        ServiceAssert.isTrue(instance.getUserId().equals(userId), "只有发起人可以更新草稿");
+        ServiceAssert.isTrue(instance.isDraft(), "只有草稿状态可以更新");
 
         applyDraftChanges(instance, request);
         WorkflowInstanceEntity saved = instanceRepository.save(instance);
@@ -220,15 +208,11 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     @Transactional
     public void deleteDraft(String instanceId) {
         String userId = getCurrentUserId();
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
-        if (!instance.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("只有发起人可以删除草稿");
-        }
-        if (!instance.isDraft()) {
-            throw new IllegalArgumentException("只有草稿状态可以删除");
-        }
+        ServiceAssert.isTrue(instance.getUserId().equals(userId), "只有发起人可以删除草稿");
+        ServiceAssert.isTrue(instance.isDraft(), "只有草稿状态可以删除");
 
         instanceRepository.delete(instance);
     }
@@ -239,8 +223,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         String userId = getCurrentUserId();
         log.info("查询工作流详情: instanceId={}", instanceId);
 
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
         // 权限检查：发起人、审批人、抄送人才可查看
         checkViewAccess(instance, userId);
@@ -270,8 +254,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         // 判断当前用户是否可以审批
         boolean canApprove = canUserApprove(instance, userId);
 
-        WorkflowDefinitionEntity definition = definitionRepository.findById(instance.getDefinitionId())
-                .orElseThrow(() -> new IllegalArgumentException("工作流定义不存在"));
+        WorkflowDefinitionEntity definition = EntityHelper.findByIdOrThrow(
+            definitionRepository::findById, instance.getDefinitionId(), "工作流定义不存在");
 
         List<WorkflowCcResponse> ccRecords = ccRepository.findByInstanceIdAndDeletedFalseOrderByCreateTimeAsc(instanceId)
                 .stream()
@@ -383,16 +367,12 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         String userId = getCurrentUserId();
         log.info("取消工作流: instanceId={}, userId={}", instanceId, userId);
 
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
-        if (!instance.isCancellable()) {
-            throw new IllegalArgumentException("当前状态不允许取消");
-        }
+        ServiceAssert.isTrue(instance.isCancellable(), "当前状态不允许取消");
 
-        if (!instance.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("只有发起人可以取消工作流");
-        }
+        ServiceAssert.isTrue(instance.getUserId().equals(userId), "只有发起人可以取消工作流");
 
         // 取消前钩子校验
         WorkflowNodeEntity currentNode = null;
@@ -434,16 +414,12 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         String userId = getCurrentUserId();
         log.info("撤回工作流: instanceId={}, userId={}", instanceId, userId);
 
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
-        if (!instance.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("只有发起人可以撤回工作流");
-        }
+        ServiceAssert.isTrue(instance.getUserId().equals(userId), "只有发起人可以撤回工作流");
 
-        if (!instance.isDraft() && !instance.isRejected()) {
-            throw new IllegalArgumentException("只有草稿或被拒绝的流程可以撤回");
-        }
+        ServiceAssert.isTrue(instance.isDraft() || instance.isRejected(), "只有草稿或被拒绝的流程可以撤回");
 
         // 撤回前钩子校验
         WorkflowNodeEntity currentNode = null;
@@ -495,8 +471,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         String userId = getCurrentUserId();
         log.info("查询审批记录: instanceId={}", instanceId);
 
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
         // 权限检查：发起人、审批人、抄送人才可查看
         checkViewAccess(instance, userId);
@@ -512,15 +488,13 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
      */
     private WorkflowInstanceResponse processApproval(String instanceId, ApprovalActionRequest request, String action) {
         String userId = getCurrentUserId();
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
+        UserEntity user = EntityHelper.findByIdOrThrow(
+            userRepository::findById, userId, "用户不存在");
 
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
-        if (!instance.isRunning()) {
-            throw new IllegalArgumentException("只有进行中的工作流可以审批");
-        }
+        ServiceAssert.isTrue(instance.isRunning(), "只有进行中的工作流可以审批");
 
         // 查询当前节点的待审批记录
         List<WorkflowApprovalEntity> pendingApprovals = approvalRepository
@@ -533,11 +507,11 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         WorkflowApprovalEntity myApproval = pendingApprovals.stream()
                 .filter(a -> a.getApproverId().equals(userId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("您没有权限审批此工作流"));
+                .orElseThrow(() -> new BizException("您没有权限审批此工作流"));
 
         // 查询当前节点
-        WorkflowNodeEntity currentNode = nodeRepository.findById(instance.getCurrentNodeId())
-                .orElseThrow(() -> new IllegalArgumentException("当前节点不存在"));
+        WorkflowNodeEntity currentNode = EntityHelper.findByIdOrThrow(
+            nodeRepository::findById, instance.getCurrentNodeId(), "当前节点不存在");
 
         // 审批前钩子校验
         String hookPoint = action.equals("approved") ? "PRE_APPROVE" : "PRE_REJECT";
@@ -915,12 +889,10 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         String userId = getCurrentUserId();
         log.info("回退工作流: instanceId={}, userId={}", instanceId, userId);
 
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
-        if (!instance.isRunning()) {
-            throw new IllegalArgumentException("只有进行中的工作流可以回退");
-        }
+        ServiceAssert.isTrue(instance.isRunning(), "只有进行中的工作流可以回退");
 
         // 验证审批权限
         WorkflowApprovalEntity approval = approvalRepository
@@ -928,7 +900,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 .stream()
                 .filter(a -> a.isPending() && a.getApproverId().equals(userId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("您没有权限回退此工作流"));
+                .orElseThrow(() -> new BizException("您没有权限回退此工作流"));
 
         // 解析目标节点ID（从请求中获取）
         String requestedTargetNodeId = request.targetNodeId();
@@ -937,7 +909,7 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
             // 如果没有指定目标节点，则回退到上一节点
             finalTargetNodeId = findPreviousNodeId(instance);
             if (finalTargetNodeId == null) {
-                throw new IllegalArgumentException("没有可以回退的节点");
+                throw new BizException("没有可以回退的节点");
             }
         } else {
             finalTargetNodeId = requestedTargetNodeId;
@@ -948,16 +920,14 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         String targetNodeIdForValidation = finalTargetNodeId; // effectively final variable for lambda
         boolean isValidTarget = rollbackableNodes.stream()
                 .anyMatch(n -> n.id().equals(targetNodeIdForValidation));
-        if (!isValidTarget) {
-            throw new IllegalArgumentException("无法回退到指定节点");
-        }
+        ServiceAssert.isTrue(isValidTarget, "无法回退到指定节点");
 
-        WorkflowNodeEntity targetNode = nodeRepository.findById(finalTargetNodeId)
-                .orElseThrow(() -> new IllegalArgumentException("目标节点不存在"));
+        WorkflowNodeEntity targetNode = EntityHelper.findByIdOrThrow(
+            nodeRepository::findById, finalTargetNodeId, "目标节点不存在");
 
         // 获取当前节点
-        WorkflowNodeEntity currentNode = nodeRepository.findById(instance.getCurrentNodeId())
-                .orElseThrow(() -> new IllegalArgumentException("当前节点不存在"));
+        WorkflowNodeEntity currentNode = EntityHelper.findByIdOrThrow(
+            nodeRepository::findById, instance.getCurrentNodeId(), "当前节点不存在");
 
         // 回退前钩子校验
         HookExecutionSummary preResult = hookService.executeAllHooks(
@@ -1012,8 +982,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
     @Transactional(readOnly = true)
     public List<WorkflowNodeResponse> getRollbackableNodes(String instanceId) {
         String userId = getCurrentUserId();
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
         // 权限检查：发起人、审批人、抄送人才可查看
         checkViewAccess(instance, userId);
@@ -1163,17 +1133,15 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         log.info("加签/转办: instanceId={}, initiatorId={}, addType={}, addUserId={}",
                 instanceId, initiatorId, request.addType(), request.addUserId());
 
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
         // 只有运行中的工作流可以加签/转办
-        if (!instance.isRunning()) {
-            throw new IllegalArgumentException("只有运行中的工作流可以加签/转办");
-        }
+        ServiceAssert.isTrue(instance.isRunning(), "只有运行中的工作流可以加签/转办");
 
         // 获取当前节点
-        WorkflowNodeEntity currentNode = nodeRepository.findById(instance.getCurrentNodeId())
-                .orElseThrow(() -> new IllegalArgumentException("当前节点不存在"));
+        WorkflowNodeEntity currentNode = EntityHelper.findByIdOrThrow(
+            nodeRepository::findById, instance.getCurrentNodeId(), "当前节点不存在");
 
         // 获取当前用户的审批记录
         WorkflowApprovalEntity myApproval = approvalRepository
@@ -1181,15 +1149,15 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
                 .stream()
                 .filter(a -> a.isPending() && a.getApproverId().equals(initiatorId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("您没有权限对当前流程进行加签/转办"));
+                .orElseThrow(() -> new BizException("您没有权限对当前流程进行加签/转办"));
 
         // 验证被加签人存在
-        UserEntity addUser = userRepository.findById(request.addUserId())
-                .orElseThrow(() -> new IllegalArgumentException("被加签人不存在"));
+        UserEntity addUser = EntityHelper.findByIdOrThrow(
+            userRepository::findById, request.addUserId(), "被加签人不存在");
 
         // 获取发起人信息
-        UserEntity initiator = userRepository.findById(initiatorId)
-                .orElseThrow(() -> new IllegalArgumentException("加签发起人不存在"));
+        UserEntity initiator = EntityHelper.findByIdOrThrow(
+            userRepository::findById, initiatorId, "加签发起人不存在");
 
         // 加签前钩子校验
         HookExecutionSummary preResult = hookService.executeAllHooks(
@@ -1341,8 +1309,8 @@ public class WorkflowInstanceServiceImpl implements WorkflowInstanceService {
         String userId = getCurrentUserId();
         log.info("查询加签记录: instanceId={}", instanceId);
 
-        WorkflowInstanceEntity instance = instanceRepository.findById(instanceId)
-                .orElseThrow(() -> new IllegalArgumentException("工作流实例不存在"));
+        WorkflowInstanceEntity instance = EntityHelper.findByIdOrThrow(
+            instanceRepository::findById, instanceId, "工作流实例不存在");
 
         // 权限检查：发起人、审批人、抄送人才可查看
         checkViewAccess(instance, userId);
