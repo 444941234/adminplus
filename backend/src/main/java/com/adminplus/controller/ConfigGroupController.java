@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/sys/config-groups")
+@RequestMapping(value = "/sys/config-groups")
 @RequiredArgsConstructor
 @Tag(name = "配置组管理", description = "配置组增删改查")
 public class ConfigGroupController {

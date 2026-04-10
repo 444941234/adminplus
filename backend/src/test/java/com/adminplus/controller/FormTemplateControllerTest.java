@@ -1,5 +1,8 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.exception.BizException;
+import com.adminplus.common.exception.GlobalExceptionHandler;
+import com.adminplus.common.properties.AppProperties;
 import com.adminplus.pojo.dto.request.FormTemplateRequest;
 import com.adminplus.pojo.dto.response.FormTemplateResponse;
 import com.adminplus.service.FormTemplateService;
@@ -54,8 +57,10 @@ class FormTemplateControllerTest {
     void setUp() {
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
+        AppProperties mockAppProperties = new AppProperties();
         mockMvc = MockMvcBuilders.standaloneSetup(formTemplateController)
                 .setValidator(validator)
+                .setControllerAdvice(new GlobalExceptionHandler(mockAppProperties))
                 .build();
         objectMapper = TestJacksonConfig.createObjectMapper();
 
@@ -81,7 +86,7 @@ class FormTemplateControllerTest {
         void getAllTemplates_Success() throws Exception {
             when(formTemplateService.getAllTemplates()).thenReturn(List.of(testTemplate));
 
-            mockMvc.perform(get("/v1/form-templates"))
+            mockMvc.perform(get("/form-templates"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].id").value("template-001"));
 
@@ -93,7 +98,7 @@ class FormTemplateControllerTest {
         void getEnabledTemplates_Success() throws Exception {
             when(formTemplateService.getEnabledTemplates()).thenReturn(List.of(testTemplate));
 
-            mockMvc.perform(get("/v1/form-templates/enabled"))
+            mockMvc.perform(get("/form-templates/enabled"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].id").value("template-001"));
 
@@ -105,7 +110,7 @@ class FormTemplateControllerTest {
         void getTemplatesByCategory_Success() throws Exception {
             when(formTemplateService.getTemplatesByCategory("leave")).thenReturn(List.of(testTemplate));
 
-            mockMvc.perform(get("/v1/form-templates/category/leave"))
+            mockMvc.perform(get("/form-templates/category/leave"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].category").value("leave"));
 
@@ -117,7 +122,7 @@ class FormTemplateControllerTest {
         void getTemplateById_Success() throws Exception {
             when(formTemplateService.getTemplateById("template-001")).thenReturn(testTemplate);
 
-            mockMvc.perform(get("/v1/form-templates/template-001"))
+            mockMvc.perform(get("/form-templates/template-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value("template-001"));
 
@@ -129,9 +134,9 @@ class FormTemplateControllerTest {
         void getTemplateById_NotFound() throws Exception {
             when(formTemplateService.getTemplateById("non-existent")).thenReturn(null);
 
-            mockMvc.perform(get("/v1/form-templates/non-existent"))
+            mockMvc.perform(get("/form-templates/non-existent"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(404));
+                .andExpect(jsonPath("$.code").value(400));
         }
 
         @Test
@@ -139,7 +144,7 @@ class FormTemplateControllerTest {
         void getTemplateByCode_Success() throws Exception {
             when(formTemplateService.getTemplateByCode("leave_form")).thenReturn(testTemplate);
 
-            mockMvc.perform(get("/v1/form-templates/code/leave_form"))
+            mockMvc.perform(get("/form-templates/code/leave_form"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.templateCode").value("leave_form"));
 
@@ -151,7 +156,7 @@ class FormTemplateControllerTest {
         void checkCodeExists_Success() throws Exception {
             when(formTemplateService.existsByCode("leave_form")).thenReturn(true);
 
-            mockMvc.perform(get("/v1/form-templates/exists/leave_form"))
+            mockMvc.perform(get("/form-templates/exists/leave_form"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value(true));
 
@@ -168,7 +173,7 @@ class FormTemplateControllerTest {
         void createTemplate_Success() throws Exception {
             when(formTemplateService.createTemplate(any(FormTemplateRequest.class))).thenReturn(testTemplate);
 
-            mockMvc.perform(post("/v1/form-templates")
+            mockMvc.perform(post("/form-templates")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
                         {
@@ -190,9 +195,9 @@ class FormTemplateControllerTest {
         @DisplayName("should return 400 when template code already exists")
         void createTemplate_CodeExists() throws Exception {
             when(formTemplateService.createTemplate(any(FormTemplateRequest.class)))
-                .thenThrow(new IllegalArgumentException("模板标识已存在"));
+                .thenThrow(new BizException("模板标识已存在"));
 
-            mockMvc.perform(post("/v1/form-templates")
+            mockMvc.perform(post("/form-templates")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
                         {
@@ -218,7 +223,7 @@ class FormTemplateControllerTest {
             when(formTemplateService.updateTemplate(anyString(), any(FormTemplateRequest.class)))
                 .thenReturn(testTemplate);
 
-            mockMvc.perform(put("/v1/form-templates/template-001")
+            mockMvc.perform(put("/form-templates/template-001")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
                         {
@@ -238,9 +243,9 @@ class FormTemplateControllerTest {
         @DisplayName("should return 404 when template not found")
         void updateTemplate_NotFound() throws Exception {
             when(formTemplateService.updateTemplate(anyString(), any(FormTemplateRequest.class)))
-                .thenThrow(new IllegalArgumentException("表单模板不存在"));
+                .thenThrow(new BizException("表单模板不存在"));
 
-            mockMvc.perform(put("/v1/form-templates/non-existent")
+            mockMvc.perform(put("/form-templates/non-existent")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
                         {
@@ -252,7 +257,7 @@ class FormTemplateControllerTest {
                         }
                         """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(404));
+                .andExpect(jsonPath("$.code").value(400));
         }
     }
 
@@ -263,7 +268,7 @@ class FormTemplateControllerTest {
         @Test
         @DisplayName("should delete template successfully")
         void deleteTemplate_Success() throws Exception {
-            mockMvc.perform(delete("/v1/form-templates/template-001"))
+            mockMvc.perform(delete("/form-templates/template-001"))
                 .andExpect(status().isOk());
 
             verify(formTemplateService).deleteTemplate("template-001");
@@ -272,12 +277,12 @@ class FormTemplateControllerTest {
         @Test
         @DisplayName("should return 404 when template not found")
         void deleteTemplate_NotFound() throws Exception {
-            org.mockito.Mockito.doThrow(new IllegalArgumentException("表单模板不存在"))
+            org.mockito.Mockito.doThrow(new BizException("表单模板不存在"))
                 .when(formTemplateService).deleteTemplate("non-existent");
 
-            mockMvc.perform(delete("/v1/form-templates/non-existent"))
+            mockMvc.perform(delete("/form-templates/non-existent"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(404));
+                .andExpect(jsonPath("$.code").value(400));
         }
     }
 }

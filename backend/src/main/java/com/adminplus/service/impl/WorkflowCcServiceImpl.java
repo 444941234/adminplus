@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.entity.WorkflowCcEntity;
 import com.adminplus.pojo.dto.response.WorkflowCcResponse;
 import com.adminplus.repository.WorkflowCcRepository;
@@ -61,11 +62,11 @@ public class WorkflowCcServiceImpl implements WorkflowCcService {
         log.info("标记抄送记录为已读: ccId={}, userId={}", ccId, userId);
 
         WorkflowCcEntity cc = ccRepository.findById(ccId)
-                .orElseThrow(() -> new IllegalArgumentException("抄送记录不存在"));
+                .orElseThrow(() -> new BizException("抄送记录不存在"));
 
         // 验证权限
         if (!cc.getUserId().equals(userId)) {
-            throw new IllegalArgumentException("无权限标记此抄送记录");
+            throw new BizException("无权限标记此抄送记录");
         }
 
         cc.markAsRead();

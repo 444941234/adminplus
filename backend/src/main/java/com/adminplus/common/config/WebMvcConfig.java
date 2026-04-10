@@ -8,6 +8,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.web.servlet.config.annotation.ApiVersionConfigurer;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -25,21 +26,50 @@ public class WebMvcConfig implements WebMvcConfigurer {
     private final RateLimitInterceptor rateLimitInterceptor;
     private final FileStorageProperties fileStorageProperties;
 
+    /**
+     * 配置 API 版本管理（Spring Boot 4.0 原生支持）
+     * <p>
+     * 支持以下版本解析方式：
+     * 1. 请求头：X-API-Version
+     * 2. URL 路径：/{version}/api/xxx
+     * 3. 请求参数：?version=1.0
+     * 4. 媒体类型参数：Accept: application/json;version=1.0
+     * <p>
+     * 使用方式：
+     * - @GetMapping(version = "1.0") 匹配特定版本
+     * - @GetMapping(version = "1.1+") 匹配 1.1 及以上版本
+     * - 不指定 version 则匹配任意版本（优先级最低）
+     */
+    @Override
+    public void configureApiVersioning(ApiVersionConfigurer configurer) {
+        // 从请求头 X-API-Version 解析版本
+        configurer.useRequestHeader("X-API-Version");
+
+        // 可选：从 URL 路径段解析版本（如 /v1/users）
+        // configurer.usePathSegment(0);  // 索引 0 表示第一个路径段
+
+        // 可选：从请求参数解析版本
+        // configurer.useRequestParameter("version");
+
+        // 可选：从媒体类型参数解析版本
+        // configurer.useMediaTypeParameter("version");
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 注册限流拦截器 - 认证接口
         registry.addInterceptor(rateLimitInterceptor)
-                .addPathPatterns("/v1/auth/**")
+                .addPathPatterns("/auth/**")
                 .order(1);
 
         // 限流拦截器 - 敏感操作接口
         registry.addInterceptor(rateLimitInterceptor)
                 .addPathPatterns(
-                        "/v1/sys/users/*/password",    // 密码重置
-                        "/v1/files/upload",            // 文件上传
-                        "/v1/workflow/**/approve",     // 工作流审批
-                        "/v1/workflow/**/reject",      // 工作流驳回
-                        "/v1/workflow/**/submit"       // 工作流提交
+                        "/sys/users/*/password",    // 密码重置
+                        "/files/upload",            // 文件上传
+                        "/workflow/**/approve",     // 工作流审批
+                        "/workflow/**/reject",      // 工作流驳回
+                        "/workflow/**/submit"       // 工作流提交
                 )
                 .order(2);
     }

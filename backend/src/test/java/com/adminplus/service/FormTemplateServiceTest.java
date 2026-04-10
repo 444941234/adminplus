@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.request.FormTemplateRequest;
 import com.adminplus.pojo.dto.response.FormTemplateResponse;
 import com.adminplus.pojo.entity.FormTemplateEntity;
@@ -305,7 +306,7 @@ class FormTemplateServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> templateService.createTemplate(req))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("表单标识已存在");
         }
     }
@@ -343,7 +344,7 @@ class FormTemplateServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> templateService.updateTemplate("non-existent", req))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("表单模板不存在");
         }
 
@@ -359,7 +360,7 @@ class FormTemplateServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> templateService.updateTemplate("template-001", req))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("表单标识已存在");
         }
 
@@ -408,7 +409,7 @@ class FormTemplateServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> templateService.deleteTemplate("non-existent"))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("表单模板不存在");
         }
     }

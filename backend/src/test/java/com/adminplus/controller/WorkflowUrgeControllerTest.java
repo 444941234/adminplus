@@ -84,7 +84,7 @@ class WorkflowUrgeControllerTest {
         @Test
         @DisplayName("should urge workflow successfully")
         void shouldUrgeWorkflow() throws Exception {
-            mockMvc.perform(post("/v1/workflow/urge/inst-001")
+            mockMvc.perform(post("/workflow/urge/inst-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(urgeActionRequest)))
                     .andExpect(status().isOk())
@@ -103,7 +103,7 @@ class WorkflowUrgeControllerTest {
         void shouldReturnReceivedUrgeRecords() throws Exception {
             when(urgeService.getReceivedUrgeRecords(anyString())).thenReturn(Arrays.asList(testUrgeRecord));
 
-            mockMvc.perform(get("/v1/workflow/urge/received"))
+            mockMvc.perform(get("/workflow/urge/received"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].id").value("urge-001"));
@@ -121,7 +121,7 @@ class WorkflowUrgeControllerTest {
         void shouldReturnSentUrgeRecords() throws Exception {
             when(urgeService.getSentUrgeRecords(anyString())).thenReturn(Arrays.asList(testUrgeRecord));
 
-            mockMvc.perform(get("/v1/workflow/urge/sent"))
+            mockMvc.perform(get("/workflow/urge/sent"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].id").value("urge-001"));
@@ -139,7 +139,7 @@ class WorkflowUrgeControllerTest {
         void shouldReturnUnreadUrgeRecords() throws Exception {
             when(urgeService.getUnreadUrgeRecords(anyString())).thenReturn(Arrays.asList(testUrgeRecord));
 
-            mockMvc.perform(get("/v1/workflow/urge/unread"))
+            mockMvc.perform(get("/workflow/urge/unread"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].isRead").value(false));
@@ -152,7 +152,7 @@ class WorkflowUrgeControllerTest {
         void shouldCountUnreadUrgeRecords() throws Exception {
             when(urgeService.countUnreadUrgeRecords(anyString())).thenReturn(5L);
 
-            mockMvc.perform(get("/v1/workflow/urge/unread/count"))
+            mockMvc.perform(get("/workflow/urge/unread/count"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data").value(5));
@@ -170,7 +170,7 @@ class WorkflowUrgeControllerTest {
         void shouldReturnInstanceUrgeRecords() throws Exception {
             when(urgeService.getInstanceUrgeRecords("inst-001")).thenReturn(Arrays.asList(testUrgeRecord));
 
-            mockMvc.perform(get("/v1/workflow/urge/instance/inst-001"))
+            mockMvc.perform(get("/workflow/urge/instance/inst-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].instanceId").value("inst-001"));
@@ -186,7 +186,7 @@ class WorkflowUrgeControllerTest {
         @Test
         @DisplayName("should mark single urge record as read")
         void shouldMarkSingleAsRead() throws Exception {
-            mockMvc.perform(put("/v1/workflow/urge/urge-001/read"))
+            mockMvc.perform(put("/workflow/urge/urge-001/read"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -198,7 +198,7 @@ class WorkflowUrgeControllerTest {
         void shouldMarkMultipleAsRead() throws Exception {
             List<String> urgeIds = Arrays.asList("urge-001", "urge-002");
 
-            mockMvc.perform(put("/v1/workflow/urge/read-batch")
+            mockMvc.perform(put("/workflow/urge/read-batch")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(urgeIds)))
                     .andExpect(status().isOk())

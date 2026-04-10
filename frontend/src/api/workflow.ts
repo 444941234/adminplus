@@ -50,7 +50,7 @@ export function getWorkflowDetail(instanceId: string) {
 }
 
 export function getMyWorkflows(status?: string) {
-  return get<WorkflowInstance[]>('/workflow/instances/my', status ? { status } : undefined)
+  return get<WorkflowInstance[]>('/workflow/instances/my', status ? { params: { status } } : undefined)
 }
 
 export function getPendingWorkflows() {

@@ -95,7 +95,7 @@ class ConfigControllerTest {
             when(configService.getConfigList(any(ConfigQuery.class))).thenReturn(pageResult);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/configs")
+            mockMvc.perform(get("/sys/configs")
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -118,7 +118,7 @@ class ConfigControllerTest {
             when(configService.getConfigList(any(ConfigQuery.class))).thenReturn(pageResult);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/configs")
+            mockMvc.perform(get("/sys/configs")
                             .param("page", "1")
                             .param("size", "10")
                             .param("groupId", "group1")
@@ -143,7 +143,7 @@ class ConfigControllerTest {
             when(configService.getConfigsByGroupId("group1")).thenReturn(configs);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/configs/group/group1"))
+            mockMvc.perform(get("/sys/configs/group/group1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data[0].name").value("系统名称"));
 
@@ -163,7 +163,7 @@ class ConfigControllerTest {
             when(configService.getConfigsByGroupCode("basic")).thenReturn(configs);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/configs/group-code/basic"))
+            mockMvc.perform(get("/sys/configs/group-code/basic"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data[0].name").value("系统名称"));
 
@@ -183,7 +183,7 @@ class ConfigControllerTest {
             when(configService.getConfigByKey("system.name")).thenReturn(config);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/configs/key/system.name"))
+            mockMvc.perform(get("/sys/configs/key/system.name"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.key").value("system.name"))
                     .andExpect(jsonPath("$.data.name").value("系统名称"));
@@ -204,7 +204,7 @@ class ConfigControllerTest {
             when(configService.getConfigById("1")).thenReturn(config);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/configs/1"))
+            mockMvc.perform(get("/sys/configs/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.id").value("1"))
                     .andExpect(jsonPath("$.data.name").value("系统名称"));
@@ -238,7 +238,7 @@ class ConfigControllerTest {
             when(configService.createConfig(any(ConfigCreateRequest.class))).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/configs")
+            mockMvc.perform(post("/sys/configs")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -272,7 +272,7 @@ class ConfigControllerTest {
             when(configService.updateConfig(eq("1"), any(ConfigUpdateRequest.class))).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(put("/v1/sys/configs/1")
+            mockMvc.perform(put("/sys/configs/1")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -290,7 +290,7 @@ class ConfigControllerTest {
         @DisplayName("成功删除配置")
         void shouldDeleteConfig() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/sys/configs/1"))
+            mockMvc.perform(delete("/sys/configs/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -306,7 +306,7 @@ class ConfigControllerTest {
         @DisplayName("成功更新配置状态")
         void shouldUpdateConfigStatus() throws Exception {
             // When & Then
-            mockMvc.perform(put("/v1/sys/configs/1/status")
+            mockMvc.perform(put("/sys/configs/1/status")
                             .param("status", "0"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
@@ -337,7 +337,7 @@ class ConfigControllerTest {
             when(configService.batchUpdateConfigs(any(ConfigBatchUpdateRequest.class))).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/configs/batch")
+            mockMvc.perform(post("/sys/configs/batch")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -380,7 +380,7 @@ class ConfigControllerTest {
             when(configService.exportConfigs(null)).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/configs/export"))
+            mockMvc.perform(post("/sys/configs/export"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.exportVersion").value("1.0"));
 
@@ -410,7 +410,7 @@ class ConfigControllerTest {
             when(configService.importConfigs(any(ConfigImportRequest.class))).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/configs/import")
+            mockMvc.perform(post("/sys/configs/import")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -434,7 +434,7 @@ class ConfigControllerTest {
             when(configService.rollbackConfig(eq("1"), any(ConfigRollbackRequest.class))).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/configs/1/rollback")
+            mockMvc.perform(post("/sys/configs/1/rollback")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -467,7 +467,7 @@ class ConfigControllerTest {
             when(configService.getConfigHistory("1")).thenReturn(history);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/configs/1/history"))
+            mockMvc.perform(get("/sys/configs/1/history"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data[0].configKey").value("system.name"));
 
@@ -498,7 +498,7 @@ class ConfigControllerTest {
             when(configService.getConfigEffectInfo()).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/configs/effect-info"))
+            mockMvc.perform(get("/sys/configs/effect-info"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.pendingEffects[0].key").value("system.name"))
                     .andExpect(jsonPath("$.data.restartRequiredConfigs[0]").value("database.url"));
@@ -515,7 +515,7 @@ class ConfigControllerTest {
         @DisplayName("成功手动生效配置")
         void shouldApplyConfig() throws Exception {
             // When & Then
-            mockMvc.perform(post("/v1/sys/configs/1/apply"))
+            mockMvc.perform(post("/sys/configs/1/apply"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 

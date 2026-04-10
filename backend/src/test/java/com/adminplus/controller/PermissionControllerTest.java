@@ -59,7 +59,7 @@ class PermissionControllerTest {
             when(permissionService.getAllPermissions()).thenReturn(List.of(testPermission));
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/permissions/all"))
+            mockMvc.perform(get("/sys/permissions/all"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].permKey").value("user:view"));

@@ -19,6 +19,9 @@ public class TokenMasker implements LogMasker, Prioritized {
 
     @Override
     public String mask(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
         return PATTERN.matcher(input).replaceAll(mr -> {
             String prefix = mr.group(1);
             String token = mr.group(2);

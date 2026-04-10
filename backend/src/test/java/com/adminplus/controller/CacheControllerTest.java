@@ -65,7 +65,7 @@ class CacheControllerTest {
             when(redisTemplate.delete((java.util.Collection<String>) keys)).thenReturn(2L);
 
             // When & Then
-            mockMvc.perform(delete("/v1/sys/cache/clear-all")
+            mockMvc.perform(delete("/sys/cache/clear-all")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -83,7 +83,7 @@ class CacheControllerTest {
             when(redisTemplate.keys("*")).thenReturn(null);
 
             // When & Then
-            mockMvc.perform(delete("/v1/sys/cache/clear-all")
+            mockMvc.perform(delete("/sys/cache/clear-all")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
@@ -107,7 +107,7 @@ class CacheControllerTest {
             when(redisTemplate.delete((java.util.Collection<String>) keys)).thenReturn(2L);
 
             // When & Then
-            mockMvc.perform(delete("/v1/sys/cache/clear/roles")
+            mockMvc.perform(delete("/sys/cache/clear/roles")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
@@ -131,7 +131,7 @@ class CacheControllerTest {
             when(redisTemplate.delete((java.util.Collection<String>) keys)).thenReturn(1L);
 
             // When & Then
-            mockMvc.perform(delete("/v1/sys/cache/clear-roles")
+            mockMvc.perform(delete("/sys/cache/clear-roles")
                             .with(csrf())
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk());
@@ -154,7 +154,7 @@ class CacheControllerTest {
             when(redisTemplate.keys("*")).thenReturn(keys);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/cache/keys")
+            mockMvc.perform(get("/sys/cache/keys")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
@@ -171,7 +171,7 @@ class CacheControllerTest {
             when(redisTemplate.keys("*")).thenReturn(null);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/cache/keys")
+            mockMvc.perform(get("/sys/cache/keys")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));

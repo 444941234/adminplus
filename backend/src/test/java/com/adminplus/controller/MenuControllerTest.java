@@ -82,7 +82,7 @@ class MenuControllerTest {
             when(menuService.getMenuTree()).thenReturn(List.of(testMenu));
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/menus/tree"))
+            mockMvc.perform(get("/sys/menus/tree"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].name").value("系统管理"));
@@ -102,7 +102,7 @@ class MenuControllerTest {
             when(menuService.getMenuById("menu-001")).thenReturn(testMenu);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/menus/menu-001"))
+            mockMvc.perform(get("/sys/menus/menu-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.name").value("系统管理"));
@@ -122,7 +122,7 @@ class MenuControllerTest {
             when(menuService.createMenu(any(MenuCreateRequest.class))).thenReturn(testMenu);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/menus")
+            mockMvc.perform(post("/sys/menus")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(createReq)))
                     .andExpect(status().isOk())
@@ -143,7 +143,7 @@ class MenuControllerTest {
             when(menuService.updateMenu(anyString(), any(MenuUpdateRequest.class))).thenReturn(testMenu);
 
             // When & Then
-            mockMvc.perform(put("/v1/sys/menus/menu-001")
+            mockMvc.perform(put("/sys/menus/menu-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateReq)))
                     .andExpect(status().isOk())
@@ -161,7 +161,7 @@ class MenuControllerTest {
         @DisplayName("should delete menu")
         void deleteMenu_ShouldDeleteMenu() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/sys/menus/menu-001"))
+            mockMvc.perform(delete("/sys/menus/menu-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 

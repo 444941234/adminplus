@@ -13,7 +13,7 @@ export function getLogList(params: {
   startTime?: string
   endTime?: string
 }) {
-  return get<PageResult<Log>>('/sys/logs', params)
+  return get<PageResult<Log>>('/sys/logs', { params })
 }
 
 // 获取日志详情
@@ -28,7 +28,7 @@ export function deleteLog(id: string) {
 
 // 批量删除日志
 export function deleteLogsBatch(ids: string[]) {
-  return del<void>('/sys/logs/batch', ids)
+  return del<void>('/sys/logs/batch', { config: { data: ids } })
 }
 
 // 按条件删除日志
@@ -43,7 +43,7 @@ export function deleteLogsByCondition(data: {
   startTime?: string
   endTime?: string
 }) {
-  return del<number>('/sys/logs/condition', data)
+  return del<number>('/sys/logs/condition', { config: { data } })
 }
 
 // 清理过期日志
@@ -58,12 +58,12 @@ export function getLogStatistics() {
 
 // 导出 Excel
 export function exportLogExcel(params: Record<string, unknown>) {
-  return `/api/v1/sys/logs/export/excel?${new URLSearchParams(params as Record<string, string>).toString()}`
+  return `/api/sys/logs/export/excel?${new URLSearchParams(params as Record<string, string>).toString()}`
 }
 
 // 导出 CSV
 export function exportLogCsv(params: Record<string, unknown>) {
-  return `/api/v1/sys/logs/export/csv?${new URLSearchParams(params as Record<string, string>).toString()}`
+  return `/api/sys/logs/export/csv?${new URLSearchParams(params as Record<string, string>).toString()}`
 }
 
 // 日志统计

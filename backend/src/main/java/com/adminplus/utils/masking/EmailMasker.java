@@ -18,6 +18,9 @@ public class EmailMasker implements LogMasker, Prioritized {
 
     @Override
     public String mask(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
         return PATTERN.matcher(input).replaceAll(mr -> {
             String username = mr.group(1);
             String domain = mr.group(2);

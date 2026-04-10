@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/sys/roles")
+@RequestMapping(value = "/sys/roles")
 @RequiredArgsConstructor
 @Tag(name = "角色管理", description = "角色增删改查")
 public class RoleController {

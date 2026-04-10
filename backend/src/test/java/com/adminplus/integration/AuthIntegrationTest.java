@@ -106,7 +106,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         void login_WithValidCredentials_ShouldReturnToken() throws Exception {
             UserLoginRequest loginReq = new UserLoginRequest("testuser", "Test@123456", "test-captcha-id", "1234");
 
-            mockMvc.perform(post("/v1/auth/login")
+            mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(loginReq)))
                     .andExpect(status().isOk())
@@ -123,7 +123,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         void login_WithInvalidPassword_ShouldFail() throws Exception {
             UserLoginRequest loginReq = new UserLoginRequest("testuser", "wrongpassword", "test-captcha-id", "1234");
 
-            mockMvc.perform(post("/v1/auth/login")
+            mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(loginReq)))
                     .andExpect(status().isUnauthorized());
@@ -135,7 +135,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         void login_WithNonExistentUser_ShouldFail() throws Exception {
             UserLoginRequest loginReq = new UserLoginRequest("nonexistent", "password", "test-captcha-id", "1234");
 
-            mockMvc.perform(post("/v1/auth/login")
+            mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(loginReq)))
                     .andExpect(status().isUnauthorized());
@@ -153,7 +153,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         void getCurrentUser_WithValidToken_ShouldReturnUser() throws Exception {
             String token = generateToken(testUser.getId(), testUser.getUsername(), new String[]{"user:view"});
 
-            mockMvc.perform(withAuth(get("/v1/auth/me"), token))
+            mockMvc.perform(withAuth(get("/auth/me"), token))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.username").value("testuser"));
@@ -163,7 +163,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void getCurrentUser_WithoutAuth_ShouldFail() throws Exception {
-            mockMvc.perform(get("/v1/auth/me"))
+            mockMvc.perform(get("/auth/me"))
                     .andExpect(status().isUnauthorized());
         }
     }
@@ -179,7 +179,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
         void logout_WithValidToken_ShouldSucceed() throws Exception {
             String token = generateToken(testUser.getId(), testUser.getUsername(), new String[]{"user:view"});
 
-            mockMvc.perform(withAuth(post("/v1/auth/logout"), token))
+            mockMvc.perform(withAuth(post("/auth/logout"), token))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -201,7 +201,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
             // First login to get refresh token
             UserLoginRequest loginReq = new UserLoginRequest("testuser", "Test@123456", "test-captcha-id", "1234");
 
-            MvcResult loginResult = mockMvc.perform(post("/v1/auth/login")
+            MvcResult loginResult = mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(loginReq)))
                     .andExpect(status().isOk())
@@ -214,7 +214,7 @@ class AuthIntegrationTest extends AbstractIntegrationTest {
             // Refresh access token
             String accessToken = generateToken(testUser.getId(), testUser.getUsername(), new String[]{"user:view"});
 
-            mockMvc.perform(withAuth(post("/v1/auth/refresh")
+            mockMvc.perform(withAuth(post("/auth/refresh")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"refreshToken\":\"" + refreshToken + "\"}"), accessToken))
                     .andExpect(status().isOk())

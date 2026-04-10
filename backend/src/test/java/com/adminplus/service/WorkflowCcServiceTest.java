@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.entity.WorkflowCcEntity;
 import com.adminplus.pojo.dto.response.WorkflowCcResponse;
 import com.adminplus.repository.WorkflowCcRepository;
@@ -245,7 +246,7 @@ class WorkflowCcServiceTest {
 
                 // When & Then
                 assertThatThrownBy(() -> ccService.markAsRead("non-existent"))
-                        .isInstanceOf(IllegalArgumentException.class)
+                        .isInstanceOf(BizException.class)
                         .hasMessageContaining("抄送记录不存在");
             }
         }
@@ -260,7 +261,7 @@ class WorkflowCcServiceTest {
 
                 // When & Then
                 assertThatThrownBy(() -> ccService.markAsRead("cc-001"))
-                        .isInstanceOf(IllegalArgumentException.class)
+                        .isInstanceOf(BizException.class)
                         .hasMessageContaining("无权限");
             }
         }

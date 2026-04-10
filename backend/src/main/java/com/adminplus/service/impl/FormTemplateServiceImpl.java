@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.request.FormTemplateRequest;
 import com.adminplus.pojo.dto.response.FormTemplateResponse;
 import com.adminplus.pojo.entity.FormTemplateEntity;
@@ -81,7 +82,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     public FormTemplateResponse createTemplate(FormTemplateRequest req) {
         // 检查标识是否已存在
         if (templateRepository.existsByTemplateCode(req.templateCode())) {
-            throw new IllegalArgumentException("表单标识已存在: " + req.templateCode());
+            throw new BizException("表单标识已存在: " + req.templateCode());
         }
 
         FormTemplateEntity entity = new FormTemplateEntity();
@@ -102,12 +103,12 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @CacheEvict(value = {"formTemplates", "formTemplate"}, allEntries = true)
     public FormTemplateResponse updateTemplate(String id, FormTemplateRequest req) {
         FormTemplateEntity entity = templateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("表单模板不存在: " + id));
+                .orElseThrow(() -> new BizException("表单模板不存在: " + id));
 
         // 检查标识是否被其他记录使用
         if (!entity.getTemplateCode().equals(req.templateCode()) &&
             templateRepository.existsByTemplateCode(req.templateCode())) {
-            throw new IllegalArgumentException("表单标识已存在: " + req.templateCode());
+            throw new BizException("表单标识已存在: " + req.templateCode());
         }
 
         entity.setTemplateName(req.templateName());
@@ -127,7 +128,7 @@ public class FormTemplateServiceImpl implements FormTemplateService {
     @CacheEvict(value = {"formTemplates", "formTemplate"}, allEntries = true)
     public void deleteTemplate(String id) {
         if (!templateRepository.existsById(id)) {
-            throw new IllegalArgumentException("表单模板不存在: " + id);
+            throw new BizException("表单模板不存在: " + id);
         }
 
         templateRepository.deleteById(id);

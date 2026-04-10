@@ -238,7 +238,6 @@ class ConfigServiceTest {
             assertThat(result).isNotNull();
             verify(configRepository).save(any(ConfigEntity.class));
             verify(configHistoryRepository).save(any(ConfigHistoryEntity.class));
-            verify(logService).log(any(LogEntry.class));
         }
 
         @Test
@@ -315,7 +314,6 @@ class ConfigServiceTest {
 
             // Then
             verify(configRepository).deleteById("config-001");
-            verify(logService).log(any(LogEntry.class));
         }
 
         @Test

@@ -21,7 +21,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/workflow/cc")
+@RequestMapping(value = "/workflow/cc")
 @RequiredArgsConstructor
 @Tag(name = "工作流抄送", description = "工作流抄送记录管理")
 public class WorkflowCcController {

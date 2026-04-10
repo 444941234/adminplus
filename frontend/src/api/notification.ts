@@ -9,7 +9,7 @@ export function getMyNotifications(params?: {
   page?: number
   size?: number
 }) {
-  return get<SpringPage<Notification>>('/notifications', params)
+  return get<SpringPage<Notification>>('/notifications', params ? { params } : undefined)
 }
 
 /**

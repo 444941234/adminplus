@@ -28,7 +28,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/sys/dicts")
+@RequestMapping(value = "/sys/dicts")
 @RequiredArgsConstructor
 @Tag(name = "字典管理", description = "字典增删改查")
 public class DictController {

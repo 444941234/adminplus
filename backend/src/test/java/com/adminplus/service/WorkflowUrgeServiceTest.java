@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.response.WorkflowUrgeResponse;
 import com.adminplus.pojo.entity.*;
 import com.adminplus.repository.*;
@@ -268,7 +269,7 @@ class WorkflowUrgeServiceTest {
 
                 // When & Then
                 assertThatThrownBy(() -> urgeService.markAsRead("non-existent"))
-                        .isInstanceOf(IllegalArgumentException.class)
+                        .isInstanceOf(BizException.class)
                         .hasMessageContaining("催办记录不存在");
             }
         }
@@ -283,7 +284,7 @@ class WorkflowUrgeServiceTest {
 
                 // When & Then
                 assertThatThrownBy(() -> urgeService.markAsRead("urge-001"))
-                        .isInstanceOf(IllegalArgumentException.class)
+                        .isInstanceOf(BizException.class)
                         .hasMessageContaining("无权限");
             }
         }

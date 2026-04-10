@@ -68,7 +68,7 @@ class RateLimitInterceptorTest {
         @Test
         @DisplayName("should allow request when under limit")
         void preHandle_LoginUnderLimit_ShouldAllow() throws Exception {
-            request.setRequestURI("/v1/auth/login");
+            request.setRequestURI("/auth/login");
             request.setRemoteAddr("192.168.1.1");
 
             when(valueOperations.increment(anyString())).thenReturn(1L);
@@ -83,7 +83,7 @@ class RateLimitInterceptorTest {
         @Test
         @DisplayName("should block request when over limit")
         void preHandle_LoginOverLimit_ShouldBlock() throws Exception {
-            request.setRequestURI("/v1/auth/login");
+            request.setRequestURI("/auth/login");
             request.setRemoteAddr("192.168.1.1");
 
             when(valueOperations.increment(anyString())).thenReturn(6L);
@@ -98,7 +98,7 @@ class RateLimitInterceptorTest {
         @Test
         @DisplayName("should allow request exactly at limit")
         void preHandle_LoginAtLimit_ShouldAllow() throws Exception {
-            request.setRequestURI("/v1/auth/login");
+            request.setRequestURI("/auth/login");
             request.setRemoteAddr("192.168.1.1");
 
             when(valueOperations.increment(anyString())).thenReturn(5L);
@@ -117,7 +117,7 @@ class RateLimitInterceptorTest {
         @Test
         @DisplayName("should apply general rate limit for other endpoints")
         void preHandle_GeneralEndpoint_ShouldApplyGeneralLimit() throws Exception {
-            request.setRequestURI("/v1/users");
+            request.setRequestURI("/users");
             request.setRemoteAddr("192.168.1.2");
 
             when(valueOperations.increment(anyString())).thenReturn(1L);
@@ -131,7 +131,7 @@ class RateLimitInterceptorTest {
         @Test
         @DisplayName("should block when general limit exceeded")
         void preHandle_GeneralOverLimit_ShouldBlock() throws Exception {
-            request.setRequestURI("/v1/files/upload");
+            request.setRequestURI("/files/upload");
             request.setRemoteAddr("192.168.1.2");
 
             when(valueOperations.increment(anyString())).thenReturn(101L);
@@ -150,7 +150,7 @@ class RateLimitInterceptorTest {
         @Test
         @DisplayName("should track different IPs separately")
         void preHandle_DifferentIps_ShouldTrackSeparately() throws Exception {
-            request.setRequestURI("/v1/auth/login");
+            request.setRequestURI("/auth/login");
 
             // First IP
             request.setRemoteAddr("192.168.1.1");
@@ -183,7 +183,7 @@ class RateLimitInterceptorTest {
             customLimit.setGeneralTimeWindow(30);
             when(appProperties.getRateLimit()).thenReturn(customLimit);
 
-            request.setRequestURI("/v1/auth/login");
+            request.setRequestURI("/auth/login");
             request.setRemoteAddr("192.168.1.1");
 
             when(valueOperations.increment(anyString())).thenReturn(3L);

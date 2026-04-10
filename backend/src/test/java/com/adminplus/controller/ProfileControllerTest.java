@@ -72,7 +72,7 @@ class ProfileControllerTest {
             when(profileService.getCurrentUserProfile()).thenReturn(testProfile);
 
             // When & Then
-            mockMvc.perform(get("/v1/profile"))
+            mockMvc.perform(get("/profile"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.username").value("testuser"));
@@ -92,7 +92,7 @@ class ProfileControllerTest {
             when(profileService.updateCurrentProfile(any(ProfileUpdateRequest.class))).thenReturn(testProfile);
 
             // When & Then
-            mockMvc.perform(put("/v1/profile")
+            mockMvc.perform(put("/profile")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateReq)))
                     .andExpect(status().isOk())
@@ -113,7 +113,7 @@ class ProfileControllerTest {
             PasswordChangeRequest req = new PasswordChangeRequest("OldPass123!", "NewTestPass123!", "NewTestPass123!");
 
             // When & Then
-            mockMvc.perform(post("/v1/profile/password")
+            mockMvc.perform(post("/profile/password")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())

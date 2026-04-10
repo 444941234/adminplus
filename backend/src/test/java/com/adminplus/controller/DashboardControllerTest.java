@@ -55,7 +55,7 @@ class DashboardControllerTest {
             when(dashboardService.getStats()).thenReturn(stats);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/dashboard/stats"))
+            mockMvc.perform(get("/sys/dashboard/stats"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.userCount").value(100));
@@ -77,7 +77,7 @@ class DashboardControllerTest {
             when(dashboardService.getUserGrowthData()).thenReturn(data);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/dashboard/user-growth"))
+            mockMvc.perform(get("/sys/dashboard/user-growth"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.labels[0]").value("2026-01"));
@@ -99,7 +99,7 @@ class DashboardControllerTest {
             when(dashboardService.getRoleDistributionData()).thenReturn(data);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/dashboard/role-distribution"))
+            mockMvc.perform(get("/sys/dashboard/role-distribution"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.labels[0]").value("管理员"));
@@ -121,7 +121,7 @@ class DashboardControllerTest {
             when(dashboardService.getMenuDistributionData()).thenReturn(data);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/dashboard/menu-distribution"))
+            mockMvc.perform(get("/sys/dashboard/menu-distribution"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.labels[0]").value("目录"));
@@ -143,7 +143,7 @@ class DashboardControllerTest {
             when(dashboardService.getVisitTrendData()).thenReturn(data);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/dashboard/visit-trend"))
+            mockMvc.perform(get("/sys/dashboard/visit-trend"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.labels[0]").value("周一"));

@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/form-templates")
+@RequestMapping(value = "/form-templates")
 @RequiredArgsConstructor
 @Tag(name = "表单模板管理", description = "表单模板增删改查")
 public class FormTemplateController {

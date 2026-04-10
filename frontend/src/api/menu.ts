@@ -38,7 +38,7 @@ export function batchUpdateStatus(ids: string[], status: number) {
 
 // 批量删除
 export function batchDelete(ids: string[]) {
-  return del<void>('/sys/menus/batch', { ids })
+  return del<void>('/sys/menus/batch', { config: { data: { ids } } })
 }
 
 // 复制菜单

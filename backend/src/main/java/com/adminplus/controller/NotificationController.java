@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/notifications")
+@RequestMapping(value = "/notifications")
 @RequiredArgsConstructor
 public class NotificationController {
 

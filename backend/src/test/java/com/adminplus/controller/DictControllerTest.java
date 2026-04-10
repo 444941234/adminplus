@@ -77,7 +77,7 @@ class DictControllerTest {
             when(dictService.getDictList(any(DictQuery.class))).thenReturn(pageResult);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/dicts")
+            mockMvc.perform(get("/sys/dicts")
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -99,7 +99,7 @@ class DictControllerTest {
             when(dictService.getDictById("dict-001")).thenReturn(testDict);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/dicts/dict-001"))
+            mockMvc.perform(get("/sys/dicts/dict-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.dictName").value("状态字典"));
@@ -119,7 +119,7 @@ class DictControllerTest {
             when(dictService.createDict(any(DictCreateRequest.class))).thenReturn(testDict);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/dicts")
+            mockMvc.perform(post("/sys/dicts")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(createReq)))
                     .andExpect(status().isOk())
@@ -140,7 +140,7 @@ class DictControllerTest {
             when(dictService.updateDict(anyString(), any(DictUpdateRequest.class))).thenReturn(testDict);
 
             // When & Then
-            mockMvc.perform(put("/v1/sys/dicts/dict-001")
+            mockMvc.perform(put("/sys/dicts/dict-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateReq)))
                     .andExpect(status().isOk())
@@ -158,7 +158,7 @@ class DictControllerTest {
         @DisplayName("should delete dict")
         void deleteDict_ShouldDeleteDict() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/sys/dicts/dict-001"))
+            mockMvc.perform(delete("/sys/dicts/dict-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -174,7 +174,7 @@ class DictControllerTest {
         @DisplayName("should update dict status")
         void updateDictStatus_ShouldUpdateStatus() throws Exception {
             // When & Then
-            mockMvc.perform(put("/v1/sys/dicts/dict-001/status")
+            mockMvc.perform(put("/sys/dicts/dict-001/status")
                             .param("status", "0"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));

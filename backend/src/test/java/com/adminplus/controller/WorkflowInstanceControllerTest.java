@@ -82,7 +82,7 @@ class WorkflowInstanceControllerTest {
             when(instanceService.createDraft(any(WorkflowStartRequest.class))).thenReturn(testInstance);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/draft")
+            mockMvc.perform(post("/workflow/instances/draft")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(startReq)))
                     .andExpect(status().isOk())
@@ -103,7 +103,7 @@ class WorkflowInstanceControllerTest {
             when(instanceService.submit("inst-001", null)).thenReturn(testInstance);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/inst-001/submit"))
+            mockMvc.perform(post("/workflow/instances/inst-001/submit"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -122,7 +122,7 @@ class WorkflowInstanceControllerTest {
             when(instanceService.start(any(WorkflowStartRequest.class))).thenReturn(testInstance);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/start")
+            mockMvc.perform(post("/workflow/instances/start")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(startReq)))
                     .andExpect(status().isOk())
@@ -147,7 +147,7 @@ class WorkflowInstanceControllerTest {
             when(instanceService.getDetail("inst-001")).thenReturn(detail);
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/instances/inst-001"))
+            mockMvc.perform(get("/workflow/instances/inst-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.instance.title").value("请假申请"));
@@ -167,7 +167,7 @@ class WorkflowInstanceControllerTest {
             when(instanceService.getMyWorkflows(null)).thenReturn(List.of(testInstance));
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/instances/my"))
+            mockMvc.perform(get("/workflow/instances/my"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].title").value("请假申请"));
@@ -187,7 +187,7 @@ class WorkflowInstanceControllerTest {
             when(instanceService.getPendingApprovals()).thenReturn(List.of(testInstance));
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/instances/pending"))
+            mockMvc.perform(get("/workflow/instances/pending"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].title").value("请假申请"));
@@ -207,7 +207,7 @@ class WorkflowInstanceControllerTest {
             when(instanceService.countPendingApprovals()).thenReturn(5L);
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/instances/pending/count"))
+            mockMvc.perform(get("/workflow/instances/pending/count"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data").value(5));
@@ -227,7 +227,7 @@ class WorkflowInstanceControllerTest {
             when(instanceService.approve(anyString(), any(ApprovalActionRequest.class))).thenReturn(testInstance);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/inst-001/approve")
+            mockMvc.perform(post("/workflow/instances/inst-001/approve")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(actionReq)))
                     .andExpect(status().isOk())
@@ -248,7 +248,7 @@ class WorkflowInstanceControllerTest {
             when(instanceService.reject(anyString(), any(ApprovalActionRequest.class))).thenReturn(testInstance);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/inst-001/reject")
+            mockMvc.perform(post("/workflow/instances/inst-001/reject")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(actionReq)))
                     .andExpect(status().isOk())
@@ -266,7 +266,7 @@ class WorkflowInstanceControllerTest {
         @DisplayName("should cancel workflow")
         void cancel_ShouldCancelWorkflow() throws Exception {
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/inst-001/cancel"))
+            mockMvc.perform(post("/workflow/instances/inst-001/cancel"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -282,7 +282,7 @@ class WorkflowInstanceControllerTest {
         @DisplayName("should withdraw workflow")
         void withdraw_ShouldWithdrawWorkflow() throws Exception {
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/inst-001/withdraw"))
+            mockMvc.perform(post("/workflow/instances/inst-001/withdraw"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 

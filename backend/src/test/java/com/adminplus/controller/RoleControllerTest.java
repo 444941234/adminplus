@@ -82,7 +82,7 @@ class RoleControllerTest {
             when(roleService.getRoleList(any(RoleQuery.class))).thenReturn(pageResult);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/roles"))
+            mockMvc.perform(get("/sys/roles"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.records[0].name").value("管理员"));
@@ -102,7 +102,7 @@ class RoleControllerTest {
             when(roleService.getRoleById("role-001")).thenReturn(testRole);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/roles/role-001"))
+            mockMvc.perform(get("/sys/roles/role-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.name").value("管理员"));
@@ -122,7 +122,7 @@ class RoleControllerTest {
             when(roleService.createRole(any(RoleCreateRequest.class))).thenReturn(testRole);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/roles")
+            mockMvc.perform(post("/sys/roles")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(createReq)))
                     .andExpect(status().isOk())
@@ -143,7 +143,7 @@ class RoleControllerTest {
             when(roleService.updateRole(anyString(), any(RoleUpdateRequest.class))).thenReturn(testRole);
 
             // When & Then
-            mockMvc.perform(put("/v1/sys/roles/role-001")
+            mockMvc.perform(put("/sys/roles/role-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateReq)))
                     .andExpect(status().isOk())
@@ -161,7 +161,7 @@ class RoleControllerTest {
         @DisplayName("should delete role")
         void deleteRole_ShouldDeleteRole() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/sys/roles/role-001"))
+            mockMvc.perform(delete("/sys/roles/role-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -177,7 +177,7 @@ class RoleControllerTest {
         @DisplayName("should assign menus to role")
         void assignMenus_ShouldAssignMenus() throws Exception {
             // When & Then
-            mockMvc.perform(put("/v1/sys/roles/role-001/menus")
+            mockMvc.perform(put("/sys/roles/role-001/menus")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("[\"menu-001\", \"menu-002\"]"))
                     .andExpect(status().isOk())
@@ -198,7 +198,7 @@ class RoleControllerTest {
             when(roleService.getRoleMenuIds("role-001")).thenReturn(List.of("menu-001", "menu-002"));
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/roles/role-001/menus"))
+            mockMvc.perform(get("/sys/roles/role-001/menus"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0]").value("menu-001"));

@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/workflow/urge")
+@RequestMapping(value = "/workflow/urge")
 @RequiredArgsConstructor
 @Tag(name = "工作流催办", description = "工作流催办管理")
 public class WorkflowUrgeController {

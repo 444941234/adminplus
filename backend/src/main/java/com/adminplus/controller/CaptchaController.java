@@ -25,7 +25,7 @@ import java.util.Base64;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/captcha")
+@RequestMapping(value = "/captcha")
 @RequiredArgsConstructor
 @Tag(name = "验证码管理", description = "生成和验证验证码")
 public class CaptchaController {

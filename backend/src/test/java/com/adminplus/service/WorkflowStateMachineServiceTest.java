@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.request.ApprovalActionRequest;
 import com.adminplus.pojo.entity.WorkflowApprovalEntity;
 import com.adminplus.pojo.entity.WorkflowInstanceEntity;
@@ -128,7 +129,7 @@ class WorkflowStateMachineServiceTest {
             // When & Then
             assertThatThrownBy(() -> stateMachineService.approve("non-existent",
                     new ApprovalActionRequest("comment", null, null)))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("工作流实例不存在");
         }
 
@@ -159,7 +160,7 @@ class WorkflowStateMachineServiceTest {
             // When & Then
             assertThatThrownBy(() -> stateMachineService.approve("inst-001",
                     new ApprovalActionRequest("comment", null, null)))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("无权限审批");
         }
     }
@@ -178,7 +179,7 @@ class WorkflowStateMachineServiceTest {
             // When & Then
             assertThatThrownBy(() -> stateMachineService.reject("non-existent",
                     new ApprovalActionRequest("comment", null, null)))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("工作流实例不存在");
         }
 
@@ -209,7 +210,7 @@ class WorkflowStateMachineServiceTest {
             // When & Then
             assertThatThrownBy(() -> stateMachineService.reject("inst-001",
                     new ApprovalActionRequest("comment", null, null)))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("无权限审批");
         }
     }
@@ -227,7 +228,7 @@ class WorkflowStateMachineServiceTest {
 
             // When & Then
             assertThatThrownBy(() -> stateMachineService.cancel("non-existent"))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("工作流实例不存在");
         }
 
@@ -278,7 +279,7 @@ class WorkflowStateMachineServiceTest {
             // When & Then
             assertThatThrownBy(() -> stateMachineService.rollback("non-existent",
                     new ApprovalActionRequest("comment", null, null)))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("工作流实例不存在");
         }
 
@@ -309,7 +310,7 @@ class WorkflowStateMachineServiceTest {
             // When & Then
             assertThatThrownBy(() -> stateMachineService.rollback("inst-001",
                     new ApprovalActionRequest("comment", null, null)))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("无权限审批");
         }
     }

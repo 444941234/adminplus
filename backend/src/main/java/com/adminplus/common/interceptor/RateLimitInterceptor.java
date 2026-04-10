@@ -37,7 +37,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         AppProperties.RateLimit rateLimit = appProperties.getRateLimit();
 
         // 登录接口限流
-        if ("/v1/auth/login".equals(uri)) {
+        if ("/auth/login".equals(uri)) {
             return checkRateLimit(clientIp, "login",
                     rateLimit.getLoginMaxRequests(),
                     rateLimit.getLoginTimeWindow(),

@@ -29,7 +29,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/sys/logs")
+@RequestMapping(value = "/sys/logs")
 @RequiredArgsConstructor
 @Tag(name = "日志管理", description = "操作日志查询和删除")
 public class LogController {

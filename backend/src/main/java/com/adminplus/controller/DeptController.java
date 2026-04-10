@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/sys/depts")
+@RequestMapping(value = "/sys/depts")
 @RequiredArgsConstructor
 @Tag(name = "部门管理", description = "部门增删改查")
 public class DeptController {

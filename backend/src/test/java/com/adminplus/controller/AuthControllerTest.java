@@ -75,7 +75,7 @@ class AuthControllerTest {
             when(authService.login(any(UserLoginRequest.class))).thenReturn(loginResponse);
 
             // When & Then
-            mockMvc.perform(post("/v1/auth/login")
+            mockMvc.perform(post("/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(loginReq)))
                     .andExpect(status().isOk())
@@ -96,7 +96,7 @@ class AuthControllerTest {
         @DisplayName("should logout successfully")
         void logout_ShouldSucceed() throws Exception {
             // When & Then
-            mockMvc.perform(post("/v1/auth/logout"))
+            mockMvc.perform(post("/auth/logout"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -115,7 +115,7 @@ class AuthControllerTest {
             when(authService.refreshAccessToken(anyString())).thenReturn("new-access-token");
 
             // When & Then
-            mockMvc.perform(post("/v1/auth/refresh")
+            mockMvc.perform(post("/auth/refresh")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content("{\"refreshToken\":\"refresh-token\"}"))
                     .andExpect(status().isOk())

@@ -26,7 +26,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/workflow/definitions")
+@RequestMapping(value = "/workflow/definitions")
 @RequiredArgsConstructor
 @Tag(name = "工作流定义", description = "工作流模板管理")
 public class WorkflowDefinitionController {

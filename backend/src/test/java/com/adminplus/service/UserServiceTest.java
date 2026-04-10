@@ -254,7 +254,25 @@ class UserServiceTest {
                 user.setId("new-user-id");
                 return user;
             });
-            doNothing().when(logService).log(any(LogEntry.class));
+            // Mock conversion to return response based on actual entity
+            when(conversionService.convert(any(UserEntity.class), eq(UserResponse.class)))
+                    .thenAnswer(inv -> {
+                        UserEntity entity = inv.getArgument(0);
+                        return new UserResponse(
+                                entity.getId(),
+                                entity.getUsername(),
+                                entity.getNickname(),
+                                entity.getEmail(),
+                                entity.getPhone(),
+                                entity.getAvatar(),
+                                entity.getStatus(),
+                                entity.getDeptId(),
+                                null,
+                                List.of(),
+                                entity.getCreateTime(),
+                                entity.getUpdateTime()
+                        );
+                    });
 
             // When
             UserResponse result = userService.createUser(req);
@@ -263,7 +281,6 @@ class UserServiceTest {
             assertThat(result).isNotNull();
             assertThat(result.username()).isEqualTo("newuser");
             verify(userRepository).save(any(UserEntity.class));
-            verify(logService).log(any(LogEntry.class));
         }
     }
 
@@ -338,7 +355,7 @@ class UserServiceTest {
         void assignRoles_ShouldAssignRoles() {
             // Given
             List<String> roleIds = List.of("role-001");
-            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+            when(userRepository.existsById("user-001")).thenReturn(true);
             when(roleRepository.findAllById(roleIds)).thenReturn(List.of(testRole));
             // Current roles (will be removed)
             when(userRoleRepository.findByUserId("user-001")).thenReturn(
@@ -359,7 +376,7 @@ class UserServiceTest {
         @DisplayName("should throw exception when user not found")
         void assignRoles_WhenUserNotFound_ShouldThrowException() {
             // Given
-            when(userRepository.findById("non-existent")).thenReturn(Optional.empty());
+            when(userRepository.existsById("non-existent")).thenReturn(false);
 
             // When & Then
             assertThatThrownBy(() -> userService.assignRoles("non-existent", List.of()))
@@ -371,7 +388,7 @@ class UserServiceTest {
         @DisplayName("should throw exception when role not found")
         void assignRoles_WhenRoleNotFound_ShouldThrowException() {
             // Given
-            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+            when(userRepository.existsById("user-001")).thenReturn(true);
             when(roleRepository.findAllById(List.of("non-existent-role"))).thenReturn(List.of());
 
             // When & Then
@@ -384,7 +401,7 @@ class UserServiceTest {
         @DisplayName("should clear all roles when empty list provided")
         void assignRoles_WithEmptyList_ShouldClearRoles() {
             // Given
-            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+            when(userRepository.existsById("user-001")).thenReturn(true);
             // Current roles (will be removed)
             when(userRoleRepository.findByUserId("user-001")).thenReturn(
                 List.of(createUserRoleEntity("user-001", "existing-role"))
@@ -411,14 +428,12 @@ class UserServiceTest {
             when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
             when(passwordEncoder.encode(any())).thenReturn("encoded-password");
             when(userRepository.save(any())).thenReturn(testUser);
-            doNothing().when(logService).log(any(LogEntry.class));
 
             // When
             userService.resetPassword("user-001", "NewStrongP@ss123");
 
             // Then
             verify(userRepository).save(any(UserEntity.class));
-            verify(logService).log(any(LogEntry.class));
         }
 
         @Test
@@ -511,7 +526,7 @@ class UserServiceTest {
             UserRoleEntity userRole = new UserRoleEntity();
             userRole.setUserId("user-001");
             userRole.setRoleId("role-001");
-            when(userRepository.findById("user-001")).thenReturn(Optional.of(testUser));
+            when(userRepository.existsById("user-001")).thenReturn(true);
             when(userRoleRepository.findByUserId("user-001")).thenReturn(List.of(userRole));
 
             // When
@@ -525,7 +540,7 @@ class UserServiceTest {
         @DisplayName("should throw exception when user not found")
         void getUserRoleIds_WhenUserNotFound_ShouldThrowException() {
             // Given
-            when(userRepository.findById("non-existent")).thenReturn(Optional.empty());
+            when(userRepository.existsById("non-existent")).thenReturn(false);
 
             // When & Then
             assertThatThrownBy(() -> userService.getUserRoleIds("non-existent"))

@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/workflow/hooks")
+@RequestMapping(value = "/workflow/hooks")
 @RequiredArgsConstructor
 @Tag(name = "工作流钩子", description = "工作流节点钩子配置管理")
 public class WorkflowNodeHookController {

@@ -54,7 +54,7 @@ class CaptchaControllerTest {
             when(captchaService.generateCaptcha()).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(get("/v1/captcha"))
+            mockMvc.perform(get("/captcha"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.captchaId").value("captcha-001"));

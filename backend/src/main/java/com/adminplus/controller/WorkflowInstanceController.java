@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/workflow/instances")
+@RequestMapping(value = "/workflow/instances")
 @RequiredArgsConstructor
 @Tag(name = "工作流实例", description = "工作流实例管理、审批操作")
 public class WorkflowInstanceController {

@@ -16,7 +16,7 @@ export function getConfigGroupList(params: {
   size?: number
   keyword?: string
 }) {
-  return get<PageResult<ConfigGroup>>('/sys/config-groups', params)
+  return get<PageResult<ConfigGroup>>('/sys/config-groups', { params })
 }
 
 export function getAllConfigGroups() {
@@ -66,7 +66,7 @@ export function getConfigList(params: {
   groupId?: string
   keyword?: string
 }) {
-  return get<PageResult<Config>>('/sys/configs', params)
+  return get<PageResult<Config>>('/sys/configs', { params })
 }
 
 export function getConfigsByGroupId(groupId: string) {
@@ -137,7 +137,7 @@ export function rollbackConfig(configId: string, data: { historyId: string; rema
 }
 
 export function exportConfigs(params: { groupId?: string; format?: string }) {
-  return get<ConfigExport>('/sys/configs/export', params)
+  return get<ConfigExport>('/sys/configs/export', { params })
 }
 
 export function importConfigs(data: {

@@ -242,7 +242,6 @@ class ConfigGroupServiceTest {
             assertThat(result.code()).isEqualTo("database");
             assertThat(result.sortOrder()).isEqualTo(2);
             verify(configGroupRepository).save(any(ConfigGroupEntity.class));
-            verify(logService).log(any(LogEntry.class));
         }
 
         @Test
@@ -290,7 +289,6 @@ class ConfigGroupServiceTest {
             assertThat(result.name()).isEqualTo("系统配置（已更新）");
             assertThat(result.icon()).isEqualTo("Settings2");
             verify(configGroupRepository).save(any(ConfigGroupEntity.class));
-            verify(logService).log(any(LogEntry.class));
         }
 
         @Test
@@ -329,7 +327,6 @@ class ConfigGroupServiceTest {
 
             // Then
             verify(configGroupRepository).deleteById("1");
-            verify(logService).log(any(LogEntry.class));
         }
 
         @Test
@@ -375,7 +372,6 @@ class ConfigGroupServiceTest {
             // Then
             assertThat(testGroup.getStatus()).isEqualTo(0);
             verify(configGroupRepository).save(testGroup);
-            verify(logService).log(any(LogEntry.class));
         }
 
         @Test

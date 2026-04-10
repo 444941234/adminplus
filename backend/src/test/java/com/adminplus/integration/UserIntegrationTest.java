@@ -145,7 +145,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
                     testDept.getId()
             );
 
-            mockMvc.perform(withAuth(post("/v1/sys/users")
+            mockMvc.perform(withAuth(post("/sys/users")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)), adminToken))
                     .andExpect(status().isOk())
@@ -169,7 +169,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
                     null, null, null
             );
 
-            mockMvc.perform(withAuth(post("/v1/sys/users")
+            mockMvc.perform(withAuth(post("/sys/users")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)), adminToken))
                     .andExpect(status().isBadRequest());
@@ -179,7 +179,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void getUserById_WithValidId_ShouldReturnUser() throws Exception {
-            mockMvc.perform(withAuth(get("/v1/sys/users/" + testUser.getId()), adminToken))
+            mockMvc.perform(withAuth(get("/sys/users/" + testUser.getId()), adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.username").value("testuser"));
@@ -198,7 +198,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
                     null
             );
 
-            mockMvc.perform(withAuth(put("/v1/sys/users/" + testUser.getId())
+            mockMvc.perform(withAuth(put("/sys/users/" + testUser.getId())
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)), adminToken))
                     .andExpect(status().isOk())
@@ -214,7 +214,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void deleteUser_WithValidId_ShouldSucceed() throws Exception {
-            mockMvc.perform(withAuth(delete("/v1/sys/users/" + testUser.getId()), adminToken))
+            mockMvc.perform(withAuth(delete("/sys/users/" + testUser.getId()), adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -233,7 +233,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void updateUserStatus_ShouldSucceed() throws Exception {
-            mockMvc.perform(withAuth(put("/v1/sys/users/" + testUser.getId() + "/status")
+            mockMvc.perform(withAuth(put("/sys/users/" + testUser.getId() + "/status")
                             .param("status", "0"), adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
@@ -255,7 +255,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
         void resetPassword_WithValidData_ShouldSucceed() throws Exception {
             String newPassword = "NewPassword@123";
 
-            mockMvc.perform(withAuth(put("/v1/sys/users/" + testUser.getId() + "/password")
+            mockMvc.perform(withAuth(put("/sys/users/" + testUser.getId() + "/password")
                             .param("password", newPassword), adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
@@ -277,7 +277,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
         void assignRoles_ShouldSucceed() throws Exception {
             List<String> roleIds = List.of(adminRole.getId(), testRole.getId());
 
-            mockMvc.perform(withAuth(put("/v1/sys/users/" + testUser.getId() + "/roles")
+            mockMvc.perform(withAuth(put("/sys/users/" + testUser.getId() + "/roles")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(roleIds)), adminToken))
                     .andExpect(status().isOk())
@@ -292,7 +292,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void getUserRoleIds_ShouldReturnRoleIds() throws Exception {
-            mockMvc.perform(withAuth(get("/v1/sys/users/" + testUser.getId() + "/roles"), adminToken))
+            mockMvc.perform(withAuth(get("/sys/users/" + testUser.getId() + "/roles"), adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data").isArray());
@@ -308,7 +308,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void withoutAuth_ShouldFail() throws Exception {
-            mockMvc.perform(get("/v1/sys/users"))
+            mockMvc.perform(get("/sys/users"))
                     .andExpect(status().isUnauthorized());
         }
 
@@ -319,7 +319,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
             // Create user without user:query permission
             String userToken = generateToken(testUser.getId(), testUser.getUsername(), new String[]{"other:permission"});
 
-            mockMvc.perform(withAuth(get("/v1/sys/users"), userToken))
+            mockMvc.perform(withAuth(get("/sys/users"), userToken))
                     .andExpect(status().isForbidden());
         }
     }
@@ -333,7 +333,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void getUserList_ShouldReturnPaginatedList() throws Exception {
-            mockMvc.perform(withAuth(get("/v1/sys/users")
+            mockMvc.perform(withAuth(get("/sys/users")
                             .param("page", "1")
                             .param("size", "10"), adminToken))
                     .andExpect(status().isOk())
@@ -346,7 +346,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
 @Disabled("Integration tests require Docker with TCP endpoint enabled")
 @DisplayName("&")
         void getUserList_WithKeyword_ShouldFilter() throws Exception {
-            mockMvc.perform(withAuth(get("/v1/sys/users")
+            mockMvc.perform(withAuth(get("/sys/users")
                             .param("keyword", "test"), adminToken))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));

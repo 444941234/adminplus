@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.request.WorkflowDefinitionRequest;
 import com.adminplus.pojo.dto.request.WorkflowNodeRequest;
 import com.adminplus.pojo.dto.response.WorkflowDefinitionResponse;
@@ -206,7 +207,7 @@ class WorkflowDefinitionServiceTest {
 
             // When/Then
             assertThatThrownBy(() -> service.create(validDefinitionReq))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("工作流标识已存在");
 
             verify(definitionRepository, never()).save(any());
@@ -296,7 +297,7 @@ class WorkflowDefinitionServiceTest {
 
             // When/Then
             assertThatThrownBy(() -> service.update("non-existent", validDefinitionReq))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("工作流定义不存在");
 
             verify(definitionRepository, never()).save(any());
@@ -325,7 +326,7 @@ class WorkflowDefinitionServiceTest {
 
             // When/Then
             assertThatThrownBy(() -> service.update("def-001", updateReq))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("工作流标识已被使用");
 
             verify(definitionRepository, never()).save(any());
@@ -436,7 +437,7 @@ class WorkflowDefinitionServiceTest {
 
             // When/Then
             assertThatThrownBy(() -> service.addNode("non-existent", validNodeReq))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("工作流定义不存在");
 
             verify(nodeRepository, never()).save(any());
@@ -489,7 +490,7 @@ class WorkflowDefinitionServiceTest {
 
             // When/Then
             assertThatThrownBy(() -> service.updateNode("non-existent", validNodeReq))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("工作流节点不存在");
 
             verify(nodeRepository, never()).save(any());
@@ -539,7 +540,7 @@ class WorkflowDefinitionServiceTest {
 
             // When/Then
             assertThatThrownBy(() -> service.getById("non-existent"))
-                    .isInstanceOf(IllegalArgumentException.class)
+                    .isInstanceOf(BizException.class)
                     .hasMessageContaining("工作流定义不存在");
         }
 

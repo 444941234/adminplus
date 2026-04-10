@@ -50,7 +50,7 @@ class FileControllerTest {
         testFile = new FileResponse(
                 "file-001",
                 "test.jpg",
-                "test",
+                "test.jpg",
                 ".jpg",
                 1024L,
                 "image/jpeg",
@@ -78,7 +78,7 @@ class FileControllerTest {
             when(fileService.uploadFile(any(), any())).thenReturn(testFile);
 
             // When & Then
-            mockMvc.perform(multipart("/v1/files/upload")
+            mockMvc.perform(multipart("/files/upload")
                             .file(file)
                             .param("directory", "uploads"))
                     .andExpect(status().isOk())
@@ -96,7 +96,7 @@ class FileControllerTest {
         @DisplayName("should delete file")
         void deleteFile_ShouldDeleteFile() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/files/file-001"))
+            mockMvc.perform(delete("/files/file-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -115,7 +115,7 @@ class FileControllerTest {
             when(fileService.getFileWithAuth("file-001")).thenReturn(testFile);
 
             // When & Then
-            mockMvc.perform(get("/v1/files/file-001"))
+            mockMvc.perform(get("/files/file-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.fileName").value("test.jpg"));
@@ -135,7 +135,7 @@ class FileControllerTest {
             when(fileService.getUserFiles()).thenReturn(List.of(testFile));
 
             // When & Then
-            mockMvc.perform(get("/v1/files/my"))
+            mockMvc.perform(get("/files/my"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].fileName").value("test.jpg"));
@@ -155,7 +155,7 @@ class FileControllerTest {
             when(fileService.getFilesByDirectory("uploads")).thenReturn(List.of(testFile));
 
             // When & Then
-            mockMvc.perform(get("/v1/files/directory/uploads"))
+            mockMvc.perform(get("/files/directory/uploads"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].fileName").value("test.jpg"));

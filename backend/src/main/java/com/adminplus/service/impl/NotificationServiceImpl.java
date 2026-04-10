@@ -1,5 +1,6 @@
 package com.adminplus.service.impl;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.query.NotificationQuery;
 import com.adminplus.pojo.dto.request.NotificationSendRequest;
 import com.adminplus.pojo.dto.response.NotificationResponse;
@@ -76,7 +77,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("通知不存在"));
 
         if (!notification.getRecipientId().equals(userId)) {
-            throw new IllegalArgumentException("无权操作此通知");
+            throw new BizException("无权操作此通知");
         }
 
         notification.setStatus(1);
@@ -119,7 +120,7 @@ public class NotificationServiceImpl implements NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("通知不存在"));
 
         if (!notification.getRecipientId().equals(userId)) {
-            throw new IllegalArgumentException("无权操作此通知");
+            throw new BizException("无权操作此通知");
         }
 
         notificationRepository.delete(notification);

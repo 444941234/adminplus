@@ -22,9 +22,21 @@ server:
       prefix: access_log
       suffix: .log
 
+# API 版本管理配置 (Spring Boot 4.0)
 spring:
-  application:
-    name: adminplus
+  mvc:
+    apiversion:
+      # 默认版本（当请求未指定版本时使用）
+      default: 1.0.0
+      # 支持的版本列表（可选，默认自动从 @RequestMapping 检测）
+      # supported: 1.0.0, 1.1.0, 2.0.0
+      use:
+        # 从请求头解析版本
+        header: X-API-Version
+        # 从 URL 路径解析版本（/{version}/xxx）
+        # path: true
+        # 从请求参数解析版本（?version=1.0）
+        # parameter: version
 
   # 虚拟线程支持
   threads:
@@ -92,6 +104,7 @@ spring:
     redis:
       host: ${REDIS_HOST:127.0.0.1}
       port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
       timeout: 2000ms
       lettuce:
         pool:

@@ -77,7 +77,7 @@ class LogControllerTest {
             when(logService.getLogList(any(LogQuery.class))).thenReturn(pageResult);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/logs")
+            mockMvc.perform(get("/sys/logs")
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -99,7 +99,7 @@ class LogControllerTest {
             when(logService.getLogById("log-001")).thenReturn(testLog);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/logs/log-001"))
+            mockMvc.perform(get("/sys/logs/log-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.username").value("testuser"));
@@ -116,7 +116,7 @@ class LogControllerTest {
         @DisplayName("should delete log")
         void deleteLog_ShouldDeleteLog() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/sys/logs/log-001"))
+            mockMvc.perform(delete("/sys/logs/log-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -132,7 +132,7 @@ class LogControllerTest {
         @DisplayName("should delete logs batch")
         void deleteLogsBatch_ShouldDeleteLogs() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/sys/logs/batch")
+            mockMvc.perform(delete("/sys/logs/batch")
                             .contentType("application/json")
                             .content("[\"log-001\", \"log-002\"]"))
                     .andExpect(status().isOk())
@@ -153,7 +153,7 @@ class LogControllerTest {
             when(logService.getStatistics()).thenReturn(testStatistics);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/logs/statistics"))
+            mockMvc.perform(get("/sys/logs/statistics"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.totalCount").value(100));
@@ -173,7 +173,7 @@ class LogControllerTest {
             when(logService.cleanupExpiredLogs()).thenReturn(5);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/logs/cleanup"))
+            mockMvc.perform(post("/sys/logs/cleanup"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data").value(5));

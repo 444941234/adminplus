@@ -1,5 +1,6 @@
 package com.adminplus.service;
 
+import com.adminplus.common.exception.BizException;
 import com.adminplus.pojo.dto.request.NotificationSendRequest;
 import com.adminplus.pojo.dto.response.NotificationResponse;
 import com.adminplus.pojo.entity.NotificationEntity;
@@ -133,8 +134,8 @@ class NotificationServiceTest {
         // When & Then
         try {
             notificationService.markAsRead("notif-001", "user-002");
-            org.junit.jupiter.api.Assertions.fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
+            org.junit.jupiter.api.Assertions.fail("Expected BizException");
+        } catch (BizException e) {
             assertThat(e.getMessage()).contains("无权操作");
         }
 
@@ -196,8 +197,8 @@ class NotificationServiceTest {
         // When & Then
         try {
             notificationService.deleteNotification("notif-001", "user-002");
-            org.junit.jupiter.api.Assertions.fail("Expected IllegalArgumentException");
-        } catch (IllegalArgumentException e) {
+            org.junit.jupiter.api.Assertions.fail("Expected BizException");
+        } catch (BizException e) {
             assertThat(e.getMessage()).contains("无权操作");
         }
 

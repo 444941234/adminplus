@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/files")
+@RequestMapping(value = "/files")
 @RequiredArgsConstructor
 @Tag(name = "文件管理", description = "文件上传、删除、查询")
 public class FileController {

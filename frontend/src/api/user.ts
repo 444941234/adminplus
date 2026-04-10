@@ -8,7 +8,7 @@ export function getUserList(params: {
   keyword?: string
   deptId?: string
 }) {
-  return get<PageResult<User>>('/sys/users', params)
+  return get<PageResult<User>>('/sys/users', { params })
 }
 
 // 获取用户详情

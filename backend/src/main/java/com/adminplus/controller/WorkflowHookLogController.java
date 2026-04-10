@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/workflow/hook-logs")
+@RequestMapping(value = "/workflow/hook-logs")
 @RequiredArgsConstructor
 @Tag(name = "工作流钩子日志", description = "工作流钩子执行日志查询")
 public class WorkflowHookLogController {

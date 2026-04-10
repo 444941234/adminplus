@@ -16,6 +16,9 @@ public class CreditCardMasker implements LogMasker, Prioritized {
 
     @Override
     public String mask(String input) {
+        if (input == null) {
+            return null;
+        }
         return PATTERN.matcher(input).replaceAll("$1********$2");
     }
 

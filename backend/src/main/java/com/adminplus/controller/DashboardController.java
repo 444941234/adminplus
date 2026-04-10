@@ -20,7 +20,7 @@ import java.util.List;
  * @since 2026-02-07
  */
 @RestController
-@RequestMapping("/v1/sys/dashboard")
+@RequestMapping(value = "/sys/dashboard")
 @RequiredArgsConstructor
 @Tag(name = "Dashboard管理", description = "统计数据接口")
 @PreAuthorize("isAuthenticated()")

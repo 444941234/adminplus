@@ -1,5 +1,7 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.exception.GlobalExceptionHandler;
+import com.adminplus.common.properties.AppProperties;
 import com.adminplus.pojo.dto.response.WorkflowHookLogResponse;
 import com.adminplus.service.WorkflowHookLogService;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +45,10 @@ class WorkflowHookLogControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(hookLogController).build();
+        AppProperties mockAppProperties = new AppProperties();
+        mockMvc = MockMvcBuilders.standaloneSetup(hookLogController)
+                .setControllerAdvice(new GlobalExceptionHandler(mockAppProperties))
+                .build();
 
         testLogResponse = new WorkflowHookLogResponse(
                 "log-001",
@@ -79,7 +84,7 @@ class WorkflowHookLogControllerTest {
             when(hookLogService.listByInstanceId("instance-001"))
                 .thenReturn(List.of(testLogResponse));
 
-            mockMvc.perform(get("/v1/workflow/hook-logs/instance/instance-001"))
+            mockMvc.perform(get("/workflow/hook-logs/instance/instance-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].id").value("log-001"));
 
@@ -92,7 +97,7 @@ class WorkflowHookLogControllerTest {
             when(hookLogService.listByInstanceIdAndHookPoint("instance-001", "PRE_APPROVE"))
                 .thenReturn(List.of(testLogResponse));
 
-            mockMvc.perform(get("/v1/workflow/hook-logs/instance/instance-001/PRE_APPROVE"))
+            mockMvc.perform(get("/workflow/hook-logs/instance/instance-001/PRE_APPROVE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].hookPoint").value("PRE_APPROVE"));
 
@@ -105,7 +110,7 @@ class WorkflowHookLogControllerTest {
             when(hookLogService.listByInstanceIdAndNodeId("instance-001", "node-001"))
                 .thenReturn(List.of(testLogResponse));
 
-            mockMvc.perform(get("/v1/workflow/hook-logs/instance/instance-001/node/node-001"))
+            mockMvc.perform(get("/workflow/hook-logs/instance/instance-001/node/node-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].nodeId").value("node-001"));
 
@@ -118,7 +123,7 @@ class WorkflowHookLogControllerTest {
             when(hookLogService.listByHookId("hook-001"))
                 .thenReturn(List.of(testLogResponse));
 
-            mockMvc.perform(get("/v1/workflow/hook-logs/hook/hook-001"))
+            mockMvc.perform(get("/workflow/hook-logs/hook/hook-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].hookId").value("hook-001"));
 
@@ -130,7 +135,7 @@ class WorkflowHookLogControllerTest {
         void getById_Success() throws Exception {
             when(hookLogService.getById("log-001")).thenReturn(testLogResponse);
 
-            mockMvc.perform(get("/v1/workflow/hook-logs/log-001"))
+            mockMvc.perform(get("/workflow/hook-logs/log-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value("log-001"));
 
@@ -143,9 +148,9 @@ class WorkflowHookLogControllerTest {
             when(hookLogService.getById("non-existent"))
                 .thenThrow(new com.adminplus.common.exception.BizException("日志不存在"));
 
-            mockMvc.perform(get("/v1/workflow/hook-logs/non-existent"))
+            mockMvc.perform(get("/workflow/hook-logs/non-existent"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(500));
+                .andExpect(jsonPath("$.code").value(400));
         }
     }
 }

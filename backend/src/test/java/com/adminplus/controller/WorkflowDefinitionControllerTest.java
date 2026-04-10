@@ -94,7 +94,7 @@ class WorkflowDefinitionControllerTest {
             when(definitionService.create(any(WorkflowDefinitionRequest.class))).thenReturn(testDefinition);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/definitions")
+            mockMvc.perform(post("/workflow/definitions")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(definitionReq)))
                     .andExpect(status().isOk())
@@ -115,7 +115,7 @@ class WorkflowDefinitionControllerTest {
             when(definitionService.update(anyString(), any(WorkflowDefinitionRequest.class))).thenReturn(testDefinition);
 
             // When & Then
-            mockMvc.perform(put("/v1/workflow/definitions/def-001")
+            mockMvc.perform(put("/workflow/definitions/def-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(definitionReq)))
                     .andExpect(status().isOk())
@@ -133,7 +133,7 @@ class WorkflowDefinitionControllerTest {
         @DisplayName("should delete workflow definition")
         void delete_ShouldDeleteDefinition() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/workflow/definitions/def-001"))
+            mockMvc.perform(delete("/workflow/definitions/def-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -152,7 +152,7 @@ class WorkflowDefinitionControllerTest {
             when(definitionService.getById("def-001")).thenReturn(testDefinition);
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/definitions/def-001"))
+            mockMvc.perform(get("/workflow/definitions/def-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.definitionName").value("请假审批"));
@@ -172,7 +172,7 @@ class WorkflowDefinitionControllerTest {
             when(definitionService.listAll()).thenReturn(List.of(testDefinition));
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/definitions"))
+            mockMvc.perform(get("/workflow/definitions"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].definitionName").value("请假审批"));
@@ -192,7 +192,7 @@ class WorkflowDefinitionControllerTest {
             when(definitionService.addNode(anyString(), any(WorkflowNodeRequest.class))).thenReturn(testNode);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/definitions/def-001/nodes")
+            mockMvc.perform(post("/workflow/definitions/def-001/nodes")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(nodeReq)))
                     .andExpect(status().isOk())
@@ -213,7 +213,7 @@ class WorkflowDefinitionControllerTest {
             when(definitionService.listNodes("def-001")).thenReturn(List.of(testNode));
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/definitions/def-001/nodes"))
+            mockMvc.perform(get("/workflow/definitions/def-001/nodes"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].nodeName").value("部门主管审批"));

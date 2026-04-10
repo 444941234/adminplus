@@ -84,7 +84,7 @@ class UserControllerTest {
             when(userService.getUserList(any(UserQuery.class))).thenReturn(pageResult);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/users")
+            mockMvc.perform(get("/sys/users")
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -106,7 +106,7 @@ class UserControllerTest {
             when(userService.getUserById("user-001")).thenReturn(testUser);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/users/user-001"))
+            mockMvc.perform(get("/sys/users/user-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.username").value("testuser"));
@@ -126,7 +126,7 @@ class UserControllerTest {
             when(userService.createUser(any(UserCreateRequest.class))).thenReturn(testUser);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/users")
+            mockMvc.perform(post("/sys/users")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(createReq)))
                     .andExpect(status().isOk())
@@ -147,7 +147,7 @@ class UserControllerTest {
             when(userService.updateUser(anyString(), any(UserUpdateRequest.class))).thenReturn(testUser);
 
             // When & Then
-            mockMvc.perform(put("/v1/sys/users/user-001")
+            mockMvc.perform(put("/sys/users/user-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateReq)))
                     .andExpect(status().isOk())
@@ -165,7 +165,7 @@ class UserControllerTest {
         @DisplayName("should delete user")
         void deleteUser_ShouldDeleteUser() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/sys/users/user-001"))
+            mockMvc.perform(delete("/sys/users/user-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -181,7 +181,7 @@ class UserControllerTest {
         @DisplayName("should update user status")
         void updateUserStatus_ShouldUpdateStatus() throws Exception {
             // When & Then
-            mockMvc.perform(put("/v1/sys/users/user-001/status")
+            mockMvc.perform(put("/sys/users/user-001/status")
                             .param("status", "0"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
@@ -201,7 +201,7 @@ class UserControllerTest {
             PasswordResetRequest req = new PasswordResetRequest("newpassword123");
 
             // When & Then
-            mockMvc.perform(put("/v1/sys/users/user-001/password")
+            mockMvc.perform(put("/sys/users/user-001/password")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -222,7 +222,7 @@ class UserControllerTest {
             RoleAssignRequest req = new RoleAssignRequest(List.of("role-001", "role-002"));
 
             // When & Then
-            mockMvc.perform(put("/v1/sys/users/user-001/roles")
+            mockMvc.perform(put("/sys/users/user-001/roles")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
                     .andExpect(status().isOk())
@@ -243,7 +243,7 @@ class UserControllerTest {
             when(userService.getUserRoleIds("user-001")).thenReturn(List.of("role-001", "role-002"));
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/users/user-001/roles"))
+            mockMvc.perform(get("/sys/users/user-001/roles"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0]").value("role-001"));

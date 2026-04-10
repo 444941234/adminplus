@@ -71,7 +71,7 @@ class DeptControllerTest {
             when(deptService.getDeptTree()).thenReturn(List.of(testDept));
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/depts/tree"))
+            mockMvc.perform(get("/sys/depts/tree"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].name").value("技术部"));
@@ -91,7 +91,7 @@ class DeptControllerTest {
             when(deptService.getDeptById("dept-001")).thenReturn(testDept);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/depts/dept-001"))
+            mockMvc.perform(get("/sys/depts/dept-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data.name").value("技术部"));
@@ -111,7 +111,7 @@ class DeptControllerTest {
             when(deptService.createDept(any(DeptCreateRequest.class))).thenReturn(testDept);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/depts")
+            mockMvc.perform(post("/sys/depts")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(createReq)))
                     .andExpect(status().isOk())
@@ -133,7 +133,7 @@ class DeptControllerTest {
             when(deptService.updateDept(anyString(), any(DeptUpdateRequest.class))).thenReturn(testDept);
 
             // When & Then
-            mockMvc.perform(put("/v1/sys/depts/dept-001")
+            mockMvc.perform(put("/sys/depts/dept-001")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(updateReq)))
                     .andExpect(status().isOk())
@@ -151,7 +151,7 @@ class DeptControllerTest {
         @DisplayName("should delete dept")
         void deleteDept_ShouldDeleteDept() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/sys/depts/dept-001"))
+            mockMvc.perform(delete("/sys/depts/dept-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 

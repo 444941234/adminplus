@@ -81,7 +81,7 @@ class WorkflowCcControllerTest {
         void shouldReturnMyCcRecords() throws Exception {
             when(ccService.getUserCcRecords(anyString())).thenReturn(Arrays.asList(testCcRecord));
 
-            mockMvc.perform(get("/v1/workflow/cc/my"))
+            mockMvc.perform(get("/workflow/cc/my"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].id").value("cc-001"));
@@ -99,7 +99,7 @@ class WorkflowCcControllerTest {
         void shouldReturnUnreadCcRecords() throws Exception {
             when(ccService.getUnreadCcRecords(anyString())).thenReturn(Arrays.asList(testCcRecord));
 
-            mockMvc.perform(get("/v1/workflow/cc/my/unread"))
+            mockMvc.perform(get("/workflow/cc/my/unread"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].isRead").value(false));
@@ -112,7 +112,7 @@ class WorkflowCcControllerTest {
         void shouldCountUnreadCcRecords() throws Exception {
             when(ccService.countUnreadCcRecords(anyString())).thenReturn(3L);
 
-            mockMvc.perform(get("/v1/workflow/cc/my/unread/count"))
+            mockMvc.perform(get("/workflow/cc/my/unread/count"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data").value(3));
@@ -130,7 +130,7 @@ class WorkflowCcControllerTest {
         void shouldReturnInstanceCcRecords() throws Exception {
             when(ccService.getInstanceCcRecords("inst-001")).thenReturn(Arrays.asList(testCcRecord));
 
-            mockMvc.perform(get("/v1/workflow/cc/instance/inst-001"))
+            mockMvc.perform(get("/workflow/cc/instance/inst-001"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].instanceId").value("inst-001"));
@@ -146,7 +146,7 @@ class WorkflowCcControllerTest {
         @Test
         @DisplayName("should mark single cc record as read")
         void shouldMarkSingleAsRead() throws Exception {
-            mockMvc.perform(put("/v1/workflow/cc/cc-001/read"))
+            mockMvc.perform(put("/workflow/cc/cc-001/read"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
 
@@ -158,7 +158,7 @@ class WorkflowCcControllerTest {
         void shouldMarkMultipleAsRead() throws Exception {
             List<String> ccIds = Arrays.asList("cc-001", "cc-002");
 
-            mockMvc.perform(put("/v1/workflow/cc/read-batch")
+            mockMvc.perform(put("/workflow/cc/read-batch")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(ccIds)))
                     .andExpect(status().isOk())

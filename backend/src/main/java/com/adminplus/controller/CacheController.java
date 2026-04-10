@@ -24,7 +24,7 @@ import java.util.Set;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/sys/cache")
+@RequestMapping(value = "/sys/cache")
 @RequiredArgsConstructor
 @Tag(name = "缓存管理", description = "Redis缓存清除和管理")
 public class CacheController {

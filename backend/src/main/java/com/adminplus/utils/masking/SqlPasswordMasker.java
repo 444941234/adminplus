@@ -19,6 +19,9 @@ public class SqlPasswordMasker implements LogMasker, Prioritized {
 
     @Override
     public String mask(String input) {
+        if (input == null) {
+            return null;
+        }
         return PATTERN.matcher(input).replaceAll("$1password=***$3");
     }
 

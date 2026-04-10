@@ -84,7 +84,7 @@ class WorkflowInstanceControllerRollbackTest {
             when(instanceService.rollback(anyString(), any(ApprovalActionRequest.class))).thenReturn(testInstance);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/inst-001/rollback")
+            mockMvc.perform(post("/workflow/instances/inst-001/rollback")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(actionReq)))
                     .andExpect(status().isOk())
@@ -103,7 +103,7 @@ class WorkflowInstanceControllerRollbackTest {
             when(instanceService.rollback(anyString(), any(ApprovalActionRequest.class))).thenReturn(testInstance);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/inst-001/rollback")
+            mockMvc.perform(post("/workflow/instances/inst-001/rollback")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(reqWithoutTarget)))
                     .andExpect(status().isOk())
@@ -128,7 +128,7 @@ class WorkflowInstanceControllerRollbackTest {
             when(instanceService.getRollbackableNodes("inst-001")).thenReturn(List.of(node));
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/instances/inst-001/rollbackable-nodes"))
+            mockMvc.perform(get("/workflow/instances/inst-001/rollbackable-nodes"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].nodeName").value("部门经理审批"));
@@ -143,7 +143,7 @@ class WorkflowInstanceControllerRollbackTest {
             when(instanceService.getRollbackableNodes("inst-001")).thenReturn(List.of());
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/instances/inst-001/rollbackable-nodes"))
+            mockMvc.perform(get("/workflow/instances/inst-001/rollbackable-nodes"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data").isArray());
@@ -168,7 +168,7 @@ class WorkflowInstanceControllerRollbackTest {
             when(instanceService.addSign(anyString(), any(AddSignRequest.class))).thenReturn(addSignResp);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/inst-001/add-sign")
+            mockMvc.perform(post("/workflow/instances/inst-001/add-sign")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(addSignRequest)))
                     .andExpect(status().isOk())
@@ -191,7 +191,7 @@ class WorkflowInstanceControllerRollbackTest {
             when(instanceService.addSign(anyString(), any(AddSignRequest.class))).thenReturn(addSignResp);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/inst-001/add-sign")
+            mockMvc.perform(post("/workflow/instances/inst-001/add-sign")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(afterReq)))
                     .andExpect(status().isOk())
@@ -214,7 +214,7 @@ class WorkflowInstanceControllerRollbackTest {
             when(instanceService.addSign(anyString(), any(AddSignRequest.class))).thenReturn(addSignResp);
 
             // When & Then
-            mockMvc.perform(post("/v1/workflow/instances/inst-001/add-sign")
+            mockMvc.perform(post("/workflow/instances/inst-001/add-sign")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(transferReq)))
                     .andExpect(status().isOk())
@@ -242,7 +242,7 @@ class WorkflowInstanceControllerRollbackTest {
             when(instanceService.getAddSignRecords("inst-001")).thenReturn(List.of(record));
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/instances/inst-001/add-sign-records"))
+            mockMvc.perform(get("/workflow/instances/inst-001/add-sign-records"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data[0].addType").value("before"));
@@ -257,7 +257,7 @@ class WorkflowInstanceControllerRollbackTest {
             when(instanceService.getAddSignRecords("inst-001")).thenReturn(List.of());
 
             // When & Then
-            mockMvc.perform(get("/v1/workflow/instances/inst-001/add-sign-records"))
+            mockMvc.perform(get("/workflow/instances/inst-001/add-sign-records"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200))
                     .andExpect(jsonPath("$.data").isArray());

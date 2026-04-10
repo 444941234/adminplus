@@ -3,7 +3,7 @@ import type { Dict, DictItem, PageResult } from '@/types'
 
 // 获取字典列表
 export function getDictList(params: { page?: number; size?: number; keyword?: string }) {
-  return get<PageResult<Dict>>('/sys/dicts', params)
+  return get<PageResult<Dict>>('/sys/dicts', { params })
 }
 
 // 根据类型获取字典

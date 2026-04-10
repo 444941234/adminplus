@@ -1,5 +1,7 @@
 package com.adminplus.controller;
 
+import com.adminplus.common.exception.GlobalExceptionHandler;
+import com.adminplus.common.properties.AppProperties;
 import com.adminplus.pojo.dto.workflow.hook.WorkflowNodeHookRequest;
 import com.adminplus.pojo.dto.response.WorkflowNodeHookResponse;
 import com.adminplus.service.WorkflowNodeHookService;
@@ -52,8 +54,10 @@ class WorkflowNodeHookControllerTest {
     void setUp() {
         LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
         validator.afterPropertiesSet();
+        AppProperties mockAppProperties = new AppProperties();
         mockMvc = MockMvcBuilders.standaloneSetup(hookController)
                 .setValidator(validator)
+                .setControllerAdvice(new GlobalExceptionHandler(mockAppProperties))
                 .build();
         objectMapper = TestJacksonConfig.createObjectMapper();
 
@@ -89,7 +93,7 @@ class WorkflowNodeHookControllerTest {
         void createHook_Success() throws Exception {
             when(hookService.create(any(WorkflowNodeHookRequest.class))).thenReturn(testHookResponse);
 
-            mockMvc.perform(post("/v1/workflow/hooks")
+            mockMvc.perform(post("/workflow/hooks")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
                         {
@@ -120,7 +124,7 @@ class WorkflowNodeHookControllerTest {
         void getHookById_Success() throws Exception {
             when(hookService.getById("hook-001")).thenReturn(testHookResponse);
 
-            mockMvc.perform(get("/v1/workflow/hooks/hook-001"))
+            mockMvc.perform(get("/workflow/hooks/hook-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.id").value("hook-001"));
 
@@ -133,9 +137,9 @@ class WorkflowNodeHookControllerTest {
             when(hookService.getById("non-existent"))
                 .thenThrow(new com.adminplus.common.exception.BizException("钩子配置不存在"));
 
-            mockMvc.perform(get("/v1/workflow/hooks/non-existent"))
+            mockMvc.perform(get("/workflow/hooks/non-existent"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(500));
+                .andExpect(jsonPath("$.code").value(400));
         }
 
         @Test
@@ -144,7 +148,7 @@ class WorkflowNodeHookControllerTest {
             when(hookService.listByNodeId("node-001"))
                 .thenReturn(List.of(testHookResponse));
 
-            mockMvc.perform(get("/v1/workflow/hooks/node/node-001"))
+            mockMvc.perform(get("/workflow/hooks/node/node-001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].id").value("hook-001"));
 
@@ -157,7 +161,7 @@ class WorkflowNodeHookControllerTest {
             when(hookService.listByNodeIdAndHookPoint("node-001", "PRE_APPROVE"))
                 .thenReturn(List.of(testHookResponse));
 
-            mockMvc.perform(get("/v1/workflow/hooks/node/node-001/PRE_APPROVE"))
+            mockMvc.perform(get("/workflow/hooks/node/node-001/PRE_APPROVE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data[0].hookPoint").value("PRE_APPROVE"));
 
@@ -174,7 +178,7 @@ class WorkflowNodeHookControllerTest {
         void updateHook_Success() throws Exception {
             when(hookService.update(any(String.class), any(WorkflowNodeHookRequest.class))).thenReturn(testHookResponse);
 
-            mockMvc.perform(put("/v1/workflow/hooks/hook-001")
+            mockMvc.perform(put("/workflow/hooks/hook-001")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("""
                         {
@@ -202,7 +206,7 @@ class WorkflowNodeHookControllerTest {
         @Test
         @DisplayName("should delete hook successfully")
         void deleteHook_Success() throws Exception {
-            mockMvc.perform(delete("/v1/workflow/hooks/hook-001"))
+            mockMvc.perform(delete("/workflow/hooks/hook-001"))
                 .andExpect(status().isOk());
 
             verify(hookService).delete("hook-001");

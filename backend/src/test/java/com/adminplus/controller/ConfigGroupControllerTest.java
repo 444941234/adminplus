@@ -90,7 +90,7 @@ class ConfigGroupControllerTest {
             when(configGroupService.getConfigGroupList(any(ConfigGroupQuery.class))).thenReturn(pageResult);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/config-groups")
+            mockMvc.perform(get("/sys/config-groups")
                             .param("page", "1")
                             .param("size", "10"))
                     .andExpect(status().isOk())
@@ -113,7 +113,7 @@ class ConfigGroupControllerTest {
             when(configGroupService.getConfigGroupList(any(ConfigGroupQuery.class))).thenReturn(pageResult);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/config-groups")
+            mockMvc.perform(get("/sys/config-groups")
                             .param("page", "1")
                             .param("size", "10")
                             .param("keyword", "系统"))
@@ -136,7 +136,7 @@ class ConfigGroupControllerTest {
             when(configGroupService.getActiveConfigGroups()).thenReturn(groups);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/config-groups/active"))
+            mockMvc.perform(get("/sys/config-groups/active"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data[0].name").value("系统配置"))
                     .andExpect(jsonPath("$.data[0].status").value(1));
@@ -157,7 +157,7 @@ class ConfigGroupControllerTest {
             when(configGroupService.getConfigGroupByCode("system")).thenReturn(group);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/config-groups/code/system"))
+            mockMvc.perform(get("/sys/config-groups/code/system"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.code").value("system"))
                     .andExpect(jsonPath("$.data.name").value("系统配置"));
@@ -178,7 +178,7 @@ class ConfigGroupControllerTest {
             when(configGroupService.getConfigGroupById("1")).thenReturn(group);
 
             // When & Then
-            mockMvc.perform(get("/v1/sys/config-groups/1"))
+            mockMvc.perform(get("/sys/config-groups/1"))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.data.id").value("1"))
                     .andExpect(jsonPath("$.data.name").value("系统配置"));
@@ -217,7 +217,7 @@ class ConfigGroupControllerTest {
             when(configGroupService.createConfigGroup(any(ConfigGroupCreateRequest.class))).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(post("/v1/sys/config-groups")
+            mockMvc.perform(post("/sys/config-groups")
                             
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
@@ -247,7 +247,7 @@ class ConfigGroupControllerTest {
             when(configGroupService.updateConfigGroup(eq("1"), any(ConfigGroupUpdateRequest.class))).thenReturn(result);
 
             // When & Then
-            mockMvc.perform(put("/v1/sys/config-groups/1")
+            mockMvc.perform(put("/sys/config-groups/1")
                             
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(req)))
@@ -266,7 +266,7 @@ class ConfigGroupControllerTest {
         @DisplayName("成功删除配置组")
         void shouldDeleteConfigGroup() throws Exception {
             // When & Then
-            mockMvc.perform(delete("/v1/sys/config-groups/1")
+            mockMvc.perform(delete("/sys/config-groups/1")
                             )
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.code").value(200));
@@ -283,7 +283,7 @@ class ConfigGroupControllerTest {
         @DisplayName("成功更新配置组状态")
         void shouldUpdateConfigGroupStatus() throws Exception {
             // When & Then
-            mockMvc.perform(put("/v1/sys/config-groups/1/status")
+            mockMvc.perform(put("/sys/config-groups/1/status")
                             
                             .param("status", "0"))
                     .andExpect(status().isOk())

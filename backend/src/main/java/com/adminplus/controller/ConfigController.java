@@ -26,7 +26,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-@RequestMapping("/v1/sys/configs")
+@RequestMapping(value = "/sys/configs")
 @RequiredArgsConstructor
 @Tag(name = "配置管理", description = "配置增删改查、导入导出、回滚")
 public class ConfigController {
