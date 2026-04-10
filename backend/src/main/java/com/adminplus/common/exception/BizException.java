@@ -20,6 +20,16 @@ public class BizException extends RuntimeException {
         this.code = code;
     }
 
+    public BizException(String message, Throwable cause) {
+        super(message, cause);
+        this.code = 400;
+    }
+
+    public BizException(Integer code, String message, Throwable cause) {
+        super(message, cause);
+        this.code = code;
+    }
+
     public Integer getCode() {
         return code;
     }
