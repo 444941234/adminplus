@@ -1,14 +1,14 @@
 package com.adminplus.common.config;
 
+import com.adminplus.common.constant.SecurityConfigConstants;
 import com.adminplus.common.properties.AppProperties;
+import com.adminplus.utils.EnvUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,8 +19,8 @@ import java.util.List;
  * <ul>
  *   <li>允许的域名（生产环境必须配置）</li>
  *   <li>允许的 HTTP 方法</li>
-   *   <li>允许的请求头</li>
-   <li>凭证传递</li>
+ *   <li>允许的请求头</li>
+ *   <li>凭证传递</li>
  * </ul>
  * </p>
  *
@@ -31,16 +31,12 @@ import java.util.List;
 @Component
 public class CorsSecurityConfig {
 
-    private static final long CORS_MAX_AGE_SECONDS = Duration.ofHours(1).toSeconds();
-
     private final AppProperties appProperties;
-    private final Environment env;
     private final boolean production;
 
-    public CorsSecurityConfig(AppProperties appProperties, Environment env) {
+    public CorsSecurityConfig(AppProperties appProperties) {
         this.appProperties = appProperties;
-        this.env = env;
-        this.production = isProductionEnv(appProperties.getEnv());
+        this.production = EnvUtils.isProduction(appProperties.getEnv());
     }
 
     /**
@@ -79,14 +75,10 @@ public class CorsSecurityConfig {
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
-        configuration.setMaxAge(CORS_MAX_AGE_SECONDS);
+        configuration.setMaxAge(SecurityConfigConstants.CORS_MAX_AGE_SECONDS);
     }
 
     public boolean isProduction() {
         return production;
-    }
-
-    private static boolean isProductionEnv(String env) {
-        return "prod".equalsIgnoreCase(env) || "production".equalsIgnoreCase(env);
     }
 }

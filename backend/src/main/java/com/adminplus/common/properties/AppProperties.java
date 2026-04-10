@@ -22,6 +22,7 @@ public class AppProperties {
         private String devSecret = "";
         private int accessTokenExpirationHours = 2;
         private int refreshTokenExpirationDays = 7;
+        private boolean useCookie = false;
     }
 
     @Data

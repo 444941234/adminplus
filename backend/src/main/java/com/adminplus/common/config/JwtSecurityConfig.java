@@ -1,6 +1,7 @@
 package com.adminplus.common.config;
 
 import com.adminplus.common.properties.AppProperties;
+import com.adminplus.utils.EnvUtils;
 import com.adminplus.service.PermissionService;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -26,8 +27,6 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtGra
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.authentication.AuthenticationManager;
 
-import java.time.Duration;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -62,11 +61,7 @@ public class JwtSecurityConfig {
     public JwtSecurityConfig(AppProperties appProperties, PermissionService permissionService) {
         this.appProperties = appProperties;
         this.permissionService = permissionService;
-        this.production = isProductionEnv(appProperties.getEnv());
-    }
-
-    private static boolean isProductionEnv(String env) {
-        return "prod".equalsIgnoreCase(env) || "production".equalsIgnoreCase(env);
+        this.production = EnvUtils.isProduction(appProperties.getEnv());
     }
 
     @Bean

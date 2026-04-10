@@ -4,9 +4,8 @@ import com.adminplus.common.constant.PublicEndpointConstants;
 import com.adminplus.common.constant.SecurityConfigConstants;
 import com.adminplus.common.filter.TokenBlacklistFilter;
 import com.adminplus.common.properties.AppProperties;
-import com.adminplus.service.PermissionService;
+import com.adminplus.utils.EnvUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -21,8 +20,8 @@ import org.springframework.stereotype.Component;
  * <ul>
  *   <li>JWT 认证</li>
  *   <li>CSRF 保护</li>
-   *   <li>CORS 跨域</li>
-   <li>安全响应头</li>
+ *   <li>CORS 跨域</li>
+ *   <li>安全响应头</li>
  * </ul>
  * </p>
  *
@@ -35,18 +34,18 @@ import org.springframework.stereotype.Component;
 public class SecurityConfig {
 
     private final TokenBlacklistFilter tokenBlacklistFilter;
-    private final Environment env;
     private final JwtSecurityConfig jwtSecurityConfig;
     private final CorsSecurityConfig corsSecurityConfig;
+    private final boolean useCookieForJwt;
 
     public SecurityConfig(TokenBlacklistFilter tokenBlacklistFilter,
-                          Environment env,
-                          AppProperties appProperties,
-                          PermissionService permissionService) {
+                          JwtSecurityConfig jwtSecurityConfig,
+                          CorsSecurityConfig corsSecurityConfig,
+                          AppProperties appProperties) {
         this.tokenBlacklistFilter = tokenBlacklistFilter;
-        this.env = env;
-        this.jwtSecurityConfig = new JwtSecurityConfig(appProperties, permissionService);
-        this.corsSecurityConfig = new CorsSecurityConfig(appProperties, env);
+        this.jwtSecurityConfig = jwtSecurityConfig;
+        this.corsSecurityConfig = corsSecurityConfig;
+        this.useCookieForJwt = resolveJwtStorageMode(appProperties);
     }
 
     /**
@@ -63,8 +62,6 @@ public class SecurityConfig {
      */
     @org.springframework.context.annotation.Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        boolean useCookieForJwt = resolveJwtStorageMode();
-
         http
                 .sessionManagement(this::configureSessionManagement)
                 .authorizeHttpRequests(this::configureAuthorization)
@@ -126,12 +123,10 @@ public class SecurityConfig {
         }
     }
 
-    private boolean resolveJwtStorageMode() {
-        boolean useCookieForJwt = Boolean.parseBoolean(
-                env.getProperty("security.jwt.use-cookie", "false")
-        );
+    private boolean resolveJwtStorageMode(AppProperties appProperties) {
+        boolean useCookieForJwt = appProperties.getJwt().isUseCookie();
 
-        if (jwtSecurityConfig.isProduction() && env.getProperty("security.jwt.use-cookie") == null) {
+        if (EnvUtils.isProduction(appProperties.getEnv()) && !useCookieForJwt) {
             log.warn("生产环境未明确配置 security.jwt.use-cookie，使用默认值 false（Bearer Token 模式）");
         }
 

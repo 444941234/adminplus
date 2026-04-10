@@ -1,5 +1,7 @@
 package com.adminplus.common.filter;
 
+import com.adminplus.constants.HttpConstants;
+import com.adminplus.common.constant.SecurityConfigConstants;
 import com.adminplus.service.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -30,9 +32,9 @@ public class TokenBlacklistFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         // 从请求头获取 Token
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+        String authHeader = request.getHeader(HttpConstants.AUTHORIZATION_HEADER);
+        if (authHeader != null && authHeader.startsWith(SecurityConfigConstants.BEARER_PREFIX)) {
+            String token = authHeader.substring(SecurityConfigConstants.BEARER_PREFIX.length());
 
             // 检查 Token 是否在黑名单中
             if (tokenBlacklistService.isTokenBlacklisted(token)) {
