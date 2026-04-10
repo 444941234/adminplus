@@ -29,12 +29,94 @@ public enum WorkflowStatus {
         return description;
     }
 
+    /**
+     * 判断当前状态是否可以提交
+     */
+    public boolean canSubmit() {
+        return this == DRAFT || this == RUNNING;
+    }
+
+    /**
+     * 判断当前状态是否可以审批
+     */
+    public boolean canApprove() {
+        return this == RUNNING;
+    }
+
+    /**
+     * 判断当前状态是否可以拒绝
+     */
+    public boolean canReject() {
+        return this == RUNNING;
+    }
+
+    /**
+     * 判断当前状态是否可以取消
+     */
+    public boolean canCancel() {
+        return this == DRAFT || this == RUNNING;
+    }
+
+    /**
+     * 判断当前状态是否可以撤回
+     */
+    public boolean canWithdraw() {
+        return this == DRAFT || this == REJECTED;
+    }
+
+    /**
+     * 判断当前状态是否可以回退
+     */
+    public boolean canRollback() {
+        return this == RUNNING;
+    }
+
+    /**
+     * 判断当前状态是否可以更新草稿
+     */
+    public boolean canUpdateDraft() {
+        return this == DRAFT;
+    }
+
+    /**
+     * 判断当前状态是否可以删除草稿
+     */
+    public boolean canDeleteDraft() {
+        return this == DRAFT;
+    }
+
+    /**
+     * 判断当前状态是否已结束
+     */
+    public boolean isFinished() {
+        return this == APPROVED || this == REJECTED || this == CANCELLED;
+    }
+
+    /**
+     * 从字符串解析状态（支持code和name，不区分大小写）
+     */
     public static WorkflowStatus fromCode(String code) {
+        if (code == null) {
+            return null;
+        }
         for (WorkflowStatus status : values()) {
-            if (status.code.equals(code)) {
+            if (status.code.equalsIgnoreCase(code)
+                || status.name().equalsIgnoreCase(code)) {
                 return status;
             }
         }
-        throw new IllegalArgumentException("Unknown WorkflowStatus code: " + code);
+        throw new IllegalArgumentException("未知工作流状态: " + code);
+    }
+
+    /**
+     * 判断是否为有效状态码
+     */
+    public static boolean isValidCode(String code) {
+        try {
+            fromCode(code);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }
